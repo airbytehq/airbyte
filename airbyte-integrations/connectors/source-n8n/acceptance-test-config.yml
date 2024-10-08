@@ -4,7 +4,7 @@ connector_image: airbyte/source-n8n:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_n8n/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

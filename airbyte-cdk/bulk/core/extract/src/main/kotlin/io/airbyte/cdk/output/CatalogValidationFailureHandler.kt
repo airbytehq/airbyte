@@ -2,7 +2,7 @@
 package io.airbyte.cdk.output
 
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.AirbyteSchemaType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -43,8 +43,8 @@ data class FieldNotFound(
 data class FieldTypeMismatch(
     override val streamID: StreamIdentifier,
     val fieldName: String,
-    val expected: AirbyteType,
-    val actual: AirbyteType,
+    val expected: AirbyteSchemaType,
+    val actual: AirbyteSchemaType,
 ) : CatalogValidationFailure
 
 data class InvalidPrimaryKey(

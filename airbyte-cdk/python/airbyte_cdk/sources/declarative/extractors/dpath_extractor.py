@@ -3,12 +3,11 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Union
 
 import dpath
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
@@ -64,7 +63,7 @@ class DpathExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         for body in self.decoder.decode(response):
             if len(self._field_path) == 0:
                 extracted = body
@@ -73,7 +72,7 @@ class DpathExtractor(RecordExtractor):
                 if "*" in path:
                     extracted = dpath.values(body, path)
                 else:
-                    extracted = dpath.get(body, path, default=[])
+                    extracted = dpath.get(body, path, default=[])  # type: ignore # extracted will be a MutableMapping, given input data structure
             if isinstance(extracted, list):
                 yield from extracted
             elif extracted:

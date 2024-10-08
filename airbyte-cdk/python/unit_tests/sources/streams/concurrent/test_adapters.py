@@ -11,7 +11,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.adapters import (
     AvailabilityStrategyFacade,
-    StreamAvailabilityStrategy,
+    CursorPartitionGenerator,
     StreamFacade,
     StreamPartition,
     StreamPartitionGenerator,
@@ -21,6 +21,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -53,20 +54,6 @@ def test_availability_strategy_facade(stream_availability, expected_available, e
     strategy.check_availability.assert_called_once_with(logger)
 
 
-def test_stream_availability_strategy():
-    stream = Mock()
-    source = Mock()
-    stream.check_availability.return_value = True, None
-    logger = Mock()
-    availability_strategy = StreamAvailabilityStrategy(stream, source)
-
-    stream_availability = availability_strategy.check_availability(logger)
-    assert stream_availability.is_available()
-    assert stream_availability.message() is None
-
-    stream.check_availability.assert_called_once_with(logger, source)
-
-
 @pytest.mark.parametrize(
     "sync_mode",
     [
@@ -93,12 +80,12 @@ def test_stream_partition_generator(sync_mode):
     [
         pytest.param(
             TypeTransformer(TransformConfig.NoTransform),
-            [Record({"data": "1"}, _STREAM_NAME), Record({"data": "2"}, _STREAM_NAME)],
+            [Record({"data": "1"}, None), Record({"data": "2"}, None)],
             id="test_no_transform",
         ),
         pytest.param(
             TypeTransformer(TransformConfig.DefaultSchemaNormalization),
-            [Record({"data": 1}, _STREAM_NAME), Record({"data": 2}, _STREAM_NAME)],
+            [Record({"data": 1}, None), Record({"data": 2}, None)],
             id="test_default_transform",
         ),
     ],
@@ -122,6 +109,8 @@ def test_stream_partition(transformer, expected_records):
             message='slice:{"partition": 1}',
         ),
     )
+    for record in expected_records:
+        record.partition = partition
 
     stream_data = [a_log_message, {"data": "1"}, {"data": "2"}]
     stream.read_records.return_value = stream_data
@@ -378,3 +367,21 @@ def test_get_error_display_message(exception, expected_display_message):
     display_message = facade.get_error_display_message(exception)
 
     assert display_message == expected_display_message
+
+
+def test_cursor_partition_generator():
+    stream = Mock()
+    cursor = Mock()
+    message_repository = Mock()
+    cursor_field = Mock()
+
+    expected_slices = [StreamSlice(partition={}, cursor_slice={"start": 1, "end": 2})]
+    cursor.generate_slices.return_value = [(1, 2)]
+
+    partition_generator = CursorPartitionGenerator(stream, message_repository, cursor, cursor_field)
+
+    partitions = list(partition_generator.generate())
+    generated_slices = [partition.to_slice() for partition in partitions]
+
+    assert all(isinstance(partition, StreamPartition) for partition in partitions), "Not all partitions are instances of StreamPartition"
+    assert generated_slices == expected_slices, f"Expected {expected_slices}, but got {generated_slices}"

@@ -12,11 +12,16 @@ import java.time.Duration
 @Requires(env = [Environment.TEST])
 @Primary
 class MysqlSourceTestConfigurationFactory :
-    SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration> {
+    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationJsonObject,
+        pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration =
         MysqlSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
-            .copy(maxConcurrency = 1, checkpointTargetInterval = Duration.ofSeconds(3))
+            .copy(
+                maxConcurrency = 1,
+                checkpointTargetInterval = Duration.ofSeconds(3),
+                debeziumHeartbeatInterval = Duration.ofMillis(100),
+                debeziumKeepAliveInterval = Duration.ofSeconds(1),
+            )
 }

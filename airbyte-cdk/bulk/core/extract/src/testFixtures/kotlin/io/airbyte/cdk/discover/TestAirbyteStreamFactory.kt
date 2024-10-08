@@ -21,7 +21,7 @@ class TestAirbyteStreamFactory : AirbyteStreamFactory {
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             (jsonSchema["properties"] as ObjectNode).apply {
                 for (metaField in CommonMetaField.entries) {
-                    set<ObjectNode>(metaField.id, metaField.type.airbyteType.asJsonSchema())
+                    set<ObjectNode>(metaField.id, metaField.type.airbyteSchemaType.asJsonSchema())
                 }
             }
             defaultCursorField = listOf(CommonMetaField.CDC_LSN.id)

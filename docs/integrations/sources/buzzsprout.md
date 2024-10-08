@@ -28,8 +28,8 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-16 |[45608](https://github.com/airbytehq/airbyte/pull/45608)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.1 | 2024-09-16 | [45608](https://github.com/airbytehq/airbyte/pull/45608) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

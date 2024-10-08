@@ -16,12 +16,7 @@ from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
-    AbstractAvailabilityStrategy,
-    StreamAvailability,
-    StreamAvailable,
-    StreamUnavailable,
-)
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, AlwaysAvailableAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -30,6 +25,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -86,7 +82,7 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
                 name=stream.name,
                 namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
-                availability_strategy=StreamAvailabilityStrategy(stream, source),
+                availability_strategy=AlwaysAvailableAvailabilityStrategy(),
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
@@ -171,6 +167,10 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         else:
             return self._abstract_stream.cursor_field
 
+    @property
+    def cursor(self) -> Optional[Cursor]:  # type: ignore[override] # StreamFaced expects to use only airbyte_cdk.sources.streams.concurrent.cursor.Cursor
+        return self._cursor
+
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._abstract_stream.get_json_schema()
@@ -197,6 +197,14 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
 
     def get_underlying_stream(self) -> DefaultStream:
         return self._abstract_stream
+
+
+class SliceEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if hasattr(obj, "__json_serializable__"):
+            return obj.__json_serializable__()
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
 
 
 class StreamPartition(Partition):
@@ -255,9 +263,7 @@ class StreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    record = Record(data_to_return, self._stream.name)
-                    self._cursor.observe(record)
-                    yield Record(data_to_return, self._stream.name)
+                    yield Record(data_to_return, self)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
@@ -273,7 +279,7 @@ class StreamPartition(Partition):
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            s = json.dumps(self._slice, sort_keys=True, cls=SliceEncoder)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
@@ -327,12 +333,65 @@ class StreamPartitionGenerator(PartitionGenerator):
             )
 
 
+class CursorPartitionGenerator(PartitionGenerator):
+    """
+    This class generates partitions using the concurrent cursor and iterates through state slices to generate partitions.
+
+    It is used when synchronizing a stream in incremental or full-refresh mode where state information is maintained
+    across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
+    """
+
+    def __init__(
+        self,
+        stream: Stream,
+        message_repository: MessageRepository,
+        cursor: Cursor,
+        cursor_field: Optional[List[str]],
+    ):
+        """
+        Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
+
+        :param stream: The stream to delegate to for partition generation.
+        :param message_repository: The message repository to use to emit non-record messages.
+        :param sync_mode: The synchronization mode.
+        :param cursor: A Cursor object that maintains the state and the cursor field.
+        """
+        self._stream = stream
+        self.message_repository = message_repository
+        self._sync_mode = SyncMode.full_refresh
+        self._cursor = cursor
+        self._cursor_field = cursor_field
+        self._state = self._cursor.state
+
+    def generate(self) -> Iterable[Partition]:
+        """
+        Generate partitions based on the slices in the cursor's state.
+
+        This method iterates through the list of slices found in the cursor's state, and for each slice, it generates
+        a `StreamPartition` object.
+
+        :return: An iterable of StreamPartition objects.
+        """
+        for slice_start, slice_end in self._cursor.generate_slices():
+            stream_slice = StreamSlice(partition={}, cursor_slice={"start": slice_start, "end": slice_end})
+
+            yield StreamPartition(
+                self._stream,
+                copy.deepcopy(stream_slice),
+                self.message_repository,
+                self._sync_mode,
+                self._cursor_field,
+                self._state,
+                self._cursor,
+            )
+
+
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 
@@ -345,37 +404,3 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         """
         stream_availability = self._abstract_availability_strategy.check_availability(logger)
         return stream_availability.is_available(), stream_availability.message()
-
-
-class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
-    """
-    This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
-    StreamAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
-
-    A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
-
-    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
-    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
-    """
-
-    def __init__(self, stream: Stream, source: Source):
-        """
-        :param stream: The stream to delegate to
-        :param source: The source to delegate to
-        """
-        self._stream = stream
-        self._source = source
-
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        try:
-            available, message = self._stream.check_availability(logger, self._source)
-            if available:
-                return StreamAvailable()
-            else:
-                return StreamUnavailable(str(message))
-        except Exception as e:
-            display_message = self._stream.get_error_display_message(e)
-            if display_message:
-                raise ExceptionWithDisplayMessage(display_message)
-            else:
-                raise e

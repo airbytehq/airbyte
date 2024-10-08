@@ -32,6 +32,7 @@ import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -652,13 +653,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -730,13 +738,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(
@@ -851,13 +866,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -1105,7 +1127,13 @@ abstract class DestinationAcceptanceTest(
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     )
             )
         runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
@@ -1562,13 +1590,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -2354,12 +2389,16 @@ abstract class DestinationAcceptanceTest(
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(
-                                Jsons.jsonNode(
-                                    ImmutableMap.builder<Any, Any>()
-                                        .put("start_date", "2020-09-02")
-                                        .build()
-                                )
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(
+                                            ImmutableMap.builder<Any, Any>()
+                                                .put("start_date", "2020-09-02")
+                                                .build()
+                                        )
+                                    )
                             )
                     )
             try {

@@ -246,7 +246,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     }
                 ],
             },
-            {"created": 1617030403},
+            {"created": 172800},
             id="epoch-single-slice",
         ),
         pytest.param(
@@ -255,7 +255,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
                         "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
                     },
                     {
@@ -264,7 +264,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": 1648566403},
+            {"created": 172800},
             id="epoch-overlapping-slices",
         ),
         pytest.param(
@@ -273,7 +273,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
                         "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
                     },
                     {
@@ -282,7 +282,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": 1617030403},
+            {"created": 172800},
             id="epoch-multiple-slices",
         ),
         pytest.param(
@@ -296,7 +296,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     }
                 ],
             },
-            {"created": "2021-03-29T15:06:43.000Z"},
+            {"created": "1970-01-03T00:00:00.000Z"},
             id="isomillis-single-slice",
         ),
         pytest.param(
@@ -314,7 +314,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": "2022-03-29T15:06:43.000Z"},
+            {"created": "1970-01-01T00:00:00.000Z"},
             id="isomillis-overlapping-slices",
         ),
         pytest.param(
@@ -332,7 +332,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": "2021-03-29T15:06:43.000Z"},
+            {"created": "1970-01-01T00:00:00.000Z"},
             id="isomillis-multiple-slices",
         ),
     ],

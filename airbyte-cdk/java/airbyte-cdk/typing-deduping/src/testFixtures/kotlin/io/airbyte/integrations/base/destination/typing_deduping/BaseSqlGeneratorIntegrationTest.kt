@@ -47,7 +47,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 @Execution(ExecutionMode.CONCURRENT)
 abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> {
-    protected var DIFFER: RecordDiffer = mock()
+    protected var DIFFER: LegacyRecordDiffer = mock()
 
     /** Subclasses may use these four StreamConfigs in their tests. */
     protected var incrementalDedupStream: StreamConfig = mock()
@@ -200,7 +200,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 
         DIFFER =
-            RecordDiffer(
+            LegacyRecordDiffer(
                 rawMetadataColumnNames,
                 finalMetadataColumnNames,
                 id1 to AirbyteProtocolType.INTEGER,

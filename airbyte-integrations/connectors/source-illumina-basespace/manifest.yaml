@@ -1,0 +1,1831 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Connector for the Basespace v1 API. This can be used to extract data on
+  projects, runs, samples and app sessions.
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/current/projects
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    runs:
+      type: DeclarativeStream
+      name: runs
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/current/runs
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/runs"
+    samples:
+      type: DeclarativeStream
+      name: samples
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/{{ stream_partition['parent_id'] }}/samples
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/samples"
+    sample_files:
+      type: DeclarativeStream
+      name: sample_files
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: samples/{{ stream_partition['parent_id'] }}/files
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/samples"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sample_files"
+    run_files:
+      type: DeclarativeStream
+      name: run_files
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: runs/{{ stream_partition['parent_id'] }}/files
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/runs"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/run_files"
+    appsessions:
+      type: DeclarativeStream
+      name: appsessions
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/current/appsessions
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/appsessions"
+    appresults:
+      type: DeclarativeStream
+      name: appresults
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: appsessions/{{ stream_partition["parent_id"] }}/appresults
+          http_method: GET
+          request_parameters:
+            SortBy: Id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            field_name: Limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1024
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/appsessions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/appresults"
+    appresults_files:
+      type: DeclarativeStream
+      name: appresults_files
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: appresults/{{ stream_partition["parent_id"] }}/files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/appresults"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/appresults_files"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.euw2.sh.basespace.illumina.com/v1pre3
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["access_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/runs"
+  - $ref: "#/definitions/streams/samples"
+  - $ref: "#/definitions/streams/sample_files"
+  - $ref: "#/definitions/streams/run_files"
+  - $ref: "#/definitions/streams/appsessions"
+  - $ref: "#/definitions/streams/appresults"
+  - $ref: "#/definitions/streams/appresults_files"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - domain
+      - user
+    properties:
+      access_token:
+        type: string
+        description: >-
+          BaseSpace access token. Instructions for obtaining your access token
+          can be found in the BaseSpace Developer Documentation.
+        order: 0
+        title: Access Token
+        airbyte_secret: true
+      domain:
+        type: string
+        description: >-
+          Domain name of the BaseSpace instance (e.g.,
+          euw2.sh.basespace.illumina.com)
+        order: 1
+        title: Domain
+      user:
+        type: string
+        description: >-
+          Providing a user ID restricts the returned data to what that user can
+          access. If you use the default ('current'), all data accessible to the
+          user associated with the API key will be shown.
+        title: User
+        default: current
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    runs: true
+    samples: false
+    sample_files: false
+    run_files: true
+    appsessions: true
+    appresults: false
+    appresults_files: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    projects:
+      streamHash: 55daa47f22d1c35c5ac847e09fa72017e1d080e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    runs:
+      streamHash: 668e3a297cbc5c11f603c8e37b6a25c18df68904
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    samples:
+      streamHash: fafc7be899ce2c4653556809e4953c9589c1dee1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sample_files:
+      streamHash: 236d4592a030be4dec25e49406238236e7b49446
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    run_files:
+      streamHash: f848e3dbb8105a7b939fa9fb074110549f615c48
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    appsessions:
+      streamHash: 0cca27ef1ddc6941089a058b2dc5ee924415ab8c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    appresults:
+      streamHash: 28e0ac50a451dc1c8c5cd226ab8a094381f570ea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    appresults_files:
+      streamHash: 30566bbd09e9b5c75f22f0ba83c1829e2f65f2cb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateModified:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      HasCollaborators:
+        type:
+          - boolean
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      IsTransferPending:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      TotalSize:
+        type:
+          - number
+          - "null"
+      UserOwnedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AnalysisSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          ReverseComplementI5Index:
+            type:
+              - boolean
+              - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateInstrumentCompleted:
+        type:
+          - string
+          - "null"
+      DateInstrumentStarted:
+        type:
+          - string
+          - "null"
+      DateModified:
+        type:
+          - string
+          - "null"
+      ExperimentName:
+        type:
+          - string
+          - "null"
+      FlowcellBarcode:
+        type:
+          - string
+          - "null"
+      HasCollaborators:
+        type:
+          - boolean
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      HrefBaseSpaceUI:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      Instrument:
+        type:
+          - object
+          - "null"
+        properties:
+          InstrumentId:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          SerialNumber:
+            type:
+              - string
+              - "null"
+      InstrumentName:
+        type:
+          - string
+          - "null"
+      InstrumentType:
+        type:
+          - string
+          - "null"
+      IsArchived:
+        type:
+          - boolean
+          - "null"
+      IsTransferPending:
+        type:
+          - boolean
+          - "null"
+      IsUnzipping:
+        type:
+          - boolean
+          - "null"
+      IsZipped:
+        type:
+          - boolean
+          - "null"
+      IsZipping:
+        type:
+          - boolean
+          - "null"
+      LaneAndQcStatus:
+        type:
+          - string
+          - "null"
+      LimsStatus:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      NumCyclesIndex1:
+        type:
+          - number
+          - "null"
+      NumCyclesIndex2:
+        type:
+          - number
+          - "null"
+      NumCyclesRead1:
+        type:
+          - number
+          - "null"
+      NumCyclesRead2:
+        type:
+          - number
+          - "null"
+      Number:
+        type:
+          - number
+          - "null"
+      PlatformName:
+        type:
+          - string
+          - "null"
+      PrepSettings:
+        type:
+          - object
+          - "null"
+      ReagentBarcode:
+        type:
+          - string
+          - "null"
+      SequencingStats:
+        type:
+          - object
+          - "null"
+        properties:
+          Chemistry:
+            type:
+              - string
+              - "null"
+          ClusterDensity:
+            type:
+              - number
+              - "null"
+          Clusters:
+            type:
+              - number
+              - "null"
+          ClustersPf:
+            type:
+              - number
+              - "null"
+          ErrorRate:
+            type:
+              - number
+              - "null"
+          ErrorRateR1:
+            type:
+              - number
+              - "null"
+          ErrorRateR2:
+            type:
+              - number
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          IntensityCycle1:
+            type:
+              - number
+              - "null"
+          IsIndexed:
+            type:
+              - boolean
+              - "null"
+          MaxCycleCalled:
+            type:
+              - number
+              - "null"
+          MaxCycleExtracted:
+            type:
+              - number
+              - "null"
+          MaxCycleScored:
+            type:
+              - number
+              - "null"
+          MinCycleCalled:
+            type:
+              - number
+              - "null"
+          MinCycleExtracted:
+            type:
+              - number
+              - "null"
+          MinCycleScored:
+            type:
+              - number
+              - "null"
+          NonIndexedErrorRate:
+            type:
+              - number
+              - "null"
+          NonIndexedIntensityCycle1:
+            type:
+              - number
+              - "null"
+          NonIndexedPercentAligned:
+            type:
+              - number
+              - "null"
+          NonIndexedPercentGtQ30:
+            type:
+              - number
+              - "null"
+          NonIndexedProjectedTotalYield:
+            type:
+              - number
+              - "null"
+          NonIndexedYieldTotal:
+            type:
+              - number
+              - "null"
+          NumCyclesIndex1:
+            type:
+              - number
+              - "null"
+          NumCyclesIndex2:
+            type:
+              - number
+              - "null"
+          NumCyclesRead1:
+            type:
+              - number
+              - "null"
+          NumCyclesRead2:
+            type:
+              - number
+              - "null"
+          NumLanes:
+            type:
+              - number
+              - "null"
+          NumReads:
+            type:
+              - number
+              - "null"
+          NumSurfaces:
+            type:
+              - number
+              - "null"
+          NumSwathsPerLane:
+            type:
+              - number
+              - "null"
+          NumTilesPerSwath:
+            type:
+              - number
+              - "null"
+          Occupancy:
+            type:
+              - number
+              - "null"
+          PercentAligned:
+            type:
+              - number
+              - "null"
+          PercentGtQ30:
+            type:
+              - number
+              - "null"
+          PercentGtQ30Last10Cycles:
+            type:
+              - number
+              - "null"
+          PercentGtQ30R1:
+            type:
+              - number
+              - "null"
+          PercentGtQ30R2:
+            type:
+              - number
+              - "null"
+          PercentLoadingConcentration:
+            type:
+              - number
+              - "null"
+          PercentPf:
+            type:
+              - number
+              - "null"
+          PercentResynthesis:
+            type:
+              - number
+              - "null"
+          PhasingR1:
+            type:
+              - number
+              - "null"
+          PhasingR2:
+            type:
+              - number
+              - "null"
+          PrePhasingR1:
+            type:
+              - number
+              - "null"
+          PrePhasingR2:
+            type:
+              - number
+              - "null"
+          ProjectedTotalYield:
+            type:
+              - number
+              - "null"
+          ReadsPfTotal:
+            type:
+              - number
+              - "null"
+          ReadsTotal:
+            type:
+              - number
+              - "null"
+          YieldTotal:
+            type:
+              - number
+              - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      TotalSize:
+        type:
+          - number
+          - "null"
+      UserOwnedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      UserUploadedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      Workflow:
+        type:
+          - string
+          - "null"
+    required:
+      - Id
+  samples:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DateCreated:
+        type:
+          - string
+          - "null"
+      ExperimentName:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      IsMerged:
+        type:
+          - boolean
+          - "null"
+      IsPairedEnd:
+        type:
+          - boolean
+          - "null"
+      Library:
+        type:
+          - object
+          - "null"
+        properties:
+          BiologicalSample:
+            type:
+              - object
+              - "null"
+            properties:
+              DateModified:
+                type:
+                  - string
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              NucleicAcid:
+                type:
+                  - string
+                  - "null"
+              Project:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  DateCreated:
+                    type:
+                      - string
+                      - "null"
+                  DateModified:
+                    type:
+                      - string
+                      - "null"
+                  Description:
+                    type:
+                      - string
+                      - "null"
+                  HasCollaborators:
+                    type:
+                      - boolean
+                      - "null"
+                  Href:
+                    type:
+                      - string
+                      - "null"
+                  Id:
+                    type:
+                      - string
+                      - "null"
+                  Name:
+                    type:
+                      - string
+                      - "null"
+                  TotalSize:
+                    type:
+                      - number
+                      - "null"
+                  UserOwnedBy:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      DateCreated:
+                        type:
+                          - string
+                          - "null"
+                      GravatarUrl:
+                        type:
+                          - string
+                          - "null"
+                      Href:
+                        type:
+                          - string
+                          - "null"
+                      Id:
+                        type:
+                          - string
+                          - "null"
+                      Name:
+                        type:
+                          - string
+                          - "null"
+              UserOwnedBy:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  DateCreated:
+                    type:
+                      - string
+                      - "null"
+                  GravatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  Href:
+                    type:
+                      - string
+                      - "null"
+                  Id:
+                    type:
+                      - string
+                      - "null"
+                  Name:
+                    type:
+                      - string
+                      - "null"
+              UserSampleId:
+                type:
+                  - string
+                  - "null"
+          DateModified:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          LibraryName:
+            type:
+              - string
+              - "null"
+          LibraryPrep:
+            type:
+              - object
+              - "null"
+            properties:
+              DateModified:
+                type:
+                  - string
+                  - "null"
+              DefaultRead1Cycles:
+                type:
+                  - number
+                  - "null"
+              DefaultRead2Cycles:
+                type:
+                  - number
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+              NumIndexCycles:
+                type:
+                  - number
+                  - "null"
+              State:
+                type:
+                  - string
+                  - "null"
+              ValidIndexingStrategies:
+                type:
+                  - string
+                  - "null"
+              ValidReadTypes:
+                type:
+                  - string
+                  - "null"
+          OwnerUser:
+            type:
+              - object
+              - "null"
+            properties:
+              DateCreated:
+                type:
+                  - string
+                  - "null"
+              GravatarUrl:
+                type:
+                  - string
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+          Project:
+            type:
+              - object
+              - "null"
+            properties:
+              DateCreated:
+                type:
+                  - string
+                  - "null"
+              DateModified:
+                type:
+                  - string
+                  - "null"
+              Description:
+                type:
+                  - string
+                  - "null"
+              HasCollaborators:
+                type:
+                  - boolean
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+              TotalSize:
+                type:
+                  - number
+                  - "null"
+              UserOwnedBy:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  DateCreated:
+                    type:
+                      - string
+                      - "null"
+                  GravatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  Href:
+                    type:
+                      - string
+                      - "null"
+                  Id:
+                    type:
+                      - string
+                      - "null"
+                  Name:
+                    type:
+                      - string
+                      - "null"
+          State:
+            type:
+              - string
+              - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      NumReadsPF:
+        type:
+          - number
+          - "null"
+      NumReadsRaw:
+        type:
+          - number
+          - "null"
+      Read1:
+        type:
+          - number
+          - "null"
+      Read2:
+        type:
+          - number
+          - "null"
+      SampleId:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StatusSummary:
+        type:
+          - string
+          - "null"
+      TotalClustersPF:
+        type:
+          - number
+          - "null"
+      TotalClustersRaw:
+        type:
+          - number
+          - "null"
+      TotalReadsPF:
+        type:
+          - number
+          - "null"
+      TotalReadsRaw:
+        type:
+          - number
+          - "null"
+      TotalSize:
+        type:
+          - number
+          - "null"
+      UserOwnedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  sample_files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      ContentType:
+        type:
+          - string
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateModified:
+        type:
+          - string
+          - "null"
+      ETag:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      HrefContent:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      IdAsLong:
+        type:
+          - number
+          - "null"
+      IsArchived:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Path:
+        type:
+          - string
+          - "null"
+      Size:
+        type:
+          - number
+          - "null"
+    required:
+      - Id
+    additionalProperties: true
+  run_files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ContentType:
+        type:
+          - string
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateModified:
+        type:
+          - string
+          - "null"
+      ETag:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      HrefContent:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      IsArchived:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Path:
+        type:
+          - string
+          - "null"
+      Size:
+        type:
+          - number
+          - "null"
+    required:
+      - Id
+  appsessions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Application:
+        type:
+          - object
+          - "null"
+        properties:
+          AppFamilySlug:
+            type:
+              - string
+              - "null"
+          AppVersionSlug:
+            type:
+              - string
+              - "null"
+          Category:
+            type:
+              - string
+              - "null"
+          Classifications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          CompanyName:
+            type:
+              - string
+              - "null"
+          DateCreated:
+            type:
+              - string
+              - "null"
+          DatePublished:
+            type:
+              - string
+              - "null"
+          Features:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          HomepageUri:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          IsBillingActivated:
+            type:
+              - boolean
+              - "null"
+          LockStatus:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          PublishStatus:
+            type:
+              - string
+              - "null"
+          ShortDescription:
+            type:
+              - string
+              - "null"
+          VersionNumber:
+            type:
+              - string
+              - "null"
+      DateCompleted:
+        type:
+          - string
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      ModifiedOn:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Purpose:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StatusSummary:
+        type:
+          - string
+          - "null"
+      TotalSize:
+        type:
+          - number
+          - "null"
+      UserCreatedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          ExternalDomainId:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  appresults:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AppSession:
+        type:
+          - object
+          - "null"
+        properties:
+          Application:
+            type:
+              - object
+              - "null"
+            properties:
+              AppFamilySlug:
+                type:
+                  - string
+                  - "null"
+              AppVersionSlug:
+                type:
+                  - string
+                  - "null"
+              Category:
+                type:
+                  - string
+                  - "null"
+              Classifications:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              CompanyName:
+                type:
+                  - string
+                  - "null"
+              DateCreated:
+                type:
+                  - string
+                  - "null"
+              DatePublished:
+                type:
+                  - string
+                  - "null"
+              Features:
+                type:
+                  - array
+                  - "null"
+              HomepageUri:
+                type:
+                  - string
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              IsBillingActivated:
+                type:
+                  - boolean
+                  - "null"
+              LockStatus:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+              PublishStatus:
+                type:
+                  - string
+                  - "null"
+              ShortDescription:
+                type:
+                  - string
+                  - "null"
+              VersionNumber:
+                type:
+                  - string
+                  - "null"
+          DateCompleted:
+            type:
+              - string
+              - "null"
+          DateCreated:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          ModifiedOn:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          QcStatus:
+            type:
+              - string
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+          StatusSummary:
+            type:
+              - string
+              - "null"
+          TotalSize:
+            type:
+              - number
+              - "null"
+          UserCreatedBy:
+            type:
+              - object
+              - "null"
+            properties:
+              DateCreated:
+                type:
+                  - string
+                  - "null"
+              GravatarUrl:
+                type:
+                  - string
+                  - "null"
+              Href:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StatusSummary:
+        type:
+          - string
+          - "null"
+      TotalSize:
+        type:
+          - number
+          - "null"
+      UserOwnedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          DateCreated:
+            type:
+              - string
+              - "null"
+          GravatarUrl:
+            type:
+              - string
+              - "null"
+          Href:
+            type:
+              - string
+              - "null"
+          Id:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  appresults_files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      Category:
+        type:
+          - string
+          - "null"
+      ContentType:
+        type:
+          - string
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateModified:
+        type:
+          - string
+          - "null"
+      ETag:
+        type:
+          - string
+          - "null"
+      Href:
+        type:
+          - string
+          - "null"
+      HrefContent:
+        type:
+          - string
+          - "null"
+      Id:
+        type: string
+      IdAsLong:
+        type:
+          - number
+          - "null"
+      IsArchived:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Path:
+        type:
+          - string
+          - "null"
+      Size:
+        type:
+          - number
+          - "null"
+    required:
+      - Id
+    additionalProperties: true

@@ -98,7 +98,7 @@ data class SshPasswordAuthTunnelMethod(
 ) : SshTunnelMethodConfiguration
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.tunnel_method")
-class MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject {
+class MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification {
     var tunnelMethod: String = "NO_TUNNEL"
     var tunnelHost: String? = null
     var tunnelPort: Int = 22

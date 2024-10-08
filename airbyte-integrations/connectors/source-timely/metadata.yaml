@@ -19,7 +19,7 @@ data:
   name: Timely
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2022-06-22

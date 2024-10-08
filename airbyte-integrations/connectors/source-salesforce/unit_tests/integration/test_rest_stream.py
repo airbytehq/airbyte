@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
@@ -125,7 +125,7 @@ class IncrementalTest(TestCase):
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}))
 
-        assert output.most_recent_state.stream_state.dict() == {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]})
 
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
@@ -155,4 +155,4 @@ class IncrementalTest(TestCase):
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
 
         # the start is granular to the second hence why we have `000` in terms of milliseconds
-        assert output.most_recent_state.stream_state.dict() == {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]})

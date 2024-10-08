@@ -188,7 +188,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
-        return True
+        return False
 
     def _read_stream(
         self,

@@ -17,7 +17,9 @@ class HttpMethod(Enum):
     Http Method to use when submitting an outgoing HTTP request
     """
 
+    DELETE = "DELETE"
     GET = "GET"
+    PATCH = "PATCH"
     POST = "POST"
 
 

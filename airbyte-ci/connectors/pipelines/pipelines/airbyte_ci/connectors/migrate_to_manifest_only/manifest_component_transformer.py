@@ -5,7 +5,7 @@
 import copy
 import logging
 import typing
-from typing import Any, Mapping, Set, Type
+from typing import Any, Mapping, Optional, Set, Type
 
 from pydantic import BaseModel
 
@@ -189,7 +189,6 @@ class ManifestComponentTransformer:
         # both exist
         for parameter_key, parameter_value in current_parameters.items():
             if parameter_key in valid_fields:
-                logger.info(f"Adding parameter {parameter_key} to {component_type}")
                 propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
 
         for field_name, field_value in propagated_component.items():
@@ -216,4 +215,8 @@ class ManifestComponentTransformer:
 
     @staticmethod
     def _is_json_schema_object(propagated_component: Mapping[str, Any]) -> bool:
-        return propagated_component.get("type") == "object"
+        component_type = propagated_component.get("type")
+        if isinstance(component_type, list):
+            # Handle nullable types, ie ["null", "object"]
+            return "object" in component_type
+        return component_type == "object"

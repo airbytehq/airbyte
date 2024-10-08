@@ -31,8 +31,8 @@ Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings â
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-01 | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-01 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

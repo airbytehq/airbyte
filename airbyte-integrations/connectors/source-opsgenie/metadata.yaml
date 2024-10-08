@@ -15,7 +15,7 @@ data:
   name: Opsgenie
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha

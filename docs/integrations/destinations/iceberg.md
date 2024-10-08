@@ -75,6 +75,7 @@ specify the target size of compacted Iceberg data file.
 
 | Version | Date       | Pull Request                                              | Subject                                                        |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------|
+| 0.2.2   | 2024-09-23 | [45861](https://github.com/airbytehq/airbyte/pull/45861)  | Keeping only S3 with Glue Catalog as config option             |
 | 0.2.1   | 2024-09-20 | [45711](https://github.com/airbytehq/airbyte/pull/45711)  | Initial Cloud version for registry purpose [UNTESTED ON CLOUD] |
 | 0.2.0   | 2024-09-20 | [45707](https://github.com/airbytehq/airbyte/pull/45707)  | Add support for AWS Glue Catalog                               |
 | 0.1.8   | 2024-09-16 | [45206](https://github.com/airbytehq/airbyte/pull/45206)  | Fixing tests to work in airbyte-ci                             |

@@ -5,6 +5,7 @@
 
 import json
 
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -31,3 +32,12 @@ def get_stream_name(blob):
     # Remove file extension from stream name
     stream_name = blob_name_without_path.replace(".csv", "")
     return stream_name
+
+
+class GCSRemoteFile(RemoteFile):
+    """
+    Extends RemoteFile instance with displayed_uri attribute.
+    displayed_uri is being used by Cursor to identify files with temporal local path in their uri attribute.
+    """
+
+    displayed_uri: str = None

@@ -1,0 +1,260 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_csv",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "TOK": {
+              "type": ["null", "string"]
+            },
+            "UPDATE": {
+              "type": ["null", "string"]
+            },
+            "DATE": {
+              "type": ["null", "string"]
+            },
+            "SHOT": {
+              "type": ["null", "string"]
+            },
+            "TIME": {
+              "type": ["null", "string"]
+            },
+            "AUXHEAT": {
+              "type": ["null", "string"]
+            },
+            "PHASE": {
+              "type": ["null", "string"]
+            },
+            "STATE": {
+              "type": ["null", "string"]
+            },
+            "PGASA": {
+              "type": ["null", "string"]
+            },
+            "PGASZ": {
+              "type": ["null", "string"]
+            },
+            "BGASA": {
+              "type": ["null", "string"]
+            },
+            "BGASZ": {
+              "type": ["null", "string"]
+            },
+            "BGASA2": {
+              "type": ["null", "string"]
+            },
+            "BGASZ2": {
+              "type": ["null", "string"]
+            },
+            "PIMPA": {
+              "type": ["null", "string"]
+            },
+            "PIMPZ": {
+              "type": ["null", "string"]
+            },
+            "PELLET": {
+              "type": ["null", "string"]
+            },
+            "RGEO": {
+              "type": ["null", "string"]
+            },
+            "RMAG": {
+              "type": ["null", "string"]
+            },
+            "AMIN": {
+              "type": ["null", "string"]
+            },
+            "SEPLIM": {
+              "type": ["null", "string"]
+            },
+            "XPLIM": {
+              "type": ["null", "string"]
+            },
+            "KAPPA": {
+              "type": ["null", "string"]
+            },
+            "DELTA": {
+              "type": ["null", "string"]
+            },
+            "INDENT": {
+              "type": ["null", "string"]
+            },
+            "AREA": {
+              "type": ["null", "string"]
+            },
+            "VOL": {
+              "type": ["null", "string"]
+            },
+            "CONFIG": {
+              "type": ["null", "string"]
+            },
+            "IGRADB": {
+              "type": ["null", "string"]
+            },
+            "WALMAT": {
+              "type": ["null", "string"]
+            },
+            "DIVMAT": {
+              "type": ["null", "string"]
+            },
+            "LIMMAT": {
+              "type": ["null", "string"]
+            },
+            "EVAP": {
+              "type": ["null", "string"]
+            },
+            "BT": {
+              "type": ["null", "string"]
+            },
+            "IP": {
+              "type": ["null", "string"]
+            },
+            "VSURF": {
+              "type": ["null", "string"]
+            },
+            "Q95": {
+              "type": ["null", "string"]
+            },
+            "BEPMHD": {
+              "type": ["null", "string"]
+            },
+            "BETMHD": {
+              "type": ["null", "string"]
+            },
+            "BEPDIA": {
+              "type": ["null", "string"]
+            },
+            "NEL": {
+              "type": ["null", "string"]
+            },
+            "DNELDT": {
+              "type": ["null", "string"]
+            },
+            "ZEFF": {
+              "type": ["null", "string"]
+            },
+            "PRAD": {
+              "type": ["null", "string"]
+            },
+            "POHM": {
+              "type": ["null", "string"]
+            },
+            "ENBI": {
+              "type": ["null", "string"]
+            },
+            "PINJ": {
+              "type": ["null", "string"]
+            },
+            "BSOURCE": {
+              "type": ["null", "string"]
+            },
+            "PINJ2": {
+              "type": ["null", "string"]
+            },
+            "BSOURCE2": {
+              "type": ["null", "string"]
+            },
+            "COCTR": {
+              "type": ["null", "string"]
+            },
+            "PNBI": {
+              "type": ["null", "string"]
+            },
+            "ECHFREQ": {
+              "type": ["null", "string"]
+            },
+            "ECHMODE": {
+              "type": ["null", "string"]
+            },
+            "ECHLOC": {
+              "type": ["null", "string"]
+            },
+            "PECH": {
+              "type": ["null", "string"]
+            },
+            "ICFREQ": {
+              "type": ["null", "string"]
+            },
+            "ICSCHEME": {
+              "type": ["null", "string"]
+            },
+            "ICANTEN": {
+              "type": ["null", "string"]
+            },
+            "PICRH": {
+              "type": ["null", "string"]
+            },
+            "LHFREQ": {
+              "type": ["null", "string"]
+            },
+            "LHNPAR": {
+              "type": ["null", "string"]
+            },
+            "PLH": {
+              "type": ["null", "string"]
+            },
+            "IBWFREQ": {
+              "type": ["null", "string"]
+            },
+            "PIBW": {
+              "type": ["null", "string"]
+            },
+            "TE0": {
+              "type": ["null", "string"]
+            },
+            "TI0": {
+              "type": ["null", "string"]
+            },
+            "WFANI": {
+              "type": ["null", "string"]
+            },
+            "WFICRH": {
+              "type": ["null", "string"]
+            },
+            "MEFF": {
+              "type": ["null", "string"]
+            },
+            "ISEQ": {
+              "type": ["null", "string"]
+            },
+            "WTH": {
+              "type": ["null", "string"]
+            },
+            "WTOT": {
+              "type": ["null", "string"]
+            },
+            "DWTOT": {
+              "type": ["null", "string"]
+            },
+            "PL": {
+              "type": ["null", "string"]
+            },
+            "PLTH": {
+              "type": ["null", "string"]
+            },
+            "TAUTOT": {
+              "type": ["null", "string"]
+            },
+            "TAUTH": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ab_source_file_last_modified"],
+      "is_resumable": true,
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

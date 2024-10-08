@@ -10,7 +10,7 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88

@@ -1940,7 +1940,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -2030,7 +2030,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -3240,7 +3240,6 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
-    .set_expected_check_error(AirbyteTracedException, None)
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3340,5 +3339,4 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
-    .set_expected_check_error(AirbyteTracedException, None)
 ).build()

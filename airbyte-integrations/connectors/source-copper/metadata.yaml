@@ -16,7 +16,7 @@ data:
   name: Copper
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
@@ -27,15 +27,15 @@ data:
   supportLevel: community
   tags:
     - cdk:low-code
-    # Disable acceptance tests for now
-    # No/Low airbyte cloud usage
-    # connectorTestSuitesOptions:
-    #   - suite: acceptanceTests
-    #     testSecrets:
-    #       - name: SECRET_SOURCE-COPPER__CREDS
-    #         fileName: config.json
-    #         secretStore:
-    #           type: GSM
-    #           alias: airbyte-connector-testing-secret-store
+      # Disable acceptance tests for now
+      # No/Low airbyte cloud usage
+      # connectorTestSuitesOptions:
+      #   - suite: acceptanceTests
+      #     testSecrets:
+      #       - name: SECRET_SOURCE-COPPER__CREDS
+      #         fileName: config.json
+      #         secretStore:
+      #           type: GSM
+      #           alias: airbyte-connector-testing-secret-store
     - language:manifest-only
 metadataSpecVersion: "1.0"

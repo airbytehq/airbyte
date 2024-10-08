@@ -206,7 +206,15 @@ def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenar
         ["check", "--config", make_file(tmp_path / "config.json", scenario.config)],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["connectionStatus"]  # type: ignore
+    return _find_connection_status(captured.out.splitlines())
+
+
+def _find_connection_status(output: List[str]) -> Mapping[str, Any]:
+    for line in output:
+        json_line = json.loads(line)
+        if "connectionStatus" in json_line:
+            return json_line["connectionStatus"]
+    raise ValueError("No valid connectionStatus found in output")
 
 
 def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> Dict[str, Any]:

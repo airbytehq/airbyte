@@ -1,0 +1,385 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.kissmetrics.io/
+  API docs: https://support.kissmetrics.io/reference/overview-1
+  Auth Docs: https://support.kissmetrics.io/reference/authorization
+
+check:
+  type: CheckStream
+  stream_names:
+    - products
+
+definitions:
+  streams:
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products/{{stream_partition.product_id }}/reports
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products/{{ stream_partition.product_id }}/events
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    properties:
+      type: DeclarativeStream
+      name: properties
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products/{{ stream_partition.product_id }}/properties
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/properties"
+  base_requester:
+    type: HttpRequester
+    url_base: https://query.kissmetrics.io/v3/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/properties"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    products: true
+    reports: true
+    events: true
+    properties: true
+  testedStreams:
+    products:
+      hasRecords: true
+      streamHash: de7bb6afa4349f5e945b11220886a9c3fc07ba99
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    reports:
+      hasRecords: true
+      streamHash: 6b7561a9343654ecc1cfc352a0deb91a50ebdedd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      hasRecords: true
+      streamHash: 27a4a1807a6e354be9e3ad7e4783e527385a5b25
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    properties:
+      streamHash: 6fae71fa57dc747f5c16a520ca37e2316e9f9bb1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://support.kissmetrics.io/reference/overview-1
+
+schemas:
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      km_key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      report_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      index:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      property_indices:
+        type:
+          - array
+          - "null"
+      visible:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  properties:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

@@ -19,7 +19,7 @@ data:
   name: Zenefits
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2022-08-24

@@ -108,7 +108,7 @@ class IcebergRESTCatalogConfigTest {
 
   @Test
   public void checksRESTServerUri() {
-    final IcebergDestination destinationFail = new IcebergDestination();
+    final IcebergOssDestination destinationFail = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
                                                                                    {
                                                                                      "catalog_config": {

@@ -84,6 +84,11 @@ Note that this process is not reversible. Once you have converted to a secret st
 
 Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS). We recommend configuring your connectors to use the encryption option whenever available.
 
+### Sensitive Data
+
+To facilitate troubleshooting, the Server component may output initial user configurations to the log stream when server loglevel is set to `DEBUG`.
+To keep this information private, it is recommended to keep loglevel set to `INFO`  outside of troubleshooting.
+
 ## Securing Airbyte Cloud
 
 Airbyte Cloud leverages the security features of leading Cloud providers and sets least-privilege access policies to ensure data security.

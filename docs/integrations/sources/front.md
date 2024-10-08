@@ -60,8 +60,8 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-11 |[45387](https://github.com/airbytehq/airbyte/pull/45387)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.1 | 2024-09-11 | [45387](https://github.com/airbytehq/airbyte/pull/45387) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

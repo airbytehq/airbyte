@@ -18,8 +18,8 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-28 | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-08-28 | | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder |
 
 </details>

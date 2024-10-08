@@ -20,46 +20,47 @@ This page contains the setup guide and reference information for the [File (CSV,
 
 ### Set up File (CSV, JSON, Excel, Feather, Parquet)
 
+:::note
 **For Airbyte Cloud users:** Please note that locally stored files cannot be used as a source in Airbyte Cloud.
+:::
 
 <!-- /env:cloud -->
 
 ### Set up the File (CSV, JSON, Excel, Feather, Parquet) connector in Airbyte
 
+#### Set up the source in Airbyte:
 
-#### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. Navigate to the Airbyte UI.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
 4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
+<FieldAnchor field="dataset_name">
 5. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+</FieldAnchor>
+<FieldAnchor field="format">
 6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
-
-### For Airbyte Open Source:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
-4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
-5. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
-6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+</FieldAnchor>
 
 ### Step 2: Select the provider and set provider-specific configurations:
 
 1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
 
+<FieldAnchor field="provider[HTTPS]">
 #### HTTPS: Public Web [Default]
 
 - `User-Agent` (Optional)
 
 Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
 
+</FieldAnchor>
+<FieldAnchor field="provider[GCS]">
 #### GCS: Google Cloud Storage
 
 - `Service Account JSON` (Required for **private** buckets)
 
 To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
+</FieldAnchor>
+<FieldAnchor field="provider[S3]">
 
 #### S3: Amazon Web Services
 
@@ -70,6 +71,8 @@ To access **private** buckets stored on AWS S3, this connector requires valid cr
 [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
 More information on setting permissions in AWS can be found
 [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
+</FieldAnchor>
+<FieldAnchor field="provider[AzBlob]">
 
 #### AzBlob: Azure Blob Storage
 
@@ -81,6 +84,8 @@ This is the globally unique name of the storage account that the desired blob si
 
 - `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
+</FieldAnchor>
+<FieldAnchor field="provider[SSH],provider[SCP],provider[SFTP]">
 
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
 
@@ -99,9 +104,9 @@ Enter the _username_ associated with your account on the remote server.
 - `Port` (Optional)
 
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
-
+</FieldAnchor>
 <!-- env:oss -->
-
+<FieldAnchor field="provider[local]">
 #### Local Filesystem (Airbyte Open Source only)
 
 - `Storage`
@@ -117,8 +122,9 @@ Please note that if you are replicating data from a locally stored file on Windo
 - `HACK_LOCAL_ROOT_PARENT`
 
 Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
-
+</FieldAnchor>
 <!-- /env:oss -->
+<FieldAnchor field="url">
 
 ### Step 3: Complete the connector setup
 
@@ -130,6 +136,8 @@ When connecting to a file located in **Google Drive**, please note that you need
 When connecting to a file using **Azure Blob Storage**, please note that we account for the base URL. Therefore, you should only need to include the path to your specific file (eg `container/file.csv`).
 :::
 
+</FieldAnchor>
+<FieldAnchor field="reader_options">
 2. For **Reader Options** (Optional), you may choose to enter a _string_ in JSON format. Depending on the file format of your source, this will provide additional options and tune the Reader's behavior. Please refer to the [next section](#reader-options) for a breakdown of the possible inputs. This field may be left blank if you do not wish to configure custom Reader options.
 3. Click **Set up source** and wait for the tests to complete.
 
@@ -161,6 +169,9 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 This connector does not support syncing unstructured data files such as raw text, audio, or videos.
 :::
 
+</FieldAnchor>
+
+<HideInUI>
 ## Supported sync modes
 
 The File (CSV, JSON, Excel, Feather, Parquet) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -217,6 +228,7 @@ This source produces a single table for the target file as it replicates only on
 | Pickle                | No         |
 | YAML                  | Yes        |
 
+
 ### Changing data types of source columns
 
 Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`.
@@ -254,6 +266,8 @@ In order to read large files from a remote location, this connector uses the [sm
 - Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/csv.md) so the `URL` should also starts with `/local/`.
 - Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 - The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
+
+</HideInUI>
 
 ## Changelog
 

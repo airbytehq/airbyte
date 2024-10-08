@@ -1,0 +1,1546 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: >-
+  The Xsolla Airbyte Connector enables seamless integration between Xsolla and
+  various data destinations. This connector allows you to extract data from
+  Xsolla’s APIs, such as Game Catalog, Virtual Items, Virtual Currency and more.
+
+check:
+  type: CheckStream
+  stream_names:
+    - games_catalog
+
+definitions:
+  streams:
+    games_catalog:
+      type: DeclarativeStream
+      name: games_catalog
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/game"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/games_catalog"
+    drm:
+      type: DeclarativeStream
+      name: drm
+      primary_key:
+        - drm_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/game/drm"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - drm
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drm"
+    virtual_items:
+      type: DeclarativeStream
+      name: virtual_items
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/virtual_items"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/virtual_items"
+    virtual_currencies:
+      type: DeclarativeStream
+      name: virtual_currencies
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/virtual_currency"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/virtual_currencies"
+    virtual_currency_packages:
+      type: DeclarativeStream
+      name: virtual_currency_packages
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/virtual_currency/package"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/virtual_currency_packages"
+    bundles:
+      type: DeclarativeStream
+      name: bundles
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/items/bundle"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bundles"
+    reward_chains:
+      type: DeclarativeStream
+      name: reward_chains
+      primary_key:
+        - reward_chain_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config[\"project_id\"] }}/user/reward_chain"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reward_chains"
+  base_requester:
+    type: HttpRequester
+    url_base: https://store.xsolla.com/api/v2/project
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/games_catalog"
+  - $ref: "#/definitions/streams/drm"
+  - $ref: "#/definitions/streams/virtual_items"
+  - $ref: "#/definitions/streams/virtual_currencies"
+  - $ref: "#/definitions/streams/virtual_currency_packages"
+  - $ref: "#/definitions/streams/bundles"
+  - $ref: "#/definitions/streams/reward_chains"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - project_id
+    properties:
+      api_key:
+        type: string
+        description: Go to Xsolla Dashboard and from company setting get the api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      project_id:
+        type: number
+        description: >-
+          You can find this parameter in your Publisher Account next to the name
+          of the project . Example: 44056
+        order: 1
+        title: Project Id
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    games_catalog: true
+    drm: true
+    virtual_items: true
+    virtual_currencies: true
+    virtual_currency_packages: true
+    bundles: true
+    reward_chains: true
+  testedStreams:
+    games_catalog:
+      hasRecords: true
+      streamHash: faec6bf685575de259040e2e22c96d946025e499
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    drm:
+      hasRecords: true
+      streamHash: 67a6c66af617f0f780be11f5ffa1ef58615a13bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_items:
+      hasRecords: true
+      streamHash: ea2c3ed5569de5cbf662a75dd9b2bfe5c80db78c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_currencies:
+      hasRecords: true
+      streamHash: 8affb3d5a7ffc9e4419a1de7620b03875d72b29e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_currency_packages:
+      hasRecords: true
+      streamHash: 805a8d7c4e01fe7399406352af6e336068412cda
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bundles:
+      hasRecords: true
+      streamHash: 85db979f7cbdf3ee2a5cf06170c87dca8a01502b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    reward_chains:
+      hasRecords: true
+      streamHash: 5e585cea19508d7ba03eddc4ffbdb339a0612f85
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.xsolla.com/api/igs-bb/overview/#section/Overview
+
+schemas:
+  games_catalog:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            external_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            values:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  external_id:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      item_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - array
+          - "null"
+      promotions:
+        type:
+          - array
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      unit_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            can_be_bought:
+              type:
+                - boolean
+                - "null"
+            drm_name:
+              type:
+                - string
+                - "null"
+            drm_sku:
+              type:
+                - string
+                - "null"
+            has_keys:
+              type:
+                - boolean
+                - "null"
+            is_free:
+              type:
+                - boolean
+                - "null"
+            is_pre_order:
+              type:
+                - boolean
+                - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            periods:
+              type:
+                - array
+                - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                amount_without_discount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            promotions:
+              type:
+                - array
+                - "null"
+            release_date:
+              type:
+                - string
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            virtual_prices:
+              type:
+                - array
+                - "null"
+            vp_rewards:
+              type:
+                - array
+                - "null"
+      unit_type:
+        type:
+          - string
+          - "null"
+    required:
+      - item_id
+  drm:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      drm_id:
+        type: number
+      image:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      redeem_instruction_link:
+        type:
+          - string
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+    required:
+      - drm_id
+  virtual_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            external_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            values:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  external_id:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      can_be_bought:
+        type:
+          - boolean
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            external_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      inventory_options:
+        type:
+          - object
+          - "null"
+        properties:
+          consumable:
+            type:
+              - object
+              - "null"
+            properties:
+              usages_count:
+                type:
+                  - number
+                  - "null"
+          expiration_period:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+      is_free:
+        type:
+          - boolean
+          - "null"
+      item_id:
+        type: number
+      limits:
+        type:
+          - object
+          - "null"
+        properties:
+          per_user:
+            type:
+              - object
+              - "null"
+            properties:
+              available:
+                type:
+                  - number
+                  - "null"
+              recurrent_schedule:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  interval_type:
+                    type:
+                      - string
+                      - "null"
+                  reset_next_date:
+                    type:
+                      - number
+                      - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+      name:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - array
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          amount_without_discount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      promotions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            bonus:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  image_url:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  sku:
+                    type:
+                      - string
+                      - "null"
+            date_end:
+              type:
+                - string
+                - "null"
+            date_start:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      virtual_item_type:
+        type:
+          - string
+          - "null"
+      virtual_prices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            amount_without_discount:
+              type:
+                - number
+                - "null"
+            calculated_price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                amount_without_discount:
+                  type:
+                    - string
+                    - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            is_default:
+              type:
+                - boolean
+                - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+      vp_rewards:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+    required:
+      - item_id
+  virtual_currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+      can_be_bought:
+        type:
+          - boolean
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      inventory_options:
+        type:
+          - object
+          - "null"
+        properties:
+          consumable:
+            type:
+              - object
+              - "null"
+            properties:
+              usages_count:
+                type:
+                  - number
+                  - "null"
+      is_free:
+        type:
+          - boolean
+          - "null"
+      item_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - array
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          amount_without_discount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      promotions:
+        type:
+          - array
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      virtual_prices:
+        type:
+          - array
+          - "null"
+      vp_rewards:
+        type:
+          - array
+          - "null"
+    required:
+      - item_id
+  virtual_currency_packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+      bundle_type:
+        type:
+          - string
+          - "null"
+      can_be_bought:
+        type:
+          - boolean
+          - "null"
+      content:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            inventory_options:
+              type:
+                - object
+                - "null"
+              properties:
+                consumable:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    usages_count:
+                      type:
+                        - number
+                        - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      is_free:
+        type:
+          - boolean
+          - "null"
+      item_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - array
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          amount_without_discount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      promotions:
+        type:
+          - array
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      virtual_prices:
+        type:
+          - array
+          - "null"
+      vp_rewards:
+        type:
+          - array
+          - "null"
+    required:
+      - item_id
+  bundles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+      bundle_type:
+        type:
+          - string
+          - "null"
+      can_be_bought:
+        type:
+          - boolean
+          - "null"
+      content:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            attributes:
+              type:
+                - array
+                - "null"
+            groups:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  external_id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            inventory_options:
+              type:
+                - object
+                - "null"
+              properties:
+                consumable:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    usages_count:
+                      type:
+                        - number
+                        - "null"
+            is_free:
+              type:
+                - boolean
+                - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            limits:
+              type:
+                - object
+                - "null"
+              properties:
+                per_user:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    available:
+                      type:
+                        - number
+                        - "null"
+                    recurrent_schedule:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        interval_type:
+                          type:
+                            - string
+                            - "null"
+                        reset_next_date:
+                          type:
+                            - number
+                            - "null"
+                    total:
+                      type:
+                        - number
+                        - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                amount_without_discount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            virtual_item_type:
+              type:
+                - string
+                - "null"
+            virtual_prices:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  amount:
+                    type:
+                      - number
+                      - "null"
+                  amount_without_discount:
+                    type:
+                      - number
+                      - "null"
+                  calculated_price:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      amount:
+                        type:
+                          - string
+                          - "null"
+                      amount_without_discount:
+                        type:
+                          - string
+                          - "null"
+                  image_url:
+                    type:
+                      - string
+                      - "null"
+                  is_default:
+                    type:
+                      - boolean
+                      - "null"
+                  item_id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sku:
+                    type:
+                      - string
+                      - "null"
+      groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            external_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      is_free:
+        type:
+          - boolean
+          - "null"
+      item_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - array
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          amount_without_discount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      promotions:
+        type:
+          - array
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      total_content_price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          amount_without_discount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      virtual_prices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            amount_without_discount:
+              type:
+                - number
+                - "null"
+            calculated_price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                amount_without_discount:
+                  type:
+                    - string
+                    - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            is_default:
+              type:
+                - boolean
+                - "null"
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+      vp_rewards:
+        type:
+          - array
+          - "null"
+    required:
+      - item_id
+  reward_chains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      date_end:
+        type:
+          - string
+          - "null"
+      date_start:
+        type:
+          - string
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      long_description:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      reward_chain_id:
+        type: number
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            image_url:
+              type:
+                - string
+                - "null"
+            is_claimed:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+            reward:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  image_url:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  sku:
+                    type:
+                      - string
+                      - "null"
+            step_id:
+              type:
+                - number
+                - "null"
+      value_point:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - number
+              - "null"
+          image_url:
+            type:
+              - string
+              - "null"
+          is_clan:
+            type:
+              - boolean
+              - "null"
+          item_id:
+            type:
+              - number
+              - "null"
+          long_description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sku:
+            type:
+              - string
+              - "null"
+    required:
+      - reward_chain_id

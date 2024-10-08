@@ -1,0 +1,5 @@
+# This is a minimal metadata.yaml that allows a destination connector to run.
+# A real metadata.yaml obviously contains much more stuff, but we don't strictly
+# need any of it at runtime.
+data:
+  dockerRepository: "airbyte/fake-destination"

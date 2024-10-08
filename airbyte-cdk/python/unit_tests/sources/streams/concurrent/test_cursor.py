@@ -38,14 +38,15 @@ _A_VERY_HIGH_CURSOR_VALUE = 1000000000
 _NO_LOOKBACK_WINDOW = timedelta(seconds=0)
 
 
-def _partition(_slice: Optional[Mapping[str, Any]]) -> Partition:
+def _partition(_slice: Optional[Mapping[str, Any]], _stream_name: Optional[str] = Mock()) -> Partition:
     partition = Mock(spec=Partition)
     partition.to_slice.return_value = _slice
+    partition.stream_name.return_value = _stream_name
     return partition
 
 
-def _record(cursor_value: CursorValueType) -> Record:
-    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, stream_name=_A_STREAM_NAME)
+def _record(cursor_value: CursorValueType, partition: Optional[Partition] = Mock(spec=Partition)) -> Record:
+    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, partition=partition)
 
 
 class ConcurrentCursorStateTest(TestCase):
@@ -113,7 +114,7 @@ class ConcurrentCursorStateTest(TestCase):
             {"slices": [{"end": 0, "start": 0}, {"end": 30, "start": 12}], "state_type": "date-range"},
         )
 
-    def test_given_boundary_fields_when_close_partition_then_emit_updated_state(self) -> None:
+    def test_close_partition_emits_message_to_lower_boundary_when_no_prior_state_exists(self) -> None:
         self._cursor_with_slice_boundary_fields().close_partition(
             _partition(
                 {_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 30},
@@ -124,7 +125,7 @@ class ConcurrentCursorStateTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            {_A_CURSOR_FIELD_KEY: 30},  # State message is updated to the legacy format before being emitted
+            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the lower slice boundary
         )
 
     def test_given_boundary_fields_and_record_observed_when_close_partition_then_ignore_records(self) -> None:
@@ -137,8 +138,9 @@ class ConcurrentCursorStateTest(TestCase):
 
     def test_given_no_boundary_fields_when_close_partition_then_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
-        cursor.observe(_record(10))
-        cursor.close_partition(_partition(_NO_SLICE))
+        partition = _partition(_NO_SLICE)
+        cursor.observe(_record(10, partition=partition))
+        cursor.close_partition(partition)
 
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
@@ -148,11 +150,12 @@ class ConcurrentCursorStateTest(TestCase):
 
     def test_given_no_boundary_fields_when_close_multiple_partitions_then_raise_exception(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
-        cursor.observe(_record(10))
-        cursor.close_partition(_partition(_NO_SLICE))
+        partition = _partition(_NO_SLICE)
+        cursor.observe(_record(10, partition=partition))
+        cursor.close_partition(partition)
 
         with pytest.raises(ValueError):
-            cursor.close_partition(_partition(_NO_SLICE))
+            cursor.close_partition(partition)
 
     def test_given_no_records_observed_when_close_partition_then_do_not_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
@@ -629,27 +632,32 @@ def test_observe_concurrent_cursor_from_datetime_based_cursor():
         slice_range=step_length,
     )
 
+    partition = _partition(
+        {_LOWER_SLICE_BOUNDARY_FIELD: "2024-08-01T00:00:00.000000+0000", _UPPER_SLICE_BOUNDARY_FIELD: "2024-09-01T00:00:00.000000+0000"},
+        _stream_name="gods",
+    )
+
     record_1 = Record(
-        stream_name="gods", data={"id": "999", "updated_at": "2024-08-23T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
+        partition=partition, data={"id": "999", "updated_at": "2024-08-23T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
     )
     record_2 = Record(
-        stream_name="gods", data={"id": "1000", "updated_at": "2024-08-22T00:00:00.000000+0000", "name": "odin", "mythology": "norse"},
+        partition=partition, data={"id": "1000", "updated_at": "2024-08-22T00:00:00.000000+0000", "name": "odin", "mythology": "norse"},
     )
     record_3 = Record(
-        stream_name="gods", data={"id": "500", "updated_at": "2024-08-24T00:00:00.000000+0000", "name": "freya", "mythology": "norse"},
+        partition=partition, data={"id": "500", "updated_at": "2024-08-24T00:00:00.000000+0000", "name": "freya", "mythology": "norse"},
     )
 
     concurrent_cursor.observe(record_1)
-    actual_most_recent_record = concurrent_cursor._most_recent_record
-    assert actual_most_recent_record == record_1
+    actual_most_recent_record = concurrent_cursor._most_recent_cursor_value_per_partition[partition]
+    assert actual_most_recent_record == concurrent_cursor._extract_cursor_value(record_1)
 
     concurrent_cursor.observe(record_2)
-    actual_most_recent_record = concurrent_cursor._most_recent_record
-    assert actual_most_recent_record == record_1
+    actual_most_recent_record = concurrent_cursor._most_recent_cursor_value_per_partition[partition]
+    assert actual_most_recent_record == concurrent_cursor._extract_cursor_value(record_1)
 
     concurrent_cursor.observe(record_3)
-    actual_most_recent_record = concurrent_cursor._most_recent_record
-    assert actual_most_recent_record == record_3
+    actual_most_recent_record = concurrent_cursor._most_recent_cursor_value_per_partition[partition]
+    assert actual_most_recent_record == concurrent_cursor._extract_cursor_value(record_3)
 
 
 @freezegun.freeze_time(time_to_freeze=datetime(2024, 9, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
@@ -694,10 +702,11 @@ def test_close_partition_concurrent_cursor_from_datetime_based_cursor():
 
     partition = _partition(
         {_LOWER_SLICE_BOUNDARY_FIELD: "2024-08-01T00:00:00.000000+0000", _UPPER_SLICE_BOUNDARY_FIELD: "2024-09-01T00:00:00.000000+0000"},
+        _stream_name="gods",
     )
 
     record_1 = Record(
-        stream_name="gods", data={"id": "999", "updated_at": "2024-08-23T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
+        partition=partition, data={"id": "999", "updated_at": "2024-08-23T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
     )
     concurrent_cursor.observe(record_1)
 
@@ -762,16 +771,16 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
     )
 
     partition_0 = _partition(
-        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-16T00:00:00.000000+0000"},
+        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-16T00:00:00.000000+0000"}, _stream_name="gods",
     )
     partition_3 = _partition(
-        {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-30T00:00:00.000000+0000"},
+        {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-30T00:00:00.000000+0000"}, _stream_name="gods",
     )
     record_1 = Record(
-        stream_name="gods", data={"id": "1000", "updated_at": "2024-07-05T00:00:00.000000+0000", "name": "loki", "mythology": "norse"},
+        partition=partition_0, data={"id": "1000", "updated_at": "2024-07-05T00:00:00.000000+0000", "name": "loki", "mythology": "norse"},
     )
     record_2 = Record(
-        stream_name="gods", data={"id": "999", "updated_at": "2024-08-20T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
+        partition=partition_3, data={"id": "999", "updated_at": "2024-08-20T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
     )
 
     concurrent_cursor.observe(record_1)
@@ -846,22 +855,22 @@ def test_close_partition_with_slice_range_granularity_concurrent_cursor_from_dat
     )
 
     partition_0 = _partition(
-        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-15T00:00:00.000000+0000"},
+        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-15T00:00:00.000000+0000"}, _stream_name="gods",
     )
     partition_1 = _partition(
-        {"start_time": "2024-07-16T00:00:00.000000+0000", "end_time": "2024-07-31T00:00:00.000000+0000"},
+        {"start_time": "2024-07-16T00:00:00.000000+0000", "end_time": "2024-07-31T00:00:00.000000+0000"}, _stream_name="gods",
     )
     partition_3 = _partition(
-        {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-29T00:00:00.000000+0000"},
+        {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-29T00:00:00.000000+0000"}, _stream_name="gods",
     )
     record_1 = Record(
-        stream_name="gods", data={"id": "1000", "updated_at": "2024-07-05T00:00:00.000000+0000", "name": "loki", "mythology": "norse"},
+        partition=partition_0, data={"id": "1000", "updated_at": "2024-07-05T00:00:00.000000+0000", "name": "loki", "mythology": "norse"},
     )
     record_2 = Record(
-        stream_name="gods", data={"id": "2000", "updated_at": "2024-07-25T00:00:00.000000+0000", "name": "freya", "mythology": "norse"},
+        partition=partition_1, data={"id": "2000", "updated_at": "2024-07-25T00:00:00.000000+0000", "name": "freya", "mythology": "norse"},
     )
     record_3 = Record(
-        stream_name="gods", data={"id": "999", "updated_at": "2024-08-20T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
+        partition=partition_3, data={"id": "999", "updated_at": "2024-08-20T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
     )
 
     concurrent_cursor.observe(record_1)

@@ -7,7 +7,7 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
-import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
+import io.airbyte.cdk.h2source.H2SourceConfigurationSpecification
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -80,8 +80,8 @@ class JdbcSelectQuerierTest {
         q: SelectQuery,
         vararg expectedJson: String,
     ) {
-        val configPojo: H2SourceConfigurationJsonObject =
-            H2SourceConfigurationJsonObject().apply {
+        val configPojo: H2SourceConfigurationSpecification =
+            H2SourceConfigurationSpecification().apply {
                 port = h2.port
                 database = h2.database
             }

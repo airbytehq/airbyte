@@ -34,6 +34,7 @@ class BufferingOutputConsumer(
     private val catalogs = mutableListOf<AirbyteCatalog>()
     private val traces = mutableListOf<AirbyteTraceMessage>()
     private val messages = mutableListOf<AirbyteMessage>()
+    private var messagesIndex: Int = 0
 
     var callback: (AirbyteMessage) -> Unit = {}
         set(value) {
@@ -79,4 +80,15 @@ class BufferingOutputConsumer(
     fun traces(): List<AirbyteTraceMessage> = synchronized(this) { listOf(*traces.toTypedArray()) }
 
     fun messages(): List<AirbyteMessage> = synchronized(this) { listOf(*messages.toTypedArray()) }
+
+    fun newMessages(): List<AirbyteMessage> =
+        synchronized(this) {
+            val newMessages = messages.subList(messagesIndex, messages.size)
+            messagesIndex = messages.size
+            newMessages
+        }
+
+    fun resetNewMessagesCursor() {
+        synchronized(this) { messagesIndex = 0 }
+    }
 }

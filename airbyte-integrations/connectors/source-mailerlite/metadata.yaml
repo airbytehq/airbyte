@@ -34,7 +34,7 @@ data:
       packageName: airbyte-source-mailerlite
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2022-10-25

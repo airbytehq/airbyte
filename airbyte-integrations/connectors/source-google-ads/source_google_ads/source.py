@@ -49,8 +49,8 @@ from .utils import GAQL, logger, traced_exception
 
 
 class SourceGoogleAds(AbstractSource):
-    # Skip exceptions on missing streams
-    raise_exception_on_missing_stream = False
+    # Raise exceptions on missing streams
+    raise_exception_on_missing_stream = True
 
     @staticmethod
     def _validate_and_transform(config: Mapping[str, Any]):

@@ -18,14 +18,14 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     val resourceAcquisitionHeartbeat: Duration
 
     /**
-     * Micronaut factory which glues [ConfigurationJsonObjectSupplier] and
+     * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [SourceConfigurationFactory] together to produce a [SourceConfiguration] singleton.
      */
     @Factory
     private class MicronautFactory {
         @Singleton
-        fun <I : ConfigurationJsonObjectBase> sourceConfig(
-            pojoSupplier: ConfigurationJsonObjectSupplier<I>,
+        fun <I : ConfigurationSpecification> sourceConfig(
+            pojoSupplier: ConfigurationSpecificationSupplier<I>,
             factory: SourceConfigurationFactory<I, out SourceConfiguration>,
         ): SourceConfiguration = factory.make(pojoSupplier.get())
     }

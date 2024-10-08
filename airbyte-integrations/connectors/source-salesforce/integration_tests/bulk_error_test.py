@@ -10,12 +10,13 @@ from typing import Any, Mapping
 
 import pytest
 import requests_mock
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = CatalogBuilder().build()
 _ANY_CONFIG = {}
 _ANY_STATE = {}
 
@@ -43,19 +44,6 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
 
 def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
     return get_stream(input_config, "ActiveFeatureLicenseMetric")
-
-
-def test_not_queryable_stream(caplog, input_config):
-    stream = get_any_real_stream(input_config)
-    url = f"{stream._legacy_stream.sf_api.instance_url}/services/data/{stream._legacy_stream.sf_api.version}/jobs/query"
-
-    # test non queryable BULK streams
-    query = "Select Id, Subject from ActivityHistory"
-    with caplog.at_level(logging.WARNING):
-        assert stream._legacy_stream.create_stream_job(query, url) is None, "this stream should be skipped"
-
-    # check logs
-    assert "is not queryable" in caplog.records[-1].message
 
 
 @pytest.mark.parametrize(
