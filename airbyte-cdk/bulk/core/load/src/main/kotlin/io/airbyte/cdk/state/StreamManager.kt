@@ -75,11 +75,14 @@ interface StreamManager {
     /** Mark the stream as closed. This should only be called after all records have been read. */
     fun markSucceeded()
 
-    /** Mark that the stream was killed due to failure elsewhere. */
-    fun markKilled(causedBy: Exception)
+    /**
+     * Mark that the stream was killed due to failure elsewhere. Returns false if task was already
+     * complete.
+     */
+    fun markKilled(causedBy: Exception): Boolean
 
-    /** Mark that the stream itself failed. */
-    fun markFailed(causedBy: Exception)
+    /** Mark that the stream itself failed. Return false if task was already complete */
+    fun markFailed(causedBy: Exception): Boolean
 
     /** Suspend until the stream completes, returning the result. */
     suspend fun awaitStreamResult(): StreamResult
@@ -182,12 +185,12 @@ class DefaultStreamManager(
         streamResult.complete(StreamSucceeded)
     }
 
-    override fun markKilled(causedBy: Exception) {
-        streamResult.complete(StreamKilled(causedBy))
+    override fun markKilled(causedBy: Exception): Boolean {
+        return streamResult.complete(StreamKilled(causedBy))
     }
 
-    override fun markFailed(causedBy: Exception) {
-        streamResult.complete(StreamFailed(causedBy))
+    override fun markFailed(causedBy: Exception): Boolean {
+        return streamResult.complete(StreamFailed(causedBy))
     }
 
     override suspend fun awaitStreamResult(): StreamResult {

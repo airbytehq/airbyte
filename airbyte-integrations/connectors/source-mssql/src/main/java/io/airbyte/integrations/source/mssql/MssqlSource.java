@@ -41,6 +41,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -232,20 +233,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly filtered (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
-          .stream()
-          .filter(this::isTableInRequestedSchema)
-          .toList();
-      for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
-      }
-      return resultInternals;
+      return schemas.stream().flatMap(schema -> {
+        LOGGER.info("Get columns for schema: {}", schema);
+        try {
+          return super.discoverInternal(database, schema).stream();
+        } catch (Exception e) {
+          throw new ConfigErrorException(String.format("Error getting columns for schema: %s", schema), e);
+        }
+      }).collect(toList());
     } else {
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return internals;
+      return super.discoverInternal(database);
     }
   }
 
@@ -287,12 +286,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     // return !nullValExist;
     // will enable after we have sent comms to users this affects
     return true;
-  }
-
-  private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
-    return schemas
-        .stream()
-        .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
