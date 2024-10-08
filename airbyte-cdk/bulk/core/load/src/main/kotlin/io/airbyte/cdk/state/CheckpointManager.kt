@@ -4,11 +4,12 @@
 
 package io.airbyte.cdk.state
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.TimeProvider
 import io.airbyte.cdk.message.CheckpointMessage
-import io.airbyte.cdk.message.MessageConverter
+import io.airbyte.cdk.util.use
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -19,10 +20,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 /**
  * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
@@ -48,7 +47,7 @@ interface CheckpointManager<K, T> {
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-abstract class StreamsCheckpointManager<T, U> : CheckpointManager<DestinationStream.Descriptor, T> {
+abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream.Descriptor, T> {
 
     private val log = KotlinLogging.logger {}
     private val flushLock = Mutex()
@@ -56,8 +55,7 @@ abstract class StreamsCheckpointManager<T, U> : CheckpointManager<DestinationStr
 
     abstract val catalog: DestinationCatalog
     abstract val syncManager: SyncManager
-    abstract val outputFactory: MessageConverter<T, U>
-    abstract val outputConsumer: Consumer<U>
+    abstract val outputConsumer: suspend (T) -> Unit
     abstract val timeProvider: TimeProvider
 
     data class GlobalCheckpoint<T>(
@@ -197,12 +195,10 @@ abstract class StreamsCheckpointManager<T, U> : CheckpointManager<DestinationStr
         }
     }
 
-    private suspend fun sendMessage(checkpointMessage: T) =
-        withContext(Dispatchers.IO) {
-            lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-            val outMessage = outputFactory.from(checkpointMessage)
-            outputConsumer.accept(outMessage)
-        }
+    private suspend fun sendMessage(checkpointMessage: T) {
+        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+        outputConsumer.invoke(checkpointMessage)
+    }
 
     override suspend fun getLastSuccessfulFlushTimeMs(): Long =
         // Return inside the lock to ensure the value reflects flushes in progress
@@ -235,11 +231,26 @@ abstract class StreamsCheckpointManager<T, U> : CheckpointManager<DestinationStr
 class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
     override val syncManager: SyncManager,
-    override val outputFactory: MessageConverter<CheckpointMessage, AirbyteMessage>,
-    override val outputConsumer: Consumer<AirbyteMessage>,
+    override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
     override val timeProvider: TimeProvider
-) : StreamsCheckpointManager<CheckpointMessage, AirbyteMessage>() {
+) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+    }
+}
+
+@SuppressFBWarnings(
+    "NP_NONNULL_PARAM_VIOLATION",
+    justification = "message is guaranteed to be non-null by Kotlin's type system"
+)
+@Singleton
+@Secondary
+class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
+    suspend (Reserved<CheckpointMessage>) -> Unit {
+    override suspend fun invoke(message: Reserved<CheckpointMessage>) {
+        message.use {
+            val outMessage = it.value.asProtocolMessage()
+            consumer.accept(outMessage)
+        }
     }
 }
