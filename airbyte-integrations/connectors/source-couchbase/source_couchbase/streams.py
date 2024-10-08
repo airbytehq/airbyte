@@ -1,443 +1,110 @@
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-import json
-
-from airbyte_cdk.sources.streams.core import Stream
+from typing import Any, Iterable, List, Mapping, MutableMapping, Dict, Optional
+from airbyte_cdk.models import SyncMode, AirbyteStateMessage, AirbyteStateType
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import IncrementalMixin
 from couchbase.cluster import Cluster
+from logging import getLogger
 
-from .queries import (
-    get_datastores_query,
-    get_namespaces_query,
-    get_buckets_query,
-    get_scopes_query,
-    get_keyspaces_query,
-    get_indexes_query,
-    get_dual_query,
-    get_vitals_query,
-    get_active_requests_query,
-    get_prepareds_query,
-    get_completed_requests_query,
-    get_my_user_info_query,
-    get_user_info_query,
-    get_nodes_query,
-    get_applicable_roles_query,
-    get_dictionary_query,
-    get_dictionary_cache_query,
-    get_functions_query,
-    get_functions_cache_query,
-    get_tasks_cache_query,
-    get_transactions_query,
-    get_sequences_query,
-    get_all_sequences_query,
-    get_documents_query,
-)
+from .queries import get_documents_query, get_incremental_documents_query
+
+logger = getLogger(__name__)
 
 class CouchbaseStream(Stream):
-    """
-    Base stream class for Couchbase. Handles connection and basic operations.
-    """
-    primary_key = None
-
-    def __init__(self, cluster: Cluster):
+    def __init__(self, cluster: Cluster, bucket: str, scope: str, collection: str):
+        super().__init__()
         self.cluster = cluster
-        
-    def next_page_token(self, response: Any) -> Optional[Mapping[str, Any]]:
-        """
-        Couchbase REST API doesn't support pagination for most endpoints.
-        """
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        No default query parameters.
-        """
-        return {}
-
-    def parse_response(self, response: Any, **kwargs) -> Iterable[Mapping]:
-        """
-        Parse the response and yield records.
-        """
-        yield response
+        self.bucket = bucket
+        self.scope = scope
+        self.collection = collection
+        self._name = f"{bucket}.{scope}.{collection}"
 
     @property
-    def json_schema(self):
-        return {}
-
-class Datastores(CouchbaseStream):
-    name = "datastores"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_datastores_query()
-        result = self.cluster.query(query)
-        yield from result
+    def name(self) -> str:
+        return self._name
 
     @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/datastores.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
+    def primary_key(self) -> str:
+        return "id"
 
-class Namespaces(CouchbaseStream):
-    name = "namespaces"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_namespaces_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/namespaces.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Buckets(CouchbaseStream):
-    name = "buckets"
-    primary_key = "name"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_buckets_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/buckets.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Scopes(CouchbaseStream):
-    name = "scopes"
-    primary_key = ["bucket", "name"]
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_scopes_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/scopes.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Keyspaces(CouchbaseStream):
-    name = "keyspaces"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_keyspaces_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/keyspaces.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Indexes(CouchbaseStream):
-    name = "indexes"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_indexes_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/indexes.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Dual(CouchbaseStream):
-    name = "dual"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_dual_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/dual.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Vitals(CouchbaseStream):
-    name = "vitals"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_vitals_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/vitals.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class ActiveRequests(CouchbaseStream):
-    name = "active_requests"
-    primary_key = "requestId"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_active_requests_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/active_requests.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Prepareds(CouchbaseStream):
-    name = "prepareds"
-    primary_key = "name"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_prepareds_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/prepareds.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class CompletedRequests(CouchbaseStream):
-    name = "completed_requests"
-    primary_key = "requestId"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_completed_requests_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/completed_requests.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class MyUserInfo(CouchbaseStream):
-    name = "my_user_info"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_my_user_info_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/my_user_info.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class UserInfo(CouchbaseStream):
-    name = "user_info"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_user_info_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/user_info.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Nodes(CouchbaseStream):
-    name = "nodes"
-    primary_key = "name"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_nodes_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/nodes.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class ApplicableRoles(CouchbaseStream):
-    name = "applicable_roles"
-    primary_key = "role"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_applicable_roles_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/applicable_roles.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Dictionary(CouchbaseStream):
-    name = "dictionary"
-    primary_key = ["bucket", "keyspace"]
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_dictionary_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/dictionary.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class DictionaryCache(CouchbaseStream):
-    name = "dictionary_cache"
-    primary_key = ["bucket", "keyspace"]
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_dictionary_cache_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/dictionary_cache.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Functions(CouchbaseStream):
-    name = "functions"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_functions_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/functions.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class FunctionsCache(CouchbaseStream):
-    name = "functions_cache"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_functions_cache_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/functions_cache.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class TasksCache(CouchbaseStream):
-    name = "tasks_cache"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_tasks_cache_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/tasks_cache.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Transactions(CouchbaseStream):
-    name = "transactions"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_transactions_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/transactions.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Sequences(CouchbaseStream):
-    name = "sequences"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_sequences_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/sequences.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class AllSequences(CouchbaseStream):
-    name = "all_sequences"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_all_sequences_query()
-        result = self.cluster.query(query)
-        yield from result
-
-    @property
-    def json_schema(self):
-        schema_path = "source_couchbase/schemas/all_sequences.json"
-        with open(schema_path, "r") as f:
-            return json.load(f)
-
-class Documents(CouchbaseStream):
-    name = "documents"
-    primary_key = "id"
-
-    def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        buckets_result = self.cluster.query(get_buckets_query())
-        
-        for bucket_row in buckets_result:
-            bucket_name = bucket_row.get('buckets', {}).get('name')
-            if not bucket_name:
-                continue
-
-            scopes_result = self.cluster.query(get_scopes_query())
-            
-            for scope_row in scopes_result:
-                scope_name = scope_row.get('scopes', {}).get('name')
-                if not scope_name:
-                    continue
-
-                collections_result = self.cluster.query(get_keyspaces_query())
-                
-                for collection_row in collections_result:
-                    collection_name = collection_row.get('keyspaces', {}).get('name')
-                    if not collection_name:
-                        continue
-
-                    documents_result = self.cluster.query(get_documents_query(bucket_name, scope_name, collection_name))
-                    for row in documents_result:
-                        yield self.format_document(row, bucket_name, scope_name, collection_name)
-
-    @staticmethod
-    def format_document(row, bucket_name, scope_name, collection_name):
+    def get_json_schema(self) -> Dict[str, Any]:
         return {
-            "id": row.get("id", ""),
-            "bucket": bucket_name,
-            "scope": scope_name,
-            "collection": collection_name,
-            "content": row,
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "content": {"type": "object", "additionalProperties": True}
+            }
         }
+
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+        query = get_documents_query(self.bucket, self.scope, self.collection)
+        yield from self._execute_query(query)
+
+    def _execute_query(self, query: str) -> Iterable[Mapping[str, Any]]:
+        for row in self.cluster.query(query):
+            yield self._process_row(row)
+
+    def _process_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        content = row.get(self.collection, {})
+        return {
+            "id": row["id"],
+            "content": content if isinstance(content, dict) else {"value": content}
+        }
+
+class IncrementalCouchbaseStream(CouchbaseStream, IncrementalMixin):
+    def __init__(self, cluster: Cluster, bucket: str, scope: str, collection: str, cursor_field: str, state: MutableMapping[str, Any] = None):
+        super().__init__(cluster, bucket, scope, collection)
+        self._cursor_field = cursor_field
+        self._state = state or {}
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    @property
+    def cursor_field(self) -> str:
+        return self._cursor_field
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = latest_record["content"].get(self.cursor_field)
+        if latest_benchmark is not None:
+            return {self.cursor_field: max(latest_benchmark, current_stream_state.get(self.cursor_field, latest_benchmark))}
+        return current_stream_state
+
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+        query = self._build_query(self.state)
+        for record in self._process_query_results(query):
+            yield record
+            yield from self._yield_state()
+
+    def _build_query(self, stream_state: Optional[Mapping[str, Any]] = None) -> str:
+        cursor_value = stream_state.get(self.cursor_field) if stream_state else None
+        return get_incremental_documents_query(self.bucket, self.scope, self.collection, self.cursor_field, cursor_value)
+
+    def _process_query_results(self, query: str) -> Iterable[Mapping[str, Any]]:
+        missing_cursor_field_records = []
+        for record in self._execute_query(query):
+            if self.cursor_field not in record["content"]:
+                missing_cursor_field_records.append(record["id"])
+            else:
+                self.state = self.get_updated_state(self.state, record)
+            yield record
+        self._log_missing_cursor_field_records(missing_cursor_field_records)
+
+    def _log_missing_cursor_field_records(self, missing_records: List[str]):
+        if missing_records:
+            logger.warning(f"Records missing the cursor field {self.cursor_field}: {', '.join(missing_records)}. These records will not update the state.")
+
+    def _yield_state(self) -> Iterable[AirbyteStateMessage]:
+        if self.state:
+            yield AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=self.name, data={self.cursor_field: self.state[self.cursor_field]})
+
+    def _process_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        record = super()._process_row(row)
+        if self.cursor_field not in record["content"]:
+            record["content"][self.cursor_field] = None
+        return record

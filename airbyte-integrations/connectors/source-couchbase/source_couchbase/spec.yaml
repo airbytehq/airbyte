@@ -7,6 +7,7 @@ connectionSpecification:
     - connection_string
     - username
     - password
+    - bucket
   additionalProperties: true
   properties:
     connection_string:
@@ -25,3 +26,20 @@ connectionSpecification:
       description: The password to use for authentication
       airbyte_secret: true
       order: 2
+    bucket:
+      type: string
+      title: Bucket
+      description: The name of the bucket to sync data from
+      order: 3
+    use_incremental:
+      type: boolean
+      title: Use Incremental Sync
+      description: Whether to use incremental sync for collections that support it
+      default: false
+      order: 4
+    cursor_field:
+      type: string
+      title: Cursor Field
+      description: The field to use as a cursor for incremental syncs. This should be a field that is updated when a record is modified and is always present in the data.
+      default: "updated_at"
+      order: 5
