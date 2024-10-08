@@ -44,7 +44,7 @@ import java.time.OffsetTime
 
 /** Convenience class for defining concrete [FieldType] objects. */
 abstract class JdbcFieldType<R>(
-    val airbyteSchemaType: AirbyteSchemaType,
+    override val airbyteSchemaType: AirbyteSchemaType,
     val jdbcGetter: JdbcGetter<out R>,
     override val jsonEncoder: JsonEncoder<R>,
 ) : FieldType, JdbcGetter<JsonNode> {
