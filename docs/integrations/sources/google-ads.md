@@ -60,9 +60,8 @@ Each Google Ads API developer token is assigned an access level and "permissible
 <!-- /env:oss -->
 
 <!-- env:cloud -->
-<HideInUI>
+
 #### For Airbyte Cloud:
-</HideInUI>
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -119,6 +118,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 
 <!-- /env:oss -->
 <HideInUI>
+
 ## Supported sync modes
 
 The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -335,11 +335,12 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.7.5 | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies |
-| 3.7.4 | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs |
-| 3.7.3 | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies |
-| 3.7.2 | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies |
-| 3.7.1 | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies |
+| 3.7.6     | 2024-09-21 | [46543](https://github.com/airbytehq/airbyte/pull/46543) | Raise exception on missing stream                                                                                                    |
+| 3.7.5     | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies                                                                                                                  |
+| 3.7.4     | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs                                                                                                        |
+| 3.7.3     | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies                                                                                                                  |
+| 3.7.2     | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies                                                                                                                  |
+| 3.7.1     | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies                                                                                                                  |
 | `3.7.0  ` | 2024-08-15 | [44095](https://github.com/airbytehq/airbyte/pull/44095) | Migrate to google-ads v17                                                                                                            |
 | `3.6.5  ` | 2024-08-12 | [43882](https://github.com/airbytehq/airbyte/pull/43882) | Update dependencies                                                                                                                  |
 | `3.6.4`   | 2024-08-10 | [43628](https://github.com/airbytehq/airbyte/pull/43628) | Update dependencies                                                                                                                  |

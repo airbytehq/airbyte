@@ -8,7 +8,7 @@ import io.airbyte.cdk.check.DestinationChecker
 import jakarta.inject.Singleton
 
 @Singleton
-class DevNullChecker() : DestinationChecker<DevNullConfiguration> {
+class DevNullChecker : DestinationChecker<DevNullConfiguration> {
     override fun check(config: DevNullConfiguration) {
         // Do nothing
     }
