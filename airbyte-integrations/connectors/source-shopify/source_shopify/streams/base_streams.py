@@ -744,7 +744,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # the default way of getting the parent stream state is to use the value from the RecordProducer,
             # since the parent record could be present but no substream's records are present to emit,
             # the parent state is tracked for each parent record processed, thus updated regardless having substream records.
-            tracked_parent_state = self.job_manager.record_producer._get_parent_stream_state()
+            tracked_parent_state = self.job_manager.record_producer.get_parent_stream_state()
             # fallback to the record level to search for the parent cursor or use the stream cursor value
             parent_state = tracked_parent_state if tracked_parent_state else self._get_parent_state_from_record(latest_record)
             # add parent_stream_state to `updated_state`
