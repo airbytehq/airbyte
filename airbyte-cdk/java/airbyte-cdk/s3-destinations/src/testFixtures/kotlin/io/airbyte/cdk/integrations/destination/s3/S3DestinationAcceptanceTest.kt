@@ -75,16 +75,12 @@ protected constructor(
     override val imageName: String
         get() = "airbyte/destination-s3:dev"
 
-    override val supportsFileTransfer = true
-
     override fun getDefaultSchema(config: JsonNode): String? {
         if (config.has("s3_bucket_path")) {
             return config["s3_bucket_path"].asText()
         }
         return null
     }
-
-    override fun getConfig(): JsonNode = configJson!!
 
     override fun getFailCheckConfig(): JsonNode {
         val baseJson = baseConfigJson
@@ -217,7 +213,7 @@ protected constructor(
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
+                    DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
                         getProtocolVersion()
                     )
                 ),
