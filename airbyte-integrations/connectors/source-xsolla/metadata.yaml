@@ -20,6 +20,7 @@ data:
   dockerRepository: airbyte/source-xsolla
   githubIssueLabel: source-xsolla
   icon: icon.svg
+  connectorSubtype: api
   license: MIT
   name: Xsolla
   releaseDate: 2024-10-01
