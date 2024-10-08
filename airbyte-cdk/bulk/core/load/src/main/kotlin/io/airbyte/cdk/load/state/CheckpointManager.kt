@@ -140,24 +140,18 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     }
 
     override suspend fun flushReadyCheckpointMessages() {
-        if (!flushLock.tryLock()) {
-            log.info { "Flush already in progress, skipping" }
-            return
-        }
-        /*
-           Iterate over the checkpoints in order, evicting each that passes
-           the persistence check. If a checkpoint is not persisted, then
-           we can break the loop since the checkpoints are ordered. For global
-           checkpoints, all streams must be persisted up to the checkpoint.
-        */
-        try {
+        flushLock.withLock {
+            /*
+               Iterate over the checkpoints in order, evicting each that passes
+               the persistence check. If a checkpoint is not persisted, then
+               we can break the loop since the checkpoints are ordered. For global
+               checkpoints, all streams must be persisted up to the checkpoint.
+            */
             when (checkpointsAreGlobal.get()) {
                 null -> log.info { "No checkpoints to flush" }
                 true -> flushGlobalCheckpoints()
                 false -> flushStreamCheckpoints()
             }
-        } finally {
-            flushLock.unlock()
         }
     }
 
@@ -215,7 +209,6 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                     head?.streamIndexes?.associate { it } ?: emptyMap()
                 }
                 false -> {
-                    println("streamCheckpoints: $streamCheckpoints")
                     streamCheckpoints
                         .mapValues { it.value.ascendingKeySet().firstOrNull() }
                         .filterValues { it != null }
