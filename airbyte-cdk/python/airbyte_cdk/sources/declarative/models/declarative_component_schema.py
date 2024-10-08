@@ -669,7 +669,7 @@ class IterableDecoder(BaseModel):
 
 
 class XmlDecoder(BaseModel):
-    type: Optional[Literal['XmlDecoder']] = None
+    type: Literal['XmlDecoder']
 
 
 class MinMaxDatetime(BaseModel):
@@ -1444,7 +1444,7 @@ class SessionTokenAuthenticator(BaseModel):
         description='Authentication method to use for requests sent to the API, specifying how to inject the session token.',
         title='Data Request Authentication',
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
         None, description='Component used to decode the response.', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')

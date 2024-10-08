@@ -5,7 +5,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Generator, MutableMapping
-from typing import Any, Generator, MutableMapping
 
 import requests
 

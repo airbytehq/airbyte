@@ -1374,6 +1374,7 @@ definitions:
         description: Component used to decode the response.
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1710,7 +1711,7 @@ definitions:
     title: XML Decoder
     description: Use this is the response is XML.
     type: object
-    require:
+    required:
       - type
     properties:
       type:
