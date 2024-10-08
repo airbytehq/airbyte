@@ -449,11 +449,18 @@ class ModelToComponentFactory:
     def create_cursor_pagination(
         self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> CursorPaginationStrategy:
-        if not isinstance(decoder, (JsonDecoder, XmlDecoder)) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, (JsonDecoder, XmlDecoder))):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+        if isinstance(decoder, PaginationDecoderDecorator):
+            if not isinstance(decoder.decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder.decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = decoder
+        else:
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
+
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
-            decoder=decoder,
+            decoder=decoder_to_use,
             page_size=model.page_size,
             stop_condition=model.stop_condition,
             config=config,
@@ -809,12 +816,15 @@ class ModelToComponentFactory:
         config: Config,
         *,
         url_base: str,
-        decoder: Decoder,
+        decoder: Optional[Decoder] = None,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-        if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
-        decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
+        if decoder:
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
+        else:
+            decoder_to_use = PaginationDecoderDecorator(decoder=JsonDecoder(parameters={}))
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
@@ -840,10 +850,14 @@ class ModelToComponentFactory:
         return paginator
 
     def create_dpath_extractor(
-        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder], **kwargs: Any
+        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
     ) -> DpathExtractor:
+        if decoder:
+            decoder_to_use = decoder
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
@@ -1047,14 +1061,18 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-        if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
-        elif (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, (JsonDecoder, XmlDecoder))):
-            raise ValueError(f"Provided decoder of {type(decoder.decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+        if isinstance(decoder, PaginationDecoderDecorator):
+            if not isinstance(decoder.decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder.decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = decoder
+        else:
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
-            decoder=decoder,
+            decoder=decoder_to_use,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
