@@ -9,9 +9,9 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.test.util.OutputRecord
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Singleton
