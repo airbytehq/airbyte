@@ -42,7 +42,6 @@ class WriteOperation(
                     when (val result = syncManager.awaitSyncResult()) {
                         is SyncSuccess -> {
                             log.info { "Sync completed successfully" }
-                            exitProcess(0)
                         }
                         is SyncFailure -> {
                             log.error { "Caught exception during sync: ${result.syncFailure}" }
