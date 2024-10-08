@@ -153,7 +153,7 @@ class DefaultStreamManager(
             batch.ranges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
 
         stateRanges.addAll(expanded)
-        log.info { "Updated ranges for $stream[${batch.batch.state}]: $stateRanges" }
+        log.info { "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $stateRanges" }
     }
 
     /** True if all records in `[0, index)` have reached the given state. */

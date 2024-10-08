@@ -33,6 +33,7 @@ class DefaultTeardownTask(
 
     override suspend fun execute() {
         // TODO: This should be its own task, dispatched on a timer or something.
+        syncManager.awaitInputProcessingComplete()
         checkpointManager.flushReadyCheckpointMessages()
 
         // Run the task exactly once, and only after all streams have closed.

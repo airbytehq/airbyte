@@ -159,6 +159,7 @@ class DefaultInputConsumerTask(
                     }
                 }
             }
+            syncManager.markInputConsumed()
         } finally {
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
