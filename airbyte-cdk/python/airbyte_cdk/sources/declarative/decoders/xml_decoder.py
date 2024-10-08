@@ -35,6 +35,6 @@ class XmlDecoder(Decoder):
                 yield {}
             else:
                 yield from body_json
-        except ExpatError:
-            logger.warning(f"Response cannot be parsed from XML: {response.status_code=}, {response.text=}")
+        except ExpatError as exc:
+            logger.warning(f"Response cannot be parsed from XML: {response.status_code=}, {response.text=}, {exc=}")
             yield {}
