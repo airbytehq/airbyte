@@ -501,15 +501,15 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
