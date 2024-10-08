@@ -35,25 +35,18 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
 
-/** Base class for default implementations of [JdbcPartition]. */
+/** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MysqlJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
-    final override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
 ) : JdbcPartition<DefaultJdbcStreamState> {
     val stream: Stream = streamState.stream
     val from = From(stream.name, stream.namespace)
-}
-
-/** Base class for default implementations of [JdbcPartition] for unsplittable partitions. */
-sealed class MysqlJdbcUnsplittablePartition(
-    selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
-) : MysqlJdbcPartition(selectQueryGenerator, streamState) {
 
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
+    open val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
@@ -67,24 +60,24 @@ sealed class MysqlJdbcUnsplittablePartition(
 }
 
 /** Default implementation of a [JdbcPartition] for an unsplittable snapshot partition. */
-class MysqlJdbcUnsplittableSnapshotPartition(
+class MysqlJdbcNonResumableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
-) : MysqlJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
+    override val streamState: DefaultJdbcStreamState,
+) : MysqlJdbcPartition(selectQueryGenerator, streamState) {
 
     override val completeState: OpaqueStateValue = MysqlJdbcStreamStateValue.snapshotCompleted
 }
 
 /**
- * Default implementation of a [JdbcPartition] for an unsplittable snapshot partition preceding a
+ * Default implementation of a [JdbcPartition] for an non resumable snapshot partition preceding a
  * cursor-based incremental sync.
  */
-class MysqlJdbcUnsplittableSnapshotWithCursorPartition(
+class MysqlJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    override val streamState: DefaultJdbcStreamState,
     val cursor: Field,
 ) :
-    MysqlJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    MysqlJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     override val completeState: OpaqueStateValue
@@ -101,8 +94,8 @@ class MysqlJdbcUnsplittableSnapshotWithCursorPartition(
     val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
 }
 
-/** Base class for default implementations of [JdbcPartition] for splittable partitions. */
-sealed class MysqlJdbcSplittablePartition(
+/** Base class for default implementations of [JdbcPartition] for partitions. */
+sealed class MysqlJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
     val checkpointColumns: List<Field>,
@@ -115,7 +108,7 @@ sealed class MysqlJdbcSplittablePartition(
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    val nonResumableQuerySpec: SelectQuerySpec
+    override val nonResumableQuerySpec: SelectQuerySpec
         get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)
 
     override fun resumableQuery(limit: Long): SelectQuery {
@@ -182,14 +175,14 @@ sealed class MysqlJdbcSplittablePartition(
     open val isLowerBoundIncluded: Boolean = false
 }
 
-/** Default implementation of a [JdbcPartition] for a splittable snapshot partition. */
-class MysqlJdbcSplittableSnapshotPartition(
+/** Implementation of a [JdbcPartition] for a snapshot partition. */
+class MysqlJdbcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-) : MysqlJdbcSplittablePartition(selectQueryGenerator, streamState, primaryKey) {
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
 
     override val completeState: OpaqueStateValue
         get() =
@@ -219,7 +212,7 @@ sealed class MysqlJdbcCursorPartition(
     val cursor: Field,
     private val explicitCursorUpperBound: JsonNode?,
 ) :
-    MysqlJdbcSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
+    MysqlJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
@@ -235,12 +228,11 @@ sealed class MysqlJdbcCursorPartition(
  * Default implementation of a [JdbcPartition] for a splittable snapshot partition preceding a
  * cursor-based incremental sync.
  */
-class MysqlJdbcSplittableSnapshotWithCursorPartition(
+class MysqlJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
-    override val upperBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
 ) :
@@ -251,24 +243,16 @@ class MysqlJdbcSplittableSnapshotWithCursorPartition(
         cursor,
         cursorUpperBound
     ) {
+    // UpperBound is not used because the partition is not splittable.
+    override val upperBound: List<JsonNode>? = null
 
     override val completeState: OpaqueStateValue
         get() =
-            when (upperBound) {
-                null ->
-                    MysqlJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                        cursor,
-                        cursorUpperBound,
-                        stream,
-                    )
-                else ->
-                    MysqlJdbcStreamStateValue.snapshotWithCursorCheckpoint(
-                        primaryKey = checkpointColumns,
-                        primaryKeyCheckpoint = upperBound,
-                        cursor,
-                        stream,
-                    )
-            }
+            MysqlJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                cursor,
+                cursorUpperBound,
+                stream,
+            )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -285,7 +269,7 @@ class MysqlJdbcSplittableSnapshotWithCursorPartition(
  */
 class MysqlJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    override val streamState: DefaultJdbcStreamState,
     cursor: Field,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,

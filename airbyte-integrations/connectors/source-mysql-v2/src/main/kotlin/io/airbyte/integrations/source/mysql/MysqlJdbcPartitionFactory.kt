@@ -9,8 +9,6 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.output.CatalogValidationFailureHandler
-import io.airbyte.cdk.output.InvalidState
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -26,7 +24,6 @@ import javax.inject.Singleton
 class MysqlJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MysqlSourceOperations,
-    val handler: CatalogValidationFailureHandler,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
@@ -47,12 +44,12 @@ class MysqlJdbcPartitionFactory(
                 sharedState.configuration.global
         ) {
             if (pkChosenFromCatalog.isEmpty()) {
-                return MysqlJdbcUnsplittableSnapshotPartition(
+                return MysqlJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                 )
             }
-            return MysqlJdbcSplittableSnapshotPartition(
+            return MysqlJdbcSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 pkChosenFromCatalog,
@@ -65,23 +62,40 @@ class MysqlJdbcPartitionFactory(
             stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
         if (pkChosenFromCatalog.isEmpty()) {
-            return MysqlJdbcUnsplittableSnapshotWithCursorPartition(
+            return MysqlJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
                 cursorChosenFromCatalog
             )
         }
-        return MysqlJdbcSplittableSnapshotWithCursorPartition(
+        return MysqlJdbcSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
             pkChosenFromCatalog,
             lowerBound = null,
-            upperBound = null,
             cursorChosenFromCatalog,
             cursorUpperBound = null,
         )
     }
 
+    /**
+     * Flowchart:
+     * 1. If the input state is null - using coldstart.
+     * ```
+     *    a. If it's global but without PK, use non-resumable  snapshot.
+     *    b. If it's global with PK, use snapshot.
+     *    c. If it's not global, use snapshot with cursor.
+     * ```
+     * 2. If the input state is not null -
+     * ```
+     *    a. If it's not cursor based, JdbcPartitionFactory will not handle this. (TODO)
+     *    b. If it's cursor based, it could be either in PK read phase (initial read) or
+     *       cursor read phase (incremental read).
+     *      i. In PK read phase, use snapshot with cursor. If no PKs were found,
+     *         use non-resumable snapshot with cursor.
+     *      ii. In cursor read phase, use cursor incremental.
+     * ```
+     */
     override fun create(
         stream: Stream,
         opaqueStateValue: OpaqueStateValue?,
@@ -98,6 +112,9 @@ class MysqlJdbcPartitionFactory(
                 !sharedState.configuration.global
 
         if (!isCursorBasedIncremental) {
+            // TODO: This should consider v1 state format for CDC initial read and return
+            // a MysqlJdbcSnapshotPartition, or a different partition if we can't reuse
+            // MysqlJdbcStreamStateValue.
             return null
         } else {
             if (sv.stateType != "cursor_based") {
@@ -109,12 +126,11 @@ class MysqlJdbcPartitionFactory(
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
                 // in a state where it's still in primary_key read part.
-                return MysqlJdbcSplittableSnapshotWithCursorPartition(
+                return MysqlJdbcSnapshotWithCursorPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = listOf(pkLowerBound),
-                    upperBound = null,
                     cursorChosenFromCatalog,
                     cursorUpperBound = null,
                 )

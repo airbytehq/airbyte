@@ -60,7 +60,7 @@ object MysqlContainerFactory {
             database = "test"
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
-            setCursorMethodValue(UserDefinedCursor)
+            setMethodValue(UserDefinedCursor)
         }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {
