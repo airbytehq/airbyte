@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type, Mapping
 
 import dagger
 import semver
@@ -16,7 +16,6 @@ from base_images.bases import AirbyteConnectorBaseImage
 from base_images.python.bases import AirbyteManifestOnlyConnectorBaseImage, AirbytePythonConnectorBaseImage
 from base_images.utils import docker
 from connector_ops.utils import ConnectorLanguage  # type: ignore
-from deepdiff.model import Mapping
 
 MANAGED_BASE_IMAGES = [AirbytePythonConnectorBaseImage]
 
