@@ -1,13 +1,16 @@
-version: 5.10.2
+version: 5.10.3
 
 type: DeclarativeSource
 
 description: >
   This is the setup guide for the Campaign Monitor source.
+
+
   Campaign Monitor is an email marketing and services platform
   https://www.campaignmonitor.com/
 
   This connector ingests a variety of endpoints from the Campaign Monitor API.
+
   In order to use the API, you must first create an account. You can generate
   your API key in the account settings.
 
@@ -63,17 +66,37 @@ definitions:
     client_details:
       type: DeclarativeStream
       name: client_details
+      primary_key:
+        - ClientID
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}.json
+          path: clients/{{ stream_partition.client }}.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ClientID
+              value: "{{ record['BasicDetails']['ClientID'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - BasicDetails
+              - ClientID
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -87,13 +110,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/segments.json
+          path: clients/{{ stream_partition.client }}/segments.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -107,13 +138,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/templates.json
+          path: clients/{{ stream_partition.client }}/templates.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -127,13 +166,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/people.json
+          path: clients/{{ stream_partition.client }}/people.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -147,13 +194,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/tags.json
+          path: clients/{{ stream_partition.client }}/tags.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -167,13 +222,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/lists.json
+          path: clients/{{ stream_partition.client }}/lists.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -187,7 +250,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/suppressionlist.json
+          path: clients/{{ stream_partition.client }}/suppressionlist.json
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -203,13 +266,21 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: pagesize
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 1000
+            start_from_page: 1
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -223,7 +294,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/campaigns.json
+          path: clients/{{ stream_partition.client }}/campaigns.json
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -239,13 +310,21 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: pagesize
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 1000
+            start_from_page: 1
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: SentDate
@@ -258,8 +337,8 @@ definitions:
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: sentFromDate
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -273,13 +352,21 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/drafts.json
+          path: clients/{{ stream_partition.client }}/drafts.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -287,17 +374,27 @@ definitions:
     scheduled_campaigns:
       type: DeclarativeStream
       name: scheduled_campaigns
+      primary_key:
+        - CampaignID
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: clients/{{ config["client_id"] }}/scheduled.json
+          path: clients/{{ stream_partition.client }}/scheduled.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,8 +404,8 @@ definitions:
     url_base: https://api.createsend.com/api/v3.3/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
       password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/clients"
@@ -334,24 +431,19 @@ spec:
     properties:
       username:
         type: string
-        title: Username
         order: 0
+        title: Username
       password:
         type: string
+        order: 1
         title: Password
         always_show: true
         airbyte_secret: true
-        order: 1
-      client_id:
-        type: string
-        description: The specific ID of a client in your account
-        title: Client ID
-        order: 2
       start_date:
         type: string
         description: Date from when the sync should start
+        order: 2
         title: start_date
-        order: 3
     additionalProperties: true
 
 metadata:
@@ -370,84 +462,84 @@ metadata:
     scheduled_campaigns: true
   testedStreams:
     clients:
+      hasRecords: true
       streamHash: 94dac85b511a5ac97e21301d8e5b1058fe85693f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     admins:
+      hasRecords: true
       streamHash: 98d12e6061d4a1dae696088e7363d642f38a2b9d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     client_details:
-      streamHash: 7bcdc8d9fdd583fcc541bbb421bd607e136fa2eb
+      streamHash: 3cd55a694d57629f4b8f3e20e77abf609542652b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     segments:
-      streamHash: 694c356617d802eff6daa65dcd5a39b4ca280f11
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 37115d05f4739801cae156adc01caa844b56ccd9
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     templates:
-      streamHash: 26b61506af69db37dabe897c40ce9178915d5037
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: b5bde153fcd637ffef8ca78caf79d67a59f8227d
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     people:
-      streamHash: ae983b5193e88333fab3acc7d597ccc21202f3de
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 989c65aaee1a276464d92d9ed36db9510372277a
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
-      streamHash: 4719bdcd546c6a7662974bcff883b2d346f54809
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: ac01a61c7ea13a604f2c0ce1e0482a298d9c432e
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     subscriber_lists:
-      streamHash: 36f50617cf4608a7d001de07f24f4e3bcac21184
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 290d9668664152c199172a5febcea3ade8ac48d3
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     suppression_lists:
-      streamHash: 3aa2bd8d58f3324c652c138660dd0fc550072a95
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 473290834046dec6ec6a9346658b1edb92a87c51
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sent_campaigns:
-      streamHash: 9117fa030665fbe61e135b5b1b30ab6f3081f940
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 35ca7056cd3848b286e4c9e2a2e26f56cc79480f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     draft_campaigns:
-      streamHash: 286294238424b3ebd18e179376c75ea010d04e08
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a98c8a83835e3f9ea6b02564ea790985683755fe
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     scheduled_campaigns:
-      streamHash: 9a884f411f61eb5d5e9d061563f6469ef069c367
+      streamHash: 2cf08000013f8b0c3df0942b9e01fbd16fdd96ca
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -500,10 +592,6 @@ schemas:
           - object
           - "null"
         properties:
-          ClientID:
-            type:
-              - string
-              - "null"
           CompanyName:
             type:
               - string
@@ -569,6 +657,10 @@ schemas:
             type:
               - number
               - "null"
+      ClientID:
+        type: string
+    required:
+      - ClientID
   segments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -778,9 +870,7 @@ schemas:
     additionalProperties: true
     properties:
       CampaignID:
-        type:
-          - string
-          - "null"
+        type: string
       DateCreated:
         type:
           - string
@@ -825,3 +915,5 @@ schemas:
         type:
           - array
           - "null"
+    required:
+      - CampaignID

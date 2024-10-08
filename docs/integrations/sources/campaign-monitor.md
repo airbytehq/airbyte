@@ -1,6 +1,7 @@
 # Campaign Monitor
 
-This is the setup guide for the Campaign Monitor source.
+This is the setup for the Campaign Monitor source which ingests data from the campaign monitor api.
+The different types of `campaign` endpoints are available in this source.
 
 ## Prerequisites
 
@@ -8,7 +9,6 @@ A username and password associated with your Campaign Monitor account is require
 You can get your API key from the Account Settings page when logged into your Campaign Monitor account. 
 Enter the API key in the username field and enter any value in the password field https://www.campaignmonitor.com/api/v3-3/getting-started/ 
 
-For Client ID, enter the ID of a client associated to the account, whose records you wish to sync.
 You can specify a `start_date` for replicating data from the beginning of that date.
 
 ## Set up the Adjust source connector
@@ -19,7 +19,6 @@ You can specify a `start_date` for replicating data from the beginning of that d
 4. For **username**, enter your API key obtained in the previous step.
 5. For **password**, enter your any dummy value.
 6. For **start_date**, enter a date in YYYY-MM-DD format (UTC timezone is assumed). Data starting from this date will be replicated.
-7. For **Client ID**, enter your client ID obtained in the previous step.
 8. Click **Set up source**.
 
 ## Supported sync modes
@@ -35,7 +34,6 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 |-------|------|-------------|---------------|
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
-| `client_id` | `string` | Client ID. The specific ID of a client in your account |  |
 | `start_date` | `string` | start_date. Date from when the sync should start |  |
 
 ## Streams
@@ -43,7 +41,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 |-------------|-------------|------------|---------------------|----------------------|
 | clients | ClientID | No pagination | ✅ |  ❌  |
 | admins | EmailAddress | No pagination | ✅ |  ❌  |
-| client_details |  | No pagination | ✅ |  ❌  |
+| client_details | ClientID | No pagination | ✅ |  ❌  |
 | segments | SegmentID | No pagination | ✅ |  ❌  |
 | templates | TemplateID | No pagination | ✅ |  ❌  |
 | people | EmailAddress | No pagination | ✅ |  ❌  |
@@ -52,7 +50,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | suppression_lists | EmailAddress | DefaultPaginator | ✅ |  ❌  |
 | sent_campaigns | CampaignID | DefaultPaginator | ✅ |  ✅  |
 | draft_campaigns | CampaignID | No pagination | ✅ |  ❌  |
-| scheduled_campaigns |  | No pagination | ✅ |  ❌  |
+| scheduled_campaigns | CampaignID  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
