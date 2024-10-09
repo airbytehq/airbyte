@@ -3,15 +3,12 @@
 #
 
 import pkgutil
-from typing import Any, Optional, Mapping
+from typing import Any, Mapping, Optional
 
 import yaml
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.source import TState
-
 from airbyte_cdk.sources.types import ConnectionDefinition
 
 

@@ -1,14 +1,13 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import freezegun
 import isodate
 import pendulum
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -314,6 +313,11 @@ _MANIFEST = {
   ],
   "check": {
     "stream_names": ["party_members", "palaces", "locations"]
+  },
+  "concurrency_level": {
+    "type": "ConcurrencyLevel",
+    "default_concurrency": "{{ config['num_workers'] or 10 }}",
+    "max_concurrency": 25,
   }
 }
 
@@ -746,10 +750,12 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
             {
                 "start": datetime(2024, 7, 5, 0, 0, tzinfo=timezone.utc),
                 "end": datetime(2024, 8, 4, 0, 0, 0, tzinfo=timezone.utc),
+                "most_recent_cursor_value": datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc),
             },
             {
-                'end': datetime(2024, 9, 9, 0, 0, 0, tzinfo=timezone.utc),
-                'start': datetime(2024, 9, 5, 0, 0, 0, tzinfo=timezone.utc)
+                "end": datetime(2024, 9, 9, 0, 0, 0, tzinfo=timezone.utc),
+                "start": datetime(2024, 9, 5, 0, 0, 0, tzinfo=timezone.utc),
+                "most_recent_cursor_value": datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc),
             }
         ],
         "legacy": {},
@@ -790,7 +796,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
 
     try:
         list(source.read(logger=source.logger, config=config, catalog=catalog, state=[]))
-    except AirbyteTracedException as e:
+    except AirbyteTracedException:
         locations_stream = [stream for stream in source.all_streams(config=config) if stream.name == "locations"][0]
         final_stream_state = locations_stream.cursor.state
         assert final_stream_state == expected_stream_state
@@ -854,6 +860,43 @@ def test_read_concurrent_skip_streams_not_in_catalog():
     assert len(get_states_for_stream(stream_name="party_members_skills", messages=messages)) == 0
 
 
+def test_default_perform_interpolation_on_concurrency_level():
+    config = {
+        "start_date": "2024-07-01T00:00:00.000Z",
+        "num_workers": 20
+    }
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+        ]
+    )
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=config, catalog=catalog, state=[])
+    assert source._concurrent_source._initial_number_partitions_to_generate == 10  # We floor the number of initial partitions on creation
+
+
+def test_default_to_single_threaded_when_no_concurrency_level():
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+        ]
+    )
+
+    manifest = copy.deepcopy(_MANIFEST)
+    del manifest["concurrency_level"]
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=_CONFIG, catalog=catalog, state=[])
+    assert source._concurrent_source._initial_number_partitions_to_generate == 1
+
+
 def create_wrapped_stream(stream: DeclarativeStream) -> Stream:
     slice_to_records_mapping = get_mocked_read_records_output(stream_name=stream.name)
 
@@ -880,10 +923,10 @@ def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str],
             ]
 
             records = [
-                {"id": "444", "name": "Yongen-jaya"},
-                {"id": "scramble", "name": "Shibuya"},
-                {"id": "aoyama", "name": "Aoyama-itchome"},
-                {"id": "shin123", "name": "Shinjuku"},
+                {"id": "444", "name": "Yongen-jaya", "updated_at": "2024-08-10"},
+                {"id": "scramble", "name": "Shibuya", "updated_at": "2024-08-10"},
+                {"id": "aoyama", "name": "Aoyama-itchome", "updated_at": "2024-08-10"},
+                {"id": "shin123", "name": "Shinjuku", "updated_at": "2024-08-10"},
             ]
         case "party_members":
             slices = [
@@ -899,13 +942,13 @@ def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str],
                 StreamSlice(cursor_slice={"start": "2024-07-01", "end": "2024-07-16"}, partition={}),
                 StreamSlice(cursor_slice={'start': '2024-07-30', 'end': '2024-08-13'}, partition={}),
                 StreamSlice(cursor_slice={'start': '2024-08-14', 'end': '2024-08-14'}, partition={}),
-                StreamSlice(cursor_slice={'start': '2024-09-04', 'end': '2024-09-10'}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-09-04', 'end': '2024-09-09'}, partition={}),
             ]
 
             records = [
-                {"id": "amamiya", "first_name": "ren", "last_name": "amamiya"},
-                {"id": "nijima", "first_name": "makoto", "last_name": "nijima"},
-                {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa"},
+                {"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"},
+                {"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"},
+                {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"},
             ]
         case "palaces":
             slices = [StreamSlice(cursor_slice={}, partition={})]

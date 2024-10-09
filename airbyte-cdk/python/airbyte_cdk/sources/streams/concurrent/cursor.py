@@ -321,7 +321,10 @@ class ConcurrentCursor(Cursor):
 
         lower = max(lower, self._start) if self._start else lower
         if not self._slice_range or lower + self._slice_range >= upper:
-            yield lower, upper
+            if self._cursor_granularity:
+                yield lower, upper - self._cursor_granularity
+            else:
+                yield lower, upper
         else:
             stop_processing = False
             current_lower_boundary = lower

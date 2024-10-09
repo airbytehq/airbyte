@@ -2,33 +2,27 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import datetime
 import logging
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGenerator, StreamPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AlwaysAvailableAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, GapType
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
@@ -74,16 +68,23 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         # Alternatively if we don't want to modify run.py, we can separate and instantiate the ConcurrentSource
         self._concurrent_streams, self._synchronous_streams = self._separate_streams(config=config)
 
-        # temporarily hard coding, but once 45943 is merged we need to do the following:
-        # concurrency_level_component = factory.create_component(
-        #         model_type=ConcurrencyLevelModel, component_definition=self._source_config["concurrency_level"], config=config
-        #     )
-        # concurrency_level = concurrency_level_component.get_concurrency_level()
-        concurrency_level = 10  # self._concurrency_level(config=config)
+        concurrency_level_from_manifest = self._source_config.get("concurrency_level")
+        if concurrency_level_from_manifest:
+            concurrency_level_component = self._constructor.create_component(
+                model_type=ConcurrencyLevelModel, component_definition=concurrency_level_from_manifest, config=config
+            )
+            if not isinstance(concurrency_level_component, ConcurrencyLevel):
+                raise ValueError(f"Expected to generate a ConcurrencyLevel component, but received {concurrency_level_component.__class__}")
+
+            concurrency_level = concurrency_level_component.get_concurrency_level()
+            initial_number_of_partitions_to_generate = concurrency_level // 2
+        else:
+            concurrency_level = 1
+            initial_number_of_partitions_to_generate = 1
 
         self._concurrent_source = ConcurrentSource.create(
             num_workers=concurrency_level,
-            initial_number_of_partitions_to_generate=concurrency_level // 2,
+            initial_number_of_partitions_to_generate=initial_number_of_partitions_to_generate,
             logger=self.logger,
             slice_logger=self._slice_logger,
             message_repository=self.message_repository,
@@ -275,17 +276,3 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         concurrent_stream_names: set[str],
     ) -> ConfiguredAirbyteCatalog:
         return ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name not in concurrent_stream_names])
-
-    # def _concurrency_level(self, config: Mapping[str, Any]) -> int:
-    #     concurrency_level_definition = self._source_config["concurrency_level"]
-    #     concurrency_level = self._constructor.create_component(
-    #         model_type=ConcurrencyLevelModel,
-    #         component_definition=concurrency_level_definition,
-    #         config=config,
-    #         emit_connector_builder_messages=self._emit_connector_builder_messages,
-    #     )
-    #
-    #     if isinstance(concurrency_level, ConcurrencyLevel):
-    #         return concurrency_level.get_concurrency_level()
-    #     else:
-    #         raise ValueError(f"Expected to generate a ConcurrencyLevel component, but received {concurrency_level.__class__}")

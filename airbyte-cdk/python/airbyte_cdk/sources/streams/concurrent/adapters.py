@@ -18,20 +18,19 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, AlwaysAvailableAvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import DateTimeStreamStateConverter
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
-
-from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import DateTimeStreamStateConverter
 
 """
 This module contains adapters to help enabling concurrency on Stream objects without needing to migrate to AbstractStream
@@ -397,8 +396,8 @@ class CursorPartitionGenerator(PartitionGenerator):
                 partition={},
                 cursor_slice={
                     start_boundary: self._connector_state_converter.output_format(slice_start),
-                    end_boundary: self._connector_state_converter.output_format(slice_end)
-                }
+                    end_boundary: self._connector_state_converter.output_format(slice_end),
+                },
             )
 
             yield StreamPartition(
