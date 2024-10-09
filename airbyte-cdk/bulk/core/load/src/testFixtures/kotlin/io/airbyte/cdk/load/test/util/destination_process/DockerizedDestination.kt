@@ -8,6 +8,7 @@ import com.google.common.collect.Lists
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
@@ -220,17 +221,22 @@ class DockerizedDestination(
                     .traces()
                     .filter { it.type == AirbyteTraceMessage.Type.ERROR }
                     .map { it.error }
-            throw RuntimeException(
-                """
-                    Destination process exited uncleanly: $exitCode
-                    Trace messages:
-                    """.trimIndent()
-                // explicit concat because otherwise trimIndent behaves badly
-                + filteredTraces,
-            )
+            throw DestinationUncleanExitException(exitCode, filteredTraces)
         }
     }
 }
+
+class DestinationUncleanExitException(
+    exitCode: Int,
+    traceMessages: List<AirbyteErrorTraceMessage>
+): Exception(
+    """
+        Destination process exited uncleanly: $exitCode
+        Trace messages:
+        """.trimIndent()
+        // explicit concat because otherwise trimIndent behaves badly
+        + traceMessages
+)
 
 @Singleton
 class DockerizedDestinationFactory(
