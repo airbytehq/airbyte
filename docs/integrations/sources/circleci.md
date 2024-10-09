@@ -15,6 +15,11 @@ This directory contains the manifest-only connector for [`source-circleci`](http
 | `api_key` | `string` | API Key.  |  |
 | `org_id` | `string` | Organization ID. The org ID found in `https://app.circleci.com/settings/organization/circleci/xxxxx/overview` |  |
 | `start_date` | `string` | Start date.  |  |
+| `project_id` | `string` | Project ID found in the project settings.  |  |
+| `job_id` | `string` | Job ID for fetching information found in URL.  |  |
+| `workflow_id` | `string` | Workflow ID of a project pipeline.  |  |
+| `workflow_name` | `string` | Workflow name for fetching information.  |  |
+| `job_number` | `string` | Job Number of the workflow.  | `2` |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -24,6 +29,13 @@ This directory contains the manifest-only connector for [`source-circleci`](http
 | self_collaborations | id | DefaultPaginator | ✅ |  ❌  |
 | me | analytics_id | DefaultPaginator | ✅ |  ✅  |
 | projects | vcs_url | DefaultPaginator | ✅ |  ❌  |
+| pipelines | id | DefaultPaginator | ✅ |  ✅ |
+| specific_project | id | DefaultPaginator | ✅ |  ❌ |
+| jobs | number | DefaultPaginator | ✅ |  ❌ |
+| workflow | id | DefaultPaginator | ✅ |  ✅ |
+| insights_metrics | project_id | DefaultPaginator | ✅ |  ❌ |
+| insights_branches | id | DefaultPaginator | ✅ |  ❌ |
+| workflow_jobs | id | DefaultPaginator | ✅ |  ✅ |
 
 ## Changelog
 
