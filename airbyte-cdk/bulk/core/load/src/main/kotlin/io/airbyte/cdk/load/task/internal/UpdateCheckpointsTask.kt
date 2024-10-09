@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.SyncTask
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -22,6 +23,7 @@ interface UpdateCheckpointsTask : SyncTask
 @Singleton
 @Secondary
 class DefaultUpdateCheckpointsTask(
+    private val syncManager: SyncManager,
     private val checkpointManager:
         CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
@@ -41,6 +43,7 @@ class DefaultUpdateCheckpointsTask(
                 }
             }
         }
+        syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }
     }
 }
