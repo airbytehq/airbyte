@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import kotlin.test.assertEquals
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -44,7 +45,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 "check",
                 config = config,
             )
-        process.run()
+        runBlocking { process.run() }
         val messages = process.readMessages()
         val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 

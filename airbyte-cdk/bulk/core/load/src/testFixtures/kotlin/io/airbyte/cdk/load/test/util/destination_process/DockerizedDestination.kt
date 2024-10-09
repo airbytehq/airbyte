@@ -134,60 +134,58 @@ class DockerizedDestination(
         destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
     }
 
-    override fun run() {
-        runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    // Consume stdout. These should all be properly-formatted messages.
-                    // Annoyingly, the process's stdout is called "inputStream".
-                    val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
-                    while (destinationStdout.hasNextLine()) {
-                        val line = destinationStdout.nextLine()
-                        val message =
-                            try {
-                                Jsons.readValue(line, AirbyteMessage::class.java)
-                            } catch (e: Exception) {
-                                // If a destination logs non-json output, just echo it
-                                getMdcScope().use { logger.info { line } }
-                                continue
-                            }
-                        if (message.type == AirbyteMessage.Type.LOG) {
-                            // Don't capture logs, just echo them directly to our own stdout
-                            val combinedMessage =
-                                message.log.message +
-                                    (if (message.log.stackTrace != null)
-                                        (System.lineSeparator() +
-                                            "Stack Trace: " +
-                                            message.log.stackTrace)
-                                    else "")
-                            getMdcScope().use {
-                                when (message.log.level) {
-                                    null, // this should be impossible, treat it as error
-                                    AirbyteLogMessage.Level
-                                        .FATAL, // klogger doesn't have a fatal level
-                                    AirbyteLogMessage.Level.ERROR ->
-                                        logger.error { combinedMessage }
-                                    AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
-                                    AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
-                                    AirbyteLogMessage.Level.DEBUG ->
-                                        logger.debug { combinedMessage }
-                                    AirbyteLogMessage.Level.TRACE ->
-                                        logger.trace { combinedMessage }
-                                }
-                            }
-                        } else {
-                            destinationOutput.accept(message)
+    override suspend fun run() {
+        withContext(Dispatchers.IO) {
+            launch {
+                // Consume stdout. These should all be properly-formatted messages.
+                // Annoyingly, the process's stdout is called "inputStream".
+                val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
+                while (destinationStdout.hasNextLine()) {
+                    val line = destinationStdout.nextLine()
+                    val message =
+                        try {
+                            Jsons.readValue(line, AirbyteMessage::class.java)
+                        } catch (e: Exception) {
+                            // If a destination logs non-json output, just echo it
+                            getMdcScope().use { logger.info { line } }
+                            continue
                         }
+                    if (message.type == AirbyteMessage.Type.LOG) {
+                        // Don't capture logs, just echo them directly to our own stdout
+                        val combinedMessage =
+                            message.log.message +
+                                (if (message.log.stackTrace != null)
+                                    (System.lineSeparator() +
+                                        "Stack Trace: " +
+                                        message.log.stackTrace)
+                                else "")
+                        getMdcScope().use {
+                            when (message.log.level) {
+                                null, // this should be impossible, treat it as error
+                                AirbyteLogMessage.Level
+                                    .FATAL, // klogger doesn't have a fatal level
+                                AirbyteLogMessage.Level.ERROR ->
+                                    logger.error { combinedMessage }
+                                AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
+                                AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
+                                AirbyteLogMessage.Level.DEBUG ->
+                                    logger.debug { combinedMessage }
+                                AirbyteLogMessage.Level.TRACE ->
+                                    logger.trace { combinedMessage }
+                            }
+                        }
+                    } else {
+                        destinationOutput.accept(message)
                     }
-                    stdoutDrained.complete(Unit)
                 }
-                launch {
-                    // Consume stderr. Connectors shouldn't really use this,
-                    // and whatever this stream contains, it's almost certainly not valid messages.
-                    // Dump it straight to our own stderr.
-                    getMdcScope().use { process.errorReader().forEachLine { logger.error { it } } }
-                    stderrDrained.complete(Unit)
-                }
+                stdoutDrained.complete(Unit)
+            }
+            launch {
+                // Consume stderr. Connectors shouldn't really use this,
+                // and whatever this stream contains, it's almost certainly not valid messages.
+                // Dump it straight to our own stderr.
+                getMdcScope().use { process.errorReader().forEachLine { logger.error { it } } }
+                stderrDrained.complete(Unit)
             }
         }
     }
@@ -201,27 +199,27 @@ class DockerizedDestination(
         return destinationOutput.newMessages()
     }
 
-    override fun shutdown() {
-        destinationStdin.close()
-        // The old cdk had a 1-minute timeout here. That seems... weird?
-        // We can just rely on the junit timeout, presumably?
-        process.waitFor()
-        // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
-        // all the destination output (logs/trace messages).
-        runBlocking {
+    override suspend fun shutdown() {
+        withContext(Dispatchers.IO) {
+            destinationStdin.close()
+            // The old cdk had a 1-minute timeout here. That seems... weird?
+            // We can just rely on the junit timeout, presumably?
+            process.waitFor()
+            // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
+            // all the destination output (logs/trace messages).
             stdoutDrained.join()
             stderrDrained.join()
-        }
-        val exitCode = process.exitValue()
-        if (exitCode != 0) {
-            // Hey look, it's possible to extract the error from a failed destination process!
-            // because "destination exit code 1" is the least-helpful error message.
-            val filteredTraces =
-                destinationOutput
-                    .traces()
-                    .filter { it.type == AirbyteTraceMessage.Type.ERROR }
-                    .map { it.error }
-            throw DestinationUncleanExitException(exitCode, filteredTraces)
+            val exitCode = process.exitValue()
+            if (exitCode != 0) {
+                // Hey look, it's possible to extract the error from a failed destination process!
+                // because "destination exit code 1" is the least-helpful error message.
+                val filteredTraces =
+                    destinationOutput
+                        .traces()
+                        .filter { it.type == AirbyteTraceMessage.Type.ERROR }
+                        .map { it.error }
+                throw DestinationUncleanExitException(exitCode, filteredTraces)
+            }
         }
     }
 }

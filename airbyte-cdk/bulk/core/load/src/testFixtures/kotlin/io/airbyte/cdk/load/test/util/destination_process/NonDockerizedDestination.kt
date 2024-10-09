@@ -50,7 +50,7 @@ class NonDockerizedDestination(
             )
     }
 
-    override fun run() {
+    override suspend fun run() {
         destination.run()
     }
 
@@ -60,7 +60,7 @@ class NonDockerizedDestination(
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
 
-    override fun shutdown() {
+    override suspend fun shutdown() {
         destinationStdinPipe.close()
     }
 }

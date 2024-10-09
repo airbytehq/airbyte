@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import kotlinx.coroutines.runBlocking
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -24,7 +25,7 @@ interface DestinationProcess {
      * Run the destination process. Callers who want to interact with the destination should
      * `launch` this method.
      */
-    fun run()
+    suspend fun run()
 
     fun sendMessage(message: AirbyteMessage)
 
@@ -35,7 +36,7 @@ interface DestinationProcess {
      * Wait for the destination to terminate, then return all messages it emitted since the last
      * call to [readMessages].
      */
-    fun shutdown()
+    suspend fun shutdown()
 }
 
 enum class TestDeploymentMode {

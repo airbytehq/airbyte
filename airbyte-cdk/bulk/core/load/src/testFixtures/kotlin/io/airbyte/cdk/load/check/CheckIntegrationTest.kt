@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import kotlinx.coroutines.runBlocking
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -45,7 +46,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     config = config,
                     deploymentMode = deploymentMode,
                 )
-            process.run()
+            runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 
@@ -74,7 +75,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     config = config,
                     deploymentMode = deploymentMode,
                 )
-            process.run()
+            runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 
