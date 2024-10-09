@@ -3,7 +3,7 @@
 #
 
 import logging
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from typing import Any, Generator, MutableMapping
 
 import requests
