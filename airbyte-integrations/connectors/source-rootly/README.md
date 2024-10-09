@@ -1,5 +1,5 @@
 # Rootly
-This directory contains the manifest-only connector for `source-rootly`.
+This directory contains the manifest-only connector for [`source-rootly`](https://rootly.com).
 
 Documentation: https://rootly.com/api#/
 

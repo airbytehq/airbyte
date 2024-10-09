@@ -55,6 +55,28 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
           fields:
@@ -2396,12 +2418,12 @@ metadata:
     retrospective_processes: true
   testedStreams:
     dashboards:
-      hasRecords: true
-      streamHash: 1663ef918bc6ec15713f1671941acbed381055b4
+      streamHash: 7f26654fcb63b5671f5879b175acdcddbf2fcbb2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents:
       hasRecords: true
       streamHash: 6a7d207eb35ceb79d35b7dcbb455e4f4ef9c2647
@@ -2418,7 +2440,7 @@ metadata:
       responsesAreSuccessful: true
     dashboards_panels:
       hasRecords: true
-      streamHash: ab987673c45d3df40e98b3a37d6cec0461680a8f
+      streamHash: 41f7aeceb88938f537ddb87fe92acee51723b391
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2700,11 +2722,10 @@ schemas:
                         - string
                         - "null"
       updated_at:
-        type:
-          - string
-          - "null"
+        type: string
     required:
       - id
+      - updated_at
   incidents:
     type: object
     $schema: http://json-schema.org/schema#

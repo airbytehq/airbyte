@@ -1,4 +1,7 @@
 # Rootly
+## Overview
+
+The Rootly source supports _Full Refresh_ as well as _Incremental_ syncs.
 Documentation: https://rootly.com/api#/
 
 ## Configuration
@@ -11,7 +14,7 @@ Documentation: https://rootly.com/api#/
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| dashboards | id | DefaultPaginator | ✅ |  ❌  |
+| dashboards | id | DefaultPaginator | ✅ |  ✅  |
 | incidents | id | DefaultPaginator | ✅ |  ✅  |
 | authorizations | id | DefaultPaginator | ✅ |  ✅  |
 | dashboards_panels | id | DefaultPaginator | ✅ |  ✅  |
@@ -49,6 +52,6 @@ Documentation: https://rootly.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-09 | | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
+| 0.0.1 | 2024-10-09 | [46669](https://github.com/airbytehq/airbyte/pull/46669) | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
 
 </details>
