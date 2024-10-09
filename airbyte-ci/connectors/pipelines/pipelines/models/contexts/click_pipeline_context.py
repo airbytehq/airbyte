@@ -98,7 +98,7 @@ class ClickPipelineContext(BaseModel, Singleton):
                     self._dagger_client = await self._og_click_context.with_async_resource(connection)
 
         assert self._dagger_client, "Error initializing Dagger client"
-        return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
+        return self._dagger_client if pipeline_name else self._dagger_client
 
     def get_log_output(self) -> TextIO:
         # This `show_dagger_logs` flag is likely going to be removed in the future.

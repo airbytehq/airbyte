@@ -48,7 +48,7 @@ class ConnectorRunner:
         self.completion_event = anyio.Event()
         self.http_proxy = http_proxy
         self.logger = logging.getLogger(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
-        self.dagger_client = dagger_client.pipeline(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
+        self.dagger_client = dagger_client
         if is_airbyte_ci:
             self.host_obfuscator_path = "/tmp/record_obfuscator.py"
         else:
@@ -145,15 +145,10 @@ class ConnectorRunner:
             assert entrypoint, "The connector container has no entrypoint"
             airbyte_command = entrypoint + self.full_command
             # We are piping the output to a file to avoidQueryError: file size exceeds limit 134217728
-            container = container.with_exec(
-                [
-                    "sh",
-                    "-c",
-                    " ".join(airbyte_command)
-                    + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
-                ],
-                skip_entrypoint=True,
-            )
+            container = container.with_exec(["sh",
+"-c",
+" ".join(airbyte_command)
+            + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"])
             executed_container = await container.sync()
             # We exporting to disk as we can't read .stdout() or await file.contents() as it might blow up the memory
             stdout_exported = await executed_container.file(self.IN_CONTAINER_OUTPUT_PATH).export(str(self.stdout_file_path))

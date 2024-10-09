@@ -93,15 +93,9 @@ class FormatCommand(click.Command):
             dagger_client.container()
             .from_(GIT_IMAGE)
             .with_workdir(REPO_MOUNT_PATH)
-            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
-            # All with_exec commands below will re-run if the to_format directory changes
-            .with_exec(["init"])
-            # Remove all gitignored files
-            .with_exec(["clean", "-dfqX"])
+            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format).with_exec(["init"], use_entrypoint=True).with_exec(["clean", "-dfqX"], use_entrypoint=True)
             # Delete all .gitignore files
-            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
-            # Delete .git
-            .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True).with_exec(["rm", "-rf", ".git"])
             .directory(REPO_MOUNT_PATH)
             .with_timestamps(0)
         )
