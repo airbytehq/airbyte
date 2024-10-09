@@ -34,12 +34,14 @@
   border-radius: 5px;
   max-width: 400px;
   width: 100%;
+  font-size: 0.8em;
 }
 
 .modalContentForm {
   display: flex;
   width: 100%;
   gap: 8px;
+
 }
 .modalContentInputContainer {
   flex-grow: 1;
@@ -52,7 +54,6 @@
 }
 .modalContentInputError {
   border: 1px solid var(--color-red-400);
-  color: var(--color-red-400);
 }
 .inputErrorMessage {
   color: var(--color-red-400);
@@ -67,7 +68,7 @@
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
-  height: 40px;
+  max-height: 38px;
 }
 
 .modalContentButton:disabled {

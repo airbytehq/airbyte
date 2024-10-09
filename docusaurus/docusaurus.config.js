@@ -1,6 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-require("dotenv").config();
+import "dotenv/config.js";
 const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");

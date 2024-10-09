@@ -2,7 +2,7 @@ import { faThumbsDown, faThumbsUp } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TOCItems from "@theme-original/TOCItems";
 import React, { useState } from "react";
-import { RequestERD } from "../../components/RequestERD";
+import { RequestERD } from "../../components/RequestERD/RequestERD";
 
 import styles from "./TOCItemsWrapper.module.css";
 

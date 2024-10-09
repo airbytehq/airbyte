@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import styles from "./EmailModal.module.css";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import cn from "classnames";
-import { useDebouncedCallback } from "use-debounce";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import React, { useState } from "react";
+import styles from "./EmailModal.module.css";
 
 const CloseButton = ({ onClose }) => {
   return (
@@ -17,20 +16,33 @@ const CloseButton = ({ onClose }) => {
 const ModalBody = ({ status, onSubmit }) => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [showEmailError, setShowEmailError] = useState(false);
 
-  const debouncedValidation = useDebouncedCallback((value) => {
+
+  const emailValidation = (value) => {
+    console.log("value", value);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(value)) {
       setEmailError("");
     } else {
       setEmailError("Please enter a valid email address");
     }
-  }, 800);
+  };
 
   const handleOnChange = (e) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
-    debouncedValidation(emailValue);
+    emailValidation(emailValue)
+
+  };
+  
+  const handleBlur = () => {
+    if(email && emailError) {
+      setShowEmailError(true);
+    }
+  };
+  const handleFocus = () => {
+    setShowEmailError(false);
   };
 
   if (status === "success") {
@@ -44,39 +56,46 @@ const ModalBody = ({ status, onSubmit }) => {
   if (status === "error") {
     return (
       <div>
-        <p> Error submitting request. Please try again later.</p>
+        <p> Error submitting your request. Please try again later.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={() => onSubmit(email)} className={styles.modalContentForm}>
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      onSubmit(email);
+    }} >
+      <p>
+        We ask for your email so we can notify you when the ERD is ready.
+      </p>
+      <div className={styles.modalContentForm}>
+
       <div className={styles.modalContentInputContainer}>
         <input
           className={cn(styles.modalContentInput, {
-            [styles.modalContentInputError]: emailError,
+            [styles.modalContentInputError]: showEmailError && emailError,
           })}
           type="email"
           value={email}
           autoComplete="email"
           onChange={handleOnChange}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
           placeholder="Enter your email"
           required
           disabled={status === "loading"}
         />
-        {emailError && <p className={styles.inputErrorMessage}>{emailError}</p>}
+        {showEmailError && emailError && <p className={styles.inputErrorMessage}>{emailError}</p>}
       </div>
       <button
         type="submit"
-        onClick={(e) => {
-          e.preventDefault();
-          onSubmit(email);
-        }}
         className={styles.modalContentButton}
-        disabled={status === "loading"}
+        disabled={status === "loading" || Boolean(emailError)}
       >
         {status === "loading" ? "Submitting..." : "Submit"}
       </button>
+      </div>
     </form>
   );
 };
@@ -89,7 +108,6 @@ export const EmailModal = ({ isOpen, onClose, sourceInfo }) => {
     },
   } = useDocusaurusContext();
  
-
   if (!isOpen) return null;
 
   const handleSubmit = async (email) => {
@@ -127,9 +145,12 @@ export const EmailModal = ({ isOpen, onClose, sourceInfo }) => {
         <>
           <div className={styles.modalContentHeader}>
             <h4>Request ERD</h4>
-            <CloseButton onClose={onClose} />
+            <CloseButton onClose={()=> {
+              setStatus("");
+              onClose();
+            }} />
           </div>
-          <ModalBody onSubmit={handleSubmit} status={status} />
+          <ModalBody onSubmit={handleSubmit} status={status}/>
         </>
       </div>
     </div>
