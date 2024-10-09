@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -42,6 +43,7 @@ enum class TestDeploymentMode {
     OSS
 }
 
+@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
 abstract class DestinationProcessFactory {
     /**
      * Ideally we'd take this in the constructor, but that's annoying because of how junit injects

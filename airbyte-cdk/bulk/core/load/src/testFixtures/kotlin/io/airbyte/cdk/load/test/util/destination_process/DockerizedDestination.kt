@@ -130,7 +130,7 @@ class DockerizedDestination(
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
         // Annoyingly, the process's stdin is called "outputStream"
-        destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream))
+        destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
     }
 
     override fun run() {
@@ -139,7 +139,7 @@ class DockerizedDestination(
                 launch {
                     // Consume stdout. These should all be properly-formatted messages.
                     // Annoyingly, the process's stdout is called "inputStream".
-                    val destinationStdout = Scanner(process.inputStream)
+                    val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
                     while (destinationStdout.hasNextLine()) {
                         val line = destinationStdout.nextLine()
                         val message =
