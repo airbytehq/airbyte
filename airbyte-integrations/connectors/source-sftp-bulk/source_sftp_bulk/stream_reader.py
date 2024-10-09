@@ -81,3 +81,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
         return remote_file
+
+    def file_size(self, file: RemoteFile):
+        file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
+        return file_size
