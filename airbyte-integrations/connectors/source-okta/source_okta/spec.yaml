@@ -92,36 +92,30 @@ connectionSpecification:
                 for instructions on how to generate it.
               airbyte_secret: true
       order: 0
+    
     domain:
-      title: Domain Configuration
-      type: object
+      type: string
+      title: Okta domain
+      description: >-
+        The Okta domain. See the <a
+        href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
+        instructions on how to find it.
+      airbyte_secret: false
+      examples:
+        - "myorg"
       order: 1
-      required:
-        - domain
-      properties:
-        domain:
-          type: string
-          title: Okta domain
-          description: >-
-            The Okta domain. See the <a
-            href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
-            instructions on how to find it.
-          airbyte_secret: false
-          examples:
-            - "myorg"
-          order: 0
-        environment_domain:
-          type: string
-          title: Okta environment domain
-          description: >-
-            The Okta environment domain. See the <a
-            href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
-            instructions on how to find it.
-          airbyte_secret: false
-          default: okta.com
-          examples:
-            - "okta.com"
-          order: 1
+    environment_domain:
+      type: string
+      title: Okta environment domain
+      description: >-
+        The Okta environment domain. See the <a
+        href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
+        instructions on how to find it.
+      airbyte_secret: false
+      default: okta.com
+      examples:
+        - "okta.com"
+      order: 2
     start_date:
       type: string
       title: Start Date
@@ -132,5 +126,5 @@ connectionSpecification:
         this date will not be replicated.
       examples:
         - "2022-07-22T00:00:00Z"
-      order: 2
+      order: 3
   additionalProperties: true

@@ -43,11 +43,10 @@ Okta is the complete identity solution for all your apps and people that’s uni
     - If you select Token authentication - fill the field **Personal Api Token**
     - If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
     - If you select OAuth2.0 with private key authorization - fill the fields **Client ID**, **Key ID**, **Private Key**, **Scope**
-6. Setup your Okta **Domain Configuration**
-    - Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
-    - Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
-7. Add **Start date** (defaults to 7 days if no date is included)
-8. Click `Set up source`.
+6. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
+7. Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
+8. Add **Start date** (defaults to 7 days if no date is included)
+9. Click `Set up source`.
 
 ### For Airbyte Open Source:
 
@@ -60,11 +59,10 @@ Okta is the complete identity solution for all your apps and people that’s uni
 7. Choose the method of authentication : **Authorization Method**
     - If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
     - If you select OAuth2.0 with private key authorization - fill the fields **Client ID**, **Key ID**, **Private Key**, **Scope**
-8. Setup your Okta **Domain Configuration**
-    - Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
-    - Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
-9. Add **Start date** (defaults to 7 days if no date is included)
-10. Click `Set up source`.
+8. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
+9. Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
+10. Add **Start date** (defaults to 7 days if no date is included)
+11. Click `Set up source`.
 
 ## Supported sync modes
 

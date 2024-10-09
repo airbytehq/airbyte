@@ -108,3 +108,4 @@ scan-journal.log
 
 # mvn
 target/
+**/file::memory:?cache=shared
