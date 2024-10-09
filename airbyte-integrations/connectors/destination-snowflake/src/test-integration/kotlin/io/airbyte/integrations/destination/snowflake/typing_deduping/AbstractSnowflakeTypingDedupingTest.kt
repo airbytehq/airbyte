@@ -28,8 +28,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
+import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -395,6 +396,91 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+    @Test
+    @Throws(Exception::class)
+    open fun testLargeRecord() {
+        val catalog1 =
+            io.airbyte.protocol.models.v0
+                .ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        val messagesFromFile = readMessages("dat/sync1_messages.jsonl")
+        val largeValue1 = RandomStringUtils.randomAlphanumeric(8 * 1024 * 1024 + 100)
+        val largeValue2 = RandomStringUtils.randomAlphanumeric(8 * 1024 * 1024 + 200)
+        // only the address field should be cleared on 1st record
+        (messagesFromFile[0].record.data as ObjectNode).put("name", largeValue1)
+        (messagesFromFile[0].record.data.get("address") as ObjectNode).put("city", largeValue2)
+
+        // only the name field should be cleared on 1st record
+        (messagesFromFile[1].record.data as ObjectNode).put("name", largeValue2)
+        (messagesFromFile[1].record.data.get("address") as ObjectNode).put("city", largeValue1)
+
+        runSync(catalog1, listOf(messagesFromFile[0], messagesFromFile[1]))
+
+        val rawTableRecords = dumpRawTableRecords(streamNamespace, streamName)
+        assertEquals(rawTableRecords.size, 2)
+        for (rawTableRecord in rawTableRecords) {
+            val rawTableRecordUpdatedAt = rawTableRecord.get("_airbyte_data").get("updated_at")
+            val rawTableAddressFieldValue = rawTableRecord.get("_airbyte_data").get("address")
+            val rawTableNameFieldValue = rawTableRecord.get("_airbyte_data").get("name")
+            val changesFieldValue = rawTableRecord.get("_airbyte_meta").get("changes").get(0)
+            if (rawTableRecordUpdatedAt == messagesFromFile[0].record.data.get("updated_at")) {
+                val originalNameFieldValue = messagesFromFile[0].record.data.get("name")
+                assert(rawTableAddressFieldValue == null) {
+                    "\"address\" field should be null. " +
+                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long"
+                }
+                assertEquals(
+                    originalNameFieldValue,
+                    rawTableNameFieldValue,
+                    "\"name\" field should have contained ${originalNameFieldValue?.toString()?.length} chars. " +
+                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long"
+                )
+                assertEquals("address", changesFieldValue.get("field").asText())
+            } else if (
+                rawTableRecordUpdatedAt == messagesFromFile[1].record.data.get("updated_at")
+            ) {
+                val originalAddressFieldValue = messagesFromFile[1].record.data.get("address")
+                assertEquals(
+                    originalAddressFieldValue,
+                    rawTableAddressFieldValue,
+                    "\"address\" field should have contained ${originalAddressFieldValue?.toString()?.length} chars. " +
+                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long"
+                )
+                assert(rawTableNameFieldValue == null) {
+                    "\"name\" field should be null. " +
+                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long"
+                }
+                assertEquals("name", changesFieldValue.get("field").asText())
+            } else {
+                throw RuntimeException("unexpected raw record $rawTableRecord")
+            }
+            assertEquals(
+                changesFieldValue.get("change").asText(),
+                AirbyteRecordMessageMetaChange.Change.NULLED.value()
+            )
+            assertEquals(
+                changesFieldValue.get("reason").asText(),
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION.value()
+            )
+        }
+    }
+
     // Disabling until we can safely fetch generation ID
     @Test
     @Disabled
@@ -406,6 +492,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         get() = config!!["schema"].asText()
 
     companion object {
+        const val _8mb = 8 * 1_241_24
         @JvmStatic
         val FINAL_METADATA_COLUMN_NAMES: Map<String, String> =
             java.util.Map.of(
