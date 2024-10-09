@@ -123,6 +123,7 @@ abstract class BaseDestinationAcceptanceTest(
 
         var expected = messages.filter { it.type == AirbyteMessage.Type.STATE }
         var actual = destinationOutput.filter { it.type == AirbyteMessage.Type.STATE }
+        LOGGER.info { "SGX destinationOutput=$destinationOutput" }
 
         if (verifyIndividualStateAndCounts) {
             /* Collect the counts and add them to each expected state message */

@@ -27,13 +27,13 @@ class S3DestinationFlushFunction(
         strategyProvider().use { strategy ->
             for (partialMessage in stream) {
                 val partialRecord = partialMessage.record!!
-                val data =
                 /**
                  * This should always be null, but if something changes upstream to trigger a clone
                  * of the record, then `null` becomes `JsonNull` and `data == null` goes from `true`
                  * to `false`
                  */
-                if (partialRecord.data == null || partialRecord.data!!.isNull) {
+                val data =
+                    if (partialRecord.data == null || partialRecord.data!!.isNull) {
                         Jsons.deserialize(partialMessage.serialized)
                     } else {
                         partialRecord.data

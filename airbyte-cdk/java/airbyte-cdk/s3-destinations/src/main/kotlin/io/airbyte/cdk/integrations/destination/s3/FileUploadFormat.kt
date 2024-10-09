@@ -9,4 +9,5 @@ enum class FileUploadFormat(val fileExtension: String) {
     CSV("csv"),
     JSONL("jsonl"),
     PARQUET("parquet"),
+    RAW_FILES("raw_files")
 }

@@ -36,6 +36,11 @@ object UploadFormatConfigFactory {
             FileUploadFormat.PARQUET -> {
                 UploadParquetFormatConfig(formatConfig)
             }
+            FileUploadFormat.RAW_FILES ->
+                object : UploadFormatConfig {
+                    override val format: FileUploadFormat = FileUploadFormat.RAW_FILES
+                    override val fileExtension: String = "DUMMY"
+                }
         }
     }
 }

@@ -48,7 +48,9 @@ class EnvVariableFeatureFlags : FeatureFlags {
     }
 
     override fun airbyteStagingDirectory(): Path {
-        return getEnvOrDefault(AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME, DEFAULT_AIRBYTE_STAGING_DIRECTORY) { arg: String -> Path.of(arg) }
+        val retVal =  getEnvOrDefault(AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME, DEFAULT_AIRBYTE_STAGING_DIRECTORY) { arg: String -> Path.of(arg) }
+        log.info{"SGX retVal = $retVal"}
+        return retVal
     }
 
     // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

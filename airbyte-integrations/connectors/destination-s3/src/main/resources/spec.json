@@ -375,6 +375,37 @@
                 "default": true
               }
             }
+          },
+          {
+            "title": "Raw Files",
+            "required": [
+              "format_type"
+            ],
+            "properties": {
+              "format_type": {
+                "title": "Format Type",
+                "type": "string",
+                "enum": [
+                  "RAW_FILES"
+                ],
+                "default": "RAW_FILES"
+              },
+              "compression_codec": {
+                "title": "Compression Codec",
+                "description": "The compression algorithm used to compress data pages.",
+                "type": "string",
+                "enum": [
+                  "UNCOMPRESSED",
+                  "SNAPPY",
+                  "GZIP",
+                  "LZO",
+                  "BROTLI",
+                  "LZ4",
+                  "ZSTD"
+                ],
+                "default": "UNCOMPRESSED"
+              }
+            }
           }
         ],
         "order": 6

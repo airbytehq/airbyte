@@ -45,6 +45,7 @@ class AirbyteMessageDeserializer(
         // Make immutability a first class citizen in the PartialAirbyteMessage class.
         val partial =
             try {
+                logger.info{"SGX message=$message"}
                 Jsons.deserializeExactUnchecked(message, PartialAirbyteMessage::class.java)
             } catch (e: ValueInstantiationException) {
                 // This is a hack to catch unrecognized message types. Jackson supports
@@ -59,14 +60,12 @@ class AirbyteMessageDeserializer(
                     logger.warn { "Unrecognized message type: $unrecognized" }
                     throw UnrecognizedAirbyteMessageTypeException(unrecognized!!)
                 } else {
-                    val obfuscated = Jsons.obfuscateDeserializationException(e)
                     throw RuntimeException(
-                        "ValueInstantiationException when deserializing PartialAirbyteMessage: $obfuscated"
+                        "ValueInstantiationException when deserializing PartialAirbyteMessage: $message"
                     )
                 }
             } catch (e: Exception) {
-                val obfuscated = Jsons.obfuscateDeserializationException(e)
-                throw RuntimeException("Could not deserialize PartialAirbyteMessage: $obfuscated")
+                throw RuntimeException("Could not deserialize PartialAirbyteMessage: $message")
             }
 
         val msgType = partial.type
@@ -94,5 +93,36 @@ class AirbyteMessageDeserializer(
         }
 
         return partial
+    }
+
+    fun checkRecordMessageValid(partial: PartialAirbyteMessage) {
+        if (partial.record?.data != null) {
+            if (hasSeenRecordsWithFile) {
+                throw RuntimeException()
+            } else {
+                synchronized(javaClass) {
+                    if (hasSeenRecordsWithFile) {
+                        throw RuntimeException()
+                    }
+                    hasSeenRecordsWithData = true
+                }
+            }
+        } else {
+            if (hasSeenRecordsWithData) {
+                throw RuntimeException()
+            } else {
+                synchronized(javaClass) {
+                    if (hasSeenRecordsWithData) {
+                        throw RuntimeException()
+                    }
+                    hasSeenRecordsWithFile = true
+                }
+            }
+        }
+    }
+
+    companion object {
+        var hasSeenRecordsWithData = false
+        var hasSeenRecordsWithFile = false
     }
 }

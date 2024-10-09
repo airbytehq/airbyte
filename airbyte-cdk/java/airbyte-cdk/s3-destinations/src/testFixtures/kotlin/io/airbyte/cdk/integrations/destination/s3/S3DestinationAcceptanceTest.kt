@@ -75,8 +75,6 @@ protected constructor(
     override val imageName: String
         get() = "airbyte/destination-s3:dev"
 
-    override val supportsFileTransfer = true
-
     override fun getDefaultSchema(config: JsonNode): String? {
         if (config.has("s3_bucket_path")) {
             return config["s3_bucket_path"].asText()
