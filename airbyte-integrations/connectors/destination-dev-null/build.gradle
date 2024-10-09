@@ -29,6 +29,7 @@ dependencies {
 //    standardInput = System.in
 //}
 
+
 integrationTestJava {
     dependsOn assemble
 }
