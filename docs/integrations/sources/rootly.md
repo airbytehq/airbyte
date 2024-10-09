@@ -49,6 +49,6 @@ Documentation: https://rootly.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-09 | | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
+| 0.0.1 | 2024-10-09 | [46668](https://github.com/airbytehq/airbyte/pull/46668/) | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
 
 </details>
