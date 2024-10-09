@@ -16,7 +16,7 @@ packages = [ { include = "source_okta" }, {include = "main.py"} ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^3"
+airbyte-cdk = "^5.11"
 
 [tool.poetry.scripts]
 source-okta = "source_okta.run:run"
