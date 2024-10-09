@@ -7,7 +7,6 @@ from copy import deepcopy
 from unittest.mock import call
 
 import pytest
-
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,

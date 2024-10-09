@@ -2,6 +2,7 @@
 
 from unittest import TestCase
 
+from airbyte_cdk.models import AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -12,7 +13,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_cdk.models import SyncMode, AirbyteStreamStateSerializer
 
 from .config import ACCOUNT_ID, ConfigBuilder
 from .request_builder import get_account_request, get_ad_sets_request, get_ads_request, get_campaigns_request
