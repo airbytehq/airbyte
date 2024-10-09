@@ -186,7 +186,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     ) {
         streamIndexes.forEach { (stream, index) ->
             val lastIndex = lastIndexEmitted[stream]
-            if (lastIndex != null && index <= lastIndex) {
+            if (lastIndex != null && index < lastIndex) {
                 throw IllegalStateException(
                     "Checkpoint message for $stream emitted out of order (emitting $index after $lastIndex)"
                 )
