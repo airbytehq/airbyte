@@ -96,7 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
-| 0.8.0   | 2024-10-09 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Moved `conversation_parts` stream to per-partition state                                                                         |
+| 0.8.0   | 2024-10-09 | [46658](https://github.com/airbytehq/airbyte/pull/46658) | Moved `conversation_parts` stream to per-partition state                                                                         |
 | 0.7.3   | 2024-10-05 | [46447](https://github.com/airbytehq/airbyte/pull/46447) | Update dependencies                                                                                                              |
 | 0.7.2   | 2024-09-28 | [45279](https://github.com/airbytehq/airbyte/pull/45279) | Update dependencies                                                                                                              |
 | 0.7.1   | 2024-08-31 | [44966](https://github.com/airbytehq/airbyte/pull/44966) | Update dependencies                                                                                                              |
