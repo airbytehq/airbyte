@@ -7,7 +7,6 @@ import logging
 from typing import Any, List, Mapping
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
-
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
