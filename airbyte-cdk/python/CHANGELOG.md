@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.12.1
+Low Code: Removes deprecated  and 
+
 ## 5.12.0
 Low Code: Adds  component
 
