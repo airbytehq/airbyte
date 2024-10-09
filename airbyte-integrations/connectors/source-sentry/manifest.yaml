@@ -1,0 +1,5680 @@
+version: 4.3.2
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - project_detail
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+      cursor_field: dateCreated
+      retriever:
+        type: SimpleRetriever
+        name: events
+        primary_key: id
+        path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+        cursor_field: dateCreated
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['hostname'] }}/api/0/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"auth_token\"] }}"
+          name: events
+          primary_key: id
+          cursor_field: dateCreated
+          path: >-
+            projects/{{ config['organization'] }}/{{ config['project']
+            }}/events/
+          http_method: GET
+          request_parameters:
+            full: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\",
+              {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"\
+              \ }}"
+      name: events
+      primary_key:
+      - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+              - "null"
+              - string
+            metadata:
+              type:
+              - "null"
+              - object
+              properties:
+                in_app_frame_mix:
+                  type:
+                  - "null"
+                  - string
+                title:
+                  type:
+                  - "null"
+                  - string
+            _meta:
+              type:
+              - "null"
+              - object
+              properties:
+                context:
+                  type:
+                  - "null"
+                  - string
+                contexts:
+                  type:
+                  - "null"
+                  - string
+                entries:
+                  type:
+                  - "null"
+                  - object
+                message:
+                  type:
+                  - "null"
+                  - string
+                packages:
+                  type:
+                  - "null"
+                  - string
+                sdk:
+                  type:
+                  - "null"
+                  - string
+                tags:
+                  type:
+                  - "null"
+                  - object
+                user:
+                  type:
+                  - "null"
+                  - string
+            context:
+              type:
+              - "null"
+              - object
+              properties:
+                emptyList:
+                  type:
+                  - "null"
+                  - array
+                emptyMap:
+                  type:
+                  - "null"
+                  - object
+                length:
+                  type:
+                  - "null"
+                  - integer
+                results:
+                  type:
+                  - "null"
+                  - array
+                  items:
+                    type:
+                    - integer
+                    - "null"
+                session:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    foo:
+                      type:
+                      - "null"
+                      - string
+                unauthorized:
+                  type:
+                  - "null"
+                  - boolean
+                url:
+                  type:
+                  - "null"
+                  - string
+            contexts:
+              type:
+              - "null"
+              - object
+              properties:
+                browser:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    version:
+                      type:
+                      - "null"
+                      - string
+                    type:
+                      type:
+                      - "null"
+                      - string
+                    name:
+                      type:
+                      - "null"
+                      - string
+                client_os:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    version:
+                      type:
+                      - "null"
+                      - string
+                    type:
+                      type:
+                      - "null"
+                      - string
+                    name:
+                      type:
+                      - "null"
+                      - string
+            crashFile:
+              type:
+              - "null"
+              - string
+            culprit:
+              type:
+              - "null"
+              - string
+            dateCreated:
+              type:
+              - string
+              - "null"
+              format: date-time
+            dateReceived:
+              type:
+              - "null"
+              - string
+              format: date-time
+            dist:
+              type:
+              - "null"
+              - string
+            entries:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                  - "null"
+                  - string
+                data:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    formatted:
+                      type:
+                      - "null"
+                      - string
+                    frames:
+                      type:
+                      - "null"
+                      - object
+                      properties:
+                        absPath:
+                          type:
+                          - "null"
+                          - string
+                        colNo:
+                          type:
+                          - "null"
+                          - string
+                        context:
+                          type:
+                          - "null"
+                          - array
+                        filename:
+                          type:
+                          - "null"
+                          - string
+                        function:
+                          type:
+                          - "null"
+                          - string
+                        inApp:
+                          type:
+                          - "null"
+                          - boolean
+                        lineNo:
+                          type:
+                          - "null"
+                          - integer
+                        lock:
+                          type:
+                          - "null"
+                          - integer
+                        module:
+                          type:
+                          - "null"
+                          - string
+                        package:
+                          type:
+                          - "null"
+                          - string
+                        platform:
+                          type:
+                          - "null"
+                          - string
+                        rawFunction:
+                          type:
+                          - "null"
+                          - string
+                        sourceLink:
+                          type:
+                          - "null"
+                          - string
+                        symbol:
+                          type:
+                          - "null"
+                          - string
+                        symbolAddr:
+                          type:
+                          - "null"
+                          - string
+                        trust:
+                          type:
+                          - "null"
+                          - string
+            errors:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            event.type:
+              type:
+              - string
+              - "null"
+            eventID:
+              type:
+              - string
+              - "null"
+            fingerprints:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            groupID:
+              type:
+              - string
+              - "null"
+            groupingConfig:
+              type:
+              - "null"
+              - object
+              properties:
+                enhancements:
+                  type:
+                  - "null"
+                  - string
+                id:
+                  type:
+                  - "null"
+                  - string
+            id:
+              type:
+              - string
+              - "null"
+            location:
+              type:
+              - "null"
+              - string
+            message:
+              type:
+              - string
+              - "null"
+            occurrence:
+              type:
+              - "null"
+              - string
+            packages:
+              type:
+              - "null"
+              - object
+            platform:
+              type:
+              - string
+              - "null"
+            projectID:
+              type:
+              - "null"
+              - string
+            sdk:
+              type:
+              - "null"
+              - string
+            size:
+              type:
+              - "null"
+              - integer
+            tags:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                properties:
+                  key:
+                    type:
+                    - string
+                    - "null"
+                  value:
+                    type:
+                    - string
+                    - "null"
+            title:
+              type:
+              - string
+              - "null"
+            user:
+              type:
+              - "null"
+              - object
+              properties:
+                data:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    isStaff:
+                      type:
+                      - boolean
+                      - "null"
+                email:
+                  type:
+                  - "null"
+                  - string
+                id:
+                  type:
+                  - string
+                  - "null"
+                ip_address:
+                  type:
+                  - "null"
+                  - string
+                name:
+                  type:
+                  - "null"
+                  - string
+                username:
+                  type:
+                  - "null"
+                  - string
+    issues:
+      type: DeclarativeStream
+      name: issues
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['hostname'] }}/api/0/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"auth_token\"] }}"
+          path: >-
+            projects/{{ config['organization'] }}/{{ config['project']
+            }}/issues/
+          http_method: GET
+          request_parameters:
+            query: >-
+              lastSeen:>{{ stream_state.get(parameters['cursor_field']) or
+              '1900-01-01T00:00:00.0Z' if stream_state else
+              '1900-01-01T00:00:00.0Z' }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\",
+              {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"\
+              \ }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastSeen
+        cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+              - string
+              - "null"
+            metadata:
+              anyOf:
+              - type:
+                - object
+                - "null"
+                properties:
+                  title:
+                    type:
+                    - string
+                    - "null"
+              - type:
+                - object
+                - "null"
+                properties:
+                  type:
+                    type:
+                    - string
+                    - "null"
+                  filename:
+                    type:
+                    - string
+                    - "null"
+                  value:
+                    type:
+                    - string
+                    - "null"
+            annotations:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            assignedTo:
+              type:
+              - "null"
+              - object
+            count:
+              type:
+              - string
+              - "null"
+            culprit:
+              type:
+              - string
+              - "null"
+            firstSeen:
+              type:
+              - string
+              - "null"
+            hasSeen:
+              type:
+              - boolean
+              - "null"
+            id:
+              type:
+              - string
+              - "null"
+            isBookmarked:
+              type:
+              - boolean
+              - "null"
+            isPublic:
+              type:
+              - boolean
+              - "null"
+            isSubscribed:
+              type:
+              - boolean
+              - "null"
+            isUnhandled:
+              type:
+              - "null"
+              - boolean
+            issueCategory:
+              type:
+              - "null"
+              - string
+            issueType:
+              type:
+              - "null"
+              - string
+            lastSeen:
+              type:
+              - string
+              - "null"
+            level:
+              type:
+              - string
+              - "null"
+            logger:
+              type:
+              - "null"
+              - string
+            numComments:
+              type:
+              - integer
+              - "null"
+            permalink:
+              type:
+              - string
+              - "null"
+            platform:
+              type:
+              - "null"
+              - string
+            project:
+              type:
+              - object
+              - "null"
+              properties:
+                id:
+                  type:
+                  - string
+                  - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+                slug:
+                  type:
+                  - string
+                  - "null"
+            shareId:
+              type:
+              - "null"
+              - string
+            shortId:
+              type:
+              - string
+              - "null"
+            stats:
+              type:
+              - object
+              - "null"
+              properties:
+                24h:
+                  type:
+                  - array
+                  - "null"
+                  items:
+                    type:
+                    - array
+                    - "null"
+                    items:
+                      type:
+                      - number
+                      - "null"
+            status:
+              type:
+              - string
+              - "null"
+              enum:
+              - resolved
+              - unresolved
+              - ignored
+            statusDetails:
+              type:
+              - object
+              - "null"
+            subscriptionDetails:
+              type:
+              - "null"
+              - object
+            substatus:
+              type:
+              - "null"
+              - string
+            title:
+              type:
+              - string
+              - "null"
+            userCount:
+              type:
+              - integer
+              - "null"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['hostname'] }}/api/0/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"auth_token\"] }}"
+          path: projects/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\",
+              {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"\
+              \ }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            access:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            avatar:
+              type:
+              - object
+              - "null"
+              properties:
+                avatarType:
+                  type:
+                  - string
+                  - "null"
+                avatarUrl:
+                  type:
+                  - "null"
+                  - string
+                avatarUuid:
+                  type:
+                  - "null"
+                  - string
+            color:
+              type:
+              - string
+              - "null"
+            dateCreated:
+              type:
+              - string
+              - "null"
+              format: date-time
+            features:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            firstEvent:
+              type:
+              - "null"
+              - string
+            firstTransactionEvent:
+              type:
+              - "null"
+              - boolean
+            hasAccess:
+              type:
+              - boolean
+              - "null"
+            hasCustomMetrics:
+              type:
+              - "null"
+              - boolean
+            hasFeedbacks:
+              type:
+              - "null"
+              - boolean
+            hasMinifiedStackTrace:
+              type:
+              - "null"
+              - boolean
+            hasMonitors:
+              type:
+              - "null"
+              - boolean
+            hasNewFeedbacks:
+              type:
+              - "null"
+              - boolean
+            hasProfiles:
+              type:
+              - "null"
+              - boolean
+            hasReplays:
+              type:
+              - "null"
+              - boolean
+            hasSessions:
+              type:
+              - "null"
+              - boolean
+            id:
+              type:
+              - string
+              - "null"
+            isBookmarked:
+              type:
+              - boolean
+              - "null"
+            isInternal:
+              type:
+              - boolean
+              - "null"
+            isMember:
+              type:
+              - boolean
+              - "null"
+            isPublic:
+              type:
+              - boolean
+              - "null"
+            name:
+              type:
+              - string
+              - "null"
+            organization:
+              type:
+              - object
+              - "null"
+              properties:
+                avatar:
+                  type:
+                  - object
+                  - "null"
+                  properties:
+                    avatarType:
+                      type:
+                      - string
+                      - "null"
+                    avatarUrl:
+                      type:
+                      - string
+                      - "null"
+                    avatarUuid:
+                      type:
+                      - "null"
+                      - string
+                dateCreated:
+                  type:
+                  - string
+                  - "null"
+                  format: date-time
+                features:
+                  type:
+                  - array
+                  - "null"
+                  items:
+                    type:
+                    - string
+                    - "null"
+                hasAuthProvider:
+                  type:
+                  - boolean
+                  - "null"
+                id:
+                  type:
+                  - string
+                  - "null"
+                isEarlyAdopter:
+                  type:
+                  - boolean
+                  - "null"
+                links:
+                  type:
+                  - object
+                  - "null"
+                  properties:
+                    organizationUrl:
+                      type:
+                      - string
+                      - "null"
+                    regionUrl:
+                      type:
+                      - string
+                      - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+                require2FA:
+                  type:
+                  - boolean
+                  - "null"
+                requireEmailVerification:
+                  type:
+                  - boolean
+                  - "null"
+                slug:
+                  type:
+                  - string
+                  - "null"
+                status:
+                  type:
+                  - object
+                  - "null"
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - "null"
+                    name:
+                      type:
+                      - string
+                      - "null"
+            platform:
+              type:
+              - "null"
+              - string
+            slug:
+              type:
+              - string
+              - "null"
+            status:
+              type:
+              - string
+              - "null"
+              enum:
+              - active
+              - disabled
+              - pending_deletion
+              - deletion_in_progress
+    project_detail:
+      type: DeclarativeStream
+      name: project_detail
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['hostname'] }}/api/0/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"auth_token\"] }}"
+          path: projects/{{ config['organization'] }}/{{ config['project'] }}/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\",
+              {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"\
+              \ }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            access:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            allowedDomains:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            avatar:
+              type:
+              - object
+              - "null"
+              properties:
+                avatarType:
+                  type:
+                  - string
+                  - "null"
+                avatarUrl:
+                  type:
+                  - "null"
+                  - string
+                avatarUuid:
+                  type:
+                  - "null"
+                  - string
+            builtinSymbolSources:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            color:
+              type:
+              - string
+              - "null"
+            dataScrubber:
+              type:
+              - boolean
+              - "null"
+            dataScrubberDefaults:
+              type:
+              - boolean
+              - "null"
+            dateCreated:
+              type:
+              - string
+              - "null"
+            defaultEnvironment:
+              type:
+              - "null"
+              - string
+            digestsMaxDelay:
+              type:
+              - integer
+              - "null"
+            digestsMinDelay:
+              type:
+              - integer
+              - "null"
+            dynamicSamplingBiases:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - object
+                properties:
+                  active:
+                    type:
+                    - "null"
+                    - boolean
+                  id:
+                    type:
+                    - "null"
+                    - string
+            eventProcessing:
+              type:
+              - "null"
+              - object
+              properties:
+                symbolicationDegraded:
+                  type:
+                  - "null"
+                  - boolean
+            features:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            fingerprintingRules:
+              type:
+              - "null"
+              - string
+            firstEvent:
+              type:
+              - "null"
+              - string
+            firstTransactionEvent:
+              type:
+              - "null"
+              - boolean
+            groupingAutoUpdate:
+              type:
+              - "null"
+              - boolean
+            groupingConfig:
+              type:
+              - "null"
+              - string
+            groupingEnhancements:
+              type:
+              - "null"
+              - string
+            groupingEnhancementsBase:
+              type:
+              - "null"
+              - string
+            hasAccess:
+              type:
+              - boolean
+              - "null"
+            hasCustomMetrics:
+              type:
+              - "null"
+              - boolean
+            hasFeedbacks:
+              type:
+              - "null"
+              - boolean
+            hasMinifiedStackTrace:
+              type:
+              - "null"
+              - boolean
+            hasMonitors:
+              type:
+              - "null"
+              - boolean
+            hasNewFeedbacks:
+              type:
+              - "null"
+              - boolean
+            hasProfiles:
+              type:
+              - "null"
+              - boolean
+            hasReplays:
+              type:
+              - "null"
+              - boolean
+            hasSessions:
+              type:
+              - "null"
+              - boolean
+            id:
+              type:
+              - string
+              - "null"
+            isBookmarked:
+              type:
+              - boolean
+              - "null"
+            isInternal:
+              type:
+              - boolean
+              - "null"
+            isMember:
+              type:
+              - boolean
+              - "null"
+            isPublic:
+              type:
+              - boolean
+              - "null"
+            latestRelease:
+              type:
+              - "null"
+              - object
+              properties:
+                version:
+                  type:
+                  - string
+                  - "null"
+                authors:
+                  type:
+                  - array
+                  - "null"
+                  items:
+                    type:
+                    - object
+                    - "null"
+                    properties:
+                      email:
+                        type:
+                        - string
+                        - "null"
+                      name:
+                        type:
+                        - string
+                        - "null"
+                commitCount:
+                  type:
+                  - integer
+                  - "null"
+                data:
+                  type:
+                  - object
+                  - "null"
+                dateCreated:
+                  type:
+                  - string
+                  - "null"
+                dateReleased:
+                  type:
+                  - "null"
+                  - string
+                deployCount:
+                  type:
+                  - integer
+                  - "null"
+                firstEvent:
+                  type:
+                  - "null"
+                  - string
+                lastCommit:
+                  type:
+                  - "null"
+                  - object
+                lastDeploy:
+                  type:
+                  - "null"
+                  - object
+                lastEvent:
+                  type:
+                  - "null"
+                  - string
+                newGroups:
+                  type:
+                  - integer
+                  - "null"
+                owner:
+                  type:
+                  - "null"
+                  - string
+                projects:
+                  type:
+                  - array
+                  - "null"
+                  items:
+                    type:
+                    - object
+                    - "null"
+                    properties:
+                      name:
+                        type:
+                        - string
+                        - "null"
+                      slug:
+                        type:
+                        - string
+                        - "null"
+                ref:
+                  type:
+                  - "null"
+                  - string
+                shortVersion:
+                  type:
+                  - string
+                  - "null"
+                url:
+                  type:
+                  - "null"
+                  - string
+            name:
+              type:
+              - string
+              - "null"
+            options:
+              type:
+              - object
+              - "null"
+              properties:
+                feedback:branding:
+                  type:
+                  - boolean
+                  - "null"
+                filters:blacklisted_ips:
+                  type:
+                  - string
+                  - "null"
+                filters:chunk-load-error:
+                  type:
+                  - boolean
+                  - "null"
+                filters:error_messages:
+                  type:
+                  - string
+                  - "null"
+                filters:react-hydration-errors:
+                  type:
+                  - boolean
+                  - "null"
+                filters:releases:
+                  type:
+                  - string
+                  - "null"
+                quotas:spike-protection-disabled:
+                  type:
+                  - boolean
+                  - "null"
+                sentry:csp_ignored_sources:
+                  type:
+                  - string
+                  - "null"
+                sentry:csp_ignored_sources_defaults:
+                  type:
+                  - boolean
+                  - "null"
+                sentry:feedback_user_report_notification:
+                  type:
+                  - boolean
+                  - "null"
+                sentry:replay_rage_click_issues:
+                  type:
+                  - integer
+                  - "null"
+                sentry:reprocessing_active:
+                  type:
+                  - boolean
+                  - "null"
+            organization:
+              type:
+              - object
+              - "null"
+              properties:
+                avatar:
+                  type:
+                  - object
+                  - "null"
+                  properties:
+                    avatarType:
+                      type:
+                      - string
+                      - "null"
+                    avatarUrl:
+                      type:
+                      - "null"
+                      - string
+                    avatarUuid:
+                      type:
+                      - "null"
+                      - string
+                dateCreated:
+                  type:
+                  - string
+                  - "null"
+                  format: date-time
+                features:
+                  type:
+                  - "null"
+                  - array
+                  items:
+                    type:
+                    - "null"
+                    - string
+                hasAuthProvider:
+                  type:
+                  - "null"
+                  - boolean
+                id:
+                  type:
+                  - string
+                  - "null"
+                isEarlyAdopter:
+                  type:
+                  - boolean
+                  - "null"
+                links:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    organizationUrl:
+                      type:
+                      - "null"
+                      - string
+                    regionUrl:
+                      type:
+                      - "null"
+                      - string
+                name:
+                  type:
+                  - string
+                  - "null"
+                require2FA:
+                  type:
+                  - boolean
+                  - "null"
+                requireEmailVerification:
+                  type:
+                  - "null"
+                  - boolean
+                slug:
+                  type:
+                  - string
+                  - "null"
+                status:
+                  type:
+                  - object
+                  - "null"
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - "null"
+                    name:
+                      type:
+                      - string
+                      - "null"
+            platform:
+              type:
+              - "null"
+              - string
+            platforms:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            plugins:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                properties:
+                  version:
+                    type:
+                    - "null"
+                    - string
+                  type:
+                    type:
+                    - string
+                    - "null"
+                  description:
+                    type:
+                    - string
+                    - "null"
+                  metadata:
+                    type:
+                    - object
+                    - "null"
+                    additionalProperties: true
+                  altIsSentryApp: {}
+                  assets:
+                    type:
+                    - array
+                    - "null"
+                    items:
+                      type:
+                      - string
+                      - "null"
+                  author:
+                    type:
+                    - "null"
+                    - object
+                    additionalProperties: true
+                    properties:
+                      name:
+                        type:
+                        - string
+                        - "null"
+                      url:
+                        type:
+                        - string
+                        - "null"
+                  canDisable:
+                    type:
+                    - boolean
+                    - "null"
+                  contexts:
+                    type:
+                    - array
+                    - "null"
+                    items:
+                      type:
+                      - string
+                      - "null"
+                  deprecationDate: {}
+                  doc:
+                    type:
+                    - string
+                    - "null"
+                  enabled:
+                    type:
+                    - boolean
+                    - "null"
+                  featureDescriptions:
+                    type:
+                    - array
+                    - "null"
+                    items:
+                      type:
+                      - object
+                      - "null"
+                      additionalProperties: true
+                  features:
+                    type:
+                    - array
+                    - "null"
+                    items:
+                      type:
+                      - string
+                      - "null"
+                  firstPartyAlternative: {}
+                  hasConfiguration:
+                    type:
+                    - boolean
+                    - "null"
+                  id:
+                    type:
+                    - string
+                    - "null"
+                  isDeprecated:
+                    type:
+                    - boolean
+                    - "null"
+                  isHidden:
+                    type:
+                    - boolean
+                    - "null"
+                  isTestable:
+                    type:
+                    - boolean
+                    - "null"
+                  name:
+                    type:
+                    - string
+                    - "null"
+                  resourceLinks:
+                    type:
+                    - "null"
+                    - array
+                    items:
+                      type:
+                      - object
+                      - "null"
+                      additionalProperties: true
+                      properties:
+                        title:
+                          type:
+                          - string
+                          - "null"
+                        url:
+                          type:
+                          - string
+                          - "null"
+                  shortName:
+                    type:
+                    - string
+                    - "null"
+                  slug:
+                    type:
+                    - string
+                    - "null"
+                  status:
+                    type:
+                    - string
+                    - "null"
+            processingIssues:
+              type:
+              - integer
+              - "null"
+            recapServerUrl:
+              type:
+              - "null"
+              - string
+            relayPiiConfig:
+              type:
+              - "null"
+              - string
+            resolveAge:
+              type:
+              - integer
+              - "null"
+            safeFields:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            scrapeJavaScript:
+              type:
+              - boolean
+              - "null"
+            scrubIPAddresses:
+              type:
+              - boolean
+              - "null"
+            secondaryGroupingConfig:
+              type:
+              - "null"
+              - string
+            secondaryGroupingExpiry:
+              type:
+              - "null"
+              - integer
+            securityToken:
+              type:
+              - string
+              - "null"
+            securityTokenHeader:
+              type:
+              - "null"
+              - string
+            sensitiveFields:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            sessionStats: {}
+            slug:
+              type:
+              - string
+              - "null"
+            stats: {}
+            status:
+              type:
+              - string
+              - "null"
+            storeCrashReports:
+              type:
+              - "null"
+              - boolean
+            subjectPrefix:
+              type:
+              - string
+              - "null"
+            subjectTemplate:
+              type:
+              - string
+              - "null"
+            symbolSources:
+              type:
+              - "null"
+              - string
+            team:
+              type:
+              - object
+              - "null"
+              properties:
+                id:
+                  type:
+                  - string
+                  - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+                slug:
+                  type:
+                  - string
+                  - "null"
+            teams:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                properties:
+                  id:
+                    type:
+                    - string
+                    - "null"
+                  name:
+                    type:
+                    - string
+                    - "null"
+                  slug:
+                    type:
+                    - string
+                    - "null"
+            transactionStats: {}
+            verifySSL:
+              type:
+              - boolean
+              - "null"
+    releases:
+      type: DeclarativeStream
+      name: releases
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['hostname'] }}/api/0/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"auth_token\"] }}"
+          path: organizations/{{ config['organization'] }}/releases/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\",
+              {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"\
+              \ }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            version:
+              type:
+              - "null"
+              - string
+            authors:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - object
+                additionalProperties: true
+                properties:
+                  email:
+                    type:
+                    - "null"
+                    - string
+                  name:
+                    type:
+                    - "null"
+                    - string
+            commitCount:
+              type:
+              - "null"
+              - integer
+            currentProjectMeta:
+              type:
+              - "null"
+              - object
+            data:
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+            dateCreated:
+              type:
+              - "null"
+              - string
+              format: date-time
+            dateReleased:
+              type:
+              - "null"
+              - string
+              format: date-time
+            deployCount:
+              type:
+              - "null"
+              - integer
+            firstEvent:
+              type:
+              - "null"
+              - string
+            id:
+              type:
+              - "null"
+              - integer
+            lastCommit:
+              type:
+              - "null"
+              - object
+            lastDeploy:
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+            lastEvent:
+              type:
+              - "null"
+              - string
+            newGroups:
+              type:
+              - "null"
+              - integer
+            owner:
+              type:
+              - "null"
+              - string
+            projects:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - object
+                properties:
+                  hasHealthData:
+                    type:
+                    - "null"
+                    - boolean
+                  id:
+                    type:
+                    - "null"
+                    - integer
+                  name:
+                    type:
+                    - "null"
+                    - string
+                  newGroups:
+                    type:
+                    - "null"
+                    - integer
+                  platform:
+                    type:
+                    - "null"
+                    - string
+                  platforms:
+                    type:
+                    - "null"
+                    - array
+                    items:
+                      type:
+                      - "null"
+                      - string
+                  slug:
+                    type:
+                    - "null"
+                    - string
+            ref:
+              type:
+              - "null"
+              - string
+            shortVersion:
+              type:
+              - "null"
+              - string
+            status:
+              type:
+              - "null"
+              - string
+            url:
+              type:
+              - "null"
+              - string
+            userAgent:
+              type:
+              - "null"
+              - string
+            versionInfo:
+              type:
+              - "null"
+              - object
+              properties:
+                version:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    buildCode:
+                      type:
+                      - "null"
+                      - string
+                    components:
+                      type:
+                      - "null"
+                      - integer
+                    major:
+                      type:
+                      - "null"
+                      - integer
+                    minor:
+                      type:
+                      - "null"
+                      - integer
+                    patch:
+                      type:
+                      - "null"
+                      - integer
+                    pre:
+                      type:
+                      - "null"
+                      - string
+                    raw:
+                      type:
+                      - "null"
+                      - string
+                description:
+                  type:
+                  - "null"
+                  - string
+                buildHash:
+                  type:
+                  - "null"
+                  - string
+                package:
+                  type:
+                  - "null"
+                  - string
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['hostname'] }}/api/0/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"auth_token\"] }}"
+streams:
+- type: DeclarativeStream
+  path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+  cursor_field: dateCreated
+  retriever:
+    type: SimpleRetriever
+    name: events
+    primary_key: id
+    path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+    cursor_field: dateCreated
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['hostname'] }}/api/0/
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config[\"auth_token\"] }}"
+      name: events
+      primary_key: id
+      cursor_field: dateCreated
+      path: >-
+        projects/{{ config['organization'] }}/{{ config['project']
+        }}/events/
+      http_method: GET
+      request_parameters:
+        full: "true"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {})
+          }}"
+        stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"
+          }}"
+  name: events
+  primary_key:
+  - id
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: dateCreated
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%SZ"
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1900-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        type:
+          type:
+          - "null"
+          - string
+        metadata:
+          type:
+          - "null"
+          - object
+          properties:
+            in_app_frame_mix:
+              type:
+              - "null"
+              - string
+            title:
+              type:
+              - "null"
+              - string
+        _meta:
+          type:
+          - "null"
+          - object
+          properties:
+            context:
+              type:
+              - "null"
+              - string
+            contexts:
+              type:
+              - "null"
+              - string
+            entries:
+              type:
+              - "null"
+              - object
+            message:
+              type:
+              - "null"
+              - string
+            packages:
+              type:
+              - "null"
+              - string
+            sdk:
+              type:
+              - "null"
+              - string
+            tags:
+              type:
+              - "null"
+              - object
+            user:
+              type:
+              - "null"
+              - string
+        context:
+          type:
+          - "null"
+          - object
+          properties:
+            emptyList:
+              type:
+              - "null"
+              - array
+            emptyMap:
+              type:
+              - "null"
+              - object
+            length:
+              type:
+              - "null"
+              - integer
+            results:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - integer
+                - "null"
+            session:
+              type:
+              - "null"
+              - object
+              properties:
+                foo:
+                  type:
+                  - "null"
+                  - string
+            unauthorized:
+              type:
+              - "null"
+              - boolean
+            url:
+              type:
+              - "null"
+              - string
+        contexts:
+          type:
+          - "null"
+          - object
+          properties:
+            browser:
+              type:
+              - "null"
+              - object
+              properties:
+                version:
+                  type:
+                  - "null"
+                  - string
+                type:
+                  type:
+                  - "null"
+                  - string
+                name:
+                  type:
+                  - "null"
+                  - string
+            client_os:
+              type:
+              - "null"
+              - object
+              properties:
+                version:
+                  type:
+                  - "null"
+                  - string
+                type:
+                  type:
+                  - "null"
+                  - string
+                name:
+                  type:
+                  - "null"
+                  - string
+        crashFile:
+          type:
+          - "null"
+          - string
+        culprit:
+          type:
+          - "null"
+          - string
+        dateCreated:
+          type:
+          - string
+          - "null"
+          format: date-time
+        dateReceived:
+          type:
+          - "null"
+          - string
+          format: date-time
+        dist:
+          type:
+          - "null"
+          - string
+        entries:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+              - "null"
+              - string
+            data:
+              type:
+              - "null"
+              - object
+              properties:
+                formatted:
+                  type:
+                  - "null"
+                  - string
+                frames:
+                  type:
+                  - "null"
+                  - object
+                  properties:
+                    absPath:
+                      type:
+                      - "null"
+                      - string
+                    colNo:
+                      type:
+                      - "null"
+                      - string
+                    context:
+                      type:
+                      - "null"
+                      - array
+                    filename:
+                      type:
+                      - "null"
+                      - string
+                    function:
+                      type:
+                      - "null"
+                      - string
+                    inApp:
+                      type:
+                      - "null"
+                      - boolean
+                    lineNo:
+                      type:
+                      - "null"
+                      - integer
+                    lock:
+                      type:
+                      - "null"
+                      - integer
+                    module:
+                      type:
+                      - "null"
+                      - string
+                    package:
+                      type:
+                      - "null"
+                      - string
+                    platform:
+                      type:
+                      - "null"
+                      - string
+                    rawFunction:
+                      type:
+                      - "null"
+                      - string
+                    sourceLink:
+                      type:
+                      - "null"
+                      - string
+                    symbol:
+                      type:
+                      - "null"
+                      - string
+                    symbolAddr:
+                      type:
+                      - "null"
+                      - string
+                    trust:
+                      type:
+                      - "null"
+                      - string
+        errors:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        event.type:
+          type:
+          - string
+          - "null"
+        eventID:
+          type:
+          - string
+          - "null"
+        fingerprints:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        groupID:
+          type:
+          - string
+          - "null"
+        groupingConfig:
+          type:
+          - "null"
+          - object
+          properties:
+            enhancements:
+              type:
+              - "null"
+              - string
+            id:
+              type:
+              - "null"
+              - string
+        id:
+          type:
+          - string
+          - "null"
+        location:
+          type:
+          - "null"
+          - string
+        message:
+          type:
+          - string
+          - "null"
+        occurrence:
+          type:
+          - "null"
+          - string
+        packages:
+          type:
+          - "null"
+          - object
+        platform:
+          type:
+          - string
+          - "null"
+        projectID:
+          type:
+          - "null"
+          - string
+        sdk:
+          type:
+          - "null"
+          - string
+        size:
+          type:
+          - "null"
+          - integer
+        tags:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - object
+            - "null"
+            properties:
+              key:
+                type:
+                - string
+                - "null"
+              value:
+                type:
+                - string
+                - "null"
+        title:
+          type:
+          - string
+          - "null"
+        user:
+          type:
+          - "null"
+          - object
+          properties:
+            data:
+              type:
+              - "null"
+              - object
+              properties:
+                isStaff:
+                  type:
+                  - boolean
+                  - "null"
+            email:
+              type:
+              - "null"
+              - string
+            id:
+              type:
+              - string
+              - "null"
+            ip_address:
+              type:
+              - "null"
+              - string
+            name:
+              type:
+              - "null"
+              - string
+            username:
+              type:
+              - "null"
+              - string
+- type: DeclarativeStream
+  name: issues
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['hostname'] }}/api/0/
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config[\"auth_token\"] }}"
+      path: >-
+        projects/{{ config['organization'] }}/{{ config['project']
+        }}/issues/
+      http_method: GET
+      request_parameters:
+        query: >-
+          lastSeen:>{{ stream_state.get(parameters['cursor_field']) or
+          '1900-01-01T00:00:00.0Z' if stream_state else
+          '1900-01-01T00:00:00.0Z' }}
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {})
+          }}"
+        stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"
+          }}"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: lastSeen
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%SZ"
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1900-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        type:
+          type:
+          - string
+          - "null"
+        metadata:
+          anyOf:
+          - type:
+            - object
+            - "null"
+            properties:
+              title:
+                type:
+                - string
+                - "null"
+          - type:
+            - object
+            - "null"
+            properties:
+              type:
+                type:
+                - string
+                - "null"
+              filename:
+                type:
+                - string
+                - "null"
+              value:
+                type:
+                - string
+                - "null"
+        annotations:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        assignedTo:
+          type:
+          - "null"
+          - object
+        count:
+          type:
+          - string
+          - "null"
+        culprit:
+          type:
+          - string
+          - "null"
+        firstSeen:
+          type:
+          - string
+          - "null"
+        hasSeen:
+          type:
+          - boolean
+          - "null"
+        id:
+          type:
+          - string
+          - "null"
+        isBookmarked:
+          type:
+          - boolean
+          - "null"
+        isPublic:
+          type:
+          - boolean
+          - "null"
+        isSubscribed:
+          type:
+          - boolean
+          - "null"
+        isUnhandled:
+          type:
+          - "null"
+          - boolean
+        issueCategory:
+          type:
+          - "null"
+          - string
+        issueType:
+          type:
+          - "null"
+          - string
+        lastSeen:
+          type:
+          - string
+          - "null"
+        level:
+          type:
+          - string
+          - "null"
+        logger:
+          type:
+          - "null"
+          - string
+        numComments:
+          type:
+          - integer
+          - "null"
+        permalink:
+          type:
+          - string
+          - "null"
+        platform:
+          type:
+          - "null"
+          - string
+        project:
+          type:
+          - object
+          - "null"
+          properties:
+            id:
+              type:
+              - string
+              - "null"
+            name:
+              type:
+              - string
+              - "null"
+            slug:
+              type:
+              - string
+              - "null"
+        shareId:
+          type:
+          - "null"
+          - string
+        shortId:
+          type:
+          - string
+          - "null"
+        stats:
+          type:
+          - object
+          - "null"
+          properties:
+            24h:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - array
+                - "null"
+                items:
+                  type:
+                  - number
+                  - "null"
+        status:
+          type:
+          - string
+          - "null"
+          enum:
+          - resolved
+          - unresolved
+          - ignored
+        statusDetails:
+          type:
+          - object
+          - "null"
+        subscriptionDetails:
+          type:
+          - "null"
+          - object
+        substatus:
+          type:
+          - "null"
+          - string
+        title:
+          type:
+          - string
+          - "null"
+        userCount:
+          type:
+          - integer
+          - "null"
+- type: DeclarativeStream
+  name: projects
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['hostname'] }}/api/0/
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config[\"auth_token\"] }}"
+      path: projects/
+      http_method: GET
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {})
+          }}"
+        stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"
+          }}"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: dateCreated
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%SZ"
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1900-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        access:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        avatar:
+          type:
+          - object
+          - "null"
+          properties:
+            avatarType:
+              type:
+              - string
+              - "null"
+            avatarUrl:
+              type:
+              - "null"
+              - string
+            avatarUuid:
+              type:
+              - "null"
+              - string
+        color:
+          type:
+          - string
+          - "null"
+        dateCreated:
+          type:
+          - string
+          - "null"
+          format: date-time
+        features:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        firstEvent:
+          type:
+          - "null"
+          - string
+        firstTransactionEvent:
+          type:
+          - "null"
+          - boolean
+        hasAccess:
+          type:
+          - boolean
+          - "null"
+        hasCustomMetrics:
+          type:
+          - "null"
+          - boolean
+        hasFeedbacks:
+          type:
+          - "null"
+          - boolean
+        hasMinifiedStackTrace:
+          type:
+          - "null"
+          - boolean
+        hasMonitors:
+          type:
+          - "null"
+          - boolean
+        hasNewFeedbacks:
+          type:
+          - "null"
+          - boolean
+        hasProfiles:
+          type:
+          - "null"
+          - boolean
+        hasReplays:
+          type:
+          - "null"
+          - boolean
+        hasSessions:
+          type:
+          - "null"
+          - boolean
+        id:
+          type:
+          - string
+          - "null"
+        isBookmarked:
+          type:
+          - boolean
+          - "null"
+        isInternal:
+          type:
+          - boolean
+          - "null"
+        isMember:
+          type:
+          - boolean
+          - "null"
+        isPublic:
+          type:
+          - boolean
+          - "null"
+        name:
+          type:
+          - string
+          - "null"
+        organization:
+          type:
+          - object
+          - "null"
+          properties:
+            avatar:
+              type:
+              - object
+              - "null"
+              properties:
+                avatarType:
+                  type:
+                  - string
+                  - "null"
+                avatarUrl:
+                  type:
+                  - string
+                  - "null"
+                avatarUuid:
+                  type:
+                  - "null"
+                  - string
+            dateCreated:
+              type:
+              - string
+              - "null"
+              format: date-time
+            features:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            hasAuthProvider:
+              type:
+              - boolean
+              - "null"
+            id:
+              type:
+              - string
+              - "null"
+            isEarlyAdopter:
+              type:
+              - boolean
+              - "null"
+            links:
+              type:
+              - object
+              - "null"
+              properties:
+                organizationUrl:
+                  type:
+                  - string
+                  - "null"
+                regionUrl:
+                  type:
+                  - string
+                  - "null"
+            name:
+              type:
+              - string
+              - "null"
+            require2FA:
+              type:
+              - boolean
+              - "null"
+            requireEmailVerification:
+              type:
+              - boolean
+              - "null"
+            slug:
+              type:
+              - string
+              - "null"
+            status:
+              type:
+              - object
+              - "null"
+              properties:
+                id:
+                  type:
+                  - string
+                  - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+        platform:
+          type:
+          - "null"
+          - string
+        slug:
+          type:
+          - string
+          - "null"
+        status:
+          type:
+          - string
+          - "null"
+          enum:
+          - active
+          - disabled
+          - pending_deletion
+          - deletion_in_progress
+- type: DeclarativeStream
+  name: project_detail
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['hostname'] }}/api/0/
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config[\"auth_token\"] }}"
+      path: projects/{{ config['organization'] }}/{{ config['project'] }}/
+      http_method: GET
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {})
+          }}"
+        stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"
+          }}"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        access:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        allowedDomains:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        avatar:
+          type:
+          - object
+          - "null"
+          properties:
+            avatarType:
+              type:
+              - string
+              - "null"
+            avatarUrl:
+              type:
+              - "null"
+              - string
+            avatarUuid:
+              type:
+              - "null"
+              - string
+        builtinSymbolSources:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        color:
+          type:
+          - string
+          - "null"
+        dataScrubber:
+          type:
+          - boolean
+          - "null"
+        dataScrubberDefaults:
+          type:
+          - boolean
+          - "null"
+        dateCreated:
+          type:
+          - string
+          - "null"
+        defaultEnvironment:
+          type:
+          - "null"
+          - string
+        digestsMaxDelay:
+          type:
+          - integer
+          - "null"
+        digestsMinDelay:
+          type:
+          - integer
+          - "null"
+        dynamicSamplingBiases:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - object
+            properties:
+              active:
+                type:
+                - "null"
+                - boolean
+              id:
+                type:
+                - "null"
+                - string
+        eventProcessing:
+          type:
+          - "null"
+          - object
+          properties:
+            symbolicationDegraded:
+              type:
+              - "null"
+              - boolean
+        features:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        fingerprintingRules:
+          type:
+          - "null"
+          - string
+        firstEvent:
+          type:
+          - "null"
+          - string
+        firstTransactionEvent:
+          type:
+          - "null"
+          - boolean
+        groupingAutoUpdate:
+          type:
+          - "null"
+          - boolean
+        groupingConfig:
+          type:
+          - "null"
+          - string
+        groupingEnhancements:
+          type:
+          - "null"
+          - string
+        groupingEnhancementsBase:
+          type:
+          - "null"
+          - string
+        hasAccess:
+          type:
+          - boolean
+          - "null"
+        hasCustomMetrics:
+          type:
+          - "null"
+          - boolean
+        hasFeedbacks:
+          type:
+          - "null"
+          - boolean
+        hasMinifiedStackTrace:
+          type:
+          - "null"
+          - boolean
+        hasMonitors:
+          type:
+          - "null"
+          - boolean
+        hasNewFeedbacks:
+          type:
+          - "null"
+          - boolean
+        hasProfiles:
+          type:
+          - "null"
+          - boolean
+        hasReplays:
+          type:
+          - "null"
+          - boolean
+        hasSessions:
+          type:
+          - "null"
+          - boolean
+        id:
+          type:
+          - string
+          - "null"
+        isBookmarked:
+          type:
+          - boolean
+          - "null"
+        isInternal:
+          type:
+          - boolean
+          - "null"
+        isMember:
+          type:
+          - boolean
+          - "null"
+        isPublic:
+          type:
+          - boolean
+          - "null"
+        latestRelease:
+          type:
+          - "null"
+          - object
+          properties:
+            version:
+              type:
+              - string
+              - "null"
+            authors:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                properties:
+                  email:
+                    type:
+                    - string
+                    - "null"
+                  name:
+                    type:
+                    - string
+                    - "null"
+            commitCount:
+              type:
+              - integer
+              - "null"
+            data:
+              type:
+              - object
+              - "null"
+            dateCreated:
+              type:
+              - string
+              - "null"
+            dateReleased:
+              type:
+              - "null"
+              - string
+            deployCount:
+              type:
+              - integer
+              - "null"
+            firstEvent:
+              type:
+              - "null"
+              - string
+            lastCommit:
+              type:
+              - "null"
+              - object
+            lastDeploy:
+              type:
+              - "null"
+              - object
+            lastEvent:
+              type:
+              - "null"
+              - string
+            newGroups:
+              type:
+              - integer
+              - "null"
+            owner:
+              type:
+              - "null"
+              - string
+            projects:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                properties:
+                  name:
+                    type:
+                    - string
+                    - "null"
+                  slug:
+                    type:
+                    - string
+                    - "null"
+            ref:
+              type:
+              - "null"
+              - string
+            shortVersion:
+              type:
+              - string
+              - "null"
+            url:
+              type:
+              - "null"
+              - string
+        name:
+          type:
+          - string
+          - "null"
+        options:
+          type:
+          - object
+          - "null"
+          properties:
+            feedback:branding:
+              type:
+              - boolean
+              - "null"
+            filters:blacklisted_ips:
+              type:
+              - string
+              - "null"
+            filters:chunk-load-error:
+              type:
+              - boolean
+              - "null"
+            filters:error_messages:
+              type:
+              - string
+              - "null"
+            filters:react-hydration-errors:
+              type:
+              - boolean
+              - "null"
+            filters:releases:
+              type:
+              - string
+              - "null"
+            quotas:spike-protection-disabled:
+              type:
+              - boolean
+              - "null"
+            sentry:csp_ignored_sources:
+              type:
+              - string
+              - "null"
+            sentry:csp_ignored_sources_defaults:
+              type:
+              - boolean
+              - "null"
+            sentry:feedback_user_report_notification:
+              type:
+              - boolean
+              - "null"
+            sentry:replay_rage_click_issues:
+              type:
+              - integer
+              - "null"
+            sentry:reprocessing_active:
+              type:
+              - boolean
+              - "null"
+        organization:
+          type:
+          - object
+          - "null"
+          properties:
+            avatar:
+              type:
+              - object
+              - "null"
+              properties:
+                avatarType:
+                  type:
+                  - string
+                  - "null"
+                avatarUrl:
+                  type:
+                  - "null"
+                  - string
+                avatarUuid:
+                  type:
+                  - "null"
+                  - string
+            dateCreated:
+              type:
+              - string
+              - "null"
+              format: date-time
+            features:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            hasAuthProvider:
+              type:
+              - "null"
+              - boolean
+            id:
+              type:
+              - string
+              - "null"
+            isEarlyAdopter:
+              type:
+              - boolean
+              - "null"
+            links:
+              type:
+              - "null"
+              - object
+              properties:
+                organizationUrl:
+                  type:
+                  - "null"
+                  - string
+                regionUrl:
+                  type:
+                  - "null"
+                  - string
+            name:
+              type:
+              - string
+              - "null"
+            require2FA:
+              type:
+              - boolean
+              - "null"
+            requireEmailVerification:
+              type:
+              - "null"
+              - boolean
+            slug:
+              type:
+              - string
+              - "null"
+            status:
+              type:
+              - object
+              - "null"
+              properties:
+                id:
+                  type:
+                  - string
+                  - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+        platform:
+          type:
+          - "null"
+          - string
+        platforms:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        plugins:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - object
+            - "null"
+            properties:
+              version:
+                type:
+                - "null"
+                - string
+              type:
+                type:
+                - string
+                - "null"
+              description:
+                type:
+                - string
+                - "null"
+              metadata:
+                type:
+                - object
+                - "null"
+                additionalProperties: true
+              altIsSentryApp: {}
+              assets:
+                type:
+                - array
+                - "null"
+                items:
+                  type:
+                  - string
+                  - "null"
+              author:
+                type:
+                - "null"
+                - object
+                additionalProperties: true
+                properties:
+                  name:
+                    type:
+                    - string
+                    - "null"
+                  url:
+                    type:
+                    - string
+                    - "null"
+              canDisable:
+                type:
+                - boolean
+                - "null"
+              contexts:
+                type:
+                - array
+                - "null"
+                items:
+                  type:
+                  - string
+                  - "null"
+              deprecationDate: {}
+              doc:
+                type:
+                - string
+                - "null"
+              enabled:
+                type:
+                - boolean
+                - "null"
+              featureDescriptions:
+                type:
+                - array
+                - "null"
+                items:
+                  type:
+                  - object
+                  - "null"
+                  additionalProperties: true
+              features:
+                type:
+                - array
+                - "null"
+                items:
+                  type:
+                  - string
+                  - "null"
+              firstPartyAlternative: {}
+              hasConfiguration:
+                type:
+                - boolean
+                - "null"
+              id:
+                type:
+                - string
+                - "null"
+              isDeprecated:
+                type:
+                - boolean
+                - "null"
+              isHidden:
+                type:
+                - boolean
+                - "null"
+              isTestable:
+                type:
+                - boolean
+                - "null"
+              name:
+                type:
+                - string
+                - "null"
+              resourceLinks:
+                type:
+                - "null"
+                - array
+                items:
+                  type:
+                  - object
+                  - "null"
+                  additionalProperties: true
+                  properties:
+                    title:
+                      type:
+                      - string
+                      - "null"
+                    url:
+                      type:
+                      - string
+                      - "null"
+              shortName:
+                type:
+                - string
+                - "null"
+              slug:
+                type:
+                - string
+                - "null"
+              status:
+                type:
+                - string
+                - "null"
+        processingIssues:
+          type:
+          - integer
+          - "null"
+        recapServerUrl:
+          type:
+          - "null"
+          - string
+        relayPiiConfig:
+          type:
+          - "null"
+          - string
+        resolveAge:
+          type:
+          - integer
+          - "null"
+        safeFields:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        scrapeJavaScript:
+          type:
+          - boolean
+          - "null"
+        scrubIPAddresses:
+          type:
+          - boolean
+          - "null"
+        secondaryGroupingConfig:
+          type:
+          - "null"
+          - string
+        secondaryGroupingExpiry:
+          type:
+          - "null"
+          - integer
+        securityToken:
+          type:
+          - string
+          - "null"
+        securityTokenHeader:
+          type:
+          - "null"
+          - string
+        sensitiveFields:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - string
+            - "null"
+        sessionStats: {}
+        slug:
+          type:
+          - string
+          - "null"
+        stats: {}
+        status:
+          type:
+          - string
+          - "null"
+        storeCrashReports:
+          type:
+          - "null"
+          - boolean
+        subjectPrefix:
+          type:
+          - string
+          - "null"
+        subjectTemplate:
+          type:
+          - string
+          - "null"
+        symbolSources:
+          type:
+          - "null"
+          - string
+        team:
+          type:
+          - object
+          - "null"
+          properties:
+            id:
+              type:
+              - string
+              - "null"
+            name:
+              type:
+              - string
+              - "null"
+            slug:
+              type:
+              - string
+              - "null"
+        teams:
+          type:
+          - array
+          - "null"
+          items:
+            type:
+            - object
+            - "null"
+            properties:
+              id:
+                type:
+                - string
+                - "null"
+              name:
+                type:
+                - string
+                - "null"
+              slug:
+                type:
+                - string
+                - "null"
+        transactionStats: {}
+        verifySSL:
+          type:
+          - boolean
+          - "null"
+- type: DeclarativeStream
+  name: releases
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['hostname'] }}/api/0/
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config[\"auth_token\"] }}"
+      path: organizations/{{ config['organization'] }}/releases/
+      http_method: GET
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: cursor
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {})
+          }}"
+        stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\"
+          }}"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: dateCreated
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%SZ"
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1900-01-01T00:00:00.0Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        version:
+          type:
+          - "null"
+          - string
+        authors:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                - "null"
+                - string
+              name:
+                type:
+                - "null"
+                - string
+        commitCount:
+          type:
+          - "null"
+          - integer
+        currentProjectMeta:
+          type:
+          - "null"
+          - object
+        data:
+          type:
+          - "null"
+          - object
+          additionalProperties: true
+        dateCreated:
+          type:
+          - "null"
+          - string
+          format: date-time
+        dateReleased:
+          type:
+          - "null"
+          - string
+          format: date-time
+        deployCount:
+          type:
+          - "null"
+          - integer
+        firstEvent:
+          type:
+          - "null"
+          - string
+        id:
+          type:
+          - "null"
+          - integer
+        lastCommit:
+          type:
+          - "null"
+          - object
+        lastDeploy:
+          type:
+          - "null"
+          - object
+          additionalProperties: true
+        lastEvent:
+          type:
+          - "null"
+          - string
+        newGroups:
+          type:
+          - "null"
+          - integer
+        owner:
+          type:
+          - "null"
+          - string
+        projects:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - object
+            properties:
+              hasHealthData:
+                type:
+                - "null"
+                - boolean
+              id:
+                type:
+                - "null"
+                - integer
+              name:
+                type:
+                - "null"
+                - string
+              newGroups:
+                type:
+                - "null"
+                - integer
+              platform:
+                type:
+                - "null"
+                - string
+              platforms:
+                type:
+                - "null"
+                - array
+                items:
+                  type:
+                  - "null"
+                  - string
+              slug:
+                type:
+                - "null"
+                - string
+        ref:
+          type:
+          - "null"
+          - string
+        shortVersion:
+          type:
+          - "null"
+          - string
+        status:
+          type:
+          - "null"
+          - string
+        url:
+          type:
+          - "null"
+          - string
+        userAgent:
+          type:
+          - "null"
+          - string
+        versionInfo:
+          type:
+          - "null"
+          - object
+          properties:
+            version:
+              type:
+              - "null"
+              - object
+              properties:
+                buildCode:
+                  type:
+                  - "null"
+                  - string
+                components:
+                  type:
+                  - "null"
+                  - integer
+                major:
+                  type:
+                  - "null"
+                  - integer
+                minor:
+                  type:
+                  - "null"
+                  - integer
+                patch:
+                  type:
+                  - "null"
+                  - integer
+                pre:
+                  type:
+                  - "null"
+                  - string
+                raw:
+                  type:
+                  - "null"
+                  - string
+            description:
+              type:
+              - "null"
+              - string
+            buildHash:
+              type:
+              - "null"
+              - string
+            package:
+              type:
+              - "null"
+              - string
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+    - auth_token
+    - organization
+    - project
+    properties:
+      auth_token:
+        type: string
+        description: >-
+          Log into Sentry and then <a
+          href="https://sentry.io/settings/account/api/auth-tokens/">create
+          authentication tokens</a>.For self-hosted, you can find or create
+          authentication tokens by visiting
+          "{instance_url_prefix}/settings/account/api/auth-tokens/"
+        title: Authentication Tokens
+        airbyte_secret: true
+        order: 0
+      hostname:
+        type: string
+        description: >-
+          Host name of Sentry API server.For self-hosted, specify your host name
+          here. Otherwise, leave it empty.
+        title: Host Name
+        default: sentry.io
+        order: 1
+      organization:
+        type: string
+        description: The slug of the organization the groups belong to.
+        title: Organization
+        order: 2
+      project:
+        type: string
+        description: The name (slug) of the Project you want to sync.
+        title: Project
+        order: 3
+      discover_fields:
+        type: array
+        description: Fields to retrieve when fetching discover events
+        item: string
+        title: Discover Event Fields
+        order: 4
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    events: false
+    issues: false
+    projects: false
+    project_detail: false
+    releases: false
+  testedStreams:
+    events:
+      streamHash: 54ab092bd807428719ce6d1f38a29871718f34f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    issues:
+      streamHash: 7e188fc4d6c3e7cbe6693e14107ec201de250b0f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    releases:
+      streamHash: 61518f05f99926eae45aa953c5f0b23be1eb57a1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_detail:
+      streamHash: d7e9cc70ebff2bff2856b08f9d4255f724edc476
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: af579ef4e8adc27e860865dd20fa25631a133e16
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+        - "null"
+        - string
+      metadata:
+        type:
+        - "null"
+        - object
+        properties:
+          in_app_frame_mix:
+            type:
+            - "null"
+            - string
+          title:
+            type:
+            - "null"
+            - string
+      _meta:
+        type:
+        - "null"
+        - object
+        properties:
+          context:
+            type:
+            - "null"
+            - string
+          contexts:
+            type:
+            - "null"
+            - string
+          entries:
+            type:
+            - "null"
+            - object
+          message:
+            type:
+            - "null"
+            - string
+          packages:
+            type:
+            - "null"
+            - string
+          sdk:
+            type:
+            - "null"
+            - string
+          tags:
+            type:
+            - "null"
+            - object
+          user:
+            type:
+            - "null"
+            - string
+      context:
+        type:
+        - "null"
+        - object
+        properties:
+          emptyList:
+            type:
+            - "null"
+            - array
+          emptyMap:
+            type:
+            - "null"
+            - object
+          length:
+            type:
+            - "null"
+            - integer
+          results:
+            type:
+            - "null"
+            - array
+            items:
+              type:
+              - integer
+              - "null"
+          session:
+            type:
+            - "null"
+            - object
+            properties:
+              foo:
+                type:
+                - "null"
+                - string
+          unauthorized:
+            type:
+            - "null"
+            - boolean
+          url:
+            type:
+            - "null"
+            - string
+      contexts:
+        type:
+        - "null"
+        - object
+        properties:
+          browser:
+            type:
+            - "null"
+            - object
+            properties:
+              version:
+                type:
+                - "null"
+                - string
+              type:
+                type:
+                - "null"
+                - string
+              name:
+                type:
+                - "null"
+                - string
+          client_os:
+            type:
+            - "null"
+            - object
+            properties:
+              version:
+                type:
+                - "null"
+                - string
+              type:
+                type:
+                - "null"
+                - string
+              name:
+                type:
+                - "null"
+                - string
+      crashFile:
+        type:
+        - "null"
+        - string
+      culprit:
+        type:
+        - "null"
+        - string
+      dateCreated:
+        type:
+        - string
+        - "null"
+        format: date-time
+      dateReceived:
+        type:
+        - "null"
+        - string
+        format: date-time
+      dist:
+        type:
+        - "null"
+        - string
+      entries:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+            - "null"
+            - string
+          data:
+            type:
+            - "null"
+            - object
+            properties:
+              formatted:
+                type:
+                - "null"
+                - string
+              frames:
+                type:
+                - "null"
+                - object
+                properties:
+                  absPath:
+                    type:
+                    - "null"
+                    - string
+                  colNo:
+                    type:
+                    - "null"
+                    - string
+                  context:
+                    type:
+                    - "null"
+                    - array
+                  filename:
+                    type:
+                    - "null"
+                    - string
+                  function:
+                    type:
+                    - "null"
+                    - string
+                  inApp:
+                    type:
+                    - "null"
+                    - boolean
+                  lineNo:
+                    type:
+                    - "null"
+                    - integer
+                  lock:
+                    type:
+                    - "null"
+                    - integer
+                  module:
+                    type:
+                    - "null"
+                    - string
+                  package:
+                    type:
+                    - "null"
+                    - string
+                  platform:
+                    type:
+                    - "null"
+                    - string
+                  rawFunction:
+                    type:
+                    - "null"
+                    - string
+                  sourceLink:
+                    type:
+                    - "null"
+                    - string
+                  symbol:
+                    type:
+                    - "null"
+                    - string
+                  symbolAddr:
+                    type:
+                    - "null"
+                    - string
+                  trust:
+                    type:
+                    - "null"
+                    - string
+      errors:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      event.type:
+        type:
+        - string
+        - "null"
+      eventID:
+        type:
+        - string
+        - "null"
+      fingerprints:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      groupID:
+        type:
+        - string
+        - "null"
+      groupingConfig:
+        type:
+        - "null"
+        - object
+        properties:
+          enhancements:
+            type:
+            - "null"
+            - string
+          id:
+            type:
+            - "null"
+            - string
+      id:
+        type:
+        - string
+        - "null"
+      location:
+        type:
+        - "null"
+        - string
+      message:
+        type:
+        - string
+        - "null"
+      occurrence:
+        type:
+        - "null"
+        - string
+      packages:
+        type:
+        - "null"
+        - object
+      platform:
+        type:
+        - string
+        - "null"
+      projectID:
+        type:
+        - "null"
+        - string
+      sdk:
+        type:
+        - "null"
+        - string
+      size:
+        type:
+        - "null"
+        - integer
+      tags:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - object
+          - "null"
+          properties:
+            key:
+              type:
+              - string
+              - "null"
+            value:
+              type:
+              - string
+              - "null"
+      title:
+        type:
+        - string
+        - "null"
+      user:
+        type:
+        - "null"
+        - object
+        properties:
+          data:
+            type:
+            - "null"
+            - object
+            properties:
+              isStaff:
+                type:
+                - boolean
+                - "null"
+          email:
+            type:
+            - "null"
+            - string
+          id:
+            type:
+            - string
+            - "null"
+          ip_address:
+            type:
+            - "null"
+            - string
+          name:
+            type:
+            - "null"
+            - string
+          username:
+            type:
+            - "null"
+            - string
+  issues:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+        - string
+        - "null"
+      metadata:
+        anyOf:
+        - type:
+          - object
+          - "null"
+          properties:
+            title:
+              type:
+              - string
+              - "null"
+        - type:
+          - object
+          - "null"
+          properties:
+            type:
+              type:
+              - string
+              - "null"
+            filename:
+              type:
+              - string
+              - "null"
+            value:
+              type:
+              - string
+              - "null"
+      annotations:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      assignedTo:
+        type:
+        - "null"
+        - object
+      count:
+        type:
+        - string
+        - "null"
+      culprit:
+        type:
+        - string
+        - "null"
+      firstSeen:
+        type:
+        - string
+        - "null"
+      hasSeen:
+        type:
+        - boolean
+        - "null"
+      id:
+        type:
+        - string
+        - "null"
+      isBookmarked:
+        type:
+        - boolean
+        - "null"
+      isPublic:
+        type:
+        - boolean
+        - "null"
+      isSubscribed:
+        type:
+        - boolean
+        - "null"
+      isUnhandled:
+        type:
+        - "null"
+        - boolean
+      issueCategory:
+        type:
+        - "null"
+        - string
+      issueType:
+        type:
+        - "null"
+        - string
+      lastSeen:
+        type:
+        - string
+        - "null"
+      level:
+        type:
+        - string
+        - "null"
+      logger:
+        type:
+        - "null"
+        - string
+      numComments:
+        type:
+        - integer
+        - "null"
+      permalink:
+        type:
+        - string
+        - "null"
+      platform:
+        type:
+        - "null"
+        - string
+      project:
+        type:
+        - object
+        - "null"
+        properties:
+          id:
+            type:
+            - string
+            - "null"
+          name:
+            type:
+            - string
+            - "null"
+          slug:
+            type:
+            - string
+            - "null"
+      shareId:
+        type:
+        - "null"
+        - string
+      shortId:
+        type:
+        - string
+        - "null"
+      stats:
+        type:
+        - object
+        - "null"
+        properties:
+          24h:
+            type:
+            - array
+            - "null"
+            items:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - number
+                - "null"
+      status:
+        type:
+        - string
+        - "null"
+        enum:
+        - resolved
+        - unresolved
+        - ignored
+      statusDetails:
+        type:
+        - object
+        - "null"
+      subscriptionDetails:
+        type:
+        - "null"
+        - object
+      substatus:
+        type:
+        - "null"
+        - string
+      title:
+        type:
+        - string
+        - "null"
+      userCount:
+        type:
+        - integer
+        - "null"
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      avatar:
+        type:
+        - object
+        - "null"
+        properties:
+          avatarType:
+            type:
+            - string
+            - "null"
+          avatarUrl:
+            type:
+            - "null"
+            - string
+          avatarUuid:
+            type:
+            - "null"
+            - string
+      color:
+        type:
+        - string
+        - "null"
+      dateCreated:
+        type:
+        - string
+        - "null"
+        format: date-time
+      features:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      firstEvent:
+        type:
+        - "null"
+        - string
+      firstTransactionEvent:
+        type:
+        - "null"
+        - boolean
+      hasAccess:
+        type:
+        - boolean
+        - "null"
+      hasCustomMetrics:
+        type:
+        - "null"
+        - boolean
+      hasFeedbacks:
+        type:
+        - "null"
+        - boolean
+      hasMinifiedStackTrace:
+        type:
+        - "null"
+        - boolean
+      hasMonitors:
+        type:
+        - "null"
+        - boolean
+      hasNewFeedbacks:
+        type:
+        - "null"
+        - boolean
+      hasProfiles:
+        type:
+        - "null"
+        - boolean
+      hasReplays:
+        type:
+        - "null"
+        - boolean
+      hasSessions:
+        type:
+        - "null"
+        - boolean
+      id:
+        type:
+        - string
+        - "null"
+      isBookmarked:
+        type:
+        - boolean
+        - "null"
+      isInternal:
+        type:
+        - boolean
+        - "null"
+      isMember:
+        type:
+        - boolean
+        - "null"
+      isPublic:
+        type:
+        - boolean
+        - "null"
+      name:
+        type:
+        - string
+        - "null"
+      organization:
+        type:
+        - object
+        - "null"
+        properties:
+          avatar:
+            type:
+            - object
+            - "null"
+            properties:
+              avatarType:
+                type:
+                - string
+                - "null"
+              avatarUrl:
+                type:
+                - string
+                - "null"
+              avatarUuid:
+                type:
+                - "null"
+                - string
+          dateCreated:
+            type:
+            - string
+            - "null"
+            format: date-time
+          features:
+            type:
+            - array
+            - "null"
+            items:
+              type:
+              - string
+              - "null"
+          hasAuthProvider:
+            type:
+            - boolean
+            - "null"
+          id:
+            type:
+            - string
+            - "null"
+          isEarlyAdopter:
+            type:
+            - boolean
+            - "null"
+          links:
+            type:
+            - object
+            - "null"
+            properties:
+              organizationUrl:
+                type:
+                - string
+                - "null"
+              regionUrl:
+                type:
+                - string
+                - "null"
+          name:
+            type:
+            - string
+            - "null"
+          require2FA:
+            type:
+            - boolean
+            - "null"
+          requireEmailVerification:
+            type:
+            - boolean
+            - "null"
+          slug:
+            type:
+            - string
+            - "null"
+          status:
+            type:
+            - object
+            - "null"
+            properties:
+              id:
+                type:
+                - string
+                - "null"
+              name:
+                type:
+                - string
+                - "null"
+      platform:
+        type:
+        - "null"
+        - string
+      slug:
+        type:
+        - string
+        - "null"
+      status:
+        type:
+        - string
+        - "null"
+        enum:
+        - active
+        - disabled
+        - pending_deletion
+        - deletion_in_progress
+  project_detail:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      allowedDomains:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      avatar:
+        type:
+        - object
+        - "null"
+        properties:
+          avatarType:
+            type:
+            - string
+            - "null"
+          avatarUrl:
+            type:
+            - "null"
+            - string
+          avatarUuid:
+            type:
+            - "null"
+            - string
+      builtinSymbolSources:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      color:
+        type:
+        - string
+        - "null"
+      dataScrubber:
+        type:
+        - boolean
+        - "null"
+      dataScrubberDefaults:
+        type:
+        - boolean
+        - "null"
+      dateCreated:
+        type:
+        - string
+        - "null"
+      defaultEnvironment:
+        type:
+        - "null"
+        - string
+      digestsMaxDelay:
+        type:
+        - integer
+        - "null"
+      digestsMinDelay:
+        type:
+        - integer
+        - "null"
+      dynamicSamplingBiases:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - object
+          properties:
+            active:
+              type:
+              - "null"
+              - boolean
+            id:
+              type:
+              - "null"
+              - string
+      eventProcessing:
+        type:
+        - "null"
+        - object
+        properties:
+          symbolicationDegraded:
+            type:
+            - "null"
+            - boolean
+      features:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      fingerprintingRules:
+        type:
+        - "null"
+        - string
+      firstEvent:
+        type:
+        - "null"
+        - string
+      firstTransactionEvent:
+        type:
+        - "null"
+        - boolean
+      groupingAutoUpdate:
+        type:
+        - "null"
+        - boolean
+      groupingConfig:
+        type:
+        - "null"
+        - string
+      groupingEnhancements:
+        type:
+        - "null"
+        - string
+      groupingEnhancementsBase:
+        type:
+        - "null"
+        - string
+      hasAccess:
+        type:
+        - boolean
+        - "null"
+      hasCustomMetrics:
+        type:
+        - "null"
+        - boolean
+      hasFeedbacks:
+        type:
+        - "null"
+        - boolean
+      hasMinifiedStackTrace:
+        type:
+        - "null"
+        - boolean
+      hasMonitors:
+        type:
+        - "null"
+        - boolean
+      hasNewFeedbacks:
+        type:
+        - "null"
+        - boolean
+      hasProfiles:
+        type:
+        - "null"
+        - boolean
+      hasReplays:
+        type:
+        - "null"
+        - boolean
+      hasSessions:
+        type:
+        - "null"
+        - boolean
+      id:
+        type:
+        - string
+        - "null"
+      isBookmarked:
+        type:
+        - boolean
+        - "null"
+      isInternal:
+        type:
+        - boolean
+        - "null"
+      isMember:
+        type:
+        - boolean
+        - "null"
+      isPublic:
+        type:
+        - boolean
+        - "null"
+      latestRelease:
+        type:
+        - "null"
+        - object
+        properties:
+          version:
+            type:
+            - string
+            - "null"
+          authors:
+            type:
+            - array
+            - "null"
+            items:
+              type:
+              - object
+              - "null"
+              properties:
+                email:
+                  type:
+                  - string
+                  - "null"
+                name:
+                  type:
+                  - string
+                  - "null"
+          commitCount:
+            type:
+            - integer
+            - "null"
+          data:
+            type:
+            - object
+            - "null"
+          dateCreated:
+            type:
+            - string
+            - "null"
+          dateReleased:
+            type:
+            - "null"
+            - string
+          deployCount:
+            type:
+            - integer
+            - "null"
+          firstEvent:
+            type:
+            - "null"
+            - string
+          lastCommit:
+            type:
+            - "null"
+            - object
+          lastDeploy:
+            type:
+            - "null"
+            - object
+          lastEvent:
+            type:
+            - "null"
+            - string
+          newGroups:
+            type:
+            - integer
+            - "null"
+          owner:
+            type:
+            - "null"
+            - string
+          projects:
+            type:
+            - array
+            - "null"
+            items:
+              type:
+              - object
+              - "null"
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                slug:
+                  type:
+                  - string
+                  - "null"
+          ref:
+            type:
+            - "null"
+            - string
+          shortVersion:
+            type:
+            - string
+            - "null"
+          url:
+            type:
+            - "null"
+            - string
+      name:
+        type:
+        - string
+        - "null"
+      options:
+        type:
+        - object
+        - "null"
+        properties:
+          feedback:branding:
+            type:
+            - boolean
+            - "null"
+          filters:blacklisted_ips:
+            type:
+            - string
+            - "null"
+          filters:chunk-load-error:
+            type:
+            - boolean
+            - "null"
+          filters:error_messages:
+            type:
+            - string
+            - "null"
+          filters:react-hydration-errors:
+            type:
+            - boolean
+            - "null"
+          filters:releases:
+            type:
+            - string
+            - "null"
+          quotas:spike-protection-disabled:
+            type:
+            - boolean
+            - "null"
+          sentry:csp_ignored_sources:
+            type:
+            - string
+            - "null"
+          sentry:csp_ignored_sources_defaults:
+            type:
+            - boolean
+            - "null"
+          sentry:feedback_user_report_notification:
+            type:
+            - boolean
+            - "null"
+          sentry:replay_rage_click_issues:
+            type:
+            - integer
+            - "null"
+          sentry:reprocessing_active:
+            type:
+            - boolean
+            - "null"
+      organization:
+        type:
+        - object
+        - "null"
+        properties:
+          avatar:
+            type:
+            - object
+            - "null"
+            properties:
+              avatarType:
+                type:
+                - string
+                - "null"
+              avatarUrl:
+                type:
+                - "null"
+                - string
+              avatarUuid:
+                type:
+                - "null"
+                - string
+          dateCreated:
+            type:
+            - string
+            - "null"
+            format: date-time
+          features:
+            type:
+            - "null"
+            - array
+            items:
+              type:
+              - "null"
+              - string
+          hasAuthProvider:
+            type:
+            - "null"
+            - boolean
+          id:
+            type:
+            - string
+            - "null"
+          isEarlyAdopter:
+            type:
+            - boolean
+            - "null"
+          links:
+            type:
+            - "null"
+            - object
+            properties:
+              organizationUrl:
+                type:
+                - "null"
+                - string
+              regionUrl:
+                type:
+                - "null"
+                - string
+          name:
+            type:
+            - string
+            - "null"
+          require2FA:
+            type:
+            - boolean
+            - "null"
+          requireEmailVerification:
+            type:
+            - "null"
+            - boolean
+          slug:
+            type:
+            - string
+            - "null"
+          status:
+            type:
+            - object
+            - "null"
+            properties:
+              id:
+                type:
+                - string
+                - "null"
+              name:
+                type:
+                - string
+                - "null"
+      platform:
+        type:
+        - "null"
+        - string
+      platforms:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      plugins:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - object
+          - "null"
+          properties:
+            version:
+              type:
+              - "null"
+              - string
+            type:
+              type:
+              - string
+              - "null"
+            description:
+              type:
+              - string
+              - "null"
+            metadata:
+              type:
+              - object
+              - "null"
+              additionalProperties: true
+            altIsSentryApp: {}
+            assets:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            author:
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                url:
+                  type:
+                  - string
+                  - "null"
+            canDisable:
+              type:
+              - boolean
+              - "null"
+            contexts:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            deprecationDate: {}
+            doc:
+              type:
+              - string
+              - "null"
+            enabled:
+              type:
+              - boolean
+              - "null"
+            featureDescriptions:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - object
+                - "null"
+                additionalProperties: true
+            features:
+              type:
+              - array
+              - "null"
+              items:
+                type:
+                - string
+                - "null"
+            firstPartyAlternative: {}
+            hasConfiguration:
+              type:
+              - boolean
+              - "null"
+            id:
+              type:
+              - string
+              - "null"
+            isDeprecated:
+              type:
+              - boolean
+              - "null"
+            isHidden:
+              type:
+              - boolean
+              - "null"
+            isTestable:
+              type:
+              - boolean
+              - "null"
+            name:
+              type:
+              - string
+              - "null"
+            resourceLinks:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - object
+                - "null"
+                additionalProperties: true
+                properties:
+                  title:
+                    type:
+                    - string
+                    - "null"
+                  url:
+                    type:
+                    - string
+                    - "null"
+            shortName:
+              type:
+              - string
+              - "null"
+            slug:
+              type:
+              - string
+              - "null"
+            status:
+              type:
+              - string
+              - "null"
+      processingIssues:
+        type:
+        - integer
+        - "null"
+      recapServerUrl:
+        type:
+        - "null"
+        - string
+      relayPiiConfig:
+        type:
+        - "null"
+        - string
+      resolveAge:
+        type:
+        - integer
+        - "null"
+      safeFields:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      scrapeJavaScript:
+        type:
+        - boolean
+        - "null"
+      scrubIPAddresses:
+        type:
+        - boolean
+        - "null"
+      secondaryGroupingConfig:
+        type:
+        - "null"
+        - string
+      secondaryGroupingExpiry:
+        type:
+        - "null"
+        - integer
+      securityToken:
+        type:
+        - string
+        - "null"
+      securityTokenHeader:
+        type:
+        - "null"
+        - string
+      sensitiveFields:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - string
+          - "null"
+      sessionStats: {}
+      slug:
+        type:
+        - string
+        - "null"
+      stats: {}
+      status:
+        type:
+        - string
+        - "null"
+      storeCrashReports:
+        type:
+        - "null"
+        - boolean
+      subjectPrefix:
+        type:
+        - string
+        - "null"
+      subjectTemplate:
+        type:
+        - string
+        - "null"
+      symbolSources:
+        type:
+        - "null"
+        - string
+      team:
+        type:
+        - object
+        - "null"
+        properties:
+          id:
+            type:
+            - string
+            - "null"
+          name:
+            type:
+            - string
+            - "null"
+          slug:
+            type:
+            - string
+            - "null"
+      teams:
+        type:
+        - array
+        - "null"
+        items:
+          type:
+          - object
+          - "null"
+          properties:
+            id:
+              type:
+              - string
+              - "null"
+            name:
+              type:
+              - string
+              - "null"
+            slug:
+              type:
+              - string
+              - "null"
+      transactionStats: {}
+      verifySSL:
+        type:
+        - boolean
+        - "null"
+  releases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+        - "null"
+        - string
+      authors:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - object
+          additionalProperties: true
+          properties:
+            email:
+              type:
+              - "null"
+              - string
+            name:
+              type:
+              - "null"
+              - string
+      commitCount:
+        type:
+        - "null"
+        - integer
+      currentProjectMeta:
+        type:
+        - "null"
+        - object
+      data:
+        type:
+        - "null"
+        - object
+        additionalProperties: true
+      dateCreated:
+        type:
+        - "null"
+        - string
+        format: date-time
+      dateReleased:
+        type:
+        - "null"
+        - string
+        format: date-time
+      deployCount:
+        type:
+        - "null"
+        - integer
+      firstEvent:
+        type:
+        - "null"
+        - string
+      id:
+        type:
+        - "null"
+        - integer
+      lastCommit:
+        type:
+        - "null"
+        - object
+      lastDeploy:
+        type:
+        - "null"
+        - object
+        additionalProperties: true
+      lastEvent:
+        type:
+        - "null"
+        - string
+      newGroups:
+        type:
+        - "null"
+        - integer
+      owner:
+        type:
+        - "null"
+        - string
+      projects:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - object
+          properties:
+            hasHealthData:
+              type:
+              - "null"
+              - boolean
+            id:
+              type:
+              - "null"
+              - integer
+            name:
+              type:
+              - "null"
+              - string
+            newGroups:
+              type:
+              - "null"
+              - integer
+            platform:
+              type:
+              - "null"
+              - string
+            platforms:
+              type:
+              - "null"
+              - array
+              items:
+                type:
+                - "null"
+                - string
+            slug:
+              type:
+              - "null"
+              - string
+      ref:
+        type:
+        - "null"
+        - string
+      shortVersion:
+        type:
+        - "null"
+        - string
+      status:
+        type:
+        - "null"
+        - string
+      url:
+        type:
+        - "null"
+        - string
+      userAgent:
+        type:
+        - "null"
+        - string
+      versionInfo:
+        type:
+        - "null"
+        - object
+        properties:
+          version:
+            type:
+            - "null"
+            - object
+            properties:
+              buildCode:
+                type:
+                - "null"
+                - string
+              components:
+                type:
+                - "null"
+                - integer
+              major:
+                type:
+                - "null"
+                - integer
+              minor:
+                type:
+                - "null"
+                - integer
+              patch:
+                type:
+                - "null"
+                - integer
+              pre:
+                type:
+                - "null"
+                - string
+              raw:
+                type:
+                - "null"
+                - string
+          description:
+            type:
+            - "null"
+            - string
+          buildHash:
+            type:
+            - "null"
+            - string
+          package:
+            type:
+            - "null"
+            - string
