@@ -122,7 +122,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="CLI validation with PyAirbyte",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
@@ -138,7 +138,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="CLI validation with PyAirbyte",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
