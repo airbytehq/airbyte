@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
 import copy
+import datetime
 import logging
 from dataclasses import dataclass
 from functools import partial
@@ -42,7 +44,7 @@ class DeclarativeCursorAttributes:
     datetime_format: str
     slice_boundary_fields: Optional[Tuple[str, str]]
     start: Optional[CursorValueType]
-    end_provider: Callable[[], CursorValueType]
+    end_provider: Optional[Callable[[], CursorValueType]]
     lookback_window: Optional[GapType]
     slice_range: Optional[GapType]
     cursor_granularity: Optional[GapType]
@@ -129,7 +131,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         """
         return self._synchronous_streams
 
-    def all_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def all_streams(self, config: Mapping[str, Any]) -> List[Union[AbstractStream, Stream]]:
         return self._synchronous_streams + self._concurrent_streams
 
     def _separate_streams(self, config: Mapping[str, Any]) -> (List[AbstractStream], List[Stream]):
@@ -149,21 +151,23 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
                         stream_name=declarative_stream.name, namespace=declarative_stream.namespace
                     )
 
+                    connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
+                        datetime_format=declarative_cursor_attributes.datetime_format,
+                        is_sequential_state=False,
+                        cursor_granularity=declarative_cursor_attributes.cursor_granularity,
+                    )
+
                     cursor = ConcurrentCursor(
                         stream_name=declarative_stream.name,
                         stream_namespace=declarative_stream.namespace,
                         stream_state=stream_state,
                         message_repository=self.message_repository,
                         connector_state_manager=state_manager,
-                        connector_state_converter=CustomOutputFormatConcurrentStreamStateConverter(
-                            datetime_format=declarative_cursor_attributes.datetime_format,
-                            is_sequential_state=False,
-                            cursor_granularity=declarative_cursor_attributes.cursor_granularity,
-                        ),
+                        connector_state_converter=connector_state_converter,
                         cursor_field=declarative_cursor_attributes.cursor_field,
                         slice_boundary_fields=declarative_cursor_attributes.slice_boundary_fields,
                         start=declarative_cursor_attributes.start,
-                        end_provider=declarative_cursor_attributes.end_provider,
+                        end_provider=declarative_cursor_attributes.end_provider or connector_state_converter.get_end_provider(),
                         lookback_window=declarative_cursor_attributes.lookback_window,
                         slice_range=declarative_cursor_attributes.slice_range,
                         cursor_granularity=declarative_cursor_attributes.cursor_granularity,
@@ -173,11 +177,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
                         stream=declarative_stream,
                         message_repository=self.message_repository,
                         cursor=cursor,
-                        connector_state_converter=CustomOutputFormatConcurrentStreamStateConverter(
-                            datetime_format=declarative_cursor_attributes.datetime_format,
-                            is_sequential_state=False,
-                            cursor_granularity=declarative_cursor_attributes.cursor_granularity,
-                        ),
+                        connector_state_converter=connector_state_converter,
                         cursor_field=[declarative_cursor_attributes.cursor_field]
                         if declarative_cursor_attributes.cursor_field is not None
                         else None,
@@ -221,12 +221,17 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
             start_date = interpolated_state_date.get_datetime(config=config)
 
             interpolated_end_date = declarative_cursor.get_end_datetime()
-            end_date_provider = partial(interpolated_end_date.get_datetime, config)
+            end_date_provider = partial(interpolated_end_date.get_datetime, config) if interpolated_end_date else None
 
             # DatetimeBasedCursor returns an isodate.Duration if step uses month or year precision. This still works in our
             # code, but mypy may complain when we actually implement this in the concurrent low-code source. To fix this, we
             # may need to convert a Duration to timedelta by multiplying month by 30 (but could lose precision).
             step_length = declarative_cursor.get_step()
+
+            # The low-code DatetimeBasedCursor component uses the default max timedelta value which can lead to an
+            # OverflowError when building datetime intervals. We should proactively cap this to the current moment instead
+            if isinstance(step_length, datetime.timedelta) and step_length >= datetime.timedelta.max:
+                step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
 
             return DeclarativeCursorAttributes(
                 cursor_field=CursorField(declarative_cursor.cursor_field.eval(config=config)),

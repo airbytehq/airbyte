@@ -161,7 +161,7 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
 
 class CustomOutputFormatConcurrentStreamStateConverter(IsoMillisConcurrentStreamStateConverter):
     """
-    Datetime State converter that emits state according to the supplied datetime format. The converter supported reading
+    Datetime State converter that emits state according to the supplied datetime format. The converter supports reading
     incoming state in any valid datetime format via Pendulum.
     """
 
@@ -169,5 +169,5 @@ class CustomOutputFormatConcurrentStreamStateConverter(IsoMillisConcurrentStream
         super().__init__(is_sequential_state=is_sequential_state, cursor_granularity=cursor_granularity)
         self._datetime_format = datetime_format
 
-    def output_format(self, timestamp: datetime) -> Any:
+    def output_format(self, timestamp: datetime) -> str:
         return timestamp.strftime(self._datetime_format)

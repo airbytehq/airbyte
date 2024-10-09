@@ -391,10 +391,13 @@ class CursorPartitionGenerator(PartitionGenerator):
 
         wam = list(self._cursor.generate_slices())
         for slice_start, slice_end in wam:
-            slice_start_str = self._connector_state_converter.output_format(slice_start)
-            slice_end_str = self._connector_state_converter.output_format(slice_end)
-
-            stream_slice = StreamSlice(partition={}, cursor_slice={start_boundary: slice_start_str, end_boundary: slice_end_str})
+            stream_slice = StreamSlice(
+                partition={},
+                cursor_slice={
+                    start_boundary: self._connector_state_converter.output_format(slice_start),
+                    end_boundary: self._connector_state_converter.output_format(slice_end)
+                }
+            )
 
             yield StreamPartition(
                 self._stream,

@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 import freezegun
 import isodate
 import pendulum
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,6 +20,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     StreamDescriptor,
     SyncMode,
 )
@@ -27,8 +29,9 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import Record, StreamSlice
-from sources.streams.core import StreamData
+from airbyte_cdk.utils import AirbyteTracedException
 
 _CONFIG = {
     "start_date": "2024-07-01T00:00:00.000Z"
@@ -342,6 +345,13 @@ class DeclarativeStreamDecorator(Stream):
     ) -> Iterable[Mapping[str, Any]]:
         if isinstance(stream_slice, StreamSlice):
             slice_key = (stream_slice.get("start_time"), stream_slice.get("end_time"))
+
+            # Extra logic to simulate raising an error during certain partitions to validate error handling
+            if slice_key == ("2024-08-05", "2024-09-04"):
+                raise AirbyteTracedException(
+                    message=f"Received an unexpected error during interval with start: {slice_key[0]} and end: {slice_key[1]}.",
+                    failure_type=FailureType.config_error)
+
             if slice_key in self._slice_to_records_mapping:
                 yield from self._slice_to_records_mapping.get(slice_key)
             else:
@@ -697,9 +707,23 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     locations_records = get_records_for_stream("locations", messages)
     assert len(locations_records) == 8
 
-    # Expects 6 records, skip successful intervals and are left with 2 slices, 4 records each slice
+    locations_states = get_states_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_states) == 3
+    assert locations_states[2].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+    )
+
+    # Expects 6 records, skip successful intervals and are left with 2 slices, 3 records each slice
     party_members_records = get_records_for_stream("party_members", messages)
     assert len(party_members_records) == 6
+
+    party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
+    assert len(party_members_states) == 3
+    assert party_members_states[2].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+    )
 
     # Expects 7 records, 1 empty slice, 7 records in slice
     palaces_records = get_records_for_stream("palaces", messages)
@@ -716,6 +740,60 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
     """
 
+    expected_stream_state = {
+        "state_type": "date-range",
+        "slices": [
+            {
+                "start": datetime(2024, 7, 5, 0, 0, tzinfo=timezone.utc),
+                "end": datetime(2024, 8, 4, 0, 0, 0, tzinfo=timezone.utc),
+            },
+            {
+                'end': datetime(2024, 9, 9, 0, 0, 0, tzinfo=timezone.utc),
+                'start': datetime(2024, 9, 5, 0, 0, 0, tzinfo=timezone.utc)
+            }
+        ],
+        "legacy": {},
+    }
+
+    # I swapped the config as a trick to get different intervals to get returned by the mocked read_records() method
+    config = {
+        "start_date": "2024-07-05T00:00:00.000Z"
+    }
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+        ]
+    )
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=config, catalog=catalog, state=[])
+
+    for i, _ in enumerate(source._concurrent_streams):
+        stream = source._concurrent_streams[i]._stream_partition_generator._stream
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    for i, _ in enumerate(source._synchronous_streams):
+        stream = source._synchronous_streams[i]
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._synchronous_streams[i] = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    try:
+        list(source.read(logger=source.logger, config=config, catalog=catalog, state=[]))
+    except AirbyteTracedException as e:
+        locations_stream = [stream for stream in source.all_streams(config=config) if stream.name == "locations"][0]
+        final_stream_state = locations_stream.cursor.state
+        assert final_stream_state == expected_stream_state
 
 
 @freezegun.freeze_time("2024-09-10T00:00:00")
@@ -776,14 +854,6 @@ def test_read_concurrent_skip_streams_not_in_catalog():
     assert len(get_states_for_stream(stream_name="party_members_skills", messages=messages)) == 0
 
 
-def test_read_concurrent_streams_only():
-    pass
-
-
-def test_read_synchronous_streams_only():
-    pass
-
-
 def create_wrapped_stream(stream: DeclarativeStream) -> Stream:
     slice_to_records_mapping = get_mocked_read_records_output(stream_name=stream.name)
 
@@ -802,6 +872,11 @@ def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str],
                 # Slices used during incremental checkpoint sync
                 StreamSlice(cursor_slice={'start': '2024-07-26', 'end': '2024-08-25'}, partition={}),
                 StreamSlice(cursor_slice={'start': '2024-08-26', 'end': '2024-09-09'}, partition={}),
+
+                # Slices used during incremental sync with some partitions that exit with an error
+                StreamSlice(cursor_slice={"start": "2024-07-05", "end": "2024-08-04"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-08-05", "end": "2024-09-04"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-09-05", "end": "2024-09-09"}, partition={}),
             ]
 
             records = [
