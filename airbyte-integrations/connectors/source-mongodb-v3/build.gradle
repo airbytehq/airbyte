@@ -1,0 +1,20 @@
+plugins {
+    id 'airbyte-bulk-connector'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mongodb.MongoDbSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-cdc']
+    cdk = 'local'
+}
+
+dependencies {
+    implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.2')
+    testImplementation 'org.testcontainers:mongodb:1.19.0'
+}
