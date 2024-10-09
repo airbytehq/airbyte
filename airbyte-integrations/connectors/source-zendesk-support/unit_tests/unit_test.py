@@ -54,6 +54,7 @@ from source_zendesk_support.streams import (
     TicketForms,
     TicketMetricEvents,
     TicketMetrics,
+    TicketMetricsStateMigration,
     Tickets,
     TicketSkips,
     Topics,
@@ -223,21 +224,21 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_str2datetime():
+def test_str_to_datetime():
     expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
-    output = BaseZendeskSupportStream.str2datetime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str_to_datetime(DATETIME_STR)
     assert output == expected
 
 
-def test_datetime2str():
+def test_datetime_to_str():
     expected = datetime.strftime(DATETIME_FROM_STR.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
-    output = BaseZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
+    output = BaseZendeskSupportStream.datetime_to_str(DATETIME_FROM_STR)
     assert output == expected
 
 
-def test_str2unixtime():
+def test_str_to_unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
-    output = BaseZendeskSupportStream.str2unixtime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str_to_unixtime(DATETIME_STR)
     assert output == expected
 
 
@@ -426,10 +427,9 @@ class TestSourceZendeskSupportStream:
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (StatefulTicketMetrics, {}, {"_ab_updated_at": 1622505600}, {"_ab_updated_at": 1622505600}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
-        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "StatefulTicketMetrics", "Topics"],
+        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
@@ -1058,29 +1058,29 @@ def test_read_non_json_error(requests_mock, caplog):
 class TestTicketMetrics:
 
     @pytest.mark.parametrize(
-            "state, expected_parent_stream",
+            "state, expected_implemented_stream",
             [
                 ({"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
                 ({}, StatelessTicketMetrics),
             ]
     )
-    def test_get_parent_stream(self, state, expected_parent_stream):
+    def test_get_implemented_stream(self, state, expected_implemented_stream):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
-        parent_stream = stream._get_parent_stream(state)
-        assert isinstance(parent_stream, expected_parent_stream)
+        implemented_stream = stream._get_implemented_stream(state)
+        assert isinstance(implemented_stream, expected_implemented_stream)
 
     @pytest.mark.parametrize(
-            "sync_mode, state, expected_parent_stream",
+            "sync_mode, state, expected_implemented_stream",
             [
                 (SyncMode.incremental, {"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
                 (SyncMode.full_refresh, {}, StatelessTicketMetrics),
                 (SyncMode.incremental, {}, StatelessTicketMetrics),
             ]
     )
-    def test_stream_slices(self, sync_mode, state, expected_parent_stream):
+    def test_stream_slices(self, sync_mode, state, expected_implemented_stream):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
         slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
-        assert isinstance(stream.parent_stream, expected_parent_stream)
+        assert isinstance(stream.implemented_stream, expected_implemented_stream)
 
 
 class TestStatefulTicketMetrics:
@@ -1150,7 +1150,7 @@ class TestStatefulTicketMetrics:
     def test_get_updated_state(self, current_stream_state, record_cursor_value, expected):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         latest_record = { "id": 1, "_ab_updated_at": record_cursor_value}
-        output_state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+        output_state = stream._get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
         assert output_state == expected
 
 
@@ -1200,8 +1200,8 @@ class TestStatelessTicketMetrics:
 
     def test_get_updated_state(self):
         stream = StatelessTicketMetrics(**STREAM_ARGS)
-        stream.most_recently_updated_record = {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
-        output_state = stream.get_updated_state(current_stream_state={}, latest_record={})
+        stream._most_recently_updated_record = {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        output_state = stream._get_updated_state(current_stream_state={}, latest_record={})
         expected_state = { "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
         assert output_state == expected_state
 
@@ -1242,3 +1242,18 @@ def test_validate_response_ticket_audits_handle_empty_response(audits_response, 
     response_mock = Mock()
     response_mock.json.return_value = audits_response
     assert stream._validate_response(response_mock, {}) == expected
+
+
+@pytest.mark.parametrize(
+        "initial_state_cursor_field",
+        [
+            "generated_timestamp",
+            "_ab_updated_at"
+        ]
+)
+def test_ticket_metrics_state_migrataion(initial_state_cursor_field):
+    state_migrator = TicketMetricsStateMigration()
+    initial_state = {initial_state_cursor_field: 1672531200}
+    expected_state = {"_ab_updated_at": 1672531200}
+    output_state = state_migrator.migrate(initial_state)
+    assert output_state == expected_state

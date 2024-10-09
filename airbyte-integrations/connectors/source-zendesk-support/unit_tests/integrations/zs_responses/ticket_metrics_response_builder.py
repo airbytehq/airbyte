@@ -21,7 +21,7 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
     @classmethod
     def stateless_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
-        return cls(find_template("stateless_ticket_metrics", __file__), NestedPath(["ticket_metrics", 0]), None)
+        return cls(find_template("stateless_ticket_metrics", __file__), NestedPath(["ticket_metrics", 0]), CursorBasedPaginationStrategy())
 
     def build(self) -> HttpResponse:
         for record in self._records:
