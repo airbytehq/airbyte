@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.LeafAirbyteType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
@@ -36,7 +36,7 @@ class MysqlJdbcPartitionFactory(
     override fun streamState(stream: Stream): DefaultJdbcStreamState =
         streamStates.getOrPut(stream.label) { DefaultJdbcStreamState(sharedState, stream) }
 
-    fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
+    private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (
@@ -137,21 +137,21 @@ class MysqlJdbcPartitionFactory(
             }
             // resume back to cursor based increment.
             val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
-            var cursorCheckpoint: JsonNode =
-                when (cursor.type.airbyteType) {
-                    is LeafAirbyteType ->
-                        when (cursor.type.airbyteType as LeafAirbyteType) {
-                            LeafAirbyteType.INTEGER -> {
+            val cursorCheckpoint: JsonNode =
+                when (cursor.type.airbyteSchemaType) {
+                    is LeafAirbyteSchemaType ->
+                        when (cursor.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                            LeafAirbyteSchemaType.INTEGER -> {
                                 Jsons.valueToTree(sv.cursors.toInt())
                             }
-                            LeafAirbyteType.NUMBER -> {
+                            LeafAirbyteSchemaType.NUMBER -> {
                                 Jsons.valueToTree(sv.cursors.toDouble())
                             }
                             else -> Jsons.valueToTree(sv.cursors)
                         }
                     else ->
                         throw IllegalStateException(
-                            "Cursor field must be leaf type but is ${cursor.type.airbyteType}."
+                            "Cursor field must be leaf type but is ${cursor.type.airbyteSchemaType}."
                         )
                 }
             // Compose a jsonnode of cursor label to cursor value to fit in
