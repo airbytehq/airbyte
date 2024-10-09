@@ -1,9 +1,6 @@
 # Rarible
 This connector integrates Rarible&#39;s API with Airbyte, enabling seamless data synchronization of NFT activities, collections, and ownership across multiple blockchains. It supports fetching  ownership, orders and other essential details to facilitate real-time updates and analytics for NFT marketplaces.
 
-## Authentication
-Follow [these](https://docs.rarible.org/docs/rarible-protocol#step-1-get-started) steps mentioned here to get your API key.
-
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -20,9 +17,9 @@ Follow [these](https://docs.rarible.org/docs/rarible-protocol#step-1-get-started
 | nfts | id | No pagination | ✅ |  ❌  |
 | collections | id | No pagination | ✅ |  ❌  |
 | statistics |  | No pagination | ✅ |  ❌  |
-| orders |  | No pagination | ✅ |  ❌  |
-| activities |  | No pagination | ✅ |  ❌  |
-| user_owned_nfts |  | No pagination | ✅ |  ❌  |
+| orders | id | No pagination | ✅ |  ❌  |
+| activities | id | No pagination | ✅ |  ❌  |
+| user_owned_nfts | id | No pagination | ✅ |  ❌  |
 | users_bid_orders | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -32,6 +29,6 @@ Follow [these](https://docs.rarible.org/docs/rarible-protocol#step-1-get-started
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-07 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-09 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
