@@ -36,7 +36,9 @@ class LocalFileTransferClient:
         """
         Write the file to a local directory.
         """
-        local_file_path = os.path.join(self._local_directory, file_uri)
+        # Remove left slashes from source path format to make relative path for writing locally
+        file_relative_path = file_uri.lstrip("/")
+        local_file_path = os.path.join(self._local_directory, file_relative_path)
 
         # Ensure the local directory exists
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
@@ -44,12 +46,10 @@ class LocalFileTransferClient:
         # Get the absolute path
         absolute_file_path = os.path.abspath(local_file_path)
 
-        relative_file_path = os.path.relpath(absolute_file_path)
-
         logger.info(f"Writing file to {local_file_path}.")
 
         with open(local_file_path, "wb") as f:
             f.write(fp.read())
-        logger.info(f"File {file_uri} successfully written to {local_file_path}.")
+        logger.info(f"File {file_relative_path} successfully written to {self._local_directory}.")
 
-        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": relative_file_path}
+        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}

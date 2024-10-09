@@ -97,8 +97,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         record[self.ab_file_name_col] = file.uri
         return record
 
-    def transform_record_for_sync_transfer(self, record: dict[str, Any], file: RemoteFile, last_updated: str) -> dict[str, Any]:
-        record["modified"] = last_updated
+    def transform_record_for_sync_transfer(self, record: dict[str, Any], file: RemoteFile) -> dict[str, Any]:
+        # timstamp() returns a float representing the number of seconds since the unix epoch
+        record["modified"] = int(file.last_modified.timestamp()) * 1000
         record["source_file_url"] = file.uri
         return record
 
@@ -133,7 +134,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1
                             continue
-                        record = self.transform_record_for_sync_transfer(record, file, file_datetime_string)
+                        record = self.transform_record_for_sync_transfer(record, file)
                         yield stream_data_to_airbyte_message(self.name, record, is_file_transfer_message=True)
                 else:
                     for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):
