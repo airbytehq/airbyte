@@ -18,17 +18,16 @@ application {
 }
 
 dependencies {
-    // temporary dependency so that we can continue running the legacy test suite.
-    // eventually we should remove this + rely solely on the bulk CDK tests.
-    integrationTestJavaImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
-    // integrationTestJavaImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    // temporary dependencies so that we can continue running the legacy test suite.
+    // eventually we should remove those tests + rely solely on the bulk CDK tests.
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    integrationTestLegacyImplementation 'io.airbyte.airbyte-protocol:protocol-models:0.12.2'
+    integrationTestLegacyImplementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    integrationTestLegacyImplementation platform('org.junit:junit-bom:5.10.2')
 }
 
 // Uncomment to run locally
 //run {
 //    standardInput = System.in
 //}
-
-integrationTestJava {
-    dependsOn assemble
-}
