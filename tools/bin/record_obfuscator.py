@@ -7,7 +7,6 @@ import json
 import sys
 from typing import Any
 
-
 #
 # record_obfuscator is a tiny script that:
 # 1. reads JSON lines from stdin
