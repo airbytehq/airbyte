@@ -5,15 +5,16 @@
 package io.airbyte.cdk.write
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.message.DestinationMessage
+import io.airbyte.cdk.state.SyncFailure
+import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.state.SyncSuccess
 import io.airbyte.cdk.task.TaskLauncher
-import io.airbyte.cdk.task.TaskRunner
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import java.io.InputStream
 import javax.inject.Singleton
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -23,24 +24,29 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
-    private val inputConsumer: InputConsumer<DestinationMessage>,
     private val taskLauncher: TaskLauncher,
-    private val taskRunner: TaskRunner,
+    private val syncManager: SyncManager,
 ) : Operation {
-    override fun execute() {
-        runBlocking {
-            launch { inputConsumer.run() }
+    val log = KotlinLogging.logger {}
 
-            launch { taskLauncher.start() }
+    override fun execute() = runBlocking {
+        taskLauncher.start()
 
-            launch { taskRunner.run() }
+        when (val result = syncManager.awaitSyncResult()) {
+            is SyncSuccess -> {
+                log.info { "Sync completed successfully" }
+            }
+            is SyncFailure -> {
+                log.info { "Sync failed with stream results ${result.streamResults}" }
+                throw result.syncFailure
+            }
         }
     }
 }
 
 /** Override to provide a custom input stream. */
 @Factory
-class InputStreamFactory {
+class InputStreamProvider {
     @Singleton
     @Secondary
     @Requires(property = Operation.PROPERTY, value = "write")

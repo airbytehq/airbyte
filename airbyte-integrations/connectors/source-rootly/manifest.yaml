@@ -1,4 +1,4 @@
-version: 5.8.1
+version: 5.10.2
 
 type: DeclarativeSource
 
@@ -55,6 +55,12 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -103,6 +109,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,6 +185,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -207,6 +269,26 @@ definitions:
               partition_field: d_id
               stream:
                 $ref: "#/definitions/streams/dashboards"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -255,6 +337,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -303,6 +413,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -407,6 +545,34 @@ definitions:
               partition_field: user_id
               stream:
                 $ref: "#/definitions/streams/users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -455,6 +621,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -503,6 +697,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -559,6 +781,34 @@ definitions:
               partition_field: incident_id
               stream:
                 $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -607,6 +857,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -655,6 +933,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -703,6 +1009,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -751,6 +1085,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -799,6 +1161,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -847,6 +1237,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -905,6 +1323,34 @@ definitions:
               partition_field: incident_permission_set_id
               stream:
                 $ref: "#/definitions/streams/incident_permission_sets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -963,6 +1409,34 @@ definitions:
               partition_field: incident_permission_set_id
               stream:
                 $ref: "#/definitions/streams/incident_permission_sets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1011,6 +1485,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1067,6 +1569,34 @@ definitions:
               partition_field: incident_id
               stream:
                 $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1115,6 +1645,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1163,6 +1721,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1219,6 +1805,34 @@ definitions:
               partition_field: workflow_id
               stream:
                 $ref: "#/definitions/streams/workflows"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1267,6 +1881,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1315,6 +1957,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1363,6 +2033,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1419,6 +2117,34 @@ definitions:
               partition_field: incident_id
               stream:
                 $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1467,6 +2193,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1515,6 +2269,34 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filter[updated_at][lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1565,12 +2347,19 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -1607,215 +2396,215 @@ metadata:
     retrospective_processes: true
   testedStreams:
     dashboards:
-      hasRecords: true
-      streamHash: a1708c0567059820c0dc956945caf487478a115a
+      streamHash: 1663ef918bc6ec15713f1671941acbed381055b4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents:
-      hasRecords: true
-      streamHash: 8cc67f76e9a7b3b960bb7abe770c4f85f915ac0a
+      streamHash: 6a7d207eb35ceb79d35b7dcbb455e4f4ef9c2647
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     authorizations:
-      hasRecords: true
-      streamHash: 524dcbe5c86d2fca67871eab887ebe3092b9d7e1
+      streamHash: 74a7b9ea0b11731c530acfc924cb2661a9fc7c43
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     dashboards_panels:
-      hasRecords: true
-      streamHash: f5a88a9674d82525513585f5a67c6165d487c7d0
+      streamHash: ab987673c45d3df40e98b3a37d6cec0461680a8f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
-      streamHash: 1001a1b69a3cd78b3a12337b32242ea23a7943de
+      streamHash: ba10b5956d03a8e0a7d6cd81c9b9d882708177cd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_types:
-      hasRecords: true
-      streamHash: 112c66d7fbd338f41ffb3980b2dd12d0ce621f31
+      streamHash: 31960d0485524c090d944c4e19e81badf3a77ecf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    ip_ranges:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ip_ranges:
       streamHash: 03a611935c0a06a36b86dc9d7867c53a7de119fa
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users_notification_rules:
-      hasRecords: true
-      streamHash: 5ab5ba2bef769c90f47deea78948b922944866fc
+      streamHash: 25232360f06af63d53be7edd48eb599a34d8dd10
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      hasRecords: true
-      streamHash: 0082ff60d942d4607acfb2cb086dfeeb0f579b27
+      streamHash: 889a8457c7765ab4e6290850acc39c8b0810fd9d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sub_statuses:
-      hasRecords: true
-      streamHash: 2a1a08c8716809eaaec40b0830ff3a311c90a543
+      streamHash: 1d11236c0f61bf3d26ad1a56e97d64353d35cdd4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents_sub_statuses:
-      hasRecords: true
-      streamHash: 14e873ba11f2b5c4d2d45acd9471f57dc551bde8
+      streamHash: 9e51697eeed1469cfea6397022ec19f15115a5da
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_roles:
-      hasRecords: true
-      streamHash: 7d104f1caa1301db3a5f6e4837ff3a938cd3e7b7
+      streamHash: c31c9f2d608f2b466f36e556731315b514dc9e8b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     post_mortems:
-      hasRecords: true
-      streamHash: a598824bb785e74cf94b3147365dd40fdbde1943
+      streamHash: 136891857f9eb58458c0c334d1f3e1f9051f6b70
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     status-pages:
-      hasRecords: true
-      streamHash: 19fc0f4cda34b29172194a6232c17adb18dcab34
+      streamHash: 97bf2f422f4cb3f54d880ab4019297871b04870e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     severities:
-      hasRecords: true
-      streamHash: 3ed9e9a90d8014906d02c94662b548588b23623d
+      streamHash: 11fec3ba47b3084fd55e66410cd5c3515006dcb4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     services:
-      hasRecords: true
-      streamHash: 7fda14f8fec0146f0ccf77e5d8130ad2a8dc35a4
+      streamHash: aa372f42eee4de89d971658a8d7bf3d082cef1bc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_permission_sets:
-      hasRecords: true
-      streamHash: bfc66b910ae60f54bbb13e94d5b30511567e118a
+      streamHash: 33f35e12a06e62e845a2b7e25f615adb731e959d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_permission_sets_resources:
-      hasRecords: true
-      streamHash: 889f84bb8ceba269911eb918e7999bf87828e2d9
+      streamHash: 4252923f5e8f17c1ae6fd3cab903185379bbd659
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_permission_sets_booleans:
-      hasRecords: true
-      streamHash: a28739a41c1c9a50233870196eaea15d41d4644a
+      streamHash: 61ec8859ccdd483f3392dd3e5768ce3e83eb3ee0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     roles:
-      hasRecords: true
-      streamHash: 9d5503859971434b51a07d7692afe7f2ea05a08a
+      streamHash: 0addd78402f7c6082b7aca0dbb468e51a7aba3b4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents_events:
-      hasRecords: true
-      streamHash: 21cb816d13f9f170aca503c2ef8b784cb1ae47d9
+      streamHash: 0d1a6deeca567b4994f5727899ba2f8392ae00f4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workflows:
-      hasRecords: true
-      streamHash: 852b1ed800305559d6e6012b8d30759bcfef1194
+      streamHash: 3e606d99bbec0d1e335f8532ef89c5aa965b195b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workflow_groups:
-      hasRecords: true
-      streamHash: 208296ca2b3b1c85f544b40f21e83cbaa77671e6
+      streamHash: da93655201d233695656bcd3c63443c225fc9d1e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workflows_tasks:
-      hasRecords: true
-      streamHash: a9c1186e80ce7e50d67f5813e632a8ffac6da267
+      streamHash: 76f9a13abeb6127601fda71e1668b3904c1f67e2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     form_sets:
-      hasRecords: true
-      streamHash: df5a91c3b0329dc051366dccfc0cbf10c41fd164
+      streamHash: 2e1d4fd567620031a426f9b6b015a6281461260b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     form_fields:
-      hasRecords: true
-      streamHash: d060f2e17f7b0daaaeae51a2be18c23a8b8c1423
+      streamHash: 8aa7de53cd01c513548d2b95cd451b6923bbc2d4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     playbooks:
-      hasRecords: true
-      streamHash: 25e62c2338d1897042119b66adb8a7cfb637e20f
+      streamHash: 328f96ffc9545af67ba5091d45592f7df3e0bec9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents_action_items:
-      hasRecords: true
-      streamHash: d35a2faab7228cfa411ea7365e08ab088e274fc7
+      streamHash: 1958e0c126ec0df890003ebf59f0fa19a1264237
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     retrospective_configurations:
-      hasRecords: true
-      streamHash: 1bf17bea052d22f500245e25a2823e5ea53c9fe7
+      streamHash: f70cb6c7cfbe315f9351ca2cad7e07be6650cf56
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     retrospective_processes:
-      hasRecords: true
-      streamHash: 349a4953abc716cd27d65a3d40222be1c14779fe
+      streamHash: 28c03f525598090d7fb65e55067c5b626f420242
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -1910,6 +2699,10 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
     required:
       - id
   incidents:
@@ -2463,8 +3256,11 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   authorizations:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2513,8 +3309,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   dashboards_panels:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2553,21 +3352,21 @@ schemas:
                     data:
                       type: object
                       properties:
-                        "2024-09-24":
+                        "2024-10-02":
                           type: number
-                        "2024-09-25":
+                        "2024-10-03":
                           type: number
-                        "2024-09-26":
+                        "2024-10-04":
                           type: number
-                        "2024-09-27":
+                        "2024-10-05":
                           type: number
-                        "2024-09-28":
+                        "2024-10-06":
                           type: number
-                        "2024-09-29":
+                        "2024-10-07":
                           type: number
-                        "2024-09-30":
+                        "2024-10-08":
                           type: number
-                        "2024-10-01":
+                        "2024-10-09":
                           type: number
                     first_name:
                       type: string
@@ -2695,8 +3494,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   users:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2786,8 +3588,11 @@ schemas:
                 type:
                   - array
                   - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incident_types:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2844,8 +3649,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   ip_ranges:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2936,8 +3744,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   teams:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3016,8 +3827,11 @@ schemas:
                 type:
                   - array
                   - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   sub_statuses:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3058,8 +3872,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incidents_sub_statuses:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3133,8 +3950,11 @@ schemas:
                     type:
                       - string
                       - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incident_roles:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3191,8 +4011,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   post_mortems:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3293,8 +4116,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   status-pages:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3395,8 +4221,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   severities:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3457,8 +4286,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   services:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3559,8 +4391,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incident_permission_sets:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3613,8 +4448,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incident_permission_sets_resources:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3659,8 +4497,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incident_permission_sets_booleans:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3701,8 +4542,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   roles:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3935,8 +4779,11 @@ schemas:
                 - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incidents_events:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3989,8 +4836,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   workflows:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4217,8 +5067,11 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   workflow_groups:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4255,8 +5108,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   workflows_tasks:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4346,8 +5202,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   form_sets:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4392,8 +5251,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   form_fields:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4502,8 +5364,11 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   playbooks:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4666,8 +5531,11 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   incidents_action_items:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4874,8 +5742,11 @@ schemas:
               - "null"
       id:
         type: string
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   retrospective_configurations:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4948,8 +5819,11 @@ schemas:
                 type:
                   - array
                   - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
   retrospective_processes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -5013,5 +5887,8 @@ schemas:
                       type:
                         - string
                         - "null"
+      updated_at:
+        type: string
     required:
       - id
+      - updated_at
