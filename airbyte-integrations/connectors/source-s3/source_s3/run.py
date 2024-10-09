@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import cast
 
 import orjson
-
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader

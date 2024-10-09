@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 """Run acceptance tests in PyTest.
 
 These tests leverage the same `acceptance-test-config.yml` configuration files as the
@@ -13,11 +15,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 import yaml
+from airbyte_cdk.test import entrypoint_wrapper
 from pydantic import BaseModel
 from source_s3.run import get_source
-
-from airbyte_cdk.test import entrypoint_wrapper
-
 
 if TYPE_CHECKING:
     from airbyte_cdk import Source

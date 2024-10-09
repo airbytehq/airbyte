@@ -9,17 +9,9 @@ from datetime import datetime
 from typing import cast
 
 import orjson
-from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
-
 from airbyte_cdk import AirbyteEntrypoint, launch
-from airbyte_cdk.models import (
-    AirbyteErrorTraceMessage,
-    AirbyteMessage,
-    AirbyteMessageSerializer,
-    AirbyteTraceMessage,
-    TraceType,
-    Type,
-)
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
 def get_source(args: list[str]) -> SourceS3 | None:
