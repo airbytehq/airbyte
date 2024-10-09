@@ -6,8 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
@@ -90,7 +89,7 @@ class DefaultPaginator(Paginator):
     config: Config
     url_base: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    decoder: Decoder = field(default_factory=lambda: PaginationDecoderDecorator(decoder=JsonDecoder(parameters={})))
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 
