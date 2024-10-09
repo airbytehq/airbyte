@@ -1407,6 +1407,7 @@ definitions:
         description: Component used to decode the response.
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1739,6 +1740,16 @@ definitions:
       type:
         type: string
         enum: [IterableDecoder]
+  XmlDecoder:
+    title: XML Decoder
+    description: Use this is the response is XML.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [XmlDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2382,6 +2393,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2497,6 +2509,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
