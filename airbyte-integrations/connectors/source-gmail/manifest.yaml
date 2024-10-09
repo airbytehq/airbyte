@@ -41,7 +41,7 @@ definitions:
           path: drafts
           http_method: GET
           request_parameters:
-            includeSpamTrash: "{{ config['includeSpamTrash'] }}"
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,7 +128,7 @@ definitions:
           path: messages
           http_method: GET
           request_parameters:
-            includeSpamTrash: "{{ config['includeSpamTrash'] }}"
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -194,7 +194,7 @@ definitions:
           path: threads
           http_method: GET
           request_parameters:
-            includeSpamTrash: "{{ config['includeSpamTrash'] }}"
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -299,7 +299,7 @@ spec:
         order: 2
         title: Refresh token
         airbyte_secret: true
-      includeSpamTrash:
+      include_spam_and_trash:
         type: boolean
         description: >-
           Include drafts/messages from SPAM and TRASH in the results. Defaults
