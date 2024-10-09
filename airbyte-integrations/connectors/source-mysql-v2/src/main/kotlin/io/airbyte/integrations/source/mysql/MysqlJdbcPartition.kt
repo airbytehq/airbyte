@@ -53,7 +53,8 @@ sealed class MysqlJdbcPartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
+                From(stream.name, stream.namespace),
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
