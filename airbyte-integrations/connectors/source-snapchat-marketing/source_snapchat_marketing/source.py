@@ -180,7 +180,11 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return next_page_token or {"read_deleted_entities": True}
+        params = { "read_deleted_entities": True }
+
+        if next_page_token is not None:
+            params["next_page_token"] = next_page_token
+        return params
 
     @property
     def response_root_name(self):
@@ -257,6 +261,10 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
             view_attribution_window=self.view_attribution_window,
         )
         stream_slices = get_parent_ids(parent_stream)
+
+        # TODO: override ad account here
+        # if self.name == 'ads':
+        #     stream_slices = [{ 'id': '8eb7496a-5961-4424-ad07-41ec648fdf6d' }]
 
         if stream_slices:
             self.last_slice = stream_slices[-1]
