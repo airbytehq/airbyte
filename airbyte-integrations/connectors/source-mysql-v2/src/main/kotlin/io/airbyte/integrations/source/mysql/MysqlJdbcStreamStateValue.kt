@@ -14,7 +14,7 @@ import io.airbyte.cdk.util.Jsons
 data class MysqlJdbcStreamStateValue(
     @JsonProperty("cursor") val cursors: String = "",
     @JsonProperty("version") val version: Int = 2,
-    @JsonProperty("state_type") val stateType: String = "cursor_based",
+    @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.stateType,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("cursor_field") val cursorField: List<String> = listOf(),
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
@@ -39,7 +39,7 @@ data class MysqlJdbcStreamStateValue(
                     cursorField = listOf(cursor.id),
                     cursors = cursorCheckpoint.asText(),
                     streamName = stream.name,
-                    streamNamespace = stream.namespace ?: ""
+                    streamNamespace = stream.namespace!!
                 )
             )
         }
@@ -54,7 +54,7 @@ data class MysqlJdbcStreamStateValue(
                 MysqlJdbcStreamStateValue(
                     pkName = primaryKeyField.id,
                     pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = "primary_key",
+                    stateType = StateType.PRIMARY_KEY.stateType,
                 )
             )
         }
@@ -71,17 +71,22 @@ data class MysqlJdbcStreamStateValue(
                 MysqlJdbcStreamStateValue(
                     pkName = primaryKeyField.id,
                     pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = "primary_key",
+                    stateType = StateType.PRIMARY_KEY.stateType,
                     incrementalState =
                         Jsons.valueToTree(
                             MysqlJdbcStreamStateValue(
                                 cursorField = listOf(cursor.id),
                                 streamName = stream.name,
-                                streamNamespace = stream.namespace ?: ""
+                                streamNamespace = stream.namespace!!
                             )
                         ),
                 )
             )
         }
     }
+}
+
+enum class StateType(val stateType: String) {
+    PRIMARY_KEY("primary_key"),
+    CURSOR_BASED("cursor_based"),
 }
