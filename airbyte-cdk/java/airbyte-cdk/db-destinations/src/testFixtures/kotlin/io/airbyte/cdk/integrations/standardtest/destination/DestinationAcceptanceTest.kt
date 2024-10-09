@@ -91,54 +91,19 @@ private val LOGGER = KotlinLogging.logger {}
 
 abstract class DestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
-    private val verifyIndividualStateAndCounts: Boolean = false,
+    verifyIndividualStateAndCounts: Boolean = false,
     private val useV2Fields: Boolean = false,
     private val supportsChangeCapture: Boolean = false,
     private val expectNumericTimestamps: Boolean = false,
     private val expectSchemalessObjectsCoercedToStrings: Boolean = false,
     private val expectUnionsPromotedToDisjointRecords: Boolean = false
+): BaseDestinationAcceptanceTest(
+    verifyIndividualStateAndCounts = verifyIndividualStateAndCounts
 ) {
-    protected var testSchemas: HashSet<String> = HashSet()
-
-    private lateinit var testEnv: TestDestinationEnv
-    protected var fileTransferMountSource: Path? = null
-        private set
-    protected open val isCloudTest: Boolean = true
-    protected val featureFlags: FeatureFlags =
-        if (isCloudTest) {
-            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "CLOUD")
-        } else {
-            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "OSS")
-        }
-
-    private lateinit var jobRoot: Path
-    private lateinit var processFactory: ProcessFactory
-    private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
-
-    protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
     protected open fun getTestDataComparator(): TestDataComparator {
         return BasicTestDataComparator { @Suppress("deprecation") this.resolveIdentifier(it) }
-    }
-
-    protected abstract val imageName: String
-        /**
-         * Name of the docker image that the tests will run against.
-         *
-         * @return docker image name
-         */
-        get
-
-    protected open fun supportsInDestinationNormalization(): Boolean {
-        return false
-    }
-
-    protected fun inDestinationNormalizationFlags(shouldNormalize: Boolean): Map<String, String> {
-        if (shouldNormalize && supportsInDestinationNormalization()) {
-            return java.util.Map.of("NORMALIZATION_TECHNIQUE", "LEGACY")
-        }
-        return emptyMap()
     }
 
     private val imageNameWithoutTag: String
@@ -166,14 +131,6 @@ abstract class DestinationAcceptanceTest(
         val normalizationRepository = normalizationConfig["normalizationRepository"] ?: return null
         return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
     }
-
-    /**
-     * Configuration specific to the integration. Will be passed to integration where appropriate in
-     * each test. Should be valid.
-     *
-     * @return integration-specific configuration
-     */
-    @Throws(Exception::class) protected abstract fun getConfig(): JsonNode
 
     /**
      * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -391,19 +348,6 @@ abstract class DestinationAcceptanceTest(
     }
 
     /**
-     * Function that performs any setup of external resources required for the test. e.g.
-     * instantiate a postgres database. This function will be called before EACH test.
-     *
-     * @param testEnv
-     * - information about the test environment.
-     * @param TEST_SCHEMAS
-     * @throws Exception
-     * - can throw any exception, test framework will handle.
-     */
-    @Throws(Exception::class)
-    protected abstract fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>)
-
-    /**
      * Function that performs any clean up of external resources required for the test. e.g. delete
      * a postgres database. This function will be called after EACH test. It MUST remove all data in
      * the destination so that there is no contamination across tests.
@@ -421,38 +365,6 @@ abstract class DestinationAcceptanceTest(
     )
     protected open fun resolveIdentifier(identifier: String?): List<String?> {
         return listOf(identifier)
-    }
-
-    @BeforeEach
-    @Throws(Exception::class)
-    fun setUpInternal() {
-        val testDir = Path.of("/tmp/airbyte_tests/")
-        Files.createDirectories(testDir)
-        val workspaceRoot = Files.createTempDirectory(testDir, "test")
-        jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
-        localRoot = Files.createTempDirectory(testDir, "output")
-        LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
-        LOGGER.info { "${"localRoot: {}"} $localRoot" }
-        testEnv = TestDestinationEnv(localRoot)
-        mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater::class.java)
-        testSchemas = HashSet()
-        setup(testEnv, testSchemas)
-        fileTransferMountSource =
-            if (supportsFileTransfer) Files.createTempDirectory(testDir, "file_transfer") else null
-
-        processFactory =
-            DockerProcessFactory(
-                workspaceRoot,
-                workspaceRoot.toString(),
-                localRoot.toString(),
-                fileTransferMountSource,
-                "host",
-                getConnectorEnv()
-            )
-    }
-
-    open fun getConnectorEnv(): Map<String, String> {
-        return emptyMap()
     }
 
     @AfterEach
@@ -2036,136 +1948,16 @@ abstract class DestinationAcceptanceTest(
             )
         }
 
-    private fun getDestination(imageName: String): AirbyteDestination {
-        return DefaultAirbyteDestination(
-            integrationLauncher =
-                AirbyteIntegrationLauncher(
-                    JOB_ID,
-                    JOB_ATTEMPT,
-                    imageName,
-                    processFactory,
-                    null,
-                    null,
-                    false,
-                    featureFlags
-                )
-        )
-    }
-
-    protected fun runSyncAndVerifyStateOutput(
-        config: JsonNode,
-        messages: List<AirbyteMessage>,
-        catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean,
-    ) {
-        runSyncAndVerifyStateOutput(
-            config,
-            messages,
-            catalog,
-            runNormalization,
-            imageName,
-            verifyIndividualStateAndCounts
-        )
-    }
-
     @Throws(Exception::class)
-    protected fun runSyncAndVerifyStateOutput(
-        config: JsonNode,
-        messages: List<AirbyteMessage>,
-        catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean,
-        imageName: String,
-        verifyIndividualStateAndCounts: Boolean
-    ) {
-        val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
-
-        var expected = messages.filter { it.type == Type.STATE }
-        var actual = destinationOutput.filter { it.type == Type.STATE }
-
-        if (verifyIndividualStateAndCounts) {
-            /* Collect the counts and add them to each expected state message */
-            val stateToCount = mutableMapOf<JsonNode, Int>()
-            messages.fold(0) { acc, message ->
-                if (message.type == Type.STATE) {
-                    stateToCount[message.state.global.sharedState] = acc
-                    0
-                } else {
-                    acc + 1
-                }
-            }
-
-            expected.forEach { message ->
-                val clone = message.state
-                clone.destinationStats =
-                    AirbyteStateStats().withRecordCount(stateToCount[clone.global.sharedState]!!.toDouble())
-                message.state = clone
-            }
-        } else {
-            /* Null the stats and collect only the final messages */
-            val finalActual =
-                actual.lastOrNull()
-                    ?: throw IllegalArgumentException(
-                        "All message sets used for testing should include a state record"
-                    )
-            val clone = finalActual.state
-            clone.destinationStats = null
-            finalActual.state = clone
-
-            expected = listOf(expected.last())
-            actual = listOf(finalActual)
-        }
-
-        Assertions.assertEquals(expected, actual)
-    }
-
-    @Throws(Exception::class)
-    private fun runSync(
+    override fun runSync(
         config: JsonNode,
         messages: List<AirbyteMessage>,
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
     ): List<AirbyteMessage> {
-        val destinationConfig =
-            WorkerDestinationConfig()
-                .withConnectionId(UUID.randomUUID())
-                .withCatalog(
-                    convertProtocolObject(
-                        catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
-                )
-                .withDestinationConnectionConfiguration(config)
-
-        val destination = getDestination(imageName)
-
-        destination.start(
-            destinationConfig,
-            jobRoot,
-            inDestinationNormalizationFlags(runNormalization)
-        )
-        messages.forEach(
-            Consumer { message: AirbyteMessage ->
-                Exceptions.toRuntime {
-                    destination.accept(
-                        convertProtocolObject(
-                            message,
-                            io.airbyte.protocol.models.AirbyteMessage::class.java
-                        )
-                    )
-                }
-            }
-        )
-        destination.notifyEndOfInput()
-
-        val destinationOutput: MutableList<AirbyteMessage> = ArrayList()
-        while (!destination.isFinished()) {
-            destination.attemptRead().ifPresent {
-                destinationOutput.add(convertProtocolObject(it, AirbyteMessage::class.java))
-            }
-        }
-
-        destination.close()
+        val destinationConfig = getDestinationConfig(config, catalog)
+        val destinationOutput = super.runSync(messages, runNormalization, imageName, destinationConfig)
 
         if (!runNormalization || (supportsInDestinationNormalization())) {
             return destinationOutput
@@ -2689,14 +2481,12 @@ abstract class DestinationAcceptanceTest(
         return supportsInDestinationNormalization() || normalizationFromDefinition()
     }
 
-    protected open val supportsFileTransfer: Boolean = false
-
     companion object {
         private val RANDOM = Random()
         private const val NORMALIZATION_VERSION = "dev"
 
-        private const val JOB_ID = "0"
-        private const val JOB_ATTEMPT = 0
+        public const val JOB_ID = "0"
+        public const val JOB_ATTEMPT = 0
 
         private const val DUMMY_CATALOG_NAME = "DummyCatalog"
 
@@ -2833,7 +2623,7 @@ abstract class DestinationAcceptanceTest(
             return airbyteMessages
         }
 
-        private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
+        fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
             return Jsons.`object`(Jsons.jsonNode(v1), klass)!!
         }
     }
