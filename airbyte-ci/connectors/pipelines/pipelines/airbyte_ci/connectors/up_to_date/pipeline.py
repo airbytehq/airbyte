@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import dagger
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -85,37 +84,33 @@ async def run_connector_up_to_date_pipeline(
             new_version: str | None = None
 
             connector_directory = await context.get_connector_dir()
-            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory=connector_directory)
+            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory)
             upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
             step_results.append(upgrade_base_image_in_metadata_result)
             if upgrade_base_image_in_metadata_result.success:
                 connector_directory = upgrade_base_image_in_metadata_result.output
-                exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(
-                    connector_directory, context.connector.code_directory
-                )
+                exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(context.connector.code_directory)
                 context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
                 all_modified_files.update(exported_modified_files)
+                connector_directory = upgrade_base_image_in_metadata_result.output
 
             if context.connector.is_using_poetry:
                 # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
-                connector_directory = await context.get_connector_dir()
-                poetry_update = PoetryUpdate(
-                    context, connector_directory, specific_dependencies=specific_dependencies, connector_directory=connector_directory
-                )
+                poetry_update = PoetryUpdate(context, connector_directory, specific_dependencies=specific_dependencies)
                 poetry_update_result = await poetry_update.run()
                 step_results.append(poetry_update_result)
                 if poetry_update_result.success:
                     exported_modified_files = await poetry_update.export_modified_files(context.connector.code_directory)
                     context.logger.info(f"Exported files following the Poetry update: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
+                    connector_directory = poetry_update_result.output
 
             one_previous_step_is_successful = any(step_result.success for step_result in step_results)
 
             # NOTE:
             # BumpConnectorVersion will already work for manifest-only and Java connectors too
             if bump_connector_version and one_previous_step_is_successful:
-                connector_directory = await context.get_connector_dir()
-                bump_version = BumpConnectorVersion(context, connector_directory, BUMP_TYPE, connector_directory=connector_directory)
+                bump_version = BumpConnectorVersion(context, connector_directory, BUMP_TYPE)
                 bump_version_result = await bump_version.run()
                 step_results.append(bump_version_result)
                 if bump_version_result.success:

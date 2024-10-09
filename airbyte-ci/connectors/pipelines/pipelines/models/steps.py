@@ -420,6 +420,7 @@ class Step(ABC):
 class StepModifyingFiles(Step):
 
     modified_files: List[str]
+    modified_directory: dagger.Directory
 
     def __init__(self, context: PipelineContext, modified_directory: dagger.Directory, secrets: List[Secret] | None = None) -> None:
         super().__init__(context, secrets)

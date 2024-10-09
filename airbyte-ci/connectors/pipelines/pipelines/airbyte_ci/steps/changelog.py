@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING
 
 import semver
 from dagger import Directory
@@ -13,9 +12,6 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.changelog import Changelog
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
-
-if TYPE_CHECKING:
-    from typing import List
 
 
 class AddChangelogEntry(StepModifyingFiles):
@@ -48,7 +44,7 @@ class AddChangelogEntry(StepModifyingFiles):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stderr=f"Connector does not have a documentation file.",
+                stderr="Connector does not have a documentation file.",
             )
 
         try:

@@ -19,12 +19,7 @@ from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.metadata.pipeline import (
-    MetadataPromoteReleaseCandidate,
-    MetadataRollbackReleaseCandidate,
-    MetadataUpload,
-    MetadataValidation,
-)
+from pipelines.airbyte_ci.metadata.pipeline import MetadataRollbackReleaseCandidate, MetadataUpload, MetadataValidation
 from pipelines.airbyte_ci.steps.bump_version import SetConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
@@ -400,7 +395,7 @@ class SetPromotedVersion(SetConnectorVersion):
         return semver.Version.parse(self.context.connector.version)
 
     @property
-    def promoted_semver_version(self) -> semver:
+    def promoted_semver_version(self) -> semver.Version:
         return self.current_semver_version.replace(prerelease=None)
 
     @property
@@ -411,7 +406,7 @@ class SetPromotedVersion(SetConnectorVersion):
     def current_version_is_rc(self) -> bool:
         return bool(self.current_semver_version.prerelease and "rc" in self.current_semver_version.prerelease)
 
-    def __init__(self, context: PublishConnectorContext, connector_directory: Directory):
+    def __init__(self, context: PublishConnectorContext, connector_directory: Directory) -> None:
         self.context = context
         super().__init__(context, connector_directory, self.promoted_version)
 
@@ -667,7 +662,6 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
 
     results = []
     current_version = context.connector.version
-    promoted_version = None
     all_modified_files = set()
     async with semaphore:
         async with context:
@@ -678,7 +672,6 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
             set_promoted_version_results = await set_promoted_version.run()
             results.append(set_promoted_version_results)
             if set_promoted_version_results.success:
-                promoted_version = set_promoted_version.promoted_version
                 all_modified_files.update(await set_promoted_version.export_modified_files(context.connector.code_directory))
 
             # Set isReleaseCandidate to False
@@ -690,6 +683,7 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
 
             # Open PR when all previous steps are successful
             if all([result.success for result in results]):
+                promoted_version = set_promoted_version.promoted_version
                 initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True)
                 pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                     all_modified_files, context, results, current_version, promoted_version

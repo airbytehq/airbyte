@@ -15,7 +15,7 @@ from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_writ
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import List
+    pass
 
 
 class ConnectorVersionNotFoundError(Exception):
@@ -117,11 +117,11 @@ class BumpConnectorVersion(SetConnectorVersion):
         bump_type: str,
     ) -> None:
         self.bump_type = bump_type
+        new_version = self.get_bumped_version(context.connector.version, bump_type)
         super().__init__(
             context,
             connector_directory,
-            self.get_bumped_version(context.connector.version, bump_type),
-            connector_directory=connector_directory,
+            new_version,
         )
 
     @property
