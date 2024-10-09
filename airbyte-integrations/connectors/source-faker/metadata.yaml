@@ -23,7 +23,7 @@ data:
       enabled: true
   releaseStage: beta
   releases:
-    isReleaseCandidate: true
+    isReleaseCandidate: false
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
