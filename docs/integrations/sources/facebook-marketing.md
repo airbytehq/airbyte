@@ -34,6 +34,7 @@ This page contains the setup guide and reference information for the [Facebook M
 
 <!-- env:oss -->
 #### For Airbyte Open Source:
+
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
