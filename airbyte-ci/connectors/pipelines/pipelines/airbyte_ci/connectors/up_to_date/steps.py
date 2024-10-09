@@ -106,7 +106,6 @@ class DependencyUpdate:
 
 
 class GetDependencyUpdates(Step):
-
     SYFT_DOCKER_IMAGE = "anchore/syft:v1.6.0"
     context: ConnectorContext
     title: str = "Get dependency updates"

@@ -53,6 +53,23 @@ class CheckStream(BaseModel):
     )
 
 
+class ConcurrencyLevel(BaseModel):
+    type: Optional[Literal['ConcurrencyLevel']] = None
+    default_concurrency: Union[int, str] = Field(
+        ...,
+        description='The amount of concurrency that will applied during a sync. This value can be hardcoded or user-defined in the config if different users have varying volume thresholds in the target API.',
+        examples=[10, "{{ config['num_workers'] or 10 }}"],
+        title='Default Concurrency',
+    )
+    max_concurrency: Optional[int] = Field(
+        None,
+        description='The maximum level of concurrency that will be used during a sync. This becomes a required field when the default_concurrency derives from the config, because it serves as a safeguard against a user-defined threshold that is too high.',
+        examples=[20, 100],
+        title='Max Concurrency',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class ConstantBackoffStrategy(BaseModel):
     type: Literal['ConstantBackoffStrategy']
     backoff_time_in_seconds: Union[float, str] = Field(
@@ -1304,6 +1321,7 @@ class DeclarativeSource(BaseModel):
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
+    concurrency_level: Optional[ConcurrencyLevel] = None
     metadata: Optional[Dict[str, Any]] = Field(
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
