@@ -9,7 +9,6 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import kotlinx.coroutines.runBlocking
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker

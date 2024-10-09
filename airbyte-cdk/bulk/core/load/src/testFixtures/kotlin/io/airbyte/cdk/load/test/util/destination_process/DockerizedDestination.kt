@@ -26,7 +26,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -162,16 +161,12 @@ class DockerizedDestination(
                         getMdcScope().use {
                             when (message.log.level) {
                                 null, // this should be impossible, treat it as error
-                                AirbyteLogMessage.Level
-                                    .FATAL, // klogger doesn't have a fatal level
-                                AirbyteLogMessage.Level.ERROR ->
-                                    logger.error { combinedMessage }
+                                AirbyteLogMessage.Level.FATAL, // klogger doesn't have a fatal level
+                                AirbyteLogMessage.Level.ERROR -> logger.error { combinedMessage }
                                 AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
                                 AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
-                                AirbyteLogMessage.Level.DEBUG ->
-                                    logger.debug { combinedMessage }
-                                AirbyteLogMessage.Level.TRACE ->
-                                    logger.trace { combinedMessage }
+                                AirbyteLogMessage.Level.DEBUG -> logger.debug { combinedMessage }
+                                AirbyteLogMessage.Level.TRACE -> logger.trace { combinedMessage }
                             }
                         }
                     } else {
@@ -227,14 +222,15 @@ class DockerizedDestination(
 class DestinationUncleanExitException(
     exitCode: Int,
     traceMessages: List<AirbyteErrorTraceMessage>
-): Exception(
-    """
+) :
+    Exception(
+        """
         Destination process exited uncleanly: $exitCode
         Trace messages:
         """.trimIndent()
         // explicit concat because otherwise trimIndent behaves badly
         + traceMessages
-)
+    )
 
 @Singleton
 class DockerizedDestinationFactory(
