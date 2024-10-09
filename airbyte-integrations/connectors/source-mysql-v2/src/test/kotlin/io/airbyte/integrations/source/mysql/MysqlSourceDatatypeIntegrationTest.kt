@@ -4,8 +4,8 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.data.AirbyteType
-import io.airbyte.cdk.data.LeafAirbyteType
+import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -127,7 +127,7 @@ class MysqlSourceDatatypeIntegrationTest {
         if (streamName == testCase.tableName) {
             val actualSchema: JsonNode = jsonSchema[testCase.columnName]
             Assertions.assertNotNull(actualSchema)
-            val expectedSchema: JsonNode = testCase.airbyteType.asJsonSchema()
+            val expectedSchema: JsonNode = testCase.airbyteSchemaType.asJsonSchema()
             Assertions.assertEquals(expectedSchema, actualSchema)
             if (testCase.cursor) {
                 Assertions.assertTrue(isIncrementalSupported)
@@ -260,67 +260,133 @@ class MysqlSourceDatatypeIntegrationTest {
                 TestCase(
                     "BOOLEAN",
                     booleanValues,
-                    airbyteType = LeafAirbyteType.BOOLEAN,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
                     cursor = false
                 ),
-                TestCase("VARCHAR(10)", stringValues, airbyteType = LeafAirbyteType.STRING),
-                TestCase("DECIMAL(10,2)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase(
+                    "VARCHAR(10)",
+                    stringValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING
+                ),
+                TestCase(
+                    "DECIMAL(10,2)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
                 TestCase(
                     "DECIMAL(10,2) UNSIGNED",
                     decimalValues,
-                    airbyteType = LeafAirbyteType.NUMBER
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
                 ),
                 TestCase(
                     "DECIMAL UNSIGNED",
                     zeroPrecisionDecimalValues,
-                    airbyteType = LeafAirbyteType.INTEGER
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
                 ),
-                TestCase("FLOAT", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
-                TestCase("FLOAT(7,4)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
-                TestCase("FLOAT(53,8)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
-                TestCase("DOUBLE", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
-                TestCase("DOUBLE UNSIGNED", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
-                TestCase("TINYINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("TINYINT UNSIGNED", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("SMALLINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("MEDIUMINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("BIGINT", intValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("SMALLINT UNSIGNED", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("FLOAT", decimalValues, airbyteSchemaType = LeafAirbyteSchemaType.NUMBER),
+                TestCase(
+                    "FLOAT(7,4)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "FLOAT(53,8)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase("DOUBLE", decimalValues, airbyteSchemaType = LeafAirbyteSchemaType.NUMBER),
+                TestCase(
+                    "DOUBLE UNSIGNED",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "TINYINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "TINYINT UNSIGNED",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "SMALLINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "MEDIUMINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("BIGINT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+                TestCase(
+                    "SMALLINT UNSIGNED",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
                 TestCase(
                     "MEDIUMINT UNSIGNED",
                     tinyintValues,
-                    airbyteType = LeafAirbyteType.INTEGER
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
                 ),
-                TestCase("BIGINT UNSIGNED", intValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("INT", intValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("INT UNSIGNED", intValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("DATE", dateValues, airbyteType = LeafAirbyteType.DATE),
+                TestCase(
+                    "BIGINT UNSIGNED",
+                    intValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("INT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+                TestCase(
+                    "INT UNSIGNED",
+                    intValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("DATE", dateValues, airbyteSchemaType = LeafAirbyteSchemaType.DATE),
                 TestCase(
                     "TIMESTAMP",
                     timestampValues,
-                    airbyteType = LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
                 ),
                 TestCase(
                     "DATETIME",
                     dateTimeValues,
-                    airbyteType = LeafAirbyteType.TIMESTAMP_WITHOUT_TIMEZONE
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
                 ),
-                TestCase("TIME", timeValues, airbyteType = LeafAirbyteType.TIME_WITHOUT_TIMEZONE),
-                TestCase("YEAR", yearValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase(
+                    "TIME",
+                    timeValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                TestCase("YEAR", yearValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
                 TestCase(
                     "VARBINARY(255)",
                     binaryValues,
-                    airbyteType = LeafAirbyteType.BINARY,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BINARY,
                     cursor = false,
                     noPK = true
                 ),
-                TestCase("BIT", bitValues, airbyteType = LeafAirbyteType.BOOLEAN, cursor = false),
-                TestCase("BIT(8)", longBitValues, airbyteType = LeafAirbyteType.INTEGER),
-                TestCase("JSON", jsonValues, airbyteType = LeafAirbyteType.STRING, noPK = true),
+                TestCase(
+                    "BIT",
+                    bitValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
+                    cursor = false
+                ),
+                TestCase(
+                    "BIT(8)",
+                    longBitValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "JSON",
+                    jsonValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING,
+                    noPK = true
+                ),
                 TestCase(
                     "ENUM('a', 'b', 'c')",
                     enumValues,
-                    airbyteType = LeafAirbyteType.STRING,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING,
                     noPK = true
                 ),
             )
@@ -354,7 +420,7 @@ class MysqlSourceDatatypeIntegrationTest {
     data class TestCase(
         val sqlType: String,
         val sqlToAirbyte: Map<String, String>,
-        val airbyteType: AirbyteType = LeafAirbyteType.STRING,
+        val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
         val cursor: Boolean = true,
         val noPK: Boolean = false,
         val customDDL: List<String>? = null,

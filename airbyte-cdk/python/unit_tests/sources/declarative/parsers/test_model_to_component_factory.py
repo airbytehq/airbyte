@@ -19,6 +19,7 @@ from airbyte_cdk.sources.declarative.auth.token import (
 )
 from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
+from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
@@ -28,6 +29,7 @@ from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeB
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
@@ -197,6 +199,10 @@ list_stream:
 check:
   type: CheckStream
   stream_names: ["list_stream"]
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] or 10 }}"
+  max_concurrency: 25
 spec:
   type: Spec
   documentation_url: https://airbyte.com/#yaml-from-manifest
@@ -310,6 +316,14 @@ spec:
     }
     advanced_auth = spec.advanced_auth
     assert advanced_auth.auth_flow_type.value == "oauth2.0"
+
+    concurrency_level = factory.create_component(
+        model_type=ConcurrencyLevelModel, component_definition=manifest["concurrency_level"], config=input_config
+    )
+    assert isinstance(concurrency_level, ConcurrencyLevel)
+    assert isinstance(concurrency_level._default_concurrency, InterpolatedString)
+    assert concurrency_level._default_concurrency.string == "{{ config['num_workers'] or 10 }}"
+    assert concurrency_level.max_concurrency == 25
 
 
 def test_interpolate_config():
