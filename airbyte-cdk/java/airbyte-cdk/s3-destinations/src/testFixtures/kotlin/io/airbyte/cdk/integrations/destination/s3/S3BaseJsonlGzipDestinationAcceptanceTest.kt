@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.S3Object
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.commons.json.Jsons
+import org.junit.jupiter.api.Test
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -23,5 +24,10 @@ abstract class S3BaseJsonlGzipDestinationAcceptanceTest : S3BaseJsonlDestination
         return BufferedReader(
             InputStreamReader(GZIPInputStream(s3Object.objectContent), StandardCharsets.UTF_8)
         )
+    }
+
+    @Test
+    override fun testAirbyteTimeTypes() {
+        super.testAirbyteTimeTypes()
     }
 }
