@@ -5,12 +5,12 @@
 package io.airbyte.integrations.destination.dev_null
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.message.Batch
-import io.airbyte.cdk.message.DestinationRecord
-import io.airbyte.cdk.message.SimpleBatch
-import io.airbyte.cdk.write.DestinationWriter
-import io.airbyte.cdk.write.StreamLoader
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicInteger
