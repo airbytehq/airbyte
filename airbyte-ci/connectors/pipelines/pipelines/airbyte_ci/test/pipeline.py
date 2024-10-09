@@ -205,37 +205,22 @@ def prepare_container_for_poe_tasks(
     # This is currently required for getting the connection-retriever package, for regression tests.
     if is_ci:
         container = (
-            container.with_exec(
-                [
-                    "sed",
-                    "-i",
-                    "-E",
-                    r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
-                    "pyproject.toml",
-                ]
-            )
-            .with_exec(
-                [
-                    "poetry",
-                    "source",
-                    "add",
-                    "--priority=supplemental",
-                    "airbyte-platform-internal-source",
-                    "https://github.com/airbytehq/airbyte-platform-internal.git",
-                ]
-            )
+            container.with_exec(["sed",
+"-i",
+"-E",
+r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+"pyproject.toml"], use_entrypoint=True).with_exec(["poetry",
+"source",
+"add",
+"--priority=supplemental",
+"airbyte-platform-internal-source",
+"https://github.com/airbytehq/airbyte-platform-internal.git"], use_entrypoint=True)
             .with_secret_variable(
                 "CI_GITHUB_ACCESS_TOKEN",
                 dagger_client.set_secret("CI_GITHUB_ACCESS_TOKEN", pipeline_context_params["ci_github_access_token"].value),
-            )
-            .with_exec(
-                [
-                    "/bin/sh",
-                    "-c",
-                    "poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN",
-                ]
-            )
-            .with_exec(["poetry", "lock", "--no-update"])
+            ).with_exec(["/bin/sh",
+"-c",
+"poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN"], use_entrypoint=True).with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
         )
 
     # Install the poetry package
@@ -258,7 +243,7 @@ async def run_poe_task(container: dagger.Container, poe_task: str) -> PoeTaskRes
         PoeTaskResult: The result of the command execution.
     """
     try:
-        executed_container = await container.pipeline(f"Run poe {poe_task}").with_exec(["poe", poe_task])
+        executed_container = await container.with_exec(["poe", poe_task], use_entrypoint=True)
         return PoeTaskResult(
             task_name=poe_task,
             status=StepStatus.SUCCESS,
@@ -317,7 +302,7 @@ async def run_poe_tasks_for_package(
     Returns:
         List[PoeTaskResult]: The results of the poe tasks.
     """
-    dagger_client = dagger_client.pipeline(f"Run poe tasks for {poetry_package_path}")
+    dagger_client = dagger_client
     airbyte_repo_dir = await get_filtered_airbyte_repo_dir(dagger_client, poetry_package_path)
     package_dir = await get_poetry_package_dir(airbyte_repo_dir, poetry_package_path)
     package_config = await get_airbyte_ci_package_config(package_dir)
