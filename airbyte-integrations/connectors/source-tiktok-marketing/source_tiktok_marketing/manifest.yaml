@@ -20,21 +20,13 @@ definitions:
     path: "{{ parameters['path'] }}"
     http_method: GET
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - predicate: "{{ response.get('code') != 0 and response.get('code') not in (40100, 50002) }}"
-              action: FAIL
-              error_message: "{{ response['message'] }}"
-        - type: DefaultErrorHandler
-          response_filters:
-            - predicate: "{{ response.get('code') == 40100 }}"
-              action: RATE_LIMITED
-        - type: DefaultErrorHandler
-          response_filters:
-            - predicate: "{{ response.get('code') == 50002 }}"
-              action: RETRY
+      type: DefaultErrorHandler
+      response_filters:
+        - predicate: "{{ response.get('code') != 0 and response.get('code') not in (40100, 50002) }}"
+          action: FAIL
+          error_message: "{{ response['message'] }}"
+        - predicate: "{{ response.get('code') == 40100 }}"
+          action: RATE_LIMITED
     authenticator:
       $ref: "#/definitions/authenticator"
     request_body_json: {}
