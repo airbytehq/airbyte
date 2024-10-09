@@ -7,13 +7,13 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Dict, List, Mapping, Optional, Tuple, Type
 
 import dagger
 import semver
 from base_images import consts, published_image
 from base_images.bases import AirbyteConnectorBaseImage
-from base_images.python.bases import AirbytePythonConnectorBaseImage
+from base_images.python.bases import AirbyteManifestOnlyConnectorBaseImage, AirbytePythonConnectorBaseImage
 from base_images.utils import docker
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 
@@ -145,7 +145,13 @@ class VersionRegistry:
         )
 
         # Build a dict of published images by version number for easier lookup
-        published_docker_images_by_version = {image.version: image for image in published_docker_images}
+        published_docker_images_by_version = dict()
+        for image in published_docker_images:
+            try:
+                published_docker_images_by_version[image.version] = image
+            # Skip any images with invalid version tags (i.e. "test_build")
+            except ValueError:
+                continue
 
         # We union the set of versions from the changelog and the published images to get all the versions we have to consider
         all_versions = set(changelog_entries_by_version.keys()) | set(published_docker_images_by_version.keys())
@@ -244,6 +250,10 @@ async def get_python_registry(dagger_client: dagger.Client, docker_credentials: 
     return await VersionRegistry.load(AirbytePythonConnectorBaseImage, dagger_client, docker_credentials)
 
 
+async def get_manifest_only_registry(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> VersionRegistry:
+    return await VersionRegistry.load(AirbyteManifestOnlyConnectorBaseImage, dagger_client, docker_credentials)
+
+
 async def get_registry_for_language(
     dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: Tuple[str, str]
 ) -> VersionRegistry:
@@ -263,6 +273,8 @@ async def get_registry_for_language(
     """
     if language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
         return await get_python_registry(dagger_client, docker_credentials)
+    elif language is ConnectorLanguage.MANIFEST_ONLY:
+        return await get_manifest_only_registry(dagger_client, docker_credentials)
     else:
         raise NotImplementedError(f"Registry for language {language} is not implemented yet.")
 
