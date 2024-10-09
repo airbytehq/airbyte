@@ -131,8 +131,8 @@ def oauth_config():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "okta.com",
-        "sub_domain": "test_domain",
+        "environment_domain": "okta.com",
+        "domain": "test_domain",
     }
 
 
@@ -149,8 +149,8 @@ def wrong_oauth_config_bad_credentials_record():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "okta.com",
-        "sub_domain": "test_domain",
+        "environment_domain": "okta.com",
+        "domain": "test_domain",
     }
 
 
@@ -166,8 +166,8 @@ def wrong_oauth_config_bad_auth_type():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "okta.com",
-        "sub_domain": "test_domain",
+        "environment_domain": "okta.com",
+        "domain": "test_domain",
     }
 
 
@@ -431,7 +431,7 @@ def logs_instance():
         "eventType": "app.oauth2.token.grant.access_token",
         "outcome": {"result": "SUCCESS", "reason": None},
         "published": "2022-07-19T15:54:11Z",
-        "securityContext": {"asNumber": 0, "asOrg": "Test Org", "isp": "TestProvider", "domain": "test-domain.com", "isProxy": False},
+        "securityContext": {"asNumber": 0, "asOrg": "Test Org", "isp": "TestProvider", "environment_domain": "test-domain.com", "isProxy": False},
         "severity": "INFO",
         "debugContext": {
             "debugData": {
