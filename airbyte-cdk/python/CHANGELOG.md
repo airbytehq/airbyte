@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.12.0
+Low Code: Adds  component
+
 ## 5.11.1
 Low Code: Consolidate manifest decoder selection under , , and 
 
