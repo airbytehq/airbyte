@@ -75,6 +75,8 @@ protected constructor(
     override val imageName: String
         get() = "airbyte/destination-s3:dev"
 
+    override val supportsFileTransfer = true
+
     override fun getDefaultSchema(config: JsonNode): String? {
         if (config.has("s3_bucket_path")) {
             return config["s3_bucket_path"].asText()
@@ -260,7 +262,10 @@ protected constructor(
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     AirbyteStateMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))),
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                        )
                 ),
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.TRACE)
@@ -579,7 +584,7 @@ protected constructor(
      * unrelated catalog sync data is untouched too.
      */
     @Test
-    fun testOverwriteSyncWithGenerationId() {
+    open fun testOverwriteSyncWithGenerationId() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
