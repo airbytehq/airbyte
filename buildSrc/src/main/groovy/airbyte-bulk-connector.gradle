@@ -207,7 +207,11 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.matching {it.name == 'spotbugsIntegrationTestJava' || it.name == 'spotbugsTest' }.configureEach {
+        project.tasks.matching {
+                it.name == 'spotbugsIntegrationTestLegacy' ||
+                it.name == 'spotbugsIntegrationTest' ||
+                it.name == 'spotbugsTest'
+            }.configureEach {
             enabled = false
         }
 
