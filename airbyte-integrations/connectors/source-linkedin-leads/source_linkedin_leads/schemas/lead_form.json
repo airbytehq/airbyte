@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "owner": {
+      "type": ["null", "object"],
+      "properties": {
+        "sponsoredAccount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "object"],
+      "properties": {
+        "headline": {
+          "type": ["null", "object"],
+          "properties": {
+            "localized": {
+              "type": ["null", "object"],
+              "properties": {
+                "da_DK": {
+                  "type": ["null", "string"]
+                },
+                "de_DE": {
+                  "type": ["null", "string"]
+                },
+                "en_US": {
+                  "type": ["null", "string"]
+                },
+                "fr_FR": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "legalInfo": {
+          "type": ["null", "object"],
+          "properties": {
+            "consents": {
+              "type": ["null", "array"]
+            },
+            "legalInfoId": {
+              "type": ["null", "integer"]
+            },
+            "privacyPolicyUrl": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "questions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "name": {
+                "type": ["null", "string"]
+              },
+              "label": {
+                "type": ["null", "string"]
+              },
+              "question": {
+                "type": ["null", "object"],
+                "properties": {
+                  "localized": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "da_DK": {
+                        "type": ["null", "string"]
+                      },
+                      "de_DE": {
+                        "type": ["null", "string"]
+                      },
+                      "en_US": {
+                        "type": ["null", "string"]
+                      },
+                      "fr_FR": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "questionId": {
+                "type": ["null", "integer"]
+              },
+              "predefinedField": {
+                "type": ["null", "string"]
+              },
+              "questionDetails": {
+                "type": ["null", "object"],
+                "properties": {
+                  "textQuestionDetails": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "maxResponseLength": {
+                        "type": ["null", "integer"]
+                      }
+                    }
+                  },
+                  "multipleChoiceQuestionDetails": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "options": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "id": {
+                              "type": ["null", "integer"]
+                            },
+                            "text": {
+                              "type": ["null", "object"],
+                              "properties": {
+                                "localized": {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "da_DK": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "de_DE": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "en_US": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "fr_FR": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "label": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responseEditable": {
+                "type": ["null", "boolean"]
+              },
+              "responseRequired": {
+                "type": ["null", "boolean"]
+              }
+            }
+          }
+        },
+        "description": {
+          "type": ["null", "object"],
+          "properties": {
+            "localized": {
+              "type": ["null", "object"],
+              "properties": {
+                "da_DK": {
+                  "type": ["null", "string"]
+                },
+                "de_DE": {
+                  "type": ["null", "string"]
+                },
+                "en_US": {
+                  "type": ["null", "string"]
+                },
+                "fr_FR": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "postSubmissionInfo": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "object"],
+              "properties": {
+                "localized": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "da_DK": {
+                      "type": ["null", "string"]
+                    },
+                    "de_DE": {
+                      "type": ["null", "string"]
+                    },
+                    "en_US": {
+                      "type": ["null", "string"]
+                    },
+                    "fr_FR": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "callToAction": {
+              "type": ["null", "object"],
+              "properties": {
+                "callToActionLabel": {
+                  "type": ["null", "string"]
+                },
+                "callToActionTarget": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "landingPageUrl": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "versionId": {
+      "type": ["null", "integer"]
+    },
+    "reviewInfo": {
+      "type": ["null", "object"],
+      "properties": {
+        "lastUpdated": {
+          "type": ["null", "integer"]
+        },
+        "reviewStatus": {
+          "type": ["null", "string"]
+        },
+        "rejectionReasons": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "hiddenFields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "lastModified": {
+      "type": ["null", "integer"]
+    },
+    "creationLocale": {
+      "type": ["null", "object"],
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        },
+        "language": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

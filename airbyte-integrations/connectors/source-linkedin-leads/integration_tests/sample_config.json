@@ -1,0 +1,6 @@
+{
+  "client_id": "<CLIENT_ID_VALUE>",
+  "client_secret": "<CLIENT_SECRET_VALUE>",
+  "client_refresh_token": "<CLIENT_REFRESH_TOKEN_VALUE>",
+  "account_ids": [111111111, 222222222]
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "owner": {
+      "type": ["null", "object"],
+      "properties": {
+        "sponsoredAccount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "leadType": {
+      "type": ["null", "string"]
+    },
+    "testLead": {
+      "type": ["null", "boolean"]
+    },
+    "submitter": {
+      "type": ["null", "string"]
+    },
+    "submittedAt": {
+      "type": ["null", "integer"]
+    },
+    "formResponse": {
+      "type": ["null", "object"],
+      "properties": {
+        "answers": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "questionId": {
+                "type": ["null", "integer"]
+              },
+              "answerDetails": {
+                "type": ["null", "object"],
+                "properties": {
+                  "textQuestionAnswer": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "answer": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "multipleChoiceAnswer": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "options": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "integer"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "consentResponses": {
+          "type": ["null", "array"]
+        }
+      }
+    },
+    "leadMetadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "sponsoredLeadMetadata": {
+          "type": ["null", "object"],
+          "properties": {
+            "campaign": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "associatedEntity": {
+      "type": ["null", "object"],
+      "properties": {
+        "associatedCreative": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "versionedLeadGenFormUrn": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}
