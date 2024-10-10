@@ -163,40 +163,14 @@ class SubstreamPartitionRouter(PartitionRouter):
                     except KeyError:
                         pass
                     else:
-                        if incremental_dependency:
-                            if previous_associated_slice is None:
-                                previous_associated_slice = parent_associated_slice
-                            elif previous_associated_slice != parent_associated_slice:
-                                # Update the parent state, as parent stream read all record for current slice and state
-                                # is already updated.
-                                #
-                                # When the associated slice of the current record of the parent stream changes, this
-                                # indicates the parent stream has finished processing the current slice and has moved onto
-                                # the next. When this happens, we should update the partition router's current state and
-                                # flush the previous set of collected records and start a new set
-                                #
-                                # Note: One tricky aspect to take note of here is that parent_stream.state will actually
-                                # fetch state of the stream of the previous record's slice NOT the current record's slice.
-                                # This is because in the retriever, we only update stream state after yielding all the
-                                # records. And since we are in the middle of the current slice, parent_stream.state is
-                                # still set to the previous state.
-                                self._parent_state[parent_stream.name] = parent_stream.state
-                                yield from stream_slices_for_parent
-
-                                # Reset stream_slices_for_parent after we've flushed parent records for the previous parent slice
-                                stream_slices_for_parent = []
-                                previous_associated_slice = parent_associated_slice
-                        stream_slices_for_parent.append(
-                            StreamSlice(
+                        print(f"Yielding slice {partition_value} for {parent_stream.name} with parent field {parent_field}")
+                        yield StreamSlice(
                                 partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
                             )
-                        )
 
-                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
-                if incremental_dependency:
-                    self._parent_state[parent_stream.name] = parent_stream.state
-
-                yield from stream_slices_for_parent
+                        print(f"Setting parent state {incremental_dependency} - {parent_stream.name} to {parent_stream.state}")
+                        if incremental_dependency:
+                            self._parent_state[parent_stream.name] = parent_stream.state
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
