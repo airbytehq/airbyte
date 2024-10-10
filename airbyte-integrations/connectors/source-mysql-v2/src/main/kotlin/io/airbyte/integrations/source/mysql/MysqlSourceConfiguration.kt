@@ -133,8 +133,8 @@ class MysqlSourceConfigurationFactory :
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
 
-        val maxSnapshotReadTime: kotlin.time.Duration? = when (pojo.getCursorConfigurationValue()) {
-            is CdcCursor -> (pojo.getCursorConfigurationValue()  as CdcCursor).initialLoadTimeoutHours!!.hours
+        val maxSnapshotReadTime: kotlin.time.Duration? = when (pojo.getCursorMethodConfigurationValue()) {
+            is CdcCursor -> (pojo.getCursorMethodConfigurationValue()  as CdcCursor).initialLoadTimeoutHours!!.hours
             else -> null
         }
         // Build JDBC URL
