@@ -23,7 +23,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.10.2"
+PYAIRBYTE_VERSION = "0.18.1"
 
 
 class PytestStep(Step, ABC):
@@ -215,7 +215,14 @@ class PyAirbyteValidation(Step):
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
-            hacks.never_fail_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--validate-install-only"])
+            hacks.never_fail_exec(
+                [
+                    "pyab",
+                    "validate",
+                    f"--connector={self.context.connector.technical_name}",
+                    "--pip-url='.'",
+                ]
+            )
         )
 
         return await self.get_step_result(test_execution)

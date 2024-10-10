@@ -122,7 +122,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test pyairbyte validation",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
@@ -138,7 +138,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test pyairbyte validation",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
@@ -155,7 +155,7 @@ class TestPyAirbyteValidationTests:
         result = await PyAirbyteValidation(context_for_valid_connector)._run(mocker.MagicMock())
         assert isinstance(result, StepResult)
         assert result.status == StepStatus.SUCCESS
-        assert "Creating source and validating spec is returned successfully..." in result.stdout
+        assert "Getting `spec` output from connector..." in result.stdout
 
     async def test__run_validation_skip_unpublished_connector(
         self,
