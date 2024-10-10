@@ -111,3 +111,6 @@ class SubstreamResumableFullRefreshCursor(Cursor):
 
     def _to_dict(self, partition_key: str) -> Mapping[str, Any]:
         return self._partition_serializer.to_partition(partition_key)
+
+    def read_state_from_cursor(self) -> bool:
+        return True

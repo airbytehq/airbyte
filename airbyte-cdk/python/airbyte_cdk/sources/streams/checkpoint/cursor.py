@@ -75,3 +75,6 @@ class Cursor(ABC):
         a single dimension this is the entire state object. For per-partition cursors used by substreams, this returns the state of
         a specific parent delineated by the incoming slice's partition object.
         """
+
+    def read_state_from_cursor(self) -> bool:
+        return False

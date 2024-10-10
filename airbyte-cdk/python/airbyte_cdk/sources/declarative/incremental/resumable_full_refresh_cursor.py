@@ -96,6 +96,9 @@ class ResumableFullRefreshCursor(DeclarativeCursor):
     ) -> Mapping[str, Any]:
         return {}
 
+    def read_state_from_cursor(self) -> bool:
+        return True
+
 
 @dataclass
 class ChildPartitionResumableFullRefreshCursor(ResumableFullRefreshCursor):
