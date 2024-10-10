@@ -1,5 +1,12 @@
 # Branch
 Branch Connector
+This directory contains the manifest-only connector for [`source-branch`](https://www.branch.io/).
+
+## Documentation reference:
+- Visit `https://help.branch.io/developers-hub/reference/apis-overview` for API documentation
+
+## Authentication setup
+`Branch` uses different authentication methods depending on the API in use, Visit `https://help.branch.io/developers-hub/reference/trying-apis#authentication` for more information
 
 ## Configuration
 
@@ -38,6 +45,6 @@ Branch Connector
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-10 | | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
+| 0.0.1 | 2024-10-10 | [46723] https://github.com/airbytehq/airbyte/pull/46723 | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
 
 </details>
