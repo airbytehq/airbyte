@@ -134,7 +134,8 @@ class JdbcPartitionReaderTest {
                         """{"id":3,"ts":"2024-08-03","msg":"are"}""",
                         """{"id":4,"ts":"2024-08-04","msg":"you"}""",
                     )
-                )
+                ),
+                maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory = sharedState.factory()
         val result = factory.create(stream, opaqueStateValue(cursor = cursorLowerBound))
@@ -194,7 +195,8 @@ class JdbcPartitionReaderTest {
                         """{"id":4,"ts":"2024-08-04","msg":"you"}""",
                         """{"id":5,"ts":"2024-08-05","msg":"today"}""",
                     )
-                )
+                ),
+                maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory2 = sharedState2.factory()
         val result2 = factory2.create(stream2, opaqueStateValue(cursor = cursorLowerBound))

@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
-import kotlin.time.toJavaDuration
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -61,13 +60,14 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         acquiredResources.getAndSet(null)?.close()
     }
 
-    protected fun checkTimeElapsed() {
+    /** If configured max feed read time elapsed we exit with a transient error */
+    protected fun checkMaxReadTimeElapsed() {
         sharedState.configuration.maxSnapshotReadTime?.let {
             if (java.time.Duration.between(
                     sharedState.readStartTime,
                     Instant.now()
                 ) > it) {
-                throw TransientErrorException("Wass")
+                throw TransientErrorException("Shutting down reader: max time elapsed")
             }
         }
     }
@@ -83,7 +83,9 @@ open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val numRecords = AtomicLong()
 
     override suspend fun run() {
-        checkTimeElapsed()
+        // Don't start read if we've gone over max duration
+        checkMaxReadTimeElapsed()
+
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
@@ -125,7 +127,8 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
-        checkTimeElapsed()
+        // Don't start read if we've gone over max duration
+        checkMaxReadTimeElapsed()
 
         val fetchSize: Int = streamState.fetchSizeOrDefault
         val limit: Long = streamState.limit
@@ -144,9 +147,6 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
                     }
-//                    if (System.currentTimeMillis() - sharedState.readStartTime.get() < sharedState.configuration.maxPartitionReadTime) { // TEMP
-//                        throw TransientErrorException("Wass")
-//                    }
                 }
             }
         runComplete.set(true)

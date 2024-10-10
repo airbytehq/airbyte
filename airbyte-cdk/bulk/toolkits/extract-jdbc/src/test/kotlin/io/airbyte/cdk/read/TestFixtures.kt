@@ -76,10 +76,11 @@ object TestFixtures {
         maxConcurrency: Int = 10,
         maxMemoryBytesForTesting: Long = 1_000_000L,
         constants: DefaultJdbcConstants = DefaultJdbcConstants(),
+        maxSnapshotReadTime: Duration? = null,
         vararg mockedQueries: MockedQuery,
     ): DefaultJdbcSharedState {
         val configuration =
-            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency, Duration.ofSeconds(1))
+            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency, maxSnapshotReadTime)
         return DefaultJdbcSharedState(
             configuration,
             BufferingOutputConsumer(ClockFactory().fixed()),

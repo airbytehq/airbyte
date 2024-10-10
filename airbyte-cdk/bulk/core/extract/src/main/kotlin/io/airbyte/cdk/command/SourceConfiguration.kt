@@ -10,7 +10,7 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     /** Does READ generate states of type GLOBAL? */
     val global: Boolean
 
-    /** Maximum amount of time may be set to limit snapshotting duration */
+    /** Maximum amount of time may be set to limit overall snapshotting duration */
     val maxSnapshotReadTime: Duration?
 
     /** During the READ operation, how often a feed should checkpoint, ideally. */
