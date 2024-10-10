@@ -140,16 +140,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 }
             }
         }
-
-        project.kotlin {
-            sourceSets {
-                testIntegration {
-                    kotlin.srcDir 'src/test-integration/kotlin'
-                    resources.srcDir 'src/test-integration/resources'
-                }
-            }
-        }
-
         project.tasks.named('spotbugsTest').configure {
             enabled = false
         }
