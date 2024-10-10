@@ -21,7 +21,7 @@ data class FakeSourceConfiguration(
     val cursor: CursorConfiguration,
     override val maxConcurrency: Int,
     override val checkpointTargetInterval: Duration,
-    override val maxSnapshotReadTime: Duration? = null,
+    override val maxSnapshotReadDuration: Duration? = null,
 ) : SourceConfiguration {
     override val global: Boolean = cursor is CdcCursor
 

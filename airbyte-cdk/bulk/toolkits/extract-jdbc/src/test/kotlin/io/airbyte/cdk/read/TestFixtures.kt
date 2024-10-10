@@ -125,7 +125,7 @@ object TestFixtures {
         override val global: Boolean,
         override val checkpointTargetInterval: Duration,
         override val maxConcurrency: Int,
-        override val maxSnapshotReadTime: Duration?,
+        override val maxSnapshotReadDuration: Duration?,
     ) : JdbcSourceConfiguration {
         override val realHost: String
             get() = TODO("Not yet implemented")

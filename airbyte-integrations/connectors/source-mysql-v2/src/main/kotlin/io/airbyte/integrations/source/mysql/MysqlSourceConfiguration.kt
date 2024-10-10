@@ -34,7 +34,7 @@ data class MysqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
-    override val maxSnapshotReadTime: Duration?
+    override val maxSnapshotReadDuration: Duration?
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
 
@@ -172,7 +172,7 @@ class MysqlSourceConfigurationFactory :
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
-            maxSnapshotReadTime = maxSnapshotReadTime
+            maxSnapshotReadDuration = maxSnapshotReadTime
         )
     }
 }

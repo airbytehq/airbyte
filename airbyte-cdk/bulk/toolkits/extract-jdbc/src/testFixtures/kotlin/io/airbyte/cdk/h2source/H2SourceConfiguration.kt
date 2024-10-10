@@ -25,7 +25,7 @@ data class H2SourceConfiguration(
     val resumablePreferred: Boolean,
     override val maxConcurrency: Int,
     override val checkpointTargetInterval: Duration,
-    override val maxSnapshotReadTime: Duration? = null,
+    override val maxSnapshotReadDuration: Duration? = null,
 ) : JdbcSourceConfiguration {
     override val global: Boolean = cursor is CdcCursor
     override val jdbcProperties: Map<String, String> = mapOf()

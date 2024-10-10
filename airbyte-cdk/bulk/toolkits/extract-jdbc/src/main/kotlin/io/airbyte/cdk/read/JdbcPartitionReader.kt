@@ -62,9 +62,9 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
     /** If configured max feed read time elapsed we exit with a transient error */
     protected fun checkMaxReadTimeElapsed() {
-        sharedState.configuration.maxSnapshotReadTime?.let {
-            if (java.time.Duration.between(sharedState.readStartTime, Instant.now()) > it) {
-                throw TransientErrorException("Shutting down reader: max time elapsed")
+        sharedState.configuration.maxSnapshotReadDuration?.let {
+            if (java.time.Duration.between(sharedState.snapshotReadStartTime, Instant.now()) > it) {
+                throw TransientErrorException("Shutting down snapshot reader: max duration elapsed")
             }
         }
     }

@@ -37,7 +37,7 @@ interface JdbcSharedState {
     val targetPartitionByteSize: Long
 
     /** Keeping the time when the read operation started. */
-    val readStartTime: Instant
+    val snapshotReadStartTime: Instant
 
     /** Creates a new instance of a [JdbcFetchSizeEstimator]. */
     fun jdbcFetchSizeEstimator(): JdbcFetchSizeEstimator

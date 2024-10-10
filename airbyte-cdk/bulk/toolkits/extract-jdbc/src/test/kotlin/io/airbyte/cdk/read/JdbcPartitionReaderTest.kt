@@ -254,7 +254,7 @@ class JdbcPartitionReaderTest {
         Assertions.assertThrows(TransientErrorException::class.java) {
             // Run and simulate timing out
             runBlocking {
-                sharedState.readStartTime
+                sharedState.snapshotReadStartTime
                 delay(1.seconds)
                 readerResumable.run()
             }
@@ -306,7 +306,7 @@ class JdbcPartitionReaderTest {
         Assertions.assertThrows(TransientErrorException::class.java) {
             // Run and simulate timing out
             runBlocking {
-                sharedState2.readStartTime
+                sharedState2.snapshotReadStartTime
                 delay(1.seconds)
                 readerNonResumable.run()
             }

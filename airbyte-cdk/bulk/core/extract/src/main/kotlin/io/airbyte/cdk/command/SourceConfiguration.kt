@@ -11,7 +11,7 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     val global: Boolean
 
     /** Maximum amount of time may be set to limit overall snapshotting duration */
-    val maxSnapshotReadTime: Duration?
+    val maxSnapshotReadDuration: Duration?
 
     /** During the READ operation, how often a feed should checkpoint, ideally. */
     val checkpointTargetInterval: Duration
