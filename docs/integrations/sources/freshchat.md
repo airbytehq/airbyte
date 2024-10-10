@@ -34,8 +34,8 @@ See more in the [API doc](https://developers.freshchat.com/api/#authentication)
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-22 | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-22 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

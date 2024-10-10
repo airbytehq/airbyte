@@ -3,6 +3,7 @@
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Google Sheets](https://developers.google.com/sheets) source connector.
+
 </HideInUI>
 
 :::info
@@ -188,6 +189,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.7.4   | 2024-09-09 | [45108](https://github.com/airbytehq/airbyte/pull/45108) | Google Sheets API errors now cause syncs to fail                                  |
 | 0.7.3   | 2024-08-12 | [43921](https://github.com/airbytehq/airbyte/pull/43921) | Update dependencies                                                               |
 | 0.7.2   | 2024-08-10 | [43544](https://github.com/airbytehq/airbyte/pull/43544) | Update dependencies                                                               |
 | 0.7.1   | 2024-08-03 | [43290](https://github.com/airbytehq/airbyte/pull/43290) | Update dependencies                                                               |
