@@ -1592,6 +1592,11 @@ class ParentStreamConfig(BaseModel):
         description='Indicates whether the parent stream should be read incrementally based on updates in the child stream.',
         title='Incremental Dependency',
     )
+    extra_fields: Optional[List[List[str]]] = Field(
+        None,
+        description='Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.',
+        title='Extra Fields',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 

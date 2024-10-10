@@ -2115,6 +2115,20 @@ definitions:
         description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
         type: boolean
         default: false
+      extra_fields:
+        title: Extra Fields
+        description: Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.
+        interpolation_context:
+          - config
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+          description: Defines a field path as an array of strings.
+          examples:
+            - ["field1"]
+            - ["nested", "field2"]
       $parameters:
         type: object
         additionalProperties: true
