@@ -42,6 +42,57 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/inventory"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commerce/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedOn
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: modifiedBefore
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
     store_pages:
       type: DeclarativeStream
       name: store_pages
@@ -122,6 +173,57 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commerce/transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - documents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedOn
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: modifiedBefore
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
     profiles:
       type: DeclarativeStream
       name: profiles
@@ -160,8 +262,10 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/inventory"
+  - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/store_pages"
   - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/profiles"
 
 spec:
@@ -194,13 +298,22 @@ spec:
 metadata:
   autoImportSchema:
     inventory: true
+    orders: false
     store_pages: true
     products: true
+    transactions: false
     profiles: true
   testedStreams:
     inventory:
       hasRecords: true
       streamHash: e9950cb9014345fb080be683d7a0fc2008023c80
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: false
+      streamHash: 1b9db6cdbbe8eb38cf0428647156ed9ebeeeb966
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -215,6 +328,13 @@ metadata:
     products:
       hasRecords: true
       streamHash: 4f5f02f6e151a6570076da29b42e81ed87114aaf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transactions:
+      hasRecords: false
+      streamHash: ad42eb766cf3b0d5f2a44eb2df5baae025b657f9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -255,6 +375,434 @@ schemas:
         type: string
     required:
       - variantId
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          countryCode:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      channelName:
+        type:
+          - string
+          - "null"
+      createdOn:
+        type:
+          - string
+          - "null"
+      customerEmail:
+        type:
+          - string
+          - "null"
+      discountLines:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+            promoCode:
+              type:
+                - string
+                - "null"
+      discountTotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      externalOrderReference:
+        type:
+          - string
+          - "null"
+      formSubmission:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      fulfilledOn:
+        type:
+          - string
+          - "null"
+      fulfillmentStatus:
+        type:
+          - string
+          - "null"
+      fulfillments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            carrierName:
+              type:
+                - string
+                - "null"
+            service:
+              type:
+                - string
+                - "null"
+            shipDate:
+              type:
+                - string
+                - "null"
+            trackingNumber:
+              type:
+                - string
+                - "null"
+            trackingUrl:
+              type:
+                - string
+                - "null"
+      grandTotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      internalNotes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content:
+              type:
+                - string
+                - "null"
+      lineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            customizations:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            height:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            imageUrl:
+              type:
+                - string
+                - "null"
+            length:
+              type:
+                - number
+                - "null"
+            lineItemType:
+              type:
+                - string
+                - "null"
+            productId:
+              type:
+                - string
+                - "null"
+            productName:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            unitPricePaid:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            variantId:
+              type:
+                - string
+                - "null"
+            variantOptions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  optionName:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            weight:
+              type:
+                - number
+                - "null"
+            width:
+              type:
+                - number
+                - "null"
+      modifiedOn:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      priceTaxInterpretation:
+        type:
+          - string
+          - "null"
+      refundedTotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      shippingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          countryCode:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      shippingLines:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            method:
+              type:
+                - string
+                - "null"
+      shippingTotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      subtotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      taxTotal:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      testmode:
+        type:
+          - boolean
+          - "null"
   store_pages:
     type: object
     $schema: http://json-schema.org/schema#
@@ -486,6 +1034,584 @@ schemas:
     required:
       - id
       - modifiedOn
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdOn:
+        type:
+          - string
+          - "null"
+      customerEmail:
+        type:
+          - string
+          - "null"
+      discounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+      id:
+        type:
+          - string
+          - "null"
+      modifiedOn:
+        type:
+          - string
+          - "null"
+      payments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            creditCardType:
+              type:
+                - string
+                - "null"
+            externalTransactionId:
+              type:
+                - string
+                - "null"
+            externalTransactionProperties:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            netAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            paidOn:
+              type:
+                - string
+                - "null"
+            processingFees:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  amountGatewayCurrency:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  exchangeRate:
+                    type:
+                      - string
+                      - "null"
+                  feeRefunds:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        amount:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                        amountGatewayCurrency:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                        exchangeRate:
+                          type:
+                            - string
+                            - "null"
+                        externalTransactionId:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        refundedOn:
+                          type:
+                            - string
+                            - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  netAmount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  netAmountGatewayCurrency:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  refundedAmount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  refundedAmountGatewayCurrency:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+            provider:
+              type:
+                - string
+                - "null"
+            refundedAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            refunds:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  externalTransactionId:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  refundedOn:
+                    type:
+                      - string
+                      - "null"
+      salesLineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            discountAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            taxes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  jurisdiction:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  rate:
+                    type:
+                      - string
+                      - "null"
+            total:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            totalNetSales:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            totalSales:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+      salesOrderId:
+        type:
+          - string
+          - "null"
+      shippingLineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            discountAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            netAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            taxes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  rate:
+                    type:
+                      - string
+                      - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalNetPayment:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalNetSales:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalNetShipping:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalSales:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalTaxes:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      voided:
+        type:
+          - boolean
+          - "null"
   profiles:
     type: object
     $schema: http://json-schema.org/schema#
