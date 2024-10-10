@@ -11,7 +11,6 @@ from typing import Any, Callable, List, Mapping, cast
 
 import dill
 import orjson
-
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer
 
 
@@ -56,6 +55,7 @@ def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: A
 
 def get_value_or_json_if_empty_string(options: str = None) -> str:
     return options.strip() if options else "{}"
+
 
 def airbyte_message_to_str(message: AirbyteMessage) -> str:
     return orjson.dumps(cast(dict, AirbyteMessageSerializer.dump(message))).decode()

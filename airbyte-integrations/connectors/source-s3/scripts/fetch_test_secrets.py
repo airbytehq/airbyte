@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 """Simple script to download secrets from GCS.
 
 Usage:
@@ -25,7 +27,6 @@ from pathlib import Path
 
 import airbyte as ab
 from airbyte.secrets import GoogleGSMSecretManager, SecretHandle
-
 
 AIRBYTE_INTERNAL_GCP_PROJECT = "dataline-integration-testing"
 CONNECTOR_NAME = "source-s3"

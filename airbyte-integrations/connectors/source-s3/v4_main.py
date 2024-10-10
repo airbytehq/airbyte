@@ -7,11 +7,10 @@ import sys
 import traceback
 from datetime import datetime
 
-from source_s3.utils import airbyte_message_to_str
-from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
-
 from airbyte_cdk import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+from source_s3.utils import airbyte_message_to_str
+from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
 def get_source(args: list[str]) -> SourceS3 | None:

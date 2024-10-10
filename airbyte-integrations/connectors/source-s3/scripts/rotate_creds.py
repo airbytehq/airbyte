@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 """Script to rotate AWS credentials for integration tests.
 
 Uses PyAirbyte to rotate AWS credentials for integration tests.
@@ -27,7 +29,6 @@ from typing import Any, cast
 
 from airbyte.secrets import get_secret
 from airbyte.secrets.google_gsm import GoogleGSMSecretManager, GSMSecretHandle
-
 
 AIRBYTE_INTERNAL_GCP_PROJECT = "dataline-integration-testing"
 CONNECTOR_NAME = "source-s3"
