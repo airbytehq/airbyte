@@ -60,12 +60,12 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             else :
                 print("Nothing to delete in default namespace. No data in the index/namespace.")
         try:
-            self.pinecone_index.delete(delete_all=True, namespace=self.config["indexing"]["default_namespace"])
+            self.pinecone_index.delete(delete_all=True, namespace="mynamespace")
         except PineconeException as e:
             if "Namespace not found" not in str(e):
                 raise(e)
             else :
-                print(f"Nothing to delete in {self.config["indexing"]["default_namespace"]} namespace. No data in the index/namespace.")
+                print("Nothing to delete in mynamespace namespace. No data in the index/namespace.")
 
     def test_integration_test_flag_is_set(self):
         assert "PYTEST_CURRENT_TEST" in os.environ
