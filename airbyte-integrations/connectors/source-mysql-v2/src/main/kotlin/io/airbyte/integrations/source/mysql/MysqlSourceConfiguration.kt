@@ -15,9 +15,7 @@ import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-import java.util.concurrent.TimeUnit.HOURS
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.toJavaDuration
 
 private val log = KotlinLogging.logger {}
 
