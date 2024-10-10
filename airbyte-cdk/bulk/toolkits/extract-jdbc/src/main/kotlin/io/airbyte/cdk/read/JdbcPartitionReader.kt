@@ -79,7 +79,10 @@ open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val numRecords = AtomicLong()
 
     override suspend fun run() {
-        // Don't start read if we've gone over max duration
+        /* Don't start read if we've gone over max duration.
+        We check for elapsed duration before reading and not while because
+        existing exiting with an exception skips checkpoint(), so any work we
+        did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
         selectQuerier
@@ -123,7 +126,10 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
-        // Don't start read if we've gone over max duration
+        /* Don't start read if we've gone over max duration.
+        We check for elapsed duration before reading and not while because
+        existing exiting with an exception skips checkpoint(), so any work we
+        did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
         val fetchSize: Int = streamState.fetchSizeOrDefault
