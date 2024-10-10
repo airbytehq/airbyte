@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "g.codefresh.io"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-codefresh
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.11.1@sha256:f48a7ddc1f3acecbd8eb6a10a3146e8d0396e9a4dede77beafb76924f416df65
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 98aa1742-6d7e-4d95-87ef-a621620aa9b9
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-codefresh
+  githubIssueLabel: source-codefresh
+  icon: icon.svg
+  license: MIT
+  name: Codefresh
+  releaseDate: 2024-10-08
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/codefresh
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
