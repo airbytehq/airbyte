@@ -6,9 +6,6 @@ from __future__ import annotations
 import sys
 import traceback
 from datetime import datetime
-from typing import cast
-
-import orjson
 
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType
