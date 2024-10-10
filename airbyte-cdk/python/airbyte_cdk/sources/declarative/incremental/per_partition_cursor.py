@@ -69,7 +69,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
             for cursor_slice in cursor.stream_slices():
-                yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+                yield StreamSlice(partition=partition, cursor_slice=cursor_slice, extra_fields=partition.extra_fields)
 
     def _ensure_partition_limit(self) -> None:
         """
