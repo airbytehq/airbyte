@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CancellationException
 
 /**
  * The level at which a task operates:
@@ -76,6 +77,8 @@ class DefaultDestinationTaskExceptionHandler(
 
             try {
                 innerTask.execute()
+            } catch (e: CancellationException) {
+                log.warn { "Sync task $innerTask was cancelled." }
             } catch (e: Exception) {
                 handleSyncFailure(e)
             }
@@ -109,6 +112,8 @@ class DefaultDestinationTaskExceptionHandler(
 
             try {
                 innerTask.execute()
+            } catch(e: CancellationException) {
+                log.warn { "Stream task $innerTask was cancelled." }
             } catch (e: Exception) {
                 handleStreamFailure(innerTask.stream, e)
             }
