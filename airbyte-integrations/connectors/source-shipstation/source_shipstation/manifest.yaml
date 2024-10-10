@@ -1,0 +1,493 @@
+version: "0.29.0"
+
+definitions:
+
+  # Authenticators
+
+  authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['api_key'] }}"
+    password: "{{ config['api_secret'] }}"
+
+
+  # Error handler
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [ 429, 500, 502, 503, 504 ]
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes: [ 400, 404 ]
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [ 401, 403 ]
+        failure_type: config_error
+
+# Requester
+  requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  customers_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      stateCode: "{{ config['stateCode'] }}"
+      countryCode: "{{ config['countryCode'] }}"
+      marketplaceId: "{{ config['marketplaceId'] }}"
+      tagId: "{{ config['tagId'] }}"
+      sortBy: "{{ config['sortBy'] }}"
+      sortDir: "{{ config['sortDir'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  fulfillments_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      fulfillmentId: "{{ config['fulfillmentId'] }}"
+      orderId: "{{ config['orderId'] }}"
+      orderNumber: "{{ config['orderNumber'] }}"
+      trackingNumber: "{{ config['trackingNumber'] }}"
+      recipientName: "{{ config['recipientName'] }}"
+      createDateStart: "{{ config['createDateStart'] }}"
+      createDateEnd: "{{ config['createDateEnd'] }}"
+      shipDateStart: "{{ config['shipDateStart'] }}"
+      shipDateEnd: "{{ config['shipDateEnd'] }}"
+      sortBy: "{{ config['sortBy'] }}"
+      sortDir: "{{ config['sortDir'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  orders_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      customerName: "{{ config['customerName'] }}"
+      itemKeyword: "{{ config['itemKeyword'] }}"
+      createDateStart: "{{ config['createDateStart'] }}"
+      createDateEnd: "{{ config['createDateEnd'] }}"
+      modifyDateStart: "{{ config['modifyDateStart'] }}"
+      modifyDateEnd: "{{ config['modifyDateEnd'] }}"
+      orderDateStart: "{{ config['orderDateStart'] }}"
+      orderDateEnd: "{{ config['orderDateEnd'] }}"
+      orderNumber: "{{ config['orderNumber'] }}"
+      orderStatus: "{{ config['orderStatus'] }}"
+      paymentDateStart: "{{ config['paymentDateStart'] }}"
+      paymentDateEnd: "{{ config['paymentDateEnd'] }}"
+      storeId: "{{ config['storeId'] }}"
+      sortBy: "{{ config['sortBy'] }}"
+      sortDir: "{{ config['sortDir'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+
+  packages_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      carrierCode: "{{ config['carrierCode'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  products_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      sku: "{{ config['sku'] }}"
+      name: "{{ config['name'] }}"
+      productCategoryId: "{{ config['productCategoryId'] }}"
+      productTypeId: "{{ config['productTypeId'] }}"
+      tagId: "{{ config['tagId'] }}"
+      startDate: "{{ config['startDate'] }}"
+      endDate: "{{ config['endDate'] }}"
+      showInactive: "{{ config['showInactive'] }}"
+      sortBy: "{{ config['sortBy'] }}"
+      sortDir: "{{ config['sortDir'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  services_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      carrierCode: "{{ config['carrierCode'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+
+  shipments_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      recipientName: "{{ config['recipientName'] }}"
+      recipientCountryCode: "{{ config['recipientCountryCode'] }}"
+      orderNumber: "{{ config['orderNumber'] }}"
+      orderId: "{{ config['orderId'] }}"
+      carrierCode: "{{ config['carrierCode'] }}"
+      trackingNumber: "{{ config['trackingNumber'] }}"
+      createDateStart: "{{ config['createDateStart'] }}"
+      createDateEnd: "{{ config['createDateEnd'] }}"
+      shipDateStart: "{{ config['shipDateStart'] }}"
+      shipDateEnd: "{{ config['shipDateEnd'] }}"
+      voidDateStart: "{{ config['voidDateStart'] }}"
+      voidDateEnd: "{{ config['voidDateEnd'] }}"
+      storeId: "{{ config['storeId'] }}"
+      includeShipmentItems: "{{ config['includeShipmentItems'] }}"
+      sortBy: "{{ config['sortBy'] }}"
+      sortDir: "{{ config['sortDir'] }}"
+      page: "{{ config['page'] }}"
+      pageSize: "{{ config['pageSize'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  stores_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      showInactive: "{{ config['showInactive'] }}"
+      marketplaceId: "{{ config['marketplaceId'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  users_requester:
+    type: HttpRequester
+    url_base: "https://ssapi.shipstation.com/"
+    http_method: "GET"
+    request_parameters:
+      showInactive: "{{ config['showInactive'] }}"
+    authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/error_handler"
+
+  # Selectors
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ "{{ parameters.name }}" ]
+
+  selector_base:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ ]
+
+  # Paginator
+
+  no_pagination_paginator:
+    type: NoPagination
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      field_name: page_size
+      inject_into: request_parameter
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 500
+      start_from_page: 1
+      inject_on_first_request: true
+
+  # Retrievers
+
+  retriever:
+    record_selector: "#/definitions/selector_base"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  customers_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/customers_requester"
+    paginator: "#/definitions/paginator"
+
+  fulfillments_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/fulfillments_requester"
+    paginator: "#/definitions/paginator"
+
+  orders_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/orders_requester"
+    paginator: "#/definitions/paginator"
+
+  packages_retriever:
+    record_selector: "#/definitions/selector_base"
+    requester: "#/definitions/packages_requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  products_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/products_requester"
+    paginator: "#/definitions/paginator"
+
+  services_retriever:
+    record_selector: "#/definitions/selector_base"
+    requester: "#/definitions/services_requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  shipments_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/shipments_requester"
+    paginator: "#/definitions/paginator"
+
+  stores_retriever:
+    record_selector: "#/definitions/selector_base"
+    requester: "#/definitions/stores_requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  users_retriever:
+    record_selector: "#/definitions/selector_base"
+    requester: "#/definitions/users_requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  webhooks_retriever:
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/no_pagination_paginator"
+
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_shipstation/schemas/{{ parameters['name'] }}.json"
+
+  # Streams
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  customers_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/customers_retriever"
+
+  fulfillments_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/fulfillments_retriever"
+
+  orders_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/orders_retriever"
+
+  packages_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/packages_retriever"
+
+  products_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/products_retriever"
+
+  services_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/services_retriever"
+
+  shipments_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/shipments_retriever"
+
+  stores_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/stores_retriever"
+
+  users_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/users_retriever"
+
+  webhooks_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/webhooks_retriever"
+
+
+  # https://www.shipstation.com/docs/api/accounts/list-tags/
+  list_account_tags_stream:
+    $ref: "#/definitions/base_stream"
+    name: "account_tags"
+    $parameters:
+      name: "account_tags"
+      path: "accounts/listtags"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/carriers/list/
+  list_carriers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "carriers"
+    $parameters:
+      name: "carriers"
+      path: "carriers"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/customers/list/
+  list_customers_stream:
+    $ref: "#/definitions/customers_base_stream"
+    name: "customers"
+    $parameters:
+      name: "customers"
+      path: "customers"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/fulfillments/list-fulfillments/
+  list_fulfillments_stream:
+    $ref: "#/definitions/fulfillments_base_stream"
+    name: "fulfillments"
+    $parameters:
+      name: "fulfillments"
+      path: "fulfillments"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/orders/list-orders/
+  list_orders_stream:
+    $ref: "#/definitions/orders_base_stream"
+    name: "orders"
+    $parameters:
+      name: "orders"
+      path: "orders"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/carriers/list-packages/
+  list_packages_stream:
+    $ref: "#/definitions/packages_base_stream"
+    name: "packages"
+    $parameters:
+      name: "packages"
+      path: "packages"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/products/list/
+  list_products_stream:
+    $ref: "#/definitions/products_base_stream"
+    name: "products"
+    $parameters:
+      name: "products"
+      path: "products"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/carriers/list-services/
+  list_services_stream:
+    $ref: "#/definitions/services_base_stream"
+    name: "services"
+    $parameters:
+      name: "services"
+      path: "services"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/shipments/list/
+  list_shipments_stream:
+    $ref: "#/definitions/shipments_base_stream"
+    name: "shipments"
+    $parameters:
+      name: "shipments"
+      path: "shipments"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+
+  # https://www.shipstation.com/docs/api/shipments/list/
+  list_stores_stream:
+    $ref: "#/definitions/stores_base_stream"
+    name: "stores"
+    $parameters:
+      name: "stores"
+      path: "stores"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/users/list/
+  list_users_stream:
+    $ref: "#/definitions/users_base_stream"
+    name: "users"
+    $parameters:
+      name: "users"
+      path: "users"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/warehouses/list/
+  list_warehouses_stream:
+    $ref: "#/definitions/base_stream"
+    name: "warehouses"
+    $parameters:
+      name: "warehouses"
+      path: "warehouses"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  # https://www.shipstation.com/docs/api/webhooks/list/
+  list_webhooks_stream:
+    $ref: "#/definitions/webhooks_base_stream"
+    name: "webhooks"
+    $parameters:
+      name: "webhooks"
+      path: "webhooks"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+streams:
+  - "#/definitions/list_account_tags_stream"
+  - "#/definitions/list_carriers_stream"
+  - "#/definitions/list_customers_stream"
+  - "#/definitions/list_fulfillments_stream"
+  - "#/definitions/list_orders_stream"
+  - "#/definitions/list_packages_stream"
+  - "#/definitions/list_products_stream"
+  - "#/definitions/list_services_stream"
+  - "#/definitions/list_shipments_stream"
+  - "#/definitions/list_stores_stream"
+  - "#/definitions/list_users_stream"
+  - "#/definitions/list_warehouses_stream"
+  - "#/definitions/list_webhooks_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "account_tags"
+    - "carriers"
+    - "customers"
+    - "fulfillments"
+    - "orders"
+    - "packages"
+    - "products"
+    - "services"
+    - "shipments"
+    - "stores"
+    - "users"
+    - "warehouses"
+    - "webhooks"
