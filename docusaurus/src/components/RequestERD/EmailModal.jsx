@@ -1,26 +1,16 @@
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import cn from "classnames";
 import React, { useState } from "react";
 import styles from "./EmailModal.module.css";
 
-const CloseButton = ({ onClose }) => {
-  return (
-    <button onClick={onClose} className={styles.modalContentClose}>
-      <FontAwesomeIcon icon={faXmark} />
-    </button>
-  );
-};
+import { Modal } from "../Modal/Modal";
 
-const ModalBody = ({ status, onSubmit }) => {
+const Form = ({ status, onSubmit }) => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [showEmailError, setShowEmailError] = useState(false);
 
-
   const emailValidation = (value) => {
-    console.log("value", value);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(value)) {
       setEmailError("");
@@ -32,12 +22,11 @@ const ModalBody = ({ status, onSubmit }) => {
   const handleOnChange = (e) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
-    emailValidation(emailValue)
-
+    emailValidation(emailValue);
   };
-  
+
   const handleBlur = () => {
-    if(email && emailError) {
+    if (email && emailError) {
       setShowEmailError(true);
     }
   };
@@ -47,7 +36,7 @@ const ModalBody = ({ status, onSubmit }) => {
 
   if (status === "success") {
     return (
-      <div>
+      <div className={cn(styles.form__status, styles["form__status--success"])}>
         <p> Request submitted successfully!</p>
         <p> We will notify you when the ERD is ready</p>
       </div>
@@ -55,26 +44,24 @@ const ModalBody = ({ status, onSubmit }) => {
   }
   if (status === "error") {
     return (
-      <div>
+      <div className={cn(styles.form__status, styles["form__status--error"])}>
         <p> Error submitting your request. Please try again later.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      onSubmit(email);
-    }} >
-      <p>
-        We ask for your email so we can notify you when the ERD is ready.
-      </p>
-      <div className={styles.modalContentForm}>
-
-      <div className={styles.modalContentInputContainer}>
+    <form
+      className={styles.form}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(email);
+      }}
+    >
+      <div className={styles.form__inputContainer}>
         <input
-          className={cn(styles.modalContentInput, {
-            [styles.modalContentInputError]: showEmailError && emailError,
+          className={cn(styles.form__input, {
+            [styles["form__input--error"]]: showEmailError && emailError,
           })}
           type="email"
           value={email}
@@ -86,16 +73,17 @@ const ModalBody = ({ status, onSubmit }) => {
           required
           disabled={status === "loading"}
         />
-        {showEmailError && emailError && <p className={styles.inputErrorMessage}>{emailError}</p>}
+        {showEmailError && emailError && (
+          <p className={styles.form__input__errorMessage}>{emailError}</p>
+        )}
       </div>
       <button
         type="submit"
-        className={styles.modalContentButton}
+        className={styles.form__submitButton}
         disabled={status === "loading" || Boolean(emailError)}
       >
         {status === "loading" ? "Submitting..." : "Submit"}
       </button>
-      </div>
     </form>
   );
 };
@@ -107,7 +95,7 @@ export const EmailModal = ({ isOpen, onClose, sourceInfo }) => {
       customFields: { requestErdApiUrl },
     },
   } = useDocusaurusContext();
- 
+
   if (!isOpen) return null;
 
   const handleSubmit = async (email) => {
@@ -140,19 +128,16 @@ export const EmailModal = ({ isOpen, onClose, sourceInfo }) => {
     }
   };
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <>
-          <div className={styles.modalContentHeader}>
-            <h4>Request ERD</h4>
-            <CloseButton onClose={()=> {
-              setStatus("");
-              onClose();
-            }} />
-          </div>
-          <ModalBody onSubmit={handleSubmit} status={status}/>
-        </>
-      </div>
-    </div>
+    <Modal
+      isOpen={isOpen}
+      title="Request ERD"
+      description="We ask for your email so we can notify you when the ERD is ready."
+      onClose={() => {
+        setStatus("");
+        onClose();
+      }}
+    >
+      <Form onSubmit={handleSubmit} status={status} />
+    </Modal>
   );
 };

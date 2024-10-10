@@ -37,7 +37,7 @@
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
 
-  --modal-overlay-background: hsla(240, 20%, 18%, 0.2);
+  --modal-overlay-background: hsla(241, 51%, 20%, 50%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -63,7 +63,7 @@ html[data-theme="dark"] {
   --color-white: hsl(0, 0%, 16%);
   --color-red-400: hsl(0, 81%, 71%);
 
-  --modal-overlay-background: hsla(240, 20%, 82%, 0.2);
+  --modal-overlay-background: hsla(236, 11%, 42%, 70%);
 }
 
 .docusaurus-highlight-code-line {

@@ -1,67 +1,32 @@
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--modal-overlay-background);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modalContentHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-.modalContentHeader p {
-  margin-bottom: 0;
-  font-size: 0.8em;
-}
-
-.modalContentClose {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: auto;
-  margin-right: 0;
-}
-.modalContent {
-  background: var(--color-white);
-  padding: 20px;
-  border-radius: 5px;
-  max-width: 400px;
-  width: 100%;
-  font-size: 0.8em;
-}
-
-.modalContentForm {
+.form {
   display: flex;
   width: 100%;
   gap: 8px;
-
 }
-.modalContentInputContainer {
+
+
+.form__inputContainer {
   flex-grow: 1;
 }
-.modalContentInput {
+
+.form__input {
   border: 1px solid var(--color-grey-400);
   border-radius: 6px;
   padding: 10px;
   width: 100%;
 }
-.modalContentInputError {
+
+.form__input--error {
   border: 1px solid var(--color-red-400);
 }
-.inputErrorMessage {
+
+.form__input__errorMessage {
   color: var(--color-red-400);
   font-size: 0.8em;
   margin-bottom: 0;
 }
 
-.modalContentButton {
+.form__submitButton {
   background-color: var(--ifm-color-primary);
   color: white;
   border: none;
@@ -71,7 +36,18 @@
   max-height: 38px;
 }
 
-.modalContentButton:disabled {
+.form__submitButton:disabled {
   background-color: var(--ifm-color-primary-light);
   cursor: not-allowed;
+}
+
+.form__status p {
+  margin: 0;
+}
+.form__status--success {
+  font-weight: 600;
+}
+
+.form__status--error {
+  color: var(--color-red-400);
 }
