@@ -66,7 +66,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             if (java.time.Duration.between(
                     sharedState.readStartTime,
                     Instant.now()
-                ) > it.toJavaDuration()) {
+                ) > it) {
                 throw TransientErrorException("Wass")
             }
         }

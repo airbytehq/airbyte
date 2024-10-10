@@ -79,7 +79,7 @@ object TestFixtures {
         vararg mockedQueries: MockedQuery,
     ): DefaultJdbcSharedState {
         val configuration =
-            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency, 1.seconds)
+            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency, Duration.ofSeconds(1))
         return DefaultJdbcSharedState(
             configuration,
             BufferingOutputConsumer(ClockFactory().fixed()),
@@ -120,7 +120,7 @@ object TestFixtures {
         override val global: Boolean,
         override val checkpointTargetInterval: Duration,
         override val maxConcurrency: Int,
-        override val maxSnapshotReadTime: kotlin.time.Duration?,
+        override val maxSnapshotReadTime: Duration?,
     ) : JdbcSourceConfiguration {
         override val realHost: String
             get() = TODO("Not yet implemented")

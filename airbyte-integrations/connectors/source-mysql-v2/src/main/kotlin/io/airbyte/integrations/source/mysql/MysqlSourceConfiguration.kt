@@ -35,18 +35,9 @@ data class MysqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
-    override val maxSnapshotReadTime: kotlin.time.Duration?
+    override val maxSnapshotReadTime: Duration?
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
-
-
-//    init {
-//        if (global) {
-//            maxSnapshotReadTime = poj 8.hours
-//        } else {
-//            maxSnapshotReadTime = null
-//        }
-//    }
 
     /** Required to inject [MysqlSourceConfiguration] directly. */
     @Factory
@@ -131,8 +122,9 @@ class MysqlSourceConfigurationFactory :
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
 
-        val maxSnapshotReadTime: kotlin.time.Duration? = when (pojo.getCursorMethodConfigurationValue()) {
-            is CdcCursor -> (pojo.getCursorMethodConfigurationValue()  as CdcCursor).initialLoadTimeoutHours!!.hours
+        val cursorConfig = pojo.getCursorMethodConfigurationValue()
+        val maxSnapshotReadTime: Duration? = when (cursorConfig is CdcCursor) {
+            true -> cursorConfig.initialLoadTimeoutHours?.let { Duration.ofHours(it.toLong())}
             else -> null
         }
         // Build JDBC URL
