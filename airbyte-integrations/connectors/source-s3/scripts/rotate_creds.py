@@ -78,10 +78,6 @@ def _replace_credentials(
 def _set_secret_json(secret_dict: dict, secret_handle: GSMSecretHandle) -> None:
     secret_client = secret_handle.parent.secret_client
     new_secret_str = json.dumps(secret_dict, indent=2)
-    # parent: str = secret_client.secret_path(
-    #     AIRBYTE_INTERNAL_GCP_PROJECT,
-    #     secret_handle.secret_name,
-    # )
     payload_bytes = new_secret_str.encode("UTF-8")
     secret_client.add_secret_version(
         request={
