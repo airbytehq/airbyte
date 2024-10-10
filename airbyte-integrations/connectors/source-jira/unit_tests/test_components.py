@@ -6,7 +6,7 @@ import pytest
 import requests
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_jira.components.extractors import LabelsRecordExtractor
-from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter, SubstreamPartitionRouterWithContext
+from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter
 
 
 @pytest.mark.parametrize(
@@ -29,51 +29,6 @@ def test_labels_record_extractor(json_response, expected_output):
 
     # Assert to check if the output matches the expected result
     assert extracted == expected_output, "The extracted records do not match the expected output"
-
-
-@pytest.mark.parametrize(
-    "records, expected_slices",
-    [
-        # No records in parent stream
-        ([], []),
-        # Valid records generating stream slices, including checking parent records
-        (
-            [{"id": 1, "parent_id": 100}, {"id": 2, "parent_id": 200}],
-            [
-                {"partition": {"partition_id": 100, "parent_slice": {}}, "parent_record": {"id": 1, "parent_id": 100}},
-                {"partition": {"partition_id": 200, "parent_slice": {}}, "parent_record": {"id": 2, "parent_id": 200}},
-            ],
-        ),
-    ],
-)
-def test_stream_slices(records, expected_slices):
-    # Mock configuration and parent stream config
-    config = MagicMock()
-    parent_stream = MagicMock()
-    parent_key = MagicMock()
-    partition_field = MagicMock()
-
-    parent_key.eval.return_value = "parent_id"
-    partition_field.eval.return_value = "partition_id"
-
-    parent_stream_config = MagicMock()
-    parent_stream_config.stream = parent_stream
-    parent_stream_config.parent_key = parent_key
-    parent_stream_config.partition_field = partition_field
-
-    # Initialize the router instance
-    router = SubstreamPartitionRouterWithContext(parent_stream_configs=[parent_stream_config], config=config, parameters={})
-
-    # Mocking parent stream's stream_slices and read_records
-    parent_stream.stream_slices.return_value = [{}]
-    parent_stream.read_records.return_value = records
-
-    slices = list(router.stream_slices())
-
-    # Preparing the output for assertion
-    output = [{"partition": slice.partition, "parent_record": getattr(slice, "parent_record", None)} for slice in slices]
-
-    assert output == expected_slices, f"Expected {expected_slices} but got {output}"
 
 
 @pytest.mark.parametrize(
