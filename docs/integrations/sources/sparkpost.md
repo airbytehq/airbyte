@@ -1,5 +1,8 @@
 # SparkPost
-The SparkPost connector for Airbyte enables seamless integration with SparkPost’s email delivery service, allowing users to automatically sync email performance data, including delivery, open, and click metrics, into their data warehouses.
+The SparkPost connector for Airbyte enables seamless integration with SparkPost’s email delivery service, allowing users to automatically sync email performance data, including delivery, templates, and click metrics etc into their data warehouses.
+
+## Authentication
+Before you can use SparkPost's REST API you will need to have a valid SparkPost API key. Follow [these](https://support.sparkpost.com/docs/getting-started/create-api-keys) steps to create a SparkPost API key.
 
 ## Configuration
 
