@@ -192,7 +192,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       final DateTimeOffset datetimeoffset = DateTimeOffset.valueOf(timestamp, offsetDateTime.getOffset().getTotalSeconds() / 60);
       preparedStatement.setObject(parameterIndex, datetimeoffset);
     } catch (final DateTimeParseException e) {
-      throw new RuntimeException(e);
+      LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
   }
 
