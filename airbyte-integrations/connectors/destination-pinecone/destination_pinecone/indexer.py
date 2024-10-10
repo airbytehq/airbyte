@@ -60,9 +60,7 @@ class PineconeIndexer(Indexer):
         for stream in catalog.streams:
             stream_identifier = create_stream_identifier(stream.stream)
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.delete_vectors(
-                    filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=self.namespace, prefix=stream_identifier
-                )
+                self.delete_vectors(filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=self.namespace, prefix=stream_identifier)
 
     def post_sync(self):
         return []
