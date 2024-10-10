@@ -27,7 +27,7 @@ data class MysqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
-    val cursorConfiguration: CursorConfiguration,
+    val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
@@ -35,7 +35,7 @@ data class MysqlSourceConfiguration(
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
-    override val global = cursorConfiguration is CdcCursor
+    override val global = incrementalConfiguration is CdcIncrementalConfiguration
 
     /** Required to inject [MysqlSourceConfiguration] directly. */
     @Factory
@@ -48,6 +48,22 @@ data class MysqlSourceConfiguration(
             supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>,
         ): MysqlSourceConfiguration = factory.make(supplier.get())
     }
+}
+
+sealed interface IncrementalConfiguration
+
+data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val initialWaitDuration: Duration,
+    val initialLoadTimeout: Duration,
+    val serverTimezone: String?,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
+) : IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
 }
 
 @Singleton
@@ -80,14 +96,13 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        val sslMode = SSLMode.fromJdbcPropertyName(pojo.encryption.encryptionMethod)
         val jdbcEncryption =
             when (encryption) {
-                is EncryptionPreferred,
-                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = sslMode)
+                is EncryptionPreferred -> MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
                 is SslVerifyCertificate ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_CA,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -95,7 +110,7 @@ class MysqlSourceConfigurationFactory :
                     )
                 is SslVerifyIdentity ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_IDENTITY,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -120,6 +135,24 @@ class MysqlSourceConfigurationFactory :
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+        val incrementalConfiguration: IncrementalConfiguration =
+            when (val incPojo = pojo.getCursorMethodConfigurationValue()) {
+                UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
+                is CdcCursor ->
+                    CdcIncrementalConfiguration(
+                        initialWaitDuration =
+                            Duration.ofSeconds(incPojo.initialWaitTimeInSeconds!!.toLong()),
+                        initialLoadTimeout =
+                            Duration.ofHours(incPojo.initialLoadTimeoutHours!!.toLong()),
+                        serverTimezone = incPojo.serverTimezone,
+                        invalidCdcCursorPositionBehavior =
+                            if (incPojo.invalidCdcCursorPositionBehavior == "Fail sync") {
+                                InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                            } else {
+                                InvalidCdcCursorPositionBehavior.RESET_SYNC
+                            },
+                    )
+            }
         return MysqlSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -128,7 +161,7 @@ class MysqlSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            cursorConfiguration = pojo.getCursorConfigurationValue(),
+            incrementalConfiguration = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
