@@ -139,6 +139,8 @@ class BumpConnectorVersion(SetConnectorVersion):
             new_version = current_version.bump_minor()
         elif bump_type == "major":
             new_version = current_version.bump_major()
+        elif bump_type == "rc":
+            new_version = current_version.bump_prerelease()
         elif bump_type.startswith("version:"):
             version_str = bump_type.split("version:", 1)[1]
             if semver.VersionInfo.is_valid(version_str):
