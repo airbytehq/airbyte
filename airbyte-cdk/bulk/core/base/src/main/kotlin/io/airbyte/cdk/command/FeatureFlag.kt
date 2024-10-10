@@ -29,6 +29,10 @@ enum class FeatureFlag(
         transformActualValue = { it.trim().uppercase() },
     );
 
+    /** Environment variable binding shell declaration which activates the feature flag. */
+    val envVarBindingDeclaration: String
+        get() = "${envVar.name}=$requiredEnvVarValue"
+
     enum class EnvVar(val defaultValue: String = "") {
         DEPLOYMENT_MODE
     }
