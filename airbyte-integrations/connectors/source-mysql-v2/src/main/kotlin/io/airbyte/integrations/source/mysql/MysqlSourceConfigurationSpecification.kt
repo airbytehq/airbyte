@@ -286,17 +286,17 @@ class SslVerifyIdentity : Encryption {
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
 class MicronautPropertiesFriendlyEncryption {
-    var encryptionMethod: String = "preferred"
+    var mode: String = "preferred"
     var sslCertificate: String? = null
 
     @JsonValue
     fun asEncryption(): Encryption =
-        when (encryptionMethod) {
+        when (mode) {
             "preferred" -> EncryptionPreferred
             "required" -> EncryptionRequired
             "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
             "verify_identity" -> SslVerifyIdentity().also { it.sslCertificate = sslCertificate!! }
-            else -> throw ConfigErrorException("invalid value $encryptionMethod")
+            else -> throw ConfigErrorException("invalid value $mode")
         }
 }
 

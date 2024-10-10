@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
@@ -36,16 +37,11 @@ interface DestinationProcess {
     fun shutdown()
 }
 
-enum class TestDeploymentMode {
-    CLOUD,
-    OSS
-}
-
 interface DestinationProcessFactory {
     fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
-        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 }
