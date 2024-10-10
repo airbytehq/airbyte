@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
@@ -68,6 +69,7 @@ abstract class BaseTypingDedupingTest {
     protected var streamNamespace: String? = null
     protected var streamName: String = "dummy"
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
+    protected open var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     protected abstract val imageName: String
         /** @return the docker image to run, e.g. `"airbyte/destination-bigquery:dev"`. */
@@ -1546,7 +1548,7 @@ abstract class BaseTypingDedupingTest {
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags
                     )
             )
 
