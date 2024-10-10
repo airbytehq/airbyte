@@ -32,11 +32,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "pinecone_key",
-          "pinecone_environment",
-          "index"
-        ],
+        "required": ["pinecone_key", "pinecone_environment", "index"],
         "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings.",
         "group": "indexing"
       },
