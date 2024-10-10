@@ -59,6 +59,87 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Create Export Request"
+    Read Existing Deep Link:
+      type: DeclarativeStream
+      name: Read Existing Deep Link
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/url
+          http_method: GET
+          request_parameters:
+            url: "{{ config['url'] }}"
+            branch_key: "{{ config[\"branch_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Read Existing Deep Link"
+    Export Cohort Analytics:
+      type: DeclarativeStream
+      name: Export Cohort Analytics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics
+          http_method: POST
+          request_parameters:
+            app_id: "{{ config[\"app_id\"] }}"
+          request_headers:
+            access-token: "{{ config[\"access_token\"] }}"
+          request_body_json:
+            start_date: "{{ config[\"start_date\"] }}"
+            end_date: "{{ config[\"end_date\"] }}"
+            data_source: "{{ config['data_source'] }}"
+            measures: "{{ config['measures'] }}"
+            granularity_band_count: "{{ config['granularity_band_count'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Export Cohort Analytics"
+    Get Export Download Status:
+      type: DeclarativeStream
+      name: Get Export Download Status
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/{{ config['job_id'] }}
+          http_method: GET
+          request_parameters:
+            app_id: "{{ config[\"app_id\"] }}"
+          request_headers:
+            access-token: "{{ config[\"access_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Get Export Download Status"
   base_requester:
     type: HttpRequester
     url_base: https://api2.branch.io
@@ -66,6 +147,9 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/GET Export Request"
   - $ref: "#/definitions/streams/Create Export Request"
+  - $ref: "#/definitions/streams/Read Existing Deep Link"
+  - $ref: "#/definitions/streams/Export Cohort Analytics"
+  - $ref: "#/definitions/streams/Get Export Download Status"
 
 spec:
   type: Spec
@@ -84,6 +168,11 @@ spec:
       - limit
       - fields
       - request_handle
+      - url
+      - data_source
+      - measures
+      - granularity_band_count
+      - job_id
     properties:
       branch_secret:
         type: string
@@ -146,12 +235,43 @@ spec:
         description: The ID returned by the log export queue.
         order: 10
         title: request_handle
+      url:
+        type: string
+        description: " The deep link url against which the details are to be fetched."
+        title: url
+        order: 11
+      data_source:
+        type: string
+        description: A string value representing the cohort type
+        title: data source
+        order: 12
+      measures:
+        type: array
+        description: The cohort measures to return.
+        title: measures
+        order: 13
+      granularity_band_count:
+        type: integer
+        description: Number of time units since the cohort event to return to the user.
+        title: granularity band count
+        default: "7"
+        order: 14
+      job_id:
+        type: string
+        description: >-
+          Unique identifier for job. Obtained from POST Export Cohort Analytics
+          API.
+        title: job_id
+        order: 15
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     GET Export Request: false
     Create Export Request: false
+    Read Existing Deep Link: false
+    Export Cohort Analytics: false
+    Get Export Download Status: false
   testedStreams:
     GET Export Request:
       streamHash: 114856ed000f6b491b31bf2382041780d6eb288a
@@ -167,6 +287,27 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    Read Existing Deep Link:
+      streamHash: aed8cf4484552d1c38c07fec2afc414f9f3cf2fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Export Cohort Analytics:
+      streamHash: a631b02fee45419fdbf6f3b201c2abd7a7371f11
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Get Export Download Status:
+      streamHash: dce451e1b274b69208ff7e99f53268303afda07d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://help.branch.io/developers-hub/reference/apis-overview
 
@@ -177,6 +318,21 @@ schemas:
     additionalProperties: true
     properties: {}
   Create Export Request:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Read Existing Deep Link:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Export Cohort Analytics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Get Export Download Status:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true

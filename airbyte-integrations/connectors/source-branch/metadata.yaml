@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: 14ed6afd-5ab0-4b62-8a60-49e854addea7
+  definitionId: 3aa9828f-0ab5-49d5-b430-602bfe2b5104
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-branch
   githubIssueLabel: source-branch

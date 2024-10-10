@@ -16,12 +16,20 @@ Branch Connector
 | `limit` | `integer` | limit. The maximum number of results to return. | 1 |
 | `fields` | `array` | fields. An array representing fields/columns available in your report |  |
 | `request_handle` | `string` | request_handle. The ID returned by the log export queue. |  |
+| `url` | `string` | url.  The deep link url against which the details are to be fetched. |  |
+| `data_source` | `string` | data source. A string value representing the cohort type |  |
+| `measures` | `array` | measures. The cohort measures to return. |  |
+| `granularity_band_count` | `integer` | granularity band count. Number of time units since the cohort event to return to the user. | 7 |
+| `job_id` | `string` | job_id. Unique identifier for job. Obtained from POST Export Cohort Analytics API. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | GET Export Request |  | No pagination | ✅ |  ❌  |
 | Create Export Request |  | No pagination | ✅ |  ❌  |
+| Read Existing Deep Link |  | No pagination | ✅ |  ❌  |
+| Export Cohort Analytics |  | DefaultPaginator | ✅ |  ❌  |
+| Get Export Download Status |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
