@@ -947,9 +947,6 @@ def product_images_response_expected_result():
             "admin_graphql_api_id": "gid://shopify/ProductImage/111",
             "product_id": 123,
             "shop_url": "test_shop",
-            "products": {
-                "updated_at": None,
-            },
         },
         {
             "created_at": "2021-06-23T01:09:47+00:00",
@@ -961,9 +958,6 @@ def product_images_response_expected_result():
             "width": 2200,
             "admin_graphql_api_id": "gid://shopify/ProductImage/222",
             "product_id": 456,
-            "products": {
-                "updated_at": None,
-            },
             "shop_url": "test_shop",
         },
     ]
