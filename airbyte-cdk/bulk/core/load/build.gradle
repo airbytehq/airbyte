@@ -22,6 +22,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
+    testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
 }
 
 task integrationTest(type: Test) {

@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
-import io.micronaut.core.util.clhm.ConcurrentLinkedHashMap
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -65,10 +64,11 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
-        ConcurrentHashMap<DestinationStream.Descriptor, ConcurrentLinkedHashMap<Long, T>> =
+        ConcurrentHashMap<DestinationStream.Descriptor, ConcurrentLinkedQueue<Pair<Long, T>>> =
         ConcurrentHashMap()
     private val globalCheckpoints: ConcurrentLinkedQueue<GlobalCheckpoint<T>> =
         ConcurrentLinkedQueue()
+    private val lastIndexEmitted = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
     override suspend fun addStreamCheckpoint(
         key: DestinationStream.Descriptor,
@@ -82,29 +82,18 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 )
             }
 
-            streamCheckpoints.compute(key) { _, indexToMessage ->
-                val map =
-                    if (indexToMessage == null) {
-                        // If the map doesn't exist yet, build it.
-                        ConcurrentLinkedHashMap.Builder<Long, T>()
-                            .maximumWeightedCapacity(1000)
-                            .build()
-                    } else {
-                        if (indexToMessage.isNotEmpty()) {
-                            // Make sure the messages are coming in order
-                            val oldestIndex = indexToMessage.ascendingKeySet().first()
-                            if (oldestIndex > index) {
-                                throw IllegalStateException(
-                                    "Checkpoint message received out of order ($oldestIndex before $index)"
-                                )
-                            }
-                        }
-                        indexToMessage
-                    }
-                // Actually add the message
-                map[index] = checkpointMessage
-                map
+            val indexedMessages: ConcurrentLinkedQueue<Pair<Long, T>> =
+                streamCheckpoints.getOrPut(key) { ConcurrentLinkedQueue() }
+            if (indexedMessages.isNotEmpty()) {
+                // Make sure the messages are coming in order
+                val (latestIndex, _) = indexedMessages.last()!!
+                if (latestIndex > index) {
+                    throw IllegalStateException(
+                        "Checkpoint message received out of order ($latestIndex before $index)"
+                    )
+                }
             }
+            indexedMessages.add(index to checkpointMessage)
 
             log.info { "Added checkpoint for stream: $key at index: $index" }
         }
@@ -163,8 +152,9 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                     syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
                 }
             if (allStreamsPersisted) {
+                log.info { "Flushing global checkpoint with stream indexes: ${head.streamIndexes}" }
                 globalCheckpoints.poll()
-                sendMessage(head.checkpointMessage)
+                validateAndSendMessage(head.checkpointMessage, head.streamIndexes)
             } else {
                 break
             }
@@ -175,13 +165,14 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         for (stream in catalog.streams) {
             val manager = syncManager.getStreamManager(stream.descriptor)
             val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
-            for (index in streamCheckpoints.keys) {
-                if (manager.areRecordsPersistedUntil(index)) {
-                    val checkpointMessage =
-                        streamCheckpoints.remove(index)
-                            ?: throw IllegalStateException("Checkpoint not found for index: $index")
-                    log.info { "Flushing checkpoint for stream: $stream at index: $index" }
-                    sendMessage(checkpointMessage)
+            while (true) {
+                val (nextIndex, nextMessage) = streamCheckpoints.peek() ?: break
+                if (manager.areRecordsPersistedUntil(nextIndex)) {
+                    streamCheckpoints.poll()
+                    log.info {
+                        "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextIndex"
+                    }
+                    validateAndSendMessage(nextMessage, listOf(stream.descriptor to nextIndex))
                 } else {
                     break
                 }
@@ -189,7 +180,20 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         }
     }
 
-    private suspend fun sendMessage(checkpointMessage: T) {
+    private suspend fun validateAndSendMessage(
+        checkpointMessage: T,
+        streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>
+    ) {
+        streamIndexes.forEach { (stream, index) ->
+            val lastIndex = lastIndexEmitted[stream]
+            if (lastIndex != null && index < lastIndex) {
+                throw IllegalStateException(
+                    "Checkpoint message for $stream emitted out of order (emitting $index after $lastIndex)"
+                )
+            }
+            lastIndexEmitted[stream] = index
+        }
+
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
         outputConsumer.invoke(checkpointMessage)
     }
@@ -210,7 +214,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 }
                 false -> {
                     streamCheckpoints
-                        .mapValues { it.value.ascendingKeySet().firstOrNull() }
+                        .mapValues { it.value.firstOrNull()?.first }
                         .filterValues { it != null }
                         .mapValues { it.value!! }
                 }

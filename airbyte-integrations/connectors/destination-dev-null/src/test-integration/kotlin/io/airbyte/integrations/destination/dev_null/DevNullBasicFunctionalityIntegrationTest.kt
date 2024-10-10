@@ -19,11 +19,6 @@ class DevNullBasicFunctionalityIntegrationTest :
     ) {
 
     @Test
-    override fun testCheck() {
-        super.testCheck()
-    }
-
-    @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
