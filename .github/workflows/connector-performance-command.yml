@@ -195,6 +195,7 @@ jobs:
           echo "Building... ${{ steps.which-harness.outputs.harness_type }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
+          docker build -t airbyte/source-harness:dev .
         env:
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
       - name: build connector
