@@ -11,6 +11,10 @@ java {
     }
 }
 
+tasks.named('sourcesJar') {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
+}
+
 airbyteJavaConnector {
     cdkVersionRequired = '0.47.1'
     features = ['db-sources', 'datastore-postgres']
