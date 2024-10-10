@@ -17,7 +17,7 @@ class PineconeIndexingModel(BaseModel):
         ..., title="Pinecone Environment", description="Pinecone Cloud environment to use", examples=["us-west1-gcp", "gcp-starter"]
     )
     index: str = Field(..., title="Index", description="Pinecone index in your project to load data into")
-    default_namespace: str = Field(..., title="Pinecone Namespace", description="Pinecone Namespace to partition the records in an index")
+    default_namespace: str = Field(None, title="Pinecone Namespace", description="Pinecone Namespace to partition the records in an index")
 
     class Config:
         title = "Indexing"
