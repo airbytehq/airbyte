@@ -526,6 +526,10 @@ module.exports = {
       id: "using-airbyte/core-concepts/readme",
     },
     {
+      type: "doc",
+      id: "using-airbyte/on-using-airbyte"
+    },
+    {
       type: "category",
       label: "Moving Data",
       items: [
@@ -562,6 +566,10 @@ module.exports = {
       ],
     },
     sectionHeader("Managing Airbyte"),
+    {
+      type: "doc",
+      id: "managing-airbyte/on-managing-airbyte",
+    },
     deployAirbyte,
     {
       type: "category",
