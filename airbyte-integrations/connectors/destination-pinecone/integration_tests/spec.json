@@ -25,6 +25,11 @@
             "title": "Index",
             "description": "Pinecone index in your project to load data into",
             "type": "string"
+          },
+          "default_namespace": {
+            "title": "Pinecone Namespace",
+            "description": "Pinecone Namespace to partition the records in an index",
+            "type": "string"
           }
         },
         "required": ["pinecone_key", "pinecone_environment", "index"],

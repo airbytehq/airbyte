@@ -2,7 +2,8 @@
   "indexing": {
     "pinecone_key": "mykey",
     "pinecone_environment": "myenv",
-    "index": "myindex"
+    "index": "myindex",
+    "default_namespace": "mynamespace"
   },
   "embedding": {
     "mode": "openai",
