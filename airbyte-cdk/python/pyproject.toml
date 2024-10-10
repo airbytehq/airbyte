@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "5.11.1"
+version = "5.13.0"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -69,6 +69,7 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
+xmltodict = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
