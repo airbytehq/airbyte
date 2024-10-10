@@ -100,6 +100,8 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
+                integrationTestJavaImplementation dep
+                integrationTestJavaImplementation testFixtures(dep)
             }
             for (dep in fromJar) {
                 implementation dep
@@ -107,6 +109,8 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
+                integrationTestJavaImplementation dep
+                integrationTestJavaImplementation testFixtures(dep)
             }
         }
     }
@@ -138,9 +142,13 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 resources {
                     srcDir 'src/test-integration/resources'
                 }
+                resources {
+                    srcDir '.'
+                    include 'metadata.yaml'
+                }
             }
         }
-        project.tasks.named('spotbugsTest').configure {
+        project.tasks.matching {it.name == 'spotbugsIntegrationTestJava' || it.name == 'spotbugsTest' }.configureEach {
             enabled = false
         }
 
@@ -154,7 +162,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath = project.sourceSets.integrationTestJava.runtimeClasspath
             useJUnitPlatform()
-            mustRunAfter project.tasks.check
         }
 
         project.tasks.named('build').configure {
@@ -164,9 +171,10 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
-
-            integrationTestJavaImplementation.extendsFrom testImplementation
-            integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+        }
+        project.dependencies {
+            // integration tests depend on the runtime code
+            integrationTestJavaImplementation project
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
