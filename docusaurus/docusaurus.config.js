@@ -49,6 +49,15 @@ const config = {
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
     },
   ],
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        name: "zd-site-verification",
+        content: "plvcr4wcl9abmq0itvi63c",
+      },
+    },
+  ],
 
   plugins: [
     [
