@@ -80,7 +80,7 @@ const Form = ({ status, onSubmit }) => {
       <button
         type="submit"
         className={styles.form__submitButton}
-        disabled={status === "loading" || Boolean(emailError)}
+        disabled={status === "loading" || Boolean(emailError) || !email}
       >
         {status === "loading" ? "Submitting..." : "Submit"}
       </button>

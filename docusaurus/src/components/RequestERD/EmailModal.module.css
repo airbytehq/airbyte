@@ -37,7 +37,7 @@
 }
 
 .form__submitButton:disabled {
-  background-color: var(--ifm-color-primary-light);
+  background-color: var(--ifm-color-primary-lightest);
   cursor: not-allowed;
 }
 
