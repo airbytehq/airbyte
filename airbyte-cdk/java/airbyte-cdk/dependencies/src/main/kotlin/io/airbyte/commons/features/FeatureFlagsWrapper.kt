@@ -36,6 +36,10 @@ open class FeatureFlagsWrapper(private val wrapped: FeatureFlags) : FeatureFlags
         return wrapped.deploymentMode()
     }
 
+    override fun logInvalidJsonDeserialization(): Boolean {
+        return wrapped.logInvalidJsonDeserialization()
+    }
+
     companion object {
         /** Overrides the [FeatureFlags.deploymentMode] method in the feature flags. */
         @JvmStatic

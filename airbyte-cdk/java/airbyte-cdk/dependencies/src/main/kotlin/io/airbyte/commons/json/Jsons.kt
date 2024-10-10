@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
+import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.stream.MoreStreams
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -24,6 +25,7 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.function.BiConsumer
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -443,7 +445,15 @@ object Jsons {
      * sensitive information in the exception message (which would be exposed with eg,
      * ExceptionUtils.getStackTrace(t).)
      */
-    fun obfuscateDeserializationException(throwable: Throwable): String {
+    fun obfuscateDeserializationException(
+        throwable: Throwable,
+        showFullExceptionMessage: Boolean =
+            EnvVariableFeatureFlags().logInvalidJsonDeserialization(),
+    ): String {
+        if (showFullExceptionMessage) {
+            return ExceptionUtils.getStackTrace(throwable)
+        }
+
         var t: Throwable = throwable
         val sb = StringBuilder()
         sb.append(t.javaClass)
