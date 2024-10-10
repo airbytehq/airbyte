@@ -10,7 +10,7 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Root level="DEBUG" additivity="false">
+    <Root level="INFO" additivity="false">
       <AppenderRef ref="ConsoleJSONAppender"/>
     </Root>
   </Loggers>
