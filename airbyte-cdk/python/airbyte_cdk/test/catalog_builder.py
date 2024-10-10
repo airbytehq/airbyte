@@ -67,4 +67,5 @@ class CatalogBuilder:
         return self
 
     def build(self) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog(streams=list(map(lambda builder: builder.build(), self._streams)))
+        """Builds a ConfiguredAirbyteCatalog from the stream builders in the list."""
+        return ConfiguredAirbyteCatalog(streams=[builder.build() for builder in self._streams])

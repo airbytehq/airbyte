@@ -79,12 +79,10 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
-        props_to_change = ["format"]
-        for prop in props_to_change:
-            schema["properties"][prop]["type"] = "object"
-            if "oneOf" in schema["properties"][prop]:
-                continue
-            schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
+        format_prop = schema["properties"]["format"]
+        if "oneOf" not in format_prop:
+            format_prop["oneOf"] = format_prop.pop("anyOf")
+        format_prop["type"] = "object"
         return schema
 
     @staticmethod
@@ -95,11 +93,11 @@ class SourceFilesAbstractSpec(BaseModel):
         """
         objects_to_check = schema["properties"]["format"]["oneOf"]
         for object in objects_to_check:
-            for key in object["properties"]:
-                property = object["properties"][key]
-                if "allOf" in property and "enum" in property["allOf"][0]:
-                    property["enum"] = property["allOf"][0]["enum"]
-                    property.pop("allOf")
+            for property in object["properties"].values():
+                allOf = property.get("allOf")
+                if allOf and "enum" in allOf[0]:
+                    property["enum"] = allOf[0]["enum"]
+                    del property["allOf"]
         return schema
 
     @staticmethod

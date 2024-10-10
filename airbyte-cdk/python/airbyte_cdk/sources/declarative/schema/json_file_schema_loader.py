@@ -17,13 +17,11 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 def _default_file_path() -> str:
     # Schema files are always in "source_<connector_name>/schemas/<stream_name>.json
     # The connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
-    source_modules = [
-        k for k, v in sys.modules.items() if "source_" in k and "airbyte_cdk" not in k
-    ]  # example: ['source_exchange_rates', 'source_exchange_rates.source']
-    if source_modules:
-        module = source_modules[0].split(".")[0]
-        return f"./{module}/schemas/{{{{parameters['name']}}}}.json"
-
+    for k in sys.modules:
+        if "source_" in k and "airbyte_cdk" not in k:
+            # example: ['source_exchange_rates', 'source_exchange_rates.source']
+            module = k.split(".")[0]
+            return f"./{module}/schemas/{{{{parameters['name']}}}}.json"
     # If we are not in a source_ module, the most likely scenario is we're processing a manifest from the connector builder
     # server which does not require a json schema to be defined.
     return "./{{parameters['name']}}.json"
@@ -78,15 +76,14 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         :param json_schema_path: The path to the schema JSON file
         :return: Tuple of the resource name and the path to the schema file
         """
-        split_path = json_schema_path.split("/")
+        split_path = json_schema_path.split("/", 2)
 
-        if split_path[0] == "" or split_path[0] == ".":
+        if split_path[0] in {"", "."}:
             split_path = split_path[1:]
 
         if len(split_path) == 0:
             return "", ""
-
-        if len(split_path) == 1:
+        elif len(split_path) == 1:
             return "", split_path[0]
-
-        return split_path[0], "/".join(split_path[1:])
+        else:
+            return split_path[0], split_path[1] if len(split_path) == 2 else f"{split_path[1]}/{split_path[2]}"
