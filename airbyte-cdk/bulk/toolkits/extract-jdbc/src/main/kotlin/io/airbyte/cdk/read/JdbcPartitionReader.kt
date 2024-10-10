@@ -3,14 +3,17 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -57,6 +60,18 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
     }
+
+    protected fun checkTimeElapsed() {
+        sharedState.configuration.maxSnapshotReadTime?.let {
+            if (java.time.Duration.between(
+                    sharedState.readStartTime,
+                    Instant.now()
+                ) > it.toJavaDuration()) {
+                throw TransientErrorException("Wass")
+            }
+        }
+    }
+
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
@@ -68,6 +83,7 @@ open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val numRecords = AtomicLong()
 
     override suspend fun run() {
+        checkTimeElapsed()
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
@@ -109,6 +125,8 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
+        checkTimeElapsed()
+
         val fetchSize: Int = streamState.fetchSizeOrDefault
         val limit: Long = streamState.limit
         incumbentLimit.set(limit)
@@ -126,6 +144,9 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
                     }
+//                    if (System.currentTimeMillis() - sharedState.readStartTime.get() < sharedState.configuration.maxPartitionReadTime) { // TEMP
+//                        throw TransientErrorException("Wass")
+//                    }
                 }
             }
         runComplete.set(true)

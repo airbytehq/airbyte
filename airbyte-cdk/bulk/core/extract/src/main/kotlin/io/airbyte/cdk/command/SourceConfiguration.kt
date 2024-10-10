@@ -9,6 +9,7 @@ import java.time.Duration
 interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     /** Does READ generate states of type GLOBAL? */
     val global: Boolean
+    val maxSnapshotReadTime: kotlin.time.Duration?
 
     /** During the READ operation, how often a feed should checkpoint, ideally. */
     val checkpointTargetInterval: Duration

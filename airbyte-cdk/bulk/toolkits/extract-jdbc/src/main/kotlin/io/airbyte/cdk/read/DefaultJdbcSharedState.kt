@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.output.OutputConsumer
 import jakarta.inject.Singleton
+import java.time.Instant
 
 /** Default implementation of [JdbcSharedState]. */
 @Singleton
@@ -20,6 +21,10 @@ class DefaultJdbcSharedState(
     private val globalLockResource: GlobalLockResource,
 ) : JdbcSharedState {
 
+    // First hit to the readStartTime initializes the value.
+    override val readStartTime: Instant by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        Instant.now()
+    }
     override val withSampling: Boolean
         get() = constants.withSampling
 

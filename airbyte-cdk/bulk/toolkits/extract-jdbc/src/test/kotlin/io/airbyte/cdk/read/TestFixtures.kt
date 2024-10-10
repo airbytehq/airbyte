@@ -24,6 +24,7 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Duration
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.seconds
 import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
@@ -78,7 +79,7 @@ object TestFixtures {
         vararg mockedQueries: MockedQuery,
     ): DefaultJdbcSharedState {
         val configuration =
-            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency)
+            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency, 1.seconds)
         return DefaultJdbcSharedState(
             configuration,
             BufferingOutputConsumer(ClockFactory().fixed()),
@@ -119,6 +120,7 @@ object TestFixtures {
         override val global: Boolean,
         override val checkpointTargetInterval: Duration,
         override val maxConcurrency: Int,
+        override val maxSnapshotReadTime: kotlin.time.Duration?,
     ) : JdbcSourceConfiguration {
         override val realHost: String
             get() = TODO("Not yet implemented")
