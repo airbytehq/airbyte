@@ -1,5 +1,5 @@
 # Solarwinds Service Desk
-This directory contains the manifest-only connector for `source-solarwinds-service-desk`.
+This directory contains the manifest-only connector for [`source-solarwinds-service-desk`](https://www.solarwinds.com/).
 
 Documentation: https://apidoc.samanage.com/#section/General-Concepts
 
