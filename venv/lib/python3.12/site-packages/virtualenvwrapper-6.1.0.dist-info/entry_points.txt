@@ -1,0 +1,47 @@
+[virtualenvwrapper.get_env_details]
+user_scripts = virtualenvwrapper.user_scripts:get_env_details
+
+[virtualenvwrapper.initialize]
+project = virtualenvwrapper.project:initialize
+user_scripts = virtualenvwrapper.user_scripts:initialize
+
+[virtualenvwrapper.initialize_source]
+user_scripts = virtualenvwrapper.user_scripts:initialize_source
+
+[virtualenvwrapper.post_activate_source]
+project = virtualenvwrapper.project:post_activate_source
+user_scripts = virtualenvwrapper.user_scripts:post_activate_source
+
+[virtualenvwrapper.post_cpvirtualenv_source]
+user_scripts = virtualenvwrapper.user_scripts:post_cpvirtualenv_source
+
+[virtualenvwrapper.post_deactivate_source]
+user_scripts = virtualenvwrapper.user_scripts:post_deactivate_source
+
+[virtualenvwrapper.post_mkvirtualenv_source]
+user_scripts = virtualenvwrapper.user_scripts:post_mkvirtualenv_source
+
+[virtualenvwrapper.post_rmvirtualenv]
+user_scripts = virtualenvwrapper.user_scripts:post_rmvirtualenv
+
+[virtualenvwrapper.pre_activate]
+user_scripts = virtualenvwrapper.user_scripts:pre_activate
+
+[virtualenvwrapper.pre_cpvirtualenv]
+user_scripts = virtualenvwrapper.user_scripts:pre_cpvirtualenv
+
+[virtualenvwrapper.pre_deactivate_source]
+project = virtualenvwrapper.project:pre_deactivate_source
+user_scripts = virtualenvwrapper.user_scripts:pre_deactivate_source
+
+[virtualenvwrapper.pre_mkvirtualenv]
+user_scripts = virtualenvwrapper.user_scripts:pre_mkvirtualenv
+
+[virtualenvwrapper.pre_rmvirtualenv]
+user_scripts = virtualenvwrapper.user_scripts:pre_rmvirtualenv
+
+[virtualenvwrapper.project.post_mkproject_source]
+project = virtualenvwrapper.project:post_mkproject_source
+
+[virtualenvwrapper.project.pre_mkproject]
+project = virtualenvwrapper.project:pre_mkproject

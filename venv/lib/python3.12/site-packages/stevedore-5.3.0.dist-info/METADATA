@@ -1,0 +1,54 @@
+Metadata-Version: 2.1
+Name: stevedore
+Version: 5.3.0
+Summary: Manage dynamic plugins for Python applications
+Home-page: https://docs.openstack.org/stevedore/latest/
+Author: OpenStack
+Author-email: openstack-discuss@lists.openstack.org
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Intended Audience :: Developers
+Classifier: Environment :: Console
+Requires-Python: >=3.8
+Requires-Dist: pbr (>=2.0.0)
+
+===========================================================
+stevedore -- Manage dynamic plugins for Python applications
+===========================================================
+
+.. image:: https://img.shields.io/pypi/v/stevedore.svg
+    :target: https://pypi.org/project/stevedore/
+    :alt: Latest Version
+
+.. image:: https://governance.openstack.org/tc/badges/stevedore.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
+
+Python makes loading code dynamically easy, allowing you to configure
+and extend your application by discovering and loading extensions
+("*plugins*") at runtime. Many applications implement their own
+library for doing this, using ``__import__`` or ``importlib``.
+stevedore avoids creating yet another extension
+mechanism by building on top of `setuptools entry points`_. The code
+for managing entry points tends to be repetitive, though, so stevedore
+provides manager classes for implementing common patterns for using
+dynamically loaded extensions.
+
+.. _setuptools entry points: http://setuptools.readthedocs.io/en/latest/pkg_resources.html?#entry-points
+
+* Free software: Apache license
+* Documentation: https://docs.openstack.org/stevedore/latest
+* Source: https://opendev.org/openstack/stevedore
+* Bugs: https://bugs.launchpad.net/python-stevedore
+
+
+

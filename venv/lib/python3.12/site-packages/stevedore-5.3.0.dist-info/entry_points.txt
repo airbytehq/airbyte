@@ -1,0 +1,11 @@
+[stevedore.example.formatter]
+field = stevedore.example2.fields:FieldList
+plain = stevedore.example.simple:Simple
+simple = stevedore.example.simple:Simple
+
+[stevedore.test.extension]
+e1 = stevedore.tests.test_extension:BrokenExtension
+e2 = stevedore.tests.notfound:UnimportableExtension
+t1 = stevedore.tests.test_extension:FauxExtension
+t2 = stevedore.tests.test_extension:FauxExtension
+

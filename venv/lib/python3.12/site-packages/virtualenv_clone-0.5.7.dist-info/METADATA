@@ -1,0 +1,64 @@
+Metadata-Version: 2.1
+Name: virtualenv-clone
+Version: 0.5.7
+Summary: script to clone virtualenvs.
+Home-page: https://github.com/edwardgeorge/virtualenv-clone
+Author: Edward George
+Author-email: edwardgeorge@gmail.com
+License: MIT
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Intended Audience :: Developers
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+virtualenv cloning script.
+
+[![Build Status](https://travis-ci.org/edwardgeorge/virtualenv-clone.svg?branch=master)](https://travis-ci.org/edwardgeorge/virtualenv-clone)
+
+A script for cloning a non-relocatable virtualenv.
+
+Virtualenv provides a way to make virtualenv's relocatable which could then be
+copied as we wanted. However making a virtualenv relocatable this way breaks
+the no-site-packages isolation of the virtualenv as well as other aspects that
+come with relative paths and `/usr/bin/env` shebangs that may be undesirable.
+
+Also, the .pth and .egg-link rewriting doesn't seem to work as intended. This
+attempts to overcome these issues and provide a way to easily clone an
+existing virtualenv.
+
+It performs the following:
+
+- copies `sys.argv[1]` dir to `sys.argv[2]`
+- updates the hardcoded `VIRTUAL_ENV` variable in the activate script to the
+  new repo location. (`--relocatable` doesn't touch this)
+- updates the shebangs of the various scripts in bin to the new Python if
+  they pointed to the old Python. (version numbering is retained.)
+
+    it can also change `/usr/bin/env python` shebangs to be absolute too,
+    though this functionality is not exposed at present.
+
+- checks `sys.path` of the cloned virtualenv and if any of the paths are from
+  the old environment it finds any `.pth` or `.egg` link files within sys.path
+  located in the new environment and makes sure any absolute paths to the
+  old environment are updated to the new environment.
+
+- finally it double checks `sys.path` again and will fail if there are still
+  paths from the old environment present.
+
+NOTE: This script requires Python 2.7 or 3.4+
+
+
