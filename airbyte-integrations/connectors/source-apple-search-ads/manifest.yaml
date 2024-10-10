@@ -452,6 +452,7 @@ definitions:
       type: OAuthAuthenticator
       client_id: "{{ config.client_id }}"
       client_secret: "{{ config.client_secret }}"
+      grant_type: client_credentials
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
 
