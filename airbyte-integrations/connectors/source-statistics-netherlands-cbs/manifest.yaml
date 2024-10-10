@@ -1,0 +1,839 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  Dataset Open API: https://dataderden.cbs.nl/ODataApi/
+
+  Dataset Selection Website:
+  https://opendata.cbs.nl/statline/portal.html?_la=en&_catalog=CBS (Select a
+  theme and click on API on left bar to find base number for dataset)
+
+check:
+  type: CheckStream
+  stream_names:
+    - open_data_base
+
+definitions:
+  streams:
+    open_data_base:
+      type: DeclarativeStream
+      name: open_data_base
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/open_data_base"
+    table_infos:
+      type: DeclarativeStream
+      name: table_infos
+      primary_key:
+        - Identifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/TableInfos
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: cursor
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - cursor
+              value: "{{ record['Modified'] }}Z"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/table_infos"
+    untyped_data_set:
+      type: DeclarativeStream
+      name: untyped_data_set
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/UntypedDataSet
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: >-
+                      Pagination problem with backend, please try another
+                      dataset
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ record['ID'] or now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/untyped_data_set"
+    typed_data_set:
+      type: DeclarativeStream
+      name: typed_data_set
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/TypedDataSet
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: >-
+                      Pagination problem with backend, please try another
+                      dataset
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ record['ID'] or now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/typed_data_set"
+    data_properties:
+      type: DeclarativeStream
+      name: data_properties
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/DataProperties
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: >-
+                      Pagination problem with backend, please try another
+                      dataset
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ record['ID'] or now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/data_properties"
+    category_groups:
+      type: DeclarativeStream
+      name: category_groups
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/CategoryGroups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: >-
+                      Pagination problem with backend, please try another
+                      dataset
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ record['ID'] or now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/category_groups"
+    perioden:
+      type: DeclarativeStream
+      name: perioden
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: OData/{{ stream_partition['base_number_config'] }}/Perioden
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: >-
+                      Pagination problem with backend, please try another
+                      dataset
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"base_number\"] }}"
+          cursor_field: base_number_config
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ record['ID'] or now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/perioden"
+  base_requester:
+    type: HttpRequester
+    url_base: https://dataderden.cbs.nl/ODataApi/
+
+streams:
+  - $ref: "#/definitions/streams/open_data_base"
+  - $ref: "#/definitions/streams/table_infos"
+  - $ref: "#/definitions/streams/untyped_data_set"
+  - $ref: "#/definitions/streams/typed_data_set"
+  - $ref: "#/definitions/streams/data_properties"
+  - $ref: "#/definitions/streams/category_groups"
+  - $ref: "#/definitions/streams/perioden"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_number
+      - start_date
+    properties:
+      base_number:
+        type: array
+        description: >-
+          Base number found at end of open data API. Refer
+          `https://dataderden.cbs.nl/ODataApi/`
+        order: 0
+        title: Base number of dataset
+        default:
+          - 48002NED
+          - 48004NED
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    open_data_base: true
+    table_infos: true
+    untyped_data_set: true
+    typed_data_set: true
+    data_properties: true
+    category_groups: true
+    perioden: true
+  testedStreams:
+    open_data_base:
+      hasRecords: true
+      streamHash: b7be3fb2d6eda1d1fbbd04184de456aef3da8e56
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    table_infos:
+      hasRecords: true
+      streamHash: 6f7b5a710ab5559701824798311f77ddd71aabd6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    untyped_data_set:
+      hasRecords: true
+      streamHash: 2271ee08aec3ade91e8fb0acc5240ceab073bc6d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    typed_data_set:
+      hasRecords: true
+      streamHash: a4ec096b3a1b09fedfe480684009c8131598f693
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data_properties:
+      hasRecords: true
+      streamHash: b5afb93f6c78760f2b8d512de9173cdf3da12647
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    category_groups:
+      hasRecords: true
+      streamHash: 6b395c0aa294258ae723a3bf4c114d0b2d0d13d8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    perioden:
+      hasRecords: true
+      streamHash: eebfd4c96f4fb37e5b8368bfff291f10978906f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  open_data_base:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      odata.metadata:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  table_infos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Catalog:
+        type:
+          - string
+          - "null"
+      DefaultPresentation:
+        type:
+          - string
+          - "null"
+      DefaultSelection:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      ExplanatoryText:
+        type:
+          - string
+          - "null"
+      Frequency:
+        type:
+          - string
+          - "null"
+      GraphTypes:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - number
+          - "null"
+      Identifier:
+        type: string
+      Language:
+        type:
+          - string
+          - "null"
+      MetaDataModified:
+        type:
+          - string
+          - "null"
+      Modified:
+        type:
+          - string
+          - "null"
+      OutputStatus:
+        type:
+          - string
+          - "null"
+      Period:
+        type:
+          - string
+          - "null"
+      ReasonDelivery:
+        type:
+          - string
+          - "null"
+      SearchPriority:
+        type:
+          - string
+          - "null"
+      ShortDescription:
+        type:
+          - string
+          - "null"
+      ShortTitle:
+        type:
+          - string
+          - "null"
+      Source:
+        type:
+          - string
+          - "null"
+      Summary:
+        type:
+          - string
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      cursor:
+        type: string
+    required:
+      - Identifier
+      - cursor
+  untyped_data_set:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Bedrijfsgebouwen_3:
+        type:
+          - string
+          - "null"
+      Bedrijfsgrootte:
+        type:
+          - string
+          - "null"
+      BedrijfstakkenBranchesSBI2008:
+        type:
+          - string
+          - "null"
+      ComputersEnRandapparatuur_6:
+        type:
+          - string
+          - "null"
+      GrondEnTerreinen_2:
+        type:
+          - string
+          - "null"
+      GrondWaterEnWegenbouwkundigeWerken_4:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - number
+          - "null"
+      InvesteringenInMaterieleVasteActiva_1:
+        type:
+          - string
+          - "null"
+      MachinesEnInstallaties_7:
+        type:
+          - string
+          - "null"
+      OverigeMaterieleVasteActiva_8:
+        type:
+          - string
+          - "null"
+      Perioden:
+        type:
+          - string
+          - "null"
+      Vervoermiddelen_5:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - number
+          - string
+    required:
+      - uuid
+  typed_data_set:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Bedrijfsgebouwen_3:
+        type:
+          - number
+          - "null"
+      Bedrijfsgrootte:
+        type:
+          - string
+          - "null"
+      BedrijfstakkenBranchesSBI2008:
+        type:
+          - string
+          - "null"
+      ComputersEnRandapparatuur_6:
+        type:
+          - number
+          - "null"
+      GrondEnTerreinen_2:
+        type:
+          - number
+          - "null"
+      GrondWaterEnWegenbouwkundigeWerken_4:
+        type:
+          - number
+          - "null"
+      ID:
+        type:
+          - number
+          - "null"
+      InvesteringenInMaterieleVasteActiva_1:
+        type:
+          - number
+          - "null"
+      MachinesEnInstallaties_7:
+        type:
+          - number
+          - "null"
+      OverigeMaterieleVasteActiva_8:
+        type:
+          - number
+          - "null"
+      Perioden:
+        type:
+          - string
+          - "null"
+      Vervoermiddelen_5:
+        type:
+          - number
+          - "null"
+      uuid:
+        type:
+          - number
+          - string
+    required:
+      - uuid
+  data_properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Datatype:
+        type:
+          - string
+          - "null"
+      Decimals:
+        type:
+          - number
+          - "null"
+      Default:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - number
+          - "null"
+      Key:
+        type:
+          - string
+          - "null"
+      ParentID:
+        type:
+          - number
+          - "null"
+      Position:
+        type:
+          - number
+          - "null"
+      ReleasePolicy:
+        type:
+          - boolean
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      Unit:
+        type:
+          - string
+          - "null"
+      odata.type:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - number
+          - string
+    required:
+      - uuid
+  category_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Description:
+        type:
+          - string
+          - "null"
+      DimensionKey:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - number
+          - "null"
+      ParentID:
+        type:
+          - number
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - number
+          - string
+    required:
+      - uuid
+  perioden:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Description:
+        type:
+          - string
+          - "null"
+      Key:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
