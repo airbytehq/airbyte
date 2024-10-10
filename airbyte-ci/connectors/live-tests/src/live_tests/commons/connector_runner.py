@@ -24,7 +24,8 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIG_PATH = "/data/config.json"
     IN_CONTAINER_CONFIGURED_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    IN_CONTAINER_STDERR_PATH = "/stderr.txt"
+    IN_CONTAINER_STDOUT_PATH = "/output.txt"
     IN_CONTAINER_OBFUSCATOR_PATH = "/user/local/bin/record_obfuscator.py"
 
     def __init__(
@@ -150,15 +151,15 @@ class ConnectorRunner:
                     "sh",
                     "-c",
                     " ".join(airbyte_command)
-                    + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
+                    + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} 2>{self.IN_CONTAINER_STDERR_PATH} 2>&1 | tee -a {self.IN_CONTAINER_STDOUT_PATH}",
                 ],
                 skip_entrypoint=True,
             )
             executed_container = await container.sync()
             # We exporting to disk as we can't read .stdout() or await file.contents() as it might blow up the memory
-            stdout_exported = await executed_container.file(self.IN_CONTAINER_OUTPUT_PATH).export(str(self.stdout_file_path))
+            stdout_exported = await executed_container.file(self.IN_CONTAINER_STDOUT_PATH).export(str(self.stdout_file_path))
             if not stdout_exported:
-                raise errors.ExportError(f"Failed to export {self.IN_CONTAINER_OUTPUT_PATH}")
+                raise errors.ExportError(f"Failed to export {self.IN_CONTAINER_STDOUT_PATH}")
 
             stderr = await executed_container.stderr()
             self.stderr_file_path.write_text(stderr)
