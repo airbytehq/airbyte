@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import kotlin.test.assertEquals
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
