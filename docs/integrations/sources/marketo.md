@@ -121,6 +121,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.8 | 2024-10-05 | [43736](https://github.com/airbytehq/airbyte/pull/43736) | Update dependencies |
 | 1.4.7 | 2024-07-06 | [40629](https://github.com/airbytehq/airbyte/pull/40629) | Update dependencies |
 | 1.4.6 | 2024-06-26 | [40530](https://github.com/airbytehq/airbyte/pull/40530) | Update dependencies |
 | 1.4.5 | 2024-06-25 | [40318](https://github.com/airbytehq/airbyte/pull/40318) | Update dependencies |
