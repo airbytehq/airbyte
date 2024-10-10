@@ -252,7 +252,7 @@ class ConnectorReleaseCandidates(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionReleaseCandidate] = Field(
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+(-[0-9A-Za-z-.]+)?$"), VersionReleaseCandidate] = Field(
         ..., description="Each entry denotes a release candidate version of a connector."
     )
 

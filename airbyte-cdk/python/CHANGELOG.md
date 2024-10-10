@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.13.0
+Add extra fields to StreamSlice
+
+## 5.12.1
+Low Code: Removes deprecated  and 
+
 ## 5.12.0
 Low Code: Adds  component
 
