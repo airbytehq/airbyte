@@ -6,7 +6,7 @@ import asyncio
 import datetime
 import math
 from typing import Any, Mapping, Union
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pyarrow as pa
 import pytest
@@ -273,3 +273,14 @@ def test_wrong_file_format(file_format: Union[CsvFormat, JsonlFormat]) -> None:
     logger = Mock()
     with pytest.raises(ValueError):
         asyncio.get_event_loop().run_until_complete(parser.infer_schema(config, file, stream_reader, logger))
+
+
+def test_given_os_error_raise_os_error():
+    fake_file = MagicMock()
+    logger = MagicMock()
+    config = MagicMock()
+    config.format = _default_parquet_format
+    stream_reader = MagicMock(open_file=MagicMock(side_effect=OSError("File does not exist")))
+
+    with pytest.raises(OSError):
+        list(ParquetParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))

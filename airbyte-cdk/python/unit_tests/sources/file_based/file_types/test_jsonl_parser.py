@@ -156,3 +156,12 @@ def test_given_unparsable_json_when_parse_records_then_raise_error(stream_reader
     with pytest.raises(RecordParseError):
         list(JsonlParser().parse_records(Mock(), Mock(), stream_reader, logger, None))
     assert logger.warning.call_count == 0
+
+
+def test_given_os_error_then_raise_os_error(stream_reader: MagicMock) -> None:
+    stream_reader.open_file.side_effect = OSError("File does not exist")
+    logger = Mock()
+
+    with pytest.raises(OSError):
+        list(JsonlParser().parse_records(Mock(), Mock(), stream_reader, logger, None))
+    assert logger.warning.call_count == 0
