@@ -33,9 +33,9 @@ data class FakeSourceConfiguration(
 @Requires(env = [Environment.TEST])
 @Secondary
 class FakeSourceConfigurationFactory :
-    SourceConfigurationFactory<FakeSourceConfigurationJsonObject, FakeSourceConfiguration> {
+    SourceConfigurationFactory<FakeSourceConfigurationSpecification, FakeSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: FakeSourceConfigurationJsonObject,
+        pojo: FakeSourceConfigurationSpecification,
     ): FakeSourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())

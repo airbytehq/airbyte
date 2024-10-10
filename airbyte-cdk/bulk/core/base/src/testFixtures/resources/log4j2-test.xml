@@ -7,7 +7,7 @@
         <Property name="container-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%replace{%X{log_source}}{^ -}{} > %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
         <!-- Always log INFO by default. -->
         <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
-        <Property name="logDir">target/test-logs/${date:yyyy-MM-dd'T'HH:mm:ss}</Property>
+        <Property name="logDir">build/test-logs/${date:yyyy-MM-dd'T'HH:mm:ss}</Property>
     </Properties>
 
     <Appenders>
