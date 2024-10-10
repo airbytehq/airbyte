@@ -19,11 +19,13 @@ def source():
 @pytest.fixture(scope="module")
 def logger():
     logger = logging.getLogger("airbyte")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.ERROR)
     return logger
 
 def test_check_connection(config, source, logger):
     result = source.check_connection(logger, config)
+    if result != (True, None):
+        logger.error(f"Connection check failed: {result[1]}")
     assert result == (True, None), "Connection check failed"
 
 def test_check_connection_invalid_config(source, logger):
@@ -34,6 +36,8 @@ def test_check_connection_invalid_config(source, logger):
         "bucket": "invalid"
     }
     result, error_msg = source.check_connection(logger, invalid_config)
+    if result:
+        logger.error("Connection check with invalid config unexpectedly succeeded")
     assert result is False
     assert "Connection check failed" in error_msg
 
@@ -100,11 +104,13 @@ def test_read(config, source, logger, configured_catalog, sync_mode):
     state = {}
     records_found = False
     final_state = None
+    record_count = 0
     for message in source.read(logger=logger, config=config, catalog=configured_catalog, state=state):
         assert_message(message, configured_catalog, sync_mode)
         
         if message.type == Type.RECORD:
             records_found = True
+            record_count += 1
         elif message.type == Type.STATE and sync_mode == "incremental":
             final_state = message.state.data
 
@@ -114,8 +120,9 @@ def test_read(config, source, logger, configured_catalog, sync_mode):
     if sync_mode == "incremental":
         assert final_state, "State should be updated after incremental sync"
         assert isinstance(final_state, dict), "Final state should be a dictionary"
-        assert "_ab_cdc_updated_at" in final_state, "State should contain _ab_cdc_updated_at field after incremental sync"
-        assert isinstance(final_state["_ab_cdc_updated_at"], (int, float)), "_ab_cdc_updated_at should be a number"
+        for stream_name, stream_state in final_state.items():
+            assert "_ab_cdc_updated_at" in stream_state, f"State for stream {stream_name} should contain _ab_cdc_updated_at field after incremental sync"
+            assert isinstance(stream_state["_ab_cdc_updated_at"], (int, float)), f"_ab_cdc_updated_at for stream {stream_name} should be a number"
 
 def test_no_streams_available(source, logger):
     invalid_config = {
@@ -128,7 +135,29 @@ def test_no_streams_available(source, logger):
     with pytest.raises(Exception) as exc_info:
         list(source.streams(invalid_config))
     
-    assert "AuthenticationException" in str(exc_info.value) or "No streams could be generated" in str(exc_info.value)
+    error_message = str(exc_info.value)
+    if "AuthenticationException" not in error_message and "No streams could be generated" not in error_message:
+        logger.error(f"Unexpected error message: {error_message}")
+    assert "AuthenticationException" in error_message or "No streams could be generated" in error_message
+
+def test_validate_state():
+    source = SourceCouchbase()
+    
+    # Test valid state
+    valid_state = {"stream1": {"_ab_cdc_updated_at": 1234567890}}
+    assert source._validate_state(valid_state) == valid_state
+
+    # Test invalid state type
+    with pytest.raises(ValueError, match="State must be a dictionary"):
+        source._validate_state([])
+
+    # Test invalid stream state type
+    with pytest.raises(ValueError, match="State for stream stream1 must be a dictionary"):
+        source._validate_state({"stream1": []})
+
+    # Test invalid _ab_cdc_updated_at type
+    with pytest.raises(ValueError, match="_ab_cdc_updated_at for stream stream1 must be a number"):
+        source._validate_state({"stream1": {"_ab_cdc_updated_at": "not a number"}})
 
 if __name__ == "__main__":
     pytest.main([__file__])

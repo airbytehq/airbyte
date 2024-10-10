@@ -27,7 +27,6 @@ class SourceCouchbase(AbstractSource):
             cluster = self._get_cluster(config)
             bucket = cluster.bucket(config['bucket'])
             bucket.ping()
-            logger.info("Successfully connected to Couchbase cluster and bucket")
             return True, None
         except Exception as e:
             logger.error(f"Connection check failed: {str(e)}")
@@ -63,26 +62,37 @@ class SourceCouchbase(AbstractSource):
         return streams
 
     def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Mapping[str, Any] = None) -> Iterable[AirbyteMessage]:
-        state = state or {}
-        for configured_stream in catalog.streams:
-            stream = next(stream for stream in self.streams(config) if stream.name == configured_stream.stream.name)
-            stream_state = state.get(stream.name, {})
-            for record in stream.read_records(sync_mode=configured_stream.sync_mode, cursor_field=configured_stream.cursor_field, stream_slice=None, stream_state=stream_state):
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(
-                        stream=stream.name,
-                        data=record,
-                        emitted_at=int(time.time() * 1000)
-                    )
-                )
-            
-            if isinstance(stream, IncrementalCouchbaseStream):
-                stream_state = stream.state
-                yield AirbyteMessage(
-                    type=Type.STATE,
-                    state=AirbyteStateMessage(data={stream.name: stream_state})
-                )
+        state = self._validate_state(state or {})
+        
+        try:
+            for configured_stream in catalog.streams:
+                stream = next(stream for stream in self.streams(config) if stream.name == configured_stream.stream.name)
+                stream_state = state.get(stream.name, {})
+                
+                try:
+                    for record in self._read_records(stream, configured_stream, stream_state):
+                        yield AirbyteMessage(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(
+                                stream=stream.name,
+                                data=record,
+                                emitted_at=int(time.time() * 1000)
+                            )
+                        )
+                except Exception as e:
+                    logger.error(f"Error reading records from stream {stream.name}: {str(e)}")
+                    raise
+                
+                if isinstance(stream, IncrementalCouchbaseStream):
+                    stream_state = stream.state
+                    if '_ab_cdc_updated_at' in stream_state:
+                        yield AirbyteMessage(
+                            type=Type.STATE,
+                            state=AirbyteStateMessage(data={stream.name: {'_ab_cdc_updated_at': stream_state['_ab_cdc_updated_at']}})
+                        )
+        except Exception as e:
+            logger.error(f"Unexpected error during sync: {str(e)}")
+            raise
 
     @staticmethod
     def _get_cluster(config: Mapping[str, Any]) -> Cluster:
@@ -97,12 +107,10 @@ class SourceCouchbase(AbstractSource):
     def _ensure_primary_index(cluster: Cluster, bucket: str, scope: str, collection: str):
         index_name = f"{bucket}_{scope}_{collection}_primary_index"
         query = f"CREATE PRIMARY INDEX IF NOT EXISTS `{index_name}` ON `{bucket}`.`{scope}`.`{collection}`"
-        logging.debug(f"Executing query to ensure primary index: {query}")
         try:
             cluster.query(query).execute()
-            logging.debug(f"Successfully ensured primary index for {bucket}.{scope}.{collection}")
         except Exception as e:
-            logging.warning(f"Failed to create primary index for {bucket}.{scope}.{collection}: {str(e)}")
+            logging.error(f"Failed to create primary index for {bucket}.{scope}.{collection}: {str(e)}")
 
     @property
     def name(self) -> str:
@@ -117,3 +125,19 @@ class SourceCouchbase(AbstractSource):
             return False, f"Missing required configuration fields: {', '.join(missing_fields)}"
         
         return True, None
+
+    @staticmethod
+    def _validate_state(state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not isinstance(state, dict):
+            raise ValueError(f"State must be a dictionary, got {type(state)}")
+        for stream_name, stream_state in state.items():
+            if not isinstance(stream_state, dict):
+                raise ValueError(f"State for stream {stream_name} must be a dictionary, got {type(stream_state)}")
+            if '_ab_cdc_updated_at' in stream_state and not isinstance(stream_state['_ab_cdc_updated_at'], (int, float)):
+                raise ValueError(f"_ab_cdc_updated_at for stream {stream_name} must be a number, got {type(stream_state['_ab_cdc_updated_at'])}")
+        return state
+
+    @staticmethod
+    def _read_records(stream, configured_stream, stream_state):
+        for record in stream.read_records(sync_mode=configured_stream.sync_mode, cursor_field=configured_stream.cursor_field, stream_slice=None, stream_state=stream_state):
+            yield record
