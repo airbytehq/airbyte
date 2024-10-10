@@ -2,21 +2,27 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import logging
 
+import requests
+
+import urllib.parse
 from typing import Any, Iterable, Mapping
+import uuid
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 
 class DestinationLimeCrm(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -30,8 +36,38 @@ class DestinationLimeCrm(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        streams = {s.stream.name for s in configured_catalog.streams}
+        logger.info(f"Starting write to Lime CRM with {len(configured_catalog.streams)} streams")
 
-        pass
+        buffer = defaultdict(list)
+
+        for message in input_messages:
+
+            logger.info(f"Received message: {message}")
+
+            match message.type:
+                case Type.RECORD:
+                    logger.info(f"Received record: {message.record}")
+                    stream = message.record.stream
+                    if stream not in streams:
+                        logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                        continue
+                    buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), message))
+                case Type.STATE:
+                    logger.info(f"Received state: {message.state}")
+                    for stream_name in buffer.keys():
+                        logger.info(f"Flushing buffer for stream: {stream_name}")
+                        logger.info("TODO: Persisting records to Lime CRM...")
+                        for message in buffer[stream_name]:
+                            yield message
+                    buffer.clear()
+                case _:
+                    logger.info(f"Message type {message.type} not supported, skipping")
+
+            for stream_name in buffer.keys():
+                logger.info(f"Flushing remaining streams in buffer: {stream_name}")
+                logger.info("TODO: Persisting records to Lime CRM...")
+            buffer.clear()
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -46,8 +82,9 @@ class DestinationLimeCrm(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
-
+            url_root = config.get("url_root")
+            url = urllib.parse.urljoin(url_root, "api/v1/")
+            requests.get(url, timeout=3, headers={"x-api-key": config.get("api_key")}).raise_for_status()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

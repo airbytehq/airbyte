@@ -17,6 +17,7 @@ packages = [ { include = "destination_lime_crm" }, {include = "main.py" } ]
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
+requests = "^2.26.0"
 
 [tool.poetry.scripts]
 destination-lime-crm = "destination_lime_crm.run:run"
