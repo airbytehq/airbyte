@@ -125,3 +125,6 @@ properties:
         default: false
       generated:
         "$ref": GeneratedFields.yaml
+      supportsFilesInAdditionalPropertiesPreview:
+        type: boolean
+        default: false

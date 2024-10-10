@@ -333,6 +333,7 @@ class Data(BaseModel):
     remoteRegistries: Optional[RemoteRegistries] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
+    supportsFilesInAdditionalPropertiesPreview: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
