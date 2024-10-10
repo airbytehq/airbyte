@@ -1,9 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import sys
-import time
 from io import StringIO
-from threading import RLock
+from threading import Lock
 from types import TracebackType
 from typing import Optional
 
@@ -19,13 +18,11 @@ class PrintBuffer:
 
     Attributes:
         buffer (StringIO): A buffer to store the messages before flushing.
-        flush_interval (float): The time interval (in seconds) after which the buffer is flushed.
-        last_flush_time (float): The last time the buffer was flushed.
-        lock (RLock): A reentrant lock to ensure thread-safe operations.
+        lock (Lock): A lock to ensure thread-safe operations.
 
     Methods:
         write(message: str) -> None:
-            Writes a message to the buffer and flushes if the interval has passed.
+            Writes a message to the buffer.
 
         flush() -> None:
             Flushes the buffer content to the standard output.
@@ -37,19 +34,13 @@ class PrintBuffer:
             Exits the runtime context and restores the original stdout and stderr.
     """
 
-    def __init__(self, flush_interval: float = 0.1):
+    def __init__(self):
         self.buffer = StringIO()
-        self.flush_interval = flush_interval
-        self.last_flush_time = time.monotonic()
-        self.lock = RLock()
+        self.lock = Lock()
 
     def write(self, message: str) -> None:
         with self.lock:
             self.buffer.write(message)
-            current_time = time.monotonic()
-            if (current_time - self.last_flush_time) >= self.flush_interval:
-                self.flush()
-                self.last_flush_time = current_time
 
     def flush(self) -> None:
         with self.lock:
