@@ -1,4 +1,4 @@
-version: 5.11.1
+version: 5.12.0
 
 type: DeclarativeSource
 
@@ -172,6 +172,9 @@ spec:
         airbyte_secret: true
       start_date:
         type: string
+        description: >-
+          Any data before this date will not be replicated and date time formate
+          should be %Y-%m-%d %H:%M:%S. Example 2017-01-24 13:12:29.
         order: 1
         title: Start Date
         default: "2017-01-24 13:12:29"
@@ -206,12 +209,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     checkins:
+      hasRecords: true
       streamHash: 3064832fb754879703a6a28d7bf6bd785b73b007
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
