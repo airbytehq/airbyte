@@ -9,8 +9,10 @@ from datetime import datetime
 from typing import cast
 
 import orjson
+
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType
+from source_s3.utils import airbyte_message_to_str
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
@@ -29,24 +31,21 @@ def get_source(args: list[str]) -> SourceS3 | None:
         )
     except Exception:
         print(
-            orjson.dumps(
-                cast(
-                    dict,
-                    AirbyteMessageSerializer.dump(
-                        AirbyteMessage(
-                            type=Type.TRACE,
-                            trace=AirbyteTraceMessage(
-                                type=TraceType.ERROR,
-                                emitted_at=int(datetime.now().timestamp() * 1000),
-                                error=AirbyteErrorTraceMessage(
-                                    message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
-                                    stack_trace=traceback.format_exc(),
-                                ),
+            airbyte_message_to_str(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
                             ),
-                        )
-                    ),
+                        ),
+                    )
                 )
-            ).decode()
+            )
         )
         return None
 

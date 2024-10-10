@@ -6,12 +6,12 @@ from __future__ import annotations
 import sys
 import traceback
 from datetime import datetime
-from typing import cast
 
-import orjson
-from airbyte_cdk import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from source_s3.utils import airbyte_message_to_str
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
+
+from airbyte_cdk import AirbyteEntrypoint, launch
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 
 
 def get_source(args: list[str]) -> SourceS3 | None:
@@ -29,24 +29,19 @@ def get_source(args: list[str]) -> SourceS3 | None:
         )
     except Exception:
         print(
-            orjson.dumps(
-                cast(
-                    dict,
-                    AirbyteMessageSerializer.dump(
-                        AirbyteMessage(
-                            type=Type.TRACE,
-                            trace=AirbyteTraceMessage(
-                                type=TraceType.ERROR,
-                                emitted_at=int(datetime.now().timestamp() * 1000),
-                                error=AirbyteErrorTraceMessage(
-                                    message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
-                                    stack_trace=traceback.format_exc(),
-                                ),
-                            ),
-                        )
+            airbyte_message_to_str(
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(
+                        type=TraceType.ERROR,
+                        emitted_at=int(datetime.now().timestamp() * 1000),
+                        error=AirbyteErrorTraceMessage(
+                            message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                            stack_trace=traceback.format_exc(),
+                        ),
                     ),
                 )
-            ).decode()
+            )
         )
         return None
 
