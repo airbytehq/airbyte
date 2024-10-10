@@ -21,9 +21,9 @@ def get_source(args: list[str]) -> SourceS3 | None:
         return SourceS3(
             SourceS3StreamReader(),
             Config,
-            SourceS3.read_catalog(catalog_path) if catalog_path else None,
-            SourceS3.read_config(config_path) if config_path else None,
-            SourceS3.read_state(state_path) if state_path else None,
+            # SourceS3.read_catalog(catalog_path) if catalog_path else None,
+            # SourceS3.read_config(config_path) if config_path else None,
+            # SourceS3.read_state(state_path) if state_path else None,
             cursor_cls=Cursor,
         )
     except Exception:
