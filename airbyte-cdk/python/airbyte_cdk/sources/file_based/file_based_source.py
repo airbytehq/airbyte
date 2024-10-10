@@ -3,7 +3,6 @@
 #
 
 import logging
-import traceback
 from abc import ABC
 from collections import Counter
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
@@ -67,6 +66,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
+        check_all_streams: bool = False
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -86,6 +86,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             MAX_CONCURRENCY, INITIAL_N_PARTITIONS, self.logger, self._slice_logger, self.message_repository
         )
         self._state = None
+        self._check_all_streams = check_all_streams
         super().__init__(concurrent_source)
 
     @property
@@ -121,8 +122,8 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 f"resolve this issue.",
             )
 
-        errors = []
-        tracebacks = []
+        errors = False
+        available_streams = 0
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
@@ -132,34 +133,32 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except AirbyteTracedException as ate:
-                errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
-                tracebacks.append(traceback.format_exc())
+                logger.error(f"Unable to connect to stream {stream.name} - {ate.message}")
+                errors = True
+                continue
             except Exception:
-                errors.append(f"Unable to connect to stream {stream.name}")
-                tracebacks.append(traceback.format_exc())
+                logger.error(f"Unable to connect to stream {stream.name}")
+                errors = True
+                continue
             else:
-                if not stream_is_available and reason:
-                    errors.append(reason)
+                if not stream_is_available:
+                    if not reason:
+                        raise AirbyteTracedException(
+                            internal_message=f"Stream {stream.name} not available, but no reason provided. Update the source's availability strategy.",
+                            message=f"An error occured while attempting to check connection to stream {stream}. Check the logs for more information.",
+                            failure_type=FailureType.system_error
+                        )
+                    logger.error(f"Unable to connect to stream {stream.name}: {reason}")
+                else:
+                    available_streams += 1
 
-        if len(errors) == 1 and len(tracebacks) == 1:
-            raise AirbyteTracedException(
-                internal_message=tracebacks[0],
-                message=f"{errors[0]}",
-                failure_type=FailureType.config_error,
-            )
-        if len(errors) == 1 and len(tracebacks) == 0:
-            raise AirbyteTracedException(
-                message=f"{errors[0]}",
-                failure_type=FailureType.config_error,
-            )
-        elif len(errors) > 1:
-            raise AirbyteTracedException(
-                internal_message="\n".join(tracebacks),
-                message=f"{len(errors)} streams with errors: {', '.join(error for error in errors)}",
-                failure_type=FailureType.config_error,
-            )
+        if errors:
+            return False, "An error occurred while attempting to connect to the configured stream(s). Please check the logs for more information."
 
-        return not bool(errors), (errors or None)
+        if not available_streams or (self._check_all_streams and len(streams) != available_streams):
+            return False, "Unable to connect to any of the configured streams. Please check the logs for more information."
+
+        return available_streams > 0, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -264,7 +263,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
         # emit all the errors collected
