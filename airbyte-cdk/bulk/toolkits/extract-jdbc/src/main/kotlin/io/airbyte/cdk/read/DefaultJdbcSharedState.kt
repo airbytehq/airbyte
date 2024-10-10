@@ -22,9 +22,7 @@ class DefaultJdbcSharedState(
 ) : JdbcSharedState {
 
     // First hit to the readStartTime initializes the value.
-    override val readStartTime: Instant by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        Instant.now()
-    }
+    override val readStartTime: Instant by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { Instant.now() }
     override val withSampling: Boolean
         get() = constants.withSampling
 

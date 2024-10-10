@@ -15,7 +15,6 @@ import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-import kotlin.time.Duration.Companion.hours
 
 private val log = KotlinLogging.logger {}
 
@@ -123,10 +122,11 @@ class MysqlSourceConfigurationFactory :
         jdbcProperties.putAll(sslJdbcParameters)
 
         val cursorConfig = pojo.getCursorMethodConfigurationValue()
-        val maxSnapshotReadTime: Duration? = when (cursorConfig is CdcCursor) {
-            true -> cursorConfig.initialLoadTimeoutHours?.let { Duration.ofHours(it.toLong())}
-            else -> null
-        }
+        val maxSnapshotReadTime: Duration? =
+            when (cursorConfig is CdcCursor) {
+                true -> cursorConfig.initialLoadTimeoutHours?.let { Duration.ofHours(it.toLong()) }
+                else -> null
+            }
         // Build JDBC URL
         val address = "%s:%d"
         val jdbcUrlFmt = "jdbc:mysql://${address}"

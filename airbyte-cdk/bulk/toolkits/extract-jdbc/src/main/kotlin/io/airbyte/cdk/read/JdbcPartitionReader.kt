@@ -63,15 +63,11 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     /** If configured max feed read time elapsed we exit with a transient error */
     protected fun checkMaxReadTimeElapsed() {
         sharedState.configuration.maxSnapshotReadTime?.let {
-            if (java.time.Duration.between(
-                    sharedState.readStartTime,
-                    Instant.now()
-                ) > it) {
+            if (java.time.Duration.between(sharedState.readStartTime, Instant.now()) > it) {
                 throw TransientErrorException("Shutting down reader: max time elapsed")
             }
         }
     }
-
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */

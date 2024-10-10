@@ -204,27 +204,27 @@ class JdbcPartitionReaderTest {
         val sharedState =
             sharedState(
                 mockedQueries =
-                arrayOf(
-                    TestFixtures.MockedQuery(
-                        SelectQuerySpec(
-                            SelectColumns(id, ts, msg),
-                            From(stream.name, stream.namespace),
-                            Where(
-                                And(
-                                    GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
-                                    LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                )
+                    arrayOf(
+                        TestFixtures.MockedQuery(
+                            SelectQuerySpec(
+                                SelectColumns(id, ts, msg),
+                                From(stream.name, stream.namespace),
+                                Where(
+                                    And(
+                                        GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
+                                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                                    )
+                                ),
+                                OrderBy(ts),
+                                Limit(4),
                             ),
-                            OrderBy(ts),
-                            Limit(4),
-                        ),
-                        SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                        """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                        """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                        """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                        """{"id":4,"ts":"2024-08-04","msg":"you"}""",
-                    )
-                ),
+                            SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
+                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
+                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
+                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
+                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
+                        )
+                    ),
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory = sharedState.factory()
@@ -266,26 +266,26 @@ class JdbcPartitionReaderTest {
         val sharedState2 =
             sharedState(
                 mockedQueries =
-                arrayOf(
-                    TestFixtures.MockedQuery(
-                        SelectQuerySpec(
-                            SelectColumns(id, ts, msg),
-                            From(stream.name, stream.namespace),
-                            Where(
-                                And(
-                                    GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
-                                    LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                )
+                    arrayOf(
+                        TestFixtures.MockedQuery(
+                            SelectQuerySpec(
+                                SelectColumns(id, ts, msg),
+                                From(stream.name, stream.namespace),
+                                Where(
+                                    And(
+                                        GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
+                                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                                    )
+                                ),
                             ),
-                        ),
-                        SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
-                        """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
-                        """{"id":2,"ts":"2024-08-02","msg":"how"}""",
-                        """{"id":3,"ts":"2024-08-03","msg":"are"}""",
-                        """{"id":4,"ts":"2024-08-04","msg":"you"}""",
-                        """{"id":5,"ts":"2024-08-05","msg":"today"}""",
-                    )
-                ),
+                            SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
+                            """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
+                            """{"id":2,"ts":"2024-08-02","msg":"how"}""",
+                            """{"id":3,"ts":"2024-08-03","msg":"are"}""",
+                            """{"id":4,"ts":"2024-08-04","msg":"you"}""",
+                            """{"id":5,"ts":"2024-08-05","msg":"today"}""",
+                        )
+                    ),
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory2 = sharedState2.factory()
@@ -296,7 +296,6 @@ class JdbcPartitionReaderTest {
         partition2.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition2.streamState.fetchSize = 2
         // Generate reader
-
 
         val readerNonResumable = JdbcNonResumablePartitionReader(partition2)
         Assertions.assertEquals(
@@ -312,7 +311,5 @@ class JdbcPartitionReaderTest {
                 readerNonResumable.run()
             }
         }
-
     }
-
 }
