@@ -29,12 +29,14 @@ def init_uncaught_exception_handler(logger: logging.Logger) -> None:
             sys.__excepthook__(exception_type, exception_value, traceback_)
             return
 
+        logger.info("Starting shutdown hook...")
         logger.fatal(exception_value, exc_info=exception_value)
 
         # emit an AirbyteTraceMessage for any exception that gets to this spot
         traced_exc = assemble_uncaught_exception(exception_type, exception_value)
 
         traced_exc.emit_message()
+        logger.info("Shutdown hook completed successfully. Source should exit with a failing exit code...")
 
     sys.excepthook = hook_fn
 
