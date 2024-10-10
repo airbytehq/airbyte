@@ -23,7 +23,8 @@ from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
-    from typing import Any, ClassVar, Optional, Union
+    import dagger
+    from typing import Any, ClassVar, Optional, Union, Set
     from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
@@ -414,3 +415,25 @@ class Step(ABC):
             status=StepStatus.FAILURE,
             stdout=f"Timed out after the max duration of {format_duration(self.max_duration)}. Please checkout the Dagger logs to see what happened.",
         )
+
+
+class StepModifyingFiles(Step):
+
+    modified_files: List[str]
+    modified_directory: dagger.Directory
+
+    def __init__(self, context: PipelineContext, modified_directory: dagger.Directory, secrets: List[Secret] | None = None) -> None:
+        super().__init__(context, secrets)
+        self.modified_directory = modified_directory
+        self.modified_files = []
+
+    async def export_modified_files(
+        self,
+        export_to_directory: Path,
+    ) -> Set[Path]:
+        modified_files = set()
+        for modified_file in self.modified_files:
+            local_path = export_to_directory / modified_file
+            await self.modified_directory.file(str(modified_file)).export(str(local_path))
+            modified_files.add(local_path)
+        return modified_files

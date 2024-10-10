@@ -9,10 +9,10 @@ from base_images import version_registry  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import Optional
 
     import dagger
 
@@ -21,20 +21,18 @@ class NoBaseImageAddressInMetadataError(Exception):
     pass
 
 
-class UpdateBaseImageMetadata(Step):
+class UpdateBaseImageMetadata(StepModifyingFiles):
     context: ConnectorContext
 
     title = "Upgrade the base image to the latest version in metadata.yaml"
 
-    modified_files: List[str]
-
     def __init__(
         self,
         context: ConnectorContext,
+        connector_directory: dagger.Directory,
         set_if_not_exists: bool = False,
-        connector_directory: Optional[dagger.Directory] = None,
     ) -> None:
-        super().__init__(context)
+        super().__init__(context, connector_directory)
         self.set_if_not_exists = set_if_not_exists
         self.modified_files = []
         self.connector_directory = connector_directory
