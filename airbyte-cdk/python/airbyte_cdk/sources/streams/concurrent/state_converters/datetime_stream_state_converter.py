@@ -157,3 +157,17 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
         if not isinstance(dt_object, DateTime):
             raise ValueError(f"DateTime object was expected but got {type(dt_object)} from pendulum.parse({timestamp})")
         return dt_object  # type: ignore  # we are manually type checking because pendulum.parse may return different types
+
+
+class CustomOutputFormatConcurrentStreamStateConverter(IsoMillisConcurrentStreamStateConverter):
+    """
+    Datetime State converter that emits state according to the supplied datetime format. The converter supports reading
+    incoming state in any valid datetime format via Pendulum.
+    """
+
+    def __init__(self, datetime_format: str, is_sequential_state: bool = True, cursor_granularity: Optional[timedelta] = None):
+        super().__init__(is_sequential_state=is_sequential_state, cursor_granularity=cursor_granularity)
+        self._datetime_format = datetime_format
+
+    def output_format(self, timestamp: datetime) -> str:
+        return timestamp.strftime(self._datetime_format)

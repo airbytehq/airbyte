@@ -40,7 +40,7 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
     stream.read_records.side_effect = mock_read_records({frozenset(stream_slice): iter([record])})
 
     source = MagicMock()
-    source.streams.return_value = [stream]
+    source.all_streams.return_value = [stream]
 
     check_stream = CheckStream(streams_to_check, parameters={})
 
@@ -63,7 +63,7 @@ def test_check_empty_stream():
     stream.stream_slices.return_value = iter([None])
 
     source = MagicMock()
-    source.streams.return_value = [stream]
+    source.all_streams.return_value = [stream]
 
     check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
@@ -76,7 +76,7 @@ def test_check_stream_with_no_stream_slices_aborts():
     stream.stream_slices.return_value = iter([])
 
     source = MagicMock()
-    source.streams.return_value = [stream]
+    source.all_streams.return_value = [stream]
 
     check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
@@ -123,7 +123,7 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
     assert isinstance(http_stream, HttpStream)
 
     source = MagicMock()
-    source.streams.return_value = [http_stream]
+    source.all_streams.return_value = [http_stream]
 
     check_stream = CheckStream(stream_names=["mock_http_stream"], parameters={})
 

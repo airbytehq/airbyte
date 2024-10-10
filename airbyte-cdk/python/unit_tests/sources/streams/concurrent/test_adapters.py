@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
 import logging
 import unittest
 from unittest.mock import Mock
@@ -20,6 +21,9 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomOutputFormatConcurrentStreamStateConverter,
+)
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -373,12 +377,21 @@ def test_cursor_partition_generator():
     stream = Mock()
     cursor = Mock()
     message_repository = Mock()
+    connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(datetime_format="%Y-%m-%dT%H:%M:%S")
     cursor_field = Mock()
+    slice_boundary_fields = ("start", "end")
 
-    expected_slices = [StreamSlice(partition={}, cursor_slice={"start": 1, "end": 2})]
-    cursor.generate_slices.return_value = [(1, 2)]
+    expected_slices = [StreamSlice(partition={}, cursor_slice={"start": "2024-01-01T00:00:00", "end": "2024-01-02T00:00:00"})]
+    cursor.generate_slices.return_value = [(datetime.datetime(year=2024, month=1, day=1), datetime.datetime(year=2024, month=1, day=2))]
 
-    partition_generator = CursorPartitionGenerator(stream, message_repository, cursor, cursor_field)
+    partition_generator = CursorPartitionGenerator(
+        stream,
+        message_repository,
+        cursor,
+        connector_state_converter,
+        cursor_field,
+        slice_boundary_fields
+    )
 
     partitions = list(partition_generator.generate())
     generated_slices = [partition.to_slice() for partition in partitions]
