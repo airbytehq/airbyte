@@ -7,14 +7,16 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.ShutdownScope
+import io.airbyte.cdk.load.task.SyncLevel
+import io.airbyte.cdk.load.util.setOnce
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 
-interface TeardownTask : SyncTask
+interface TeardownTask : SyncLevel, ShutdownScope
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -29,15 +31,16 @@ class DefaultTeardownTask(
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
 
-    private val teardownHasRun = AtomicBoolean(false)
+    companion object {
+        private val teardownHasRun = AtomicBoolean(false)
+    }
 
     override suspend fun execute() {
-        // TODO: This should be its own task, dispatched on a timer or something.
-        syncManager.awaitInputProcessingComplete()
-        checkpointManager.flushReadyCheckpointMessages()
-
         // Run the task exactly once, and only after all streams have closed.
-        if (teardownHasRun.compareAndSet(false, true)) {
+        if (teardownHasRun.setOnce()) {
+            syncManager.awaitInputProcessingComplete()
+            checkpointManager.awaitAllCheckpointsFlushed()
+
             log.info { "Teardown task awaiting stream completion" }
             if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
                 log.info { "Streams failed to complete successfully, doing nothing." }
@@ -49,6 +52,8 @@ class DefaultTeardownTask(
             log.info { "Teardown task complete, marking sync succeeded." }
             syncManager.markSucceeded()
             taskLauncher.handleTeardownComplete()
+        } else {
+            log.info { "Teardown already initiated, doing nothing." }
         }
     }
 }
@@ -64,6 +69,7 @@ class DefaultTeardownTaskFactory(
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
 ) : TeardownTaskFactory {
+
     override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
         return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
     }

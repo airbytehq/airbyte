@@ -18,8 +18,8 @@ import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.InternalTask
-import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.util.takeUntilInclusive
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
@@ -28,7 +28,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
 
-interface SpillToDiskTask : StreamTask, InternalTask
+interface SpillToDiskTask : StreamLevel, InternalScope
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and is not

@@ -30,4 +30,7 @@ interface TaskExceptionHandler<T : Task, U : Task> {
 interface TaskScopeProvider<T : Task> : CloseableCoroutine {
     /** Launch a task in the correct scope. */
     suspend fun launch(task: T)
+
+    /** Unliked close, may attempt to fail gracefully, but should guarantee return. */
+    suspend fun kill()
 }

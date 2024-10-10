@@ -5,12 +5,12 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.state.CheckpointManager
-import io.airbyte.cdk.load.task.InternalTask
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.SyncLevel
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FlushCheckpointsTask : SyncTask, InternalTask
+interface FlushCheckpointsTask : SyncLevel, InternalScope
 
 class DefaultFlushCheckpointsTask(
     private val checkpointManager: CheckpointManager<*, *>,
