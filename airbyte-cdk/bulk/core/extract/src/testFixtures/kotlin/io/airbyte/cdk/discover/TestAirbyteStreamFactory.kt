@@ -16,15 +16,22 @@ import jakarta.inject.Singleton
 @Requires(notEnv = [Environment.CLI])
 class TestAirbyteStreamFactory : AirbyteStreamFactory {
 
+    data object TestCursor : MetaField {
+        override val id: String = MetaField.META_PREFIX + "cdc_lsn"
+        override val type: FieldType = CdcStringMetaFieldType
+    }
+
+    override val metaFields: Set<MetaField> = setOf(TestCursor) + CommonMetaField.entries
+
     override fun createGlobal(discoveredStream: DiscoveredStream): AirbyteStream =
         AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             (jsonSchema["properties"] as ObjectNode).apply {
-                for (metaField in CommonMetaField.entries) {
+                for (metaField in metaFields) {
                     set<ObjectNode>(metaField.id, metaField.type.airbyteSchemaType.asJsonSchema())
                 }
             }
-            defaultCursorField = listOf(CommonMetaField.CDC_LSN.id)
+            defaultCursorField = listOf(TestCursor.id)
             sourceDefinedCursor = true
             if (discoveredStream.primaryKeyColumnIDs.isNotEmpty()) {
                 sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs

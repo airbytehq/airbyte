@@ -2,8 +2,11 @@
 package io.airbyte.integrations.source.mysql
 
 import com.mysql.cj.MysqlType
+import io.airbyte.cdk.discover.AirbyteStreamFactory
+import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
@@ -54,12 +57,23 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
 @Singleton
 @Primary
-class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class MysqlSourceOperations(
+    val jdbcAirbyteStreamFactoryBase: JdbcAirbyteStreamFactory =
+        JdbcAirbyteStreamFactory(
+            globalCursorField = MysqlCdcMetaFields.CDC_CURSOR,
+            otherMetaFields = MysqlCdcMetaFields.entries.toTypedArray(),
+        )
+) :
+    JdbcMetadataQuerier.FieldTypeMapper,
+    SelectQueryGenerator,
+    AirbyteStreamFactory by jdbcAirbyteStreamFactoryBase {
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
             is SystemType -> leafType(type)
@@ -200,5 +214,14 @@ class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGe
             NoLimit,
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
+        }
+
+    override fun createGlobal(discoveredStream: DiscoveredStream): AirbyteStream =
+        jdbcAirbyteStreamFactoryBase.createGlobal(discoveredStream).apply {
+            if (!isResumable) {
+                sourceDefinedCursor = false
+                defaultCursorField = listOf()
+                supportedSyncModes = listOf(SyncMode.FULL_REFRESH)
+            }
         }
 }

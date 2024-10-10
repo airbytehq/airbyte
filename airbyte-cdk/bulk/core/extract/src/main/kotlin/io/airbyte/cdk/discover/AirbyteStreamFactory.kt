@@ -7,6 +7,9 @@ import io.airbyte.protocol.models.v0.CatalogHelpers
 
 /** Stateless object for building an [AirbyteStream] during DISCOVER. */
 interface AirbyteStreamFactory {
+
+    val metaFields: Set<MetaField>
+
     /** Connector-specific [AirbyteStream] creation logic for GLOBAL-state streams. */
     fun createGlobal(discoveredStream: DiscoveredStream): AirbyteStream
 

@@ -74,6 +74,7 @@ data object SyncsTestFixture {
         expectedCatalog: AirbyteCatalog,
     ) {
         val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", configPojo).run()
+        discoverOutput.catalogs().forEach { println(Jsons.writeValueAsString(it)) }
         Assertions.assertEquals(listOf(expectedCatalog), discoverOutput.catalogs())
     }
 

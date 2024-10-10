@@ -10,21 +10,26 @@ import io.airbyte.cdk.jdbc.JsonStringFieldType
 import io.airbyte.cdk.jdbc.NCharacterStreamFieldType
 import io.airbyte.cdk.jdbc.NClobFieldType
 import io.airbyte.protocol.models.v0.SyncMode
-import jakarta.inject.Singleton
 
-@Singleton
-class JdbcAirbyteStreamFactory : AirbyteStreamFactory {
+/** [JdbcAirbyteStreamFactory] is deliberately not a Bean. */
+class JdbcAirbyteStreamFactory(
+    val globalCursorField: FieldOrMetaField,
+    vararg otherMetaFields: MetaField,
+) : AirbyteStreamFactory {
+
+    override val metaFields: Set<MetaField> =
+        setOfNotNull(globalCursorField as? MetaField) + otherMetaFields + CommonMetaField.entries
 
     override fun createGlobal(discoveredStream: DiscoveredStream) =
         AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             (jsonSchema["properties"] as ObjectNode).apply {
-                for (metaField in CommonMetaField.entries) {
+                for (metaField in metaFields) {
                     set<ObjectNode>(metaField.id, metaField.type.airbyteSchemaType.asJsonSchema())
                 }
             }
-            defaultCursorField = listOf(CommonMetaField.CDC_LSN.id)
+            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             sourceDefinedCursor = true
+            defaultCursorField = listOf(globalCursorField.id)
             if (hasValidPrimaryKey(discoveredStream)) {
                 sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs
                 isResumable = true
