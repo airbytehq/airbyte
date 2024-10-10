@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 import logging
 from typing import Any, List, Mapping
 
@@ -36,6 +36,7 @@ class OktaConfigMigration:
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         config["domain"] = config["base_url"].split("https://")[1].split(".")[0]
+        config["environment_domain"] = ".".join(config["base_url"].split("https://")[1].split(".")[1:])
         if "credentials" not in config:
             if "token" in config:
                 config["credentials"] = {
@@ -61,7 +62,7 @@ class OktaConfigMigration:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+            print(json.dumps(message.record))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
