@@ -42,6 +42,7 @@ class PineconeIndexer(Indexer):
 
         self.pinecone_index = self.pc.Index(config.index)
         self.embedding_dimensions = embedding_dimensions
+        self.namespace = self.config.default_namespace
 
     def determine_spec_type(self, index_name):
         description = self.pc.describe_index(index_name)
@@ -60,7 +61,7 @@ class PineconeIndexer(Indexer):
             stream_identifier = create_stream_identifier(stream.stream)
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self.delete_vectors(
-                    filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=stream.stream.namespace, prefix=stream_identifier
+                    filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=self.namespace, prefix=stream_identifier
                 )
 
     def post_sync(self):
@@ -138,7 +139,7 @@ class PineconeIndexer(Indexer):
             async_results = []
             for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE):
                 async_result = self.pinecone_index.upsert(
-                    vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=namespace
+                    vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=self.namespace
                 )
                 async_results.append(async_result)
             # Wait for and retrieve responses (this raises in case of error)
@@ -150,12 +151,12 @@ class PineconeIndexer(Indexer):
             if self._pod_type == "starter":
                 # Starter pod types have a maximum of 100000 rows
                 top_k = 10000
-                self.delete_by_metadata(filter=filter, top_k=top_k, namespace=namespace)
+                self.delete_by_metadata(filter=filter, top_k=top_k, namespace=self.namespace)
             elif self._pod_type == "serverless":
-                self.pinecone_index.delete(ids=delete_ids, namespace=namespace)
+                self.pinecone_index.delete(ids=delete_ids, namespace=self.namespace)
             else:
                 # Pod spec
-                self.pinecone_index.delete(filter=filter, namespace=namespace)
+                self.pinecone_index.delete(filter=filter, namespace=self.namespace)
 
     def check(self) -> Optional[str]:
         try:
