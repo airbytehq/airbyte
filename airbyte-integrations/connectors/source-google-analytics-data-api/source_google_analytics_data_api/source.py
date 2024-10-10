@@ -482,10 +482,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
-        # reference issue: https://github.com/airbytehq/airbyte-internal-issues/issues/8315
-        # This has been added, because there is a risk of removing the `Custom Stream` from the `input configuration`,
-        # which brings the error about `missing stream` present in the CATALOG but not in the `input configuration`.
-        return False
+        return True
 
     def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
         start_date = self.default_date_ranges_start_date if not start_date else start_date
