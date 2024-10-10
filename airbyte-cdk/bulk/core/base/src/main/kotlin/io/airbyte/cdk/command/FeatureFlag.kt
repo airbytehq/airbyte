@@ -16,8 +16,8 @@ import java.util.EnumSet
  */
 enum class FeatureFlag(
     val micronautEnvironmentName: String,
-    internal val envVar: EnvVar,
-    internal val requiredEnvVarValue: String,
+    val envVar: EnvVar,
+    val requiredEnvVarValue: String,
     private val transformActualValue: (String) -> String = { it }
 ) {
 
@@ -29,7 +29,7 @@ enum class FeatureFlag(
         transformActualValue = { it.trim().uppercase() },
     );
 
-    internal enum class EnvVar(val defaultValue: String = "") {
+    enum class EnvVar(val defaultValue: String = "") {
         DEPLOYMENT_MODE
     }
 
