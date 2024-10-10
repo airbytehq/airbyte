@@ -1742,7 +1742,7 @@ definitions:
         enum: [IterableDecoder]
   XmlDecoder:
     title: XML Decoder
-    description: Use this is the response is XML.
+    description: Use this if the response is XML.
     type: object
     required:
       - type
