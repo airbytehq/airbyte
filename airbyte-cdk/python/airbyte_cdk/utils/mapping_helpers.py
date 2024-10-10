@@ -14,30 +14,29 @@ def combine_mappings(mappings: List[Optional[Union[Mapping[str, Any], str]]]) ->
     * If there are multiple string mappings
     * If there are multiple mappings containing keys and one of them is a string
     """
-    all_keys: List[Set[str]] = []
+    combined_mapping = {}
+    unique_keys = set()
+    string_mappings = 0
+    string_mapping_value = None
+
     for part in mappings:
         if part is None:
             continue
-        keys = set(part.keys()) if not isinstance(part, str) else set()
-        all_keys.append(keys)
+        if isinstance(part, str):
+            string_mappings += 1
+            string_mapping_value = part
+            if string_mappings > 1:
+                raise ValueError("Cannot combine multiple string options")
+        else:
+            for key in part:
+                if key in unique_keys:
+                    raise ValueError(f"Duplicate keys found: {key}")
+                combined_mapping[key] = part[key]
+                unique_keys.add(key)
 
-    string_options = sum(isinstance(mapping, str) for mapping in mappings)
-    # If more than one mapping is a string, raise a ValueError
-    if string_options > 1:
-        raise ValueError("Cannot combine multiple string options")
+    if string_mappings == 1:
+        if combined_mapping:
+            raise ValueError("Cannot combine multiple options if one is a string")
+        return string_mapping_value
 
-    if string_options == 1 and sum(len(keys) for keys in all_keys) > 0:
-        raise ValueError("Cannot combine multiple options if one is a string")
-
-    # If any mapping is a string, return it
-    for mapping in mappings:
-        if isinstance(mapping, str):
-            return mapping
-
-    # If there are duplicate keys across mappings, raise a ValueError
-    intersection = set().union(*all_keys)
-    if len(intersection) < sum(len(keys) for keys in all_keys):
-        raise ValueError(f"Duplicate keys found: {intersection}")
-
-    # Return the combined mappings
-    return {key: value for mapping in mappings if mapping for key, value in mapping.items()}  # type: ignore # mapping can't be string here
+    return combined_mapping
