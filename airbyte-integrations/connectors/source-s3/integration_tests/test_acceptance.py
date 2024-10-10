@@ -19,6 +19,7 @@ from airbyte_cdk.test import entrypoint_wrapper
 from pydantic import BaseModel
 from source_s3.run import get_source
 
+
 if TYPE_CHECKING:
     from airbyte_cdk import Source
 
@@ -51,25 +52,10 @@ class AcceptanceTestInstance(BaseModel):
 
 def _get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
     all_tests_config = yaml.safe_load(ACCEPTANCE_TEST_CONFIG_PATH.read_text())
-    tests: list[AcceptanceTestInstance] = []
-    if category == "basic_read" and category in all_tests_config["acceptance_tests"]:
-        tests += [AcceptanceTestInstance.model_validate(test) for test in all_tests_config["acceptance_tests"][category]["tests"]]
-
-    if category == "full_refresh" and category in all_tests_config["acceptance_tests"]:
-        tests += [
-            AcceptanceTestInstance.model_validate(
-                test,
-            )
-            for test in all_tests_config["acceptance_tests"][category]["tests"]
-        ]
-
-    if category == "performance" and category in all_tests_config["acceptance_tests"]:
-        tests += [AcceptanceTestInstance.model_validate(test) for test in all_tests_config["acceptance_tests"][category]["tests"]]
-
-    return [  # noqa: C416  # Ignore list comprehension suggestion
-        test
-        for test in tests
-        # if "iam_role" not in test.config_path
+    return [
+        AcceptanceTestInstance.model_validate(test)
+        for test in all_tests_config["acceptance_tests"][category]["tests"]
+        if "iam_role" not in test["config_path"]
     ]
 
 
