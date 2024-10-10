@@ -3,8 +3,6 @@ version: 5.12.0
 type: DeclarativeSource
 
 description: >-
-  Dataset Open API: https://dataderden.cbs.nl/ODataApi/
-
   Dataset Selection Website:
   https://opendata.cbs.nl/statline/portal.html?_la=en&_catalog=CBS (Select a
   theme and click on API on left bar to find base number for dataset)
@@ -107,16 +105,19 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits has been hit
+              - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -125,9 +126,6 @@ definitions:
                     error_message: >-
                       Pagination problem with backend, please try another
                       dataset
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -164,16 +162,19 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits has been hit
+              - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -182,9 +183,6 @@ definitions:
                     error_message: >-
                       Pagination problem with backend, please try another
                       dataset
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -221,16 +219,19 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits has been hit
+              - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -239,9 +240,6 @@ definitions:
                     error_message: >-
                       Pagination problem with backend, please try another
                       dataset
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -278,16 +276,19 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits has been hit
+              - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -296,9 +297,6 @@ definitions:
                     error_message: >-
                       Pagination problem with backend, please try another
                       dataset
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -335,16 +333,19 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits has been hit
+              - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -353,9 +354,6 @@ definitions:
                     error_message: >-
                       Pagination problem with backend, please try another
                       dataset
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -378,7 +376,7 @@ definitions:
           $ref: "#/schemas/perioden"
   base_requester:
     type: HttpRequester
-    url_base: https://dataderden.cbs.nl/ODataApi/
+    url_base: https://{{ config['base_origin'] }}.cbs.nl/ODataApi/
 
 streams:
   - $ref: "#/definitions/streams/open_data_base"
@@ -397,6 +395,7 @@ spec:
     required:
       - base_number
       - start_date
+      - base_origin
     properties:
       base_number:
         type: array
@@ -406,7 +405,6 @@ spec:
         order: 0
         title: Base number of dataset
         default:
-          - 48002NED
           - 48004NED
       start_date:
         type: string
@@ -414,6 +412,14 @@ spec:
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      base_origin:
+        type: string
+        description: >-
+          Base origin of the URL, Example: `dataderden.cbs.nl`,
+          `opendata.cbs.nl/`
+        title: Base Origin
+        default: dataderden
+        order: 2
     additionalProperties: true
 
 metadata:
@@ -427,50 +433,50 @@ metadata:
     perioden: true
   testedStreams:
     open_data_base:
-      hasRecords: true
-      streamHash: b7be3fb2d6eda1d1fbbd04184de456aef3da8e56
+      streamHash: be80815e311852541ab0ac530631759241afd35c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     table_infos:
-      hasRecords: true
-      streamHash: 6f7b5a710ab5559701824798311f77ddd71aabd6
+      streamHash: a64521ae0662abe5c8149579549042aa5116a21b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     untyped_data_set:
-      hasRecords: true
-      streamHash: 2271ee08aec3ade91e8fb0acc5240ceab073bc6d
+      streamHash: 539948cf6554651d6b49cd30142564f4d3713ed6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     typed_data_set:
       hasRecords: true
-      streamHash: a4ec096b3a1b09fedfe480684009c8131598f693
+      streamHash: 2ccde55803c6fe50a60f0716f7a4f8c85e8be783
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     data_properties:
       hasRecords: true
-      streamHash: b5afb93f6c78760f2b8d512de9173cdf3da12647
+      streamHash: c26ea7ab91e2abfef8f946b46f098d5c125995ff
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     category_groups:
       hasRecords: true
-      streamHash: 6b395c0aa294258ae723a3bf4c114d0b2d0d13d8
+      streamHash: 91f65dc16848a378ec43e201cf5c2cd6147dbdac
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     perioden:
       hasRecords: true
-      streamHash: eebfd4c96f4fb37e5b8368bfff291f10978906f0
+      streamHash: d91a42792018642f0fac0d64dcee3d600fdc65b3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true

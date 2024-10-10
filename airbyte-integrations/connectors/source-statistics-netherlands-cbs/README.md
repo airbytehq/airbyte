@@ -1,7 +1,9 @@
 # Statistics Netherlands CBS
 This directory contains the manifest-only connector for `source-statistics-netherlands-cbs`.
 
-Dataset Open API: https://dataderden.cbs.nl/ODataApi/
+This connector is for fetching open statistical dataset of netherlands, the [CBS Opendata website](https://opendata.cbs.nl) provides dataset within several themes, Visit `https://opendata.cbs.nl/statline/portal.html?_la=en&amp;_catalog=CBS`, select a theme and click of API tab in left bar to find the link with dataset number which could be given as config for this connector
+
+Example Open API Dataset : https://dataderden.cbs.nl/ODataApi/
 Dataset Selection Website: https://opendata.cbs.nl/statline/portal.html?_la=en&amp;_catalog=CBS (Select a theme and click on API on left bar to find base number for dataset)
 
 ## Usage

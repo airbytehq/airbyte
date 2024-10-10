@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "dataderden.cbs.nl"
+      - "*.cbs.nl"
   registryOverrides:
     oss:
       enabled: true
