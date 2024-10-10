@@ -1,8 +1,12 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.h2source
 
+import io.airbyte.cdk.discover.AirbyteStreamFactory
+import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
@@ -66,7 +70,18 @@ import java.sql.JDBCType
 @Singleton
 @Requires(env = [Environment.TEST])
 @Secondary
-class H2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class H2SourceOperations(
+    airbyteStreamFactory: JdbcAirbyteStreamFactory = JdbcAirbyteStreamFactory(FakeGlobalCursor),
+) :
+    JdbcMetadataQuerier.FieldTypeMapper,
+    SelectQueryGenerator,
+    AirbyteStreamFactory by airbyteStreamFactory {
+
+    data object FakeGlobalCursor : MetaField {
+        override val id: String = "fake_global_cursor"
+        override val type: FieldType = CdcStringMetaFieldType
+    }
+
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
