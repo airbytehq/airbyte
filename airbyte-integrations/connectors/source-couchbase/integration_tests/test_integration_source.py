@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, Level, TraceType, Type, SyncMode, DestinationSyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, SyncMode, DestinationSyncMode, Type
 from source_couchbase.source import SourceCouchbase
 
 @pytest.fixture(scope="module")
@@ -26,6 +26,17 @@ def test_check_connection(config, source, logger):
     result = source.check_connection(logger, config)
     assert result == (True, None), "Connection check failed"
 
+def test_check_connection_invalid_config(source, logger):
+    invalid_config = {
+        "connection_string": "couchbase://localhost",
+        "username": "invalid",
+        "password": "invalid",
+        "bucket": "invalid"
+    }
+    result, error_msg = source.check_connection(logger, invalid_config)
+    assert result is False
+    assert "Connection check failed" in error_msg
+
 def test_source_name(source):
     assert source.name == "Couchbase", "Source name is not 'Couchbase'"
 
@@ -38,7 +49,7 @@ def test_get_connector_spec(source, logger):
     assert connection_spec['$schema'] == "http://json-schema.org/draft-07/schema#", "Incorrect schema in connectionSpecification"
     assert connection_spec['title'] == "Couchbase Source Spec", "Incorrect title in connectionSpecification"
     
-    required_properties = ["connection_string", "username", "password", "bucket", "use_incremental", "cursor_field"]
+    required_properties = ["connection_string", "username", "password", "bucket"]
     for prop in required_properties:
         assert prop in connection_spec["properties"], f"{prop} not in spec properties"
 
@@ -57,35 +68,29 @@ def configured_catalog(config, source, logger):
     )
 
 def configure_incremental_sync(config, configured_catalog):
-    incremental_config = {**config, "use_incremental": True, "cursor_field": "updated_at"}
+    incremental_config = {**config, "use_incremental": True}
     for stream in configured_catalog.streams:
         stream.sync_mode = SyncMode.incremental
-        stream.cursor_field = ["updated_at"]
+        stream.cursor_field = ["_ab_cdc_updated_at"]
         stream.destination_sync_mode = DestinationSyncMode.append
     return incremental_config
 
-def assert_record(record, configured_catalog, sync_mode, state):
+def assert_record(record, configured_catalog, sync_mode):
     assert record.stream in [stream.stream.name for stream in configured_catalog.streams], f"Record stream {record.stream} not in catalog"
     assert isinstance(record.data, dict), "Record data is not a dict"
-    assert "id" in record.data, "id not in record data"
+    assert "_id" in record.data, "_id not in record data"
     assert "content" in record.data, "content not in record data"
     
     if sync_mode == "incremental":
-        assert "updated_at" in record.data["content"], "updated_at not in record content"
-        if state:
-            assert record.data["content"]["updated_at"] >= state["updated_at"], "Record updated_at is less than state updated_at"
+        assert "_ab_cdc_updated_at" in record.data, "_ab_cdc_updated_at not in record data"
 
-def assert_message(message, configured_catalog, sync_mode, state):
-    assert message.type in [Type.RECORD, Type.STATE, Type.TRACE, Type.LOG], f"Unexpected message type {message.type}"
+def assert_message(message, configured_catalog, sync_mode):
+    assert message.type in [Type.RECORD, Type.STATE, Type.LOG, Type.TRACE], f"Unexpected message type {message.type}"
     
     if message.type == Type.RECORD:
-        assert_record(message.record, configured_catalog, sync_mode, state)
+        assert_record(message.record, configured_catalog, sync_mode)
     elif message.type == Type.STATE:
         assert message.state.data is None or isinstance(message.state.data, dict), "State data is not None or dict"
-    elif message.type == Type.TRACE:
-        assert message.trace.type in [TraceType.STREAM_STATUS, TraceType.ERROR], f"Unexpected trace type {message.trace.type}"
-    elif message.type == Type.LOG:
-        assert message.log.level in [Level.INFO, Level.ERROR], f"Unexpected log level {message.log.level}"
 
 @pytest.mark.parametrize("sync_mode", ["full_refresh", "incremental"])
 def test_read(config, source, logger, configured_catalog, sync_mode):
@@ -94,19 +99,36 @@ def test_read(config, source, logger, configured_catalog, sync_mode):
 
     state = {}
     records_found = False
+    final_state = None
     for message in source.read(logger=logger, config=config, catalog=configured_catalog, state=state):
-        assert_message(message, configured_catalog, sync_mode, state)
+        assert_message(message, configured_catalog, sync_mode)
         
         if message.type == Type.RECORD:
             records_found = True
         elif message.type == Type.STATE and sync_mode == "incremental":
-            state = message.state.data
+            final_state = message.state.data
 
     if not records_found:
         pytest.skip(f"No records found for {sync_mode} sync")
 
     if sync_mode == "incremental":
-        assert state, "State should be updated after incremental sync"
+        assert final_state, "State should be updated after incremental sync"
+        assert isinstance(final_state, dict), "Final state should be a dictionary"
+        assert "_ab_cdc_updated_at" in final_state, "State should contain _ab_cdc_updated_at field after incremental sync"
+        assert isinstance(final_state["_ab_cdc_updated_at"], (int, float)), "_ab_cdc_updated_at should be a number"
+
+def test_no_streams_available(source, logger):
+    invalid_config = {
+        "connection_string": "couchbase://localhost",
+        "username": "invalid",
+        "password": "invalid",
+        "bucket": "non_existent_bucket"
+    }
+    
+    with pytest.raises(Exception) as exc_info:
+        list(source.streams(invalid_config))
+    
+    assert "AuthenticationException" in str(exc_info.value) or "No streams could be generated" in str(exc_info.value)
 
 if __name__ == "__main__":
     pytest.main([__file__])

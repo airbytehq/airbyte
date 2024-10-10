@@ -22,7 +22,7 @@ def streams(config, source):
 
 @pytest.fixture(scope="module")
 def incremental_streams(config, source):
-    incremental_config = {**config, "use_incremental": True, "cursor_field": "updated_at"}
+    incremental_config = {**config, "use_incremental": True}
     return source.streams(incremental_config)
 
 def test_streams_not_empty(streams):
@@ -47,7 +47,7 @@ def test_stream_names(streams, config):
 
 def test_incremental_stream_cursor_field(incremental_streams):
     for stream in incremental_streams:
-        assert stream.cursor_field == "updated_at", f"Cursor field for stream {stream.name} is not 'updated_at'"
+        assert stream.cursor_field == "_ab_cdc_updated_at", f"Cursor field for stream {stream.name} is not '_ab_cdc_updated_at'"
 
 @pytest.mark.parametrize("sync_mode,stream_type", [
     (SyncMode.full_refresh, CouchbaseStream),
@@ -57,16 +57,16 @@ def test_stream_read(streams, sync_mode, stream_type):
     records_found = False
     for stream in streams:
         if isinstance(stream, stream_type):
-            state = {"updated_at": "1970-01-01T00:00:00Z"} if sync_mode == SyncMode.incremental else None
-            records = list(stream.read_records(sync_mode=sync_mode, cursor_field="updated_at", stream_state=state))
+            state = {"_ab_cdc_updated_at": 0} if sync_mode == SyncMode.incremental else None
+            records = list(stream.read_records(sync_mode=sync_mode, cursor_field="_ab_cdc_updated_at", stream_state=state))
             if len(records) > 0:
                 records_found = True
                 for record in records:
-                    assert "id" in record, f"Record in stream {stream.name} is missing 'id' field"
+                    assert "_id" in record, f"Record in stream {stream.name} is missing '_id' field"
                     assert "content" in record, f"Record in stream {stream.name} is missing 'content' field"
                     if sync_mode == SyncMode.incremental:
-                        assert "updated_at" in record["content"], f"Incremental record in stream {stream.name} is missing 'updated_at' field"
-                        assert record["content"]["updated_at"] >= state["updated_at"], f"Record 'updated_at' is less than state 'updated_at' in stream {stream.name}"
+                        assert "_ab_cdc_updated_at" in record, f"Incremental record in stream {stream.name} is missing '_ab_cdc_updated_at' field"
+                        assert record["_ab_cdc_updated_at"] >= state["_ab_cdc_updated_at"], f"Record '_ab_cdc_updated_at' is less than state '_ab_cdc_updated_at' in stream {stream.name}"
     
     if not records_found:
         pytest.skip(f"No records found for any stream with {sync_mode} sync mode")
@@ -76,17 +76,20 @@ def test_json_schema(streams):
         schema = stream.get_json_schema()
         assert isinstance(schema, dict), f"Schema for stream {stream.name} is not a dictionary"
         assert "properties" in schema, f"Schema for stream {stream.name} is missing 'properties'"
-        assert "id" in schema["properties"], f"Schema for stream {stream.name} is missing 'id' property"
+        assert "_id" in schema["properties"], f"Schema for stream {stream.name} is missing '_id' property"
         assert "content" in schema["properties"], f"Schema for stream {stream.name} is missing 'content' property"
+        if isinstance(stream, IncrementalCouchbaseStream):
+            assert "_ab_cdc_updated_at" in schema["properties"], f"Schema for incremental stream {stream.name} is missing '_ab_cdc_updated_at' property"
 
 def test_incremental_sync_updates_state(incremental_streams):
     state_updated = False
     for stream in incremental_streams:
-        initial_state = {"updated_at": "1970-01-01T00:00:00Z"}
-        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field="updated_at", stream_state=initial_state))
+        initial_state = {"_ab_cdc_updated_at": 0}
+        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field="_ab_cdc_updated_at", stream_state=initial_state))
         if len(records) > 0:
             final_state = stream.state
-            assert final_state["updated_at"] > initial_state["updated_at"], f"State not updated for incremental stream {stream.name}"
+            assert "_ab_cdc_updated_at" in final_state, f"State does not contain '_ab_cdc_updated_at' for incremental stream {stream.name}"
+            assert final_state["_ab_cdc_updated_at"] > initial_state["_ab_cdc_updated_at"], f"State not updated for incremental stream {stream.name}"
             state_updated = True
     
     if not state_updated:

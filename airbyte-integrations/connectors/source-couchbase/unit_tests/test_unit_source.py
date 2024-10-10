@@ -73,7 +73,6 @@ def test_streams(mocker, config):
 
 def test_streams_incremental(mocker, config):
     config["use_incremental"] = True
-    config["cursor_field"] = "updated_at"
     source = SourceCouchbase()
     
     mock_cluster = MagicMock()
@@ -94,7 +93,7 @@ def test_streams_incremental(mocker, config):
             assert len(streams) == 1, "Expected one incremental stream"
             assert isinstance(streams[0], IncrementalCouchbaseStream), "Stream is not an instance of IncrementalCouchbaseStream"
             assert streams[0].name == "travel-sample.inventory.hotel", "Stream name is incorrect"
-            assert streams[0].cursor_field == "updated_at", "Cursor field is incorrect"
+            assert streams[0].cursor_field == "_ab_cdc_updated_at", "Cursor field is incorrect"
 
             mock_ensure_index.assert_called_once_with(mock_cluster, "travel-sample", "inventory", "hotel")
 
@@ -102,11 +101,16 @@ def test_ensure_primary_index(mocker, config):
     source = SourceCouchbase()
     mock_cluster = MagicMock()
 
-    with patch("source_couchbase.source.QueryIndexNotFoundException", Exception):
-        # Test when index doesn't exist
-        mock_cluster.query.side_effect = [Exception()]
-        source._ensure_primary_index(mock_cluster, "travel-sample", "inventory", "hotel")
-        assert mock_cluster.query.call_count == 1, "Query should be called once"
+    # Test when index doesn't exist
+    mock_cluster.query.return_value.execute.return_value = None
+    source._ensure_primary_index(mock_cluster, "travel-sample", "inventory", "hotel")
+    assert mock_cluster.query.call_count == 1, "Query should be called once"
+
+    # Test when index already exists
+    mock_cluster.query.reset_mock()
+    mock_cluster.query.return_value.execute.side_effect = Exception("Index already exists")
+    source._ensure_primary_index(mock_cluster, "travel-sample", "inventory", "hotel")
+    assert mock_cluster.query.call_count == 1, "Query should be called once"
 
 def test_validate_config(config):
     source = SourceCouchbase()
@@ -123,9 +127,9 @@ def test_validate_config(config):
     assert is_valid is False, "Config should be invalid"
     assert "Missing required configuration fields" in error
 
-    # Test incremental sync without cursor field
-    invalid_config = config.copy()
-    invalid_config["use_incremental"] = True
-    is_valid, error = source._validate_config(invalid_config)
-    assert is_valid is False, "Config should be invalid"
-    assert "Cursor field must be specified when using incremental sync" in error
+    # Test incremental sync (no need to specify cursor field anymore)
+    valid_incremental_config = config.copy()
+    valid_incremental_config["use_incremental"] = True
+    is_valid, error = source._validate_config(valid_incremental_config)
+    assert is_valid is True, "Config should be valid"
+    assert error is None

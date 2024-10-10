@@ -22,21 +22,21 @@ def test_couchbase_stream_initialization(mock_cluster):
 
 def test_couchbase_stream_primary_key():
     stream = CouchbaseStream(MagicMock(), "test_bucket", "test_scope", "test_collection")
-    assert stream.primary_key == "id"
+    assert stream.primary_key == "_id"
 
 def test_couchbase_stream_read_records(mock_cluster):
     mock_cluster.query.return_value = [
-        {"id": "doc1", "content": {"key": "value1"}},
-        {"id": "doc2", "content": {"key": "value2"}}
+        {"_id": "doc1", "key": "value1"},
+        {"_id": "doc2", "key": "value2"}
     ]
     
     stream = CouchbaseStream(mock_cluster, "test_bucket", "test_scope", "test_collection")
     records = list(stream.read_records(sync_mode=None))
     
     assert len(records) == 2
-    assert records[0]["id"] == "doc1"
+    assert records[0]["_id"] == "doc1"
     assert records[0]["content"] == {"key": "value1"}
-    assert records[1]["id"] == "doc2"
+    assert records[1]["_id"] == "doc2"
     assert records[1]["content"] == {"key": "value2"}
     
     mock_cluster.query.assert_called_once_with(get_documents_query("test_bucket", "test_scope", "test_collection"))
@@ -46,5 +46,14 @@ def test_couchbase_stream_json_schema():
     schema = stream.get_json_schema()
     assert isinstance(schema, dict)
     assert "properties" in schema
-    assert "id" in schema["properties"]
+    assert "_id" in schema["properties"]
     assert "content" in schema["properties"]
+
+def test_couchbase_stream_process_row():
+    stream = CouchbaseStream(MagicMock(), "test_bucket", "test_scope", "test_collection")
+    row = {"_id": "doc1", "key1": "value1", "key2": "value2"}
+    processed_row = stream._process_row(row)
+    assert processed_row == {
+        "_id": "doc1",
+        "content": {"key1": "value1", "key2": "value2"}
+    }

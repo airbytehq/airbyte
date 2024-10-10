@@ -1,14 +1,23 @@
 import logging
 from datetime import timedelta
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple, Iterable
+import time
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import (
+    ConnectorSpecification,
+    FailureType,
+    AirbyteMessage,
+    Type,
+    ConfiguredAirbyteCatalog,
+    AirbyteStateMessage,
+    AirbyteRecordMessage,
+)
 from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
-from couchbase.exceptions import QueryIndexNotFoundException  # Ensure this import is present
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .streams import CouchbaseStream, IncrementalCouchbaseStream
 
@@ -39,13 +48,41 @@ class SourceCouchbase(AbstractSource):
                         config['bucket'],
                         scope.name,
                         collection.name,
-                        cursor_field=config.get('cursor_field', 'updated_at'),
-                        state=config.get('state', {})  # Pass the initial state here
+                        state=config.get('state', {})
                     ))
                 else:
                     streams.append(CouchbaseStream(cluster, config['bucket'], scope.name, collection.name))
         
+        if not streams:
+            raise AirbyteTracedException(
+                internal_message="No streams available",
+                message="No streams could be generated from the provided configuration. Please check your permissions and the names of buckets, scopes, and collections.",
+                failure_type=FailureType.config_error
+            )
+        
         return streams
+
+    def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Mapping[str, Any] = None) -> Iterable[AirbyteMessage]:
+        state = state or {}
+        for configured_stream in catalog.streams:
+            stream = next(stream for stream in self.streams(config) if stream.name == configured_stream.stream.name)
+            stream_state = state.get(stream.name, {})
+            for record in stream.read_records(sync_mode=configured_stream.sync_mode, cursor_field=configured_stream.cursor_field, stream_slice=None, stream_state=stream_state):
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(
+                        stream=stream.name,
+                        data=record,
+                        emitted_at=int(time.time() * 1000)
+                    )
+                )
+            
+            if isinstance(stream, IncrementalCouchbaseStream):
+                stream_state = stream.state
+                yield AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(data={stream.name: stream_state})
+                )
 
     @staticmethod
     def _get_cluster(config: Mapping[str, Any]) -> Cluster:
@@ -78,8 +115,5 @@ class SourceCouchbase(AbstractSource):
         
         if missing_fields:
             return False, f"Missing required configuration fields: {', '.join(missing_fields)}"
-        
-        if config.get('use_incremental', False) and 'cursor_field' not in config:
-            return False, "Cursor field must be specified when using incremental sync"
         
         return True, None
