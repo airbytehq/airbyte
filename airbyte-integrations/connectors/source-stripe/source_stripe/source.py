@@ -513,7 +513,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 },
                 **args,
             ),
-            StripeLazySubStream(
+            UpdatedCursorIncrementalStripeLazySubStream(
                 name="invoice_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,

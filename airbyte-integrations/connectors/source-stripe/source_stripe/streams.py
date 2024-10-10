@@ -720,6 +720,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         sub_items_attr: Optional[str] = None,
+        slice_data_retriever: Optional[str] = None,
         response_filter: Optional[Callable] = None,
         **kwargs,
     ):
@@ -738,7 +739,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent=parent,
             sub_items_attr=sub_items_attr,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(
-                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter, slice_data_retriever=self.slice_data_retriever
             ),
             **kwargs,
         )
