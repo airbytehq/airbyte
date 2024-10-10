@@ -1,6 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-
+import "dotenv/config.js";
 const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -78,7 +78,9 @@ const config = {
       },
     }),
   ],
-
+  customFields: {
+    requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+  },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
