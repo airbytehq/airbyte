@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
@@ -233,6 +234,7 @@ class DestinationUncleanExitException(
     )
 
 @Singleton
+@Requires(env = [DOCKERIZED_TEST_ENV])
 class DockerizedDestinationFactory(
     // Note that this is not the same property as in MetadataYamlPropertySource.
     // We get this because IntegrationTest manually sets "classpath:metadata.yaml"
