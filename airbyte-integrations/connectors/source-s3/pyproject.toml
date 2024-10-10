@@ -19,11 +19,10 @@ include = "source_s3"
 python = "^3.10,<3.12"
 pytz = "==2024.1"
 wcmatch = "==8.4"
-python-snappy = "==0.6.1"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^5"}
+airbyte-cdk = {extras = ["file-based"], version = "^5.7.4"}
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
