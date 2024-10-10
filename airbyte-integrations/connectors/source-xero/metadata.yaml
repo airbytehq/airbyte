@@ -6,13 +6,18 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-xero
   releases:
     breakingChanges:
+      3.0.0:
+        upgradeDeadline: "2024-08-30"
+        message:
+          Due to limitations on the number of OAuth users permitted for the Airbyte application, OAuth support has been disabled.
+          Consequently, the bearer authentication method has been adopted as the primary authentication type.
       2.0.0:
         upgradeDeadline: "2024-06-30"
         message:
@@ -31,7 +36,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 2.0.0
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
