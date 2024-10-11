@@ -18,11 +18,13 @@ from typing import TYPE_CHECKING, Literal
 import orjson
 import pytest
 import yaml
+from pydantic import BaseModel
+from source_s3.v4.source import SourceS3
+
 from airbyte_cdk import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, Type
 from airbyte_cdk.test import entrypoint_wrapper
-from pydantic import BaseModel
-from source_s3.v4.source import SourceS3
+
 
 if TYPE_CHECKING:
     from airbyte_cdk import Source
@@ -102,7 +104,7 @@ def run_test_job(
 
     # This is a bit of a hack because the source needs the catalog early.
     source: Source = SOURCE_CLASS.create(
-        catalog=orjson.loads(catalog_path.read_text()) if catalog_path else None,
+        configured_catalog_path=catalog_path,
     )
     assert source
 
