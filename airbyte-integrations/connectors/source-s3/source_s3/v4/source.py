@@ -148,6 +148,8 @@ class SourceS3(FileBasedSource):
             config=config_path,
             state=state_path,
         )
+        # The following function will wrap the execution in proper error handling.
+        # Failures prior to here may not emit proper Airbyte TRACE or CONNECTION_STATUS messages.
         launch(
             source=source,
             args=args,
@@ -167,6 +169,12 @@ class SourceS3(FileBasedSource):
 
         We should consider declaring these are class properties so they don't need to be provided
         by the caller.
+
+        NOTE: If we fail in this method, we will not have a chance to wrap the error in an
+        AirbyteTracedException, and if we are running `CHECK`, we won't properly emit the
+        CONNECTION_STATUS message. For that reason, we do as little as possible here.
+
+        We prefer to fail in the `launch` method, where proper error handling is in place.
         """
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
