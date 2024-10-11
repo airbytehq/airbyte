@@ -4,11 +4,11 @@
 
 package io.airbyte.cdk.load.test.util
 
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.DestinationStream
+
 fun interface DestinationDataDumper {
-    fun dumpRecords(
-        streamName: String,
-        streamNamespace: String?,
-    ): List<OutputRecord>
+    fun dumpRecords(spec: ConfigurationSpecification, stream: DestinationStream): List<OutputRecord>
 }
 
 /**
@@ -16,7 +16,10 @@ fun interface DestinationDataDumper {
  * implementation to satisfy the compiler.
  */
 object FakeDataDumper : DestinationDataDumper {
-    override fun dumpRecords(streamName: String, streamNamespace: String?): List<OutputRecord> {
+    override fun dumpRecords(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<OutputRecord> {
         throw NotImplementedError()
     }
 }
