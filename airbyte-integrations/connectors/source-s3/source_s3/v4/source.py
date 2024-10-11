@@ -1,13 +1,28 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+import sys
 from typing import Any, Dict, Mapping, Optional
 
-from airbyte_cdk import ConnectorSpecification, emit_configuration_as_airbyte_control_message, is_cloud_environment
+from airbyte_cdk import (
+    AirbyteEntrypoint,
+    ConnectorSpecification,
+    emit_configuration_as_airbyte_control_message,
+    is_cloud_environment,
+    launch,
+)
+from airbyte_cdk.models import (
+    ConfiguredAirbyteCatalogSerializer,
+)
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
+from source_s3.v4.config import Config
+from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
+from source_s3.v4.stream_reader import SourceS3StreamReader
+
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
@@ -113,3 +128,54 @@ class SourceS3(FileBasedSource):
         if new_fields:
             return f"Deprecated and will be removed soon. Please do not use this field anymore and use {new_fields} instead. "
         return "Deprecated and will be removed soon. Please do not use this field anymore. "
+
+    @classmethod
+    def launch(cls, args: list[str] | None = None) -> None:
+        """Launch the source using the provided CLI args.
+
+        If no args are provided, the launch args will be inferred automatically.
+        """
+        catalog_path = AirbyteEntrypoint.extract_catalog(args)
+        config_path = AirbyteEntrypoint.extract_config(args)
+        state_path = AirbyteEntrypoint.extract_state(args)
+        args = args or sys.argv[1:]
+        source = cls(
+            stream_reader=SourceS3StreamReader(),
+            spec_class=Config,
+            cursor_cls=Cursor,
+            # We will provide these later, after we have wrapped proper error handling.
+            catalog=catalog_path,
+            config=config_path,
+            state=state_path,
+        )
+        launch(
+            source=source,
+            args=args,
+        )
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        catalog: Mapping[str, Any] | None = None,
+    ) -> SourceS3:
+        """Create a new instance of the source.
+
+        This is a bit of a hack because (1) the source needs the catalog early, and (2), the
+        constructor asks for things that the caller won't know about, specifically: the stream
+        reader class, the spec class, and the cursor class.
+
+        We should consider declaring these are class properties so they don't need to be provided
+        by the caller.
+        """
+        return cls(
+            # These are the defaults for the source. No need for a caller to change them:
+            stream_reader=SourceS3StreamReader(),
+            spec_class=Config,
+            cursor_cls=Cursor,
+            # This is needed early. (We also will provide it again later.)
+            catalog=ConfiguredAirbyteCatalogSerializer.load(catalog) if catalog else None,
+            # These will be provided later, after we have wrapped proper error handling.
+            config=None,
+            state=None,
+        )

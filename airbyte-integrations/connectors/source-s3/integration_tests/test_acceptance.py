@@ -13,13 +13,13 @@ from __future__ import annotations
 import tempfile
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import orjson
 import pytest
 import yaml
 from pydantic import BaseModel
-from source_s3.run import get_source
+from source_s3.v4.source import SourceS3
 
 from airbyte_cdk import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, Type
@@ -42,15 +42,15 @@ class AcceptanceTestInstance(BaseModel):
     """
 
     class AcceptanceTestExpectRecords(BaseModel):
-        path: str
+        path: Path
         exact_order: bool = False
 
     class AcceptanceTestFileTypes(BaseModel):
         skip_test: bool
         bypass_reason: str
 
-    config_path: str
-    configured_catalog_path: str | None = None
+    config_path: Path
+    configured_catalog_path: Path | None = None
     timeout_seconds: int | None = None
     expect_records: AcceptanceTestExpectRecords | None = None
     file_types: AcceptanceTestFileTypes | None = None
@@ -75,21 +75,28 @@ def _run_test_job(
     test_instance: AcceptanceTestInstance,
     catalog: dict | None = None,
 ) -> entrypoint_wrapper.EntrypointOutput:
-    source: Source | None = get_source()
-    assert source
     args = [verb]
     if test_instance.config_path:
-        args += ["--config", test_instance.config_path]
+        args += ["--config", str(test_instance.config_path)]
 
+    catalog_path: Path | None = None
     if verb not in ["discover", "check"]:
         if catalog:
             # Write the catalog to a temp json file and pass the path to the file as an argument.
-            tmp_catalog_path = Path(tempfile.gettempdir()) / "airbyte-test" / f"temp_catalog_{uuid.uuid4().hex}.json"
-            tmp_catalog_path.parent.mkdir(parents=True, exist_ok=True)
-            tmp_catalog_path.write_text(orjson.dumps(catalog).decode())
-            args += ["--catalog", str(tmp_catalog_path)]
+            catalog_path = Path(tempfile.gettempdir()) / "airbyte-test" / f"temp_catalog_{uuid.uuid4().hex}.json"
+            catalog_path.parent.mkdir(parents=True, exist_ok=True)
+            catalog_path.write_text(orjson.dumps(catalog).decode())
         elif test_instance.configured_catalog_path:
-            args += ["--catalog", test_instance.configured_catalog_path]
+            catalog_path = Path(test_instance.configured_catalog_path)
+
+        if catalog_path:
+            args += ["--catalog", str(catalog_path)]
+
+    # This is a bit of a hack because the source needs the catalog early.
+    source: Source | None = SourceS3.create(
+        catalog=orjson.loads(catalog_path.read_text()) if catalog_path else None,
+    )
+    assert source
 
     result: entrypoint_wrapper.EntrypointOutput = entrypoint_wrapper._run_command(  # noqa: SLF001  # Non-public API
         source=source,
@@ -112,7 +119,7 @@ def _run_test_job(
 @pytest.mark.parametrize(
     "instance",
     _get_acceptance_tests("full_refresh"),
-    ids=lambda instance: instance.config_path.split("/")[-1],
+    ids=lambda instance: cast(AcceptanceTestInstance, instance).config_path.name,
 )
 def test_full_refresh(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
@@ -125,7 +132,7 @@ def test_full_refresh(instance: AcceptanceTestInstance) -> None:
 @pytest.mark.parametrize(
     "instance",
     _get_acceptance_tests("basic_read"),
-    ids=lambda instance: instance.config_path.split("/")[-1],
+    ids=lambda instance: instance.config_path.name,
 )
 def test_basic_read(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
@@ -154,7 +161,7 @@ def test_basic_read(instance: AcceptanceTestInstance) -> None:
 @pytest.mark.parametrize(
     "instance",
     _get_acceptance_tests("connection"),
-    ids=lambda instance: instance.config_path.split("/")[-1],
+    ids=lambda instance: instance.config_path.name,
 )
 def test_check(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
@@ -169,7 +176,7 @@ def test_check(instance: AcceptanceTestInstance) -> None:
 @pytest.mark.parametrize(
     "instance",
     _get_acceptance_tests("full_refresh"),
-    ids=lambda instance: instance.config_path.split("/")[-1],
+    ids=lambda instance: instance.config_path.name,
 )
 def test_discover(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
