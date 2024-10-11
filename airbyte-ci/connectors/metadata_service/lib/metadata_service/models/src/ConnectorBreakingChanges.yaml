@@ -28,7 +28,6 @@ definitions:
       deadlineAction:
         description: Action to do when the deadline is reached.
         type: string
-        default: auto_upgrade
         enum:
           - auto_upgrade
           - disable
