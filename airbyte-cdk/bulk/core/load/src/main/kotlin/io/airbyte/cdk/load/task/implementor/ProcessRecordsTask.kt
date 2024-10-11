@@ -12,11 +12,11 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.DestinationStreamComplete
 import io.airbyte.cdk.load.message.DestinationStreamIncomplete
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.task.StreamLevel
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -35,7 +35,7 @@ interface ProcessRecordsTask : StreamLevel, ImplementorScope
 class DefaultProcessRecordsTask(
     override val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher,
-    private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
+    private val file: SpilledRawMessagesLocalFile,
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
 ) : ProcessRecordsTask {
@@ -45,10 +45,10 @@ class DefaultProcessRecordsTask(
         log.info { "Fetching stream loader for ${stream.descriptor}" }
         val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
 
-        log.info { "Processing records from ${fileEnvelope.batch.localFile}" }
-        val nextBatch =
+        log.info { "Processing records from $file" }
+        val batch =
             try {
-                fileEnvelope.batch.localFile.toFileReader().use { reader ->
+                file.localFile.toFileReader().use { reader ->
                     val records =
                         reader
                             .lines()
@@ -67,14 +67,14 @@ class DefaultProcessRecordsTask(
                             }
                             .map { it as DestinationRecord }
                             .iterator()
-                    streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)
+                    streamLoader.processRecords(records, file.totalSizeBytes)
                 }
             } finally {
-                log.info { "Processing completed, deleting ${fileEnvelope.batch.localFile}" }
-                fileEnvelope.batch.localFile.delete()
+                log.info { "Processing completed, deleting $file" }
+                file.localFile.delete()
             }
 
-        val wrapped = fileEnvelope.withBatch(nextBatch)
+        val wrapped = BatchEnvelope(batch, file.indexRange)
         taskLauncher.handleNewBatch(stream, wrapped)
     }
 }
@@ -83,7 +83,7 @@ interface ProcessRecordsTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream,
-        fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
+        file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask
 }
 
@@ -96,14 +96,8 @@ class DefaultProcessRecordsTaskFactory(
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream,
-        fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
+        file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask {
-        return DefaultProcessRecordsTask(
-            stream,
-            taskLauncher,
-            fileEnvelope,
-            deserializer,
-            syncManager
-        )
+        return DefaultProcessRecordsTask(stream, taskLauncher, file, deserializer, syncManager)
     }
 }

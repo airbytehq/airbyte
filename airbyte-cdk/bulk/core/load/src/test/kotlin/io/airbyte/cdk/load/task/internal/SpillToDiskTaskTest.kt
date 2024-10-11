@@ -104,16 +104,16 @@ class SpillToDiskTaskTest {
             .execute()
         Assertions.assertEquals(2, mockTaskLauncher.spilledFiles.size)
 
-        Assertions.assertEquals(1024, mockTaskLauncher.spilledFiles[0].batch.totalSizeBytes)
-        Assertions.assertEquals(512, mockTaskLauncher.spilledFiles[1].batch.totalSizeBytes)
+        Assertions.assertEquals(1024, mockTaskLauncher.spilledFiles[0].totalSizeBytes)
+        Assertions.assertEquals(512, mockTaskLauncher.spilledFiles[1].totalSizeBytes)
 
-        val env1 = mockTaskLauncher.spilledFiles[0]
-        val env2 = mockTaskLauncher.spilledFiles[1]
-        Assertions.assertEquals(1024, env1.batch.totalSizeBytes)
-        Assertions.assertEquals(512, env2.batch.totalSizeBytes)
+        val spilled1 = mockTaskLauncher.spilledFiles[0]
+        val spilled2 = mockTaskLauncher.spilledFiles[1]
+        Assertions.assertEquals(1024, spilled1.totalSizeBytes)
+        Assertions.assertEquals(512, spilled2.totalSizeBytes)
 
-        val file1 = env1.batch.localFile as MockTempFileProvider.MockLocalFile
-        val file2 = env2.batch.localFile as MockTempFileProvider.MockLocalFile
+        val file1 = spilled1.localFile as MockTempFileProvider.MockLocalFile
+        val file2 = spilled2.localFile as MockTempFileProvider.MockLocalFile
         Assertions.assertTrue(file1.writersCreated[0].isClosed)
         Assertions.assertTrue(file2.writersCreated[0].isClosed)
 

@@ -142,10 +142,10 @@ class ObjectStoragePathFactory(
             )
 
         fun <T> from(config: T, timeProvider: TimeProvider? = null): ObjectStoragePathFactory where
-        T : ObjectStoragePathConfigurationProvider,
-        T : ObjectStorageFormatConfigurationProvider {
-            return ObjectStoragePathFactory(config, config, timeProvider)
-        }
+            T : ObjectStoragePathConfigurationProvider,
+            T : ObjectStorageFormatConfigurationProvider {
+                return ObjectStoragePathFactory(config, config, timeProvider)
+            }
     }
 
     fun getStagingDirectory(stream: DestinationStream): Path {

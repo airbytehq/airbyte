@@ -10,13 +10,12 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.file.MockTempFileProvider
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.MockTaskLauncher
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -100,12 +99,13 @@ class ProcessRecordsTaskTest {
             SpilledRawMessagesLocalFile(
                 localFile = mockFile,
                 totalSizeBytes = byteSize,
+                indexRange = Range.closed(0, recordCount)
             )
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
                 stream = MockDestinationCatalogFactory.stream1,
-                fileEnvelope = BatchEnvelope(file, Range.closed(0, 1024))
+                file = file
             )
         mockFile.linesToRead = (0 until recordCount).map { "$it" }.toMutableList()
 
