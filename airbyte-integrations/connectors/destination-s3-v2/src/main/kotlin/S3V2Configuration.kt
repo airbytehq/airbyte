@@ -18,6 +18,7 @@ data class S3V2Configuration(
     override val s3BucketConfiguration: S3BucketConfiguration
 ) : DestinationConfiguration(), AWSAccessKeyConfigurationProvider, S3BucketConfigurationProvider
 
+
 @Singleton
 class S3V2ConfigurationFactory :
     DestinationConfigurationFactory<S3V2Specification, S3V2Configuration> {

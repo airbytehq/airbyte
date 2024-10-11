@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    implementation("aws.sdk.kotlin:s3:1.0.0")
+}
