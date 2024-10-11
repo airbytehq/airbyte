@@ -989,20 +989,7 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          //circleci.com/206c584e-39c0-488d-ad95-b26563202e9b/33c9922c-635b-4e9c-ae77-3de50a1c7b0c:
-            type:
-              - object
-              - "null"
-            properties:
-              emails:
-                type:
-                  - string
-                  - "null"
-              on_dashboard:
-                type:
-                  - boolean
-                  - "null"
+        properties: {}
       pusher_id:
         type:
           - string
