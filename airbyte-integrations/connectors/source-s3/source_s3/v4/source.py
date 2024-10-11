@@ -4,10 +4,14 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
+
+import orjson
 
 from airbyte_cdk import (
     AirbyteEntrypoint,
+    ConfiguredAirbyteCatalog,
     ConnectorSpecification,
     emit_configuration_as_airbyte_control_message,
     is_cloud_environment,
@@ -134,19 +138,19 @@ class SourceS3(FileBasedSource):
         """Launch the source using the provided CLI args.
 
         If no args are provided, the launch args will be inferred automatically.
+
+        In the future, we should consider moving this method to the Connector base class,
+        so that all sources and destinations can launch themselves and so none of this
+        code needs to live in the connector itself.
         """
-        catalog_path = AirbyteEntrypoint.extract_catalog(args)
-        config_path = AirbyteEntrypoint.extract_config(args)
-        state_path = AirbyteEntrypoint.extract_state(args)
         args = args or sys.argv[1:]
-        source = cls(
-            stream_reader=SourceS3StreamReader(),
-            spec_class=Config,
-            cursor_cls=Cursor,
-            # We will provide these later, after we have wrapped proper error handling.
-            catalog=catalog_path,
-            config=config_path,
-            state=state_path,
+        catalog_path = AirbyteEntrypoint.extract_catalog(args)
+        # TODO: Delete if not needed:
+        # config_path = AirbyteEntrypoint.extract_config(args)
+        # state_path = AirbyteEntrypoint.extract_state(args)
+
+        source = cls.create(
+            configured_catalog_path=catalog_path,
         )
         # The following function will wrap the execution in proper error handling.
         # Failures prior to here may not emit proper Airbyte TRACE or CONNECTION_STATUS messages.
@@ -159,7 +163,7 @@ class SourceS3(FileBasedSource):
     def create(
         cls,
         *,
-        catalog: Mapping[str, Any] | None = None,
+        configured_catalog_path: Path | None = None,
     ) -> SourceS3:
         """Create a new instance of the source.
 
@@ -167,8 +171,8 @@ class SourceS3(FileBasedSource):
         constructor asks for things that the caller won't know about, specifically: the stream
         reader class, the spec class, and the cursor class.
 
-        We should consider declaring these are class properties so they don't need to be provided
-        by the caller.
+        We should consider refactoring the constructor so that these inputs don't need to be
+        provided by the caller. This probably requires changes to the base class in the CDK.
 
         NOTE: If we fail in this method, we will not have a chance to wrap the error in an
         AirbyteTracedException, and if we are running `CHECK`, we won't properly emit the
@@ -176,13 +180,16 @@ class SourceS3(FileBasedSource):
 
         We prefer to fail in the `launch` method, where proper error handling is in place.
         """
+        configured_catalog: ConfiguredAirbyteCatalog | None = (
+            ConfiguredAirbyteCatalogSerializer.load(orjson.loads(configured_catalog_path.read_text())) if configured_catalog_path else None
+        )
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
             stream_reader=SourceS3StreamReader(),
             spec_class=Config,
             cursor_cls=Cursor,
             # This is needed early. (We also will provide it again later.)
-            catalog=ConfiguredAirbyteCatalogSerializer.load(catalog) if catalog else None,
+            catalog=configured_catalog,
             # These will be provided later, after we have wrapped proper error handling.
             config=None,
             state=None,

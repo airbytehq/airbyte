@@ -13,7 +13,7 @@ from __future__ import annotations
 import tempfile
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Literal
 
 import orjson
 import pytest
@@ -60,8 +60,11 @@ class AcceptanceTestInstance(BaseModel):
     def expect_exception(self) -> bool:
         return self.status and self.status == "failed"
 
+    @property
+    def instance_name(self) -> str:
+        return self.config_path.stem
 
-def _get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
+def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
     all_tests_config = yaml.safe_load(ACCEPTANCE_TEST_CONFIG_PATH.read_text())
     return [
         AcceptanceTestInstance.model_validate(test)
@@ -69,12 +72,19 @@ def _get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
         if "iam_role" not in test["config_path"]
     ]
 
+# TODO: Convert to a CDK class for better reuse and portability.
+# class TestSourceAcceptanceTestSuiteBase:
+#     """Test suite for acceptance tests."""
 
-def _run_test_job(
+SOURCE_CLASS: type[Source] = SourceS3
+
+
+def run_test_job(
     verb: Literal["read", "check", "discover"],
     test_instance: AcceptanceTestInstance,
     catalog: dict | None = None,
 ) -> entrypoint_wrapper.EntrypointOutput:
+    """Run a test job from provided CLI args and return the result."""
     args = [verb]
     if test_instance.config_path:
         args += ["--config", str(test_instance.config_path)]
@@ -93,7 +103,7 @@ def _run_test_job(
             args += ["--catalog", str(catalog_path)]
 
     # This is a bit of a hack because the source needs the catalog early.
-    source: Source | None = SourceS3.create(
+    source: Source = SOURCE_CLASS.create(
         catalog=orjson.loads(catalog_path.read_text()) if catalog_path else None,
     )
     assert source
@@ -111,19 +121,19 @@ def _run_test_job(
         )
 
     if test_instance.expect_exception and not result.errors:
-        raise AssertionError("Expected exception but got none.")
+        raise AssertionError("Expected exception but got none.")  # noqa: TRY003
 
     return result
 
 
 @pytest.mark.parametrize(
     "instance",
-    _get_acceptance_tests("full_refresh"),
-    ids=lambda instance: cast(AcceptanceTestInstance, instance).config_path.name,
+    get_acceptance_tests("full_refresh"),
+    ids=lambda instance: instance.instance_name,
 )
 def test_full_refresh(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
-    _run_test_job(
+    run_test_job(
         "read",
         test_instance=instance,
     )
@@ -131,12 +141,12 @@ def test_full_refresh(instance: AcceptanceTestInstance) -> None:
 
 @pytest.mark.parametrize(
     "instance",
-    _get_acceptance_tests("basic_read"),
-    ids=lambda instance: instance.config_path.name,
+    get_acceptance_tests("basic_read"),
+    ids=lambda instance: instance.instance_name,
 )
 def test_basic_read(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
-    discover_result = _run_test_job(
+    discover_result = run_test_job(
         "discover",
         test_instance=instance,
     )
@@ -151,7 +161,7 @@ def test_basic_read(instance: AcceptanceTestInstance) -> None:
             for stream in discover_result.catalog.catalog.streams
         ]
     )
-    _run_test_job(
+    run_test_job(
         "read",
         test_instance=instance,
         catalog=configured_catalog,
@@ -160,12 +170,12 @@ def test_basic_read(instance: AcceptanceTestInstance) -> None:
 
 @pytest.mark.parametrize(
     "instance",
-    _get_acceptance_tests("connection"),
-    ids=lambda instance: instance.config_path.name,
+    get_acceptance_tests("connection"),
+    ids=lambda instance: instance.instance_name,
 )
 def test_check(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
-    result: entrypoint_wrapper.EntrypointOutput = _run_test_job(
+    result: entrypoint_wrapper.EntrypointOutput = run_test_job(
         "check",
         test_instance=instance,
     )
@@ -175,12 +185,12 @@ def test_check(instance: AcceptanceTestInstance) -> None:
 
 @pytest.mark.parametrize(
     "instance",
-    _get_acceptance_tests("full_refresh"),
-    ids=lambda instance: instance.config_path.name,
+    get_acceptance_tests("full_refresh"),
+    ids=lambda instance: instance.instance_name,
 )
 def test_discover(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
-    _run_test_job(
+    run_test_job(
         "check",
         test_instance=instance,
     )
