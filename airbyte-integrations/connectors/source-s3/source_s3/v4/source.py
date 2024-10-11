@@ -150,7 +150,7 @@ class SourceS3(FileBasedSource):
         # state_path = AirbyteEntrypoint.extract_state(args)
 
         source = cls.create(
-            configured_catalog_path=catalog_path,
+            configured_catalog_path=Path(catalog_path) if catalog_path else None,
         )
         # The following function will wrap the execution in proper error handling.
         # Failures prior to here may not emit proper Airbyte TRACE or CONNECTION_STATUS messages.
