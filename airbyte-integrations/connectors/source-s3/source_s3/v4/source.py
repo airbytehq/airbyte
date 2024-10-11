@@ -163,7 +163,7 @@ class SourceS3(FileBasedSource):
     def create(
         cls,
         *,
-        configured_catalog_path: Path | None = None,
+        configured_catalog_path: Path | str | None = None,
     ) -> SourceS3:
         """Create a new instance of the source.
 
@@ -181,7 +181,9 @@ class SourceS3(FileBasedSource):
         We prefer to fail in the `launch` method, where proper error handling is in place.
         """
         configured_catalog: ConfiguredAirbyteCatalog | None = (
-            ConfiguredAirbyteCatalogSerializer.load(orjson.loads(configured_catalog_path.read_text())) if configured_catalog_path else None
+            ConfiguredAirbyteCatalogSerializer.load(orjson.loads(Path(configured_catalog_path).read_text()))
+            if configured_catalog_path
+            else None
         )
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
