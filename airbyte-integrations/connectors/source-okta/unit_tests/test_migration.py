@@ -5,6 +5,7 @@
 import json
 from typing import Any, Mapping
 import logging
+from enum import Enum
 
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
@@ -20,6 +21,12 @@ logger = logging.getLogger("airbyte")
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
+    
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value  # Encode enums as their values
+        return super().default(obj)
 
 
 class TestMigrateConfig:
@@ -33,8 +40,7 @@ class TestMigrateConfig:
         migration_instance = OktaConfigMigration()
         migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
         captured = capsys.readouterr()
-        logger.info(f"Captured Output: {captured.out}")  # Add this to see what's actually captured
-        control_msg = json.loads(captured.out)
+        control_msg = json.loads(captured.out.strip())
         assert control_msg["type"] == Type.CONTROL.value
         assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
         migrated_config = control_msg["control"]["connectorConfig"]["config"]
