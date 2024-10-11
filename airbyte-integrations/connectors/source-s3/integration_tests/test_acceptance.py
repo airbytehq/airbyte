@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import tempfile
 import uuid
+from dataclasses import asdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -21,8 +22,15 @@ import yaml
 from pydantic import BaseModel
 from source_s3.v4.source import SourceS3
 
-from airbyte_cdk import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+    Type,
+)
 from airbyte_cdk.test import entrypoint_wrapper
 
 
@@ -103,10 +111,19 @@ def run_test_job(
             args += ["--catalog", str(catalog_path)]
 
     # This is a bit of a hack because the source needs the catalog early.
-    source: Source = SOURCE_CLASS.create(
-        configured_catalog_path=catalog_path,
-    )
-    assert source
+    # Because it *also* can fail, we have ot redundantly wrap it in a try/except block.
+    try:
+        source: Source = SOURCE_CLASS.create(
+            configured_catalog_path=catalog_path,
+        )
+    except Exception as ex:
+        if not test_instance.expect_exception:
+            raise
+
+        return entrypoint_wrapper.EntrypointOutput(
+            messages=[],
+            uncaught_exception=ex,
+        )
 
     result: entrypoint_wrapper.EntrypointOutput = entrypoint_wrapper._run_command(  # noqa: SLF001  # Non-public API
         source=source,
@@ -123,9 +140,6 @@ def run_test_job(
     if test_instance.expect_exception and not result.errors:
         raise AssertionError("Expected exception but got none.")  # noqa: TRY003
 
-    if not result.records:
-        raise AssertionError("Expected records but got none.")  # noqa: TRY003
-
     return result
 
 
@@ -136,10 +150,12 @@ def run_test_job(
 )
 def test_full_refresh(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
-    run_test_job(
+    result = run_test_job(
         "read",
         test_instance=instance,
     )
+    if not result.records:
+        raise AssertionError("Expected records but got none.")  # noqa: TRY003
 
 
 @pytest.mark.parametrize(
@@ -164,11 +180,48 @@ def test_basic_read(instance: AcceptanceTestInstance) -> None:
             for stream in discover_result.catalog.catalog.streams
         ]
     )
-    run_test_job(
+    result = run_test_job(
         "read",
         test_instance=instance,
         catalog=configured_catalog,
     )
+
+    if not result.records:
+        raise AssertionError("Expected records but got none.")  # noqa: TRY003
+
+
+@pytest.mark.parametrize(
+    "instance",
+    get_acceptance_tests("basic_read"),
+    ids=lambda instance: instance.instance_name,
+)
+def test_fail_with_bad_catalog(instance: AcceptanceTestInstance) -> None:
+    """Test that a bad catalog fails."""
+    invalid_configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            # Create ConfiguredAirbyteStream which is deliberately invalid
+            # with regard to the Airbyte Protocol.
+            # This should cause the connector to fail.
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="__AIRBYTE__stream_that_does_not_exist",
+                    json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode="INVALID",
+                destination_sync_mode="INVALID",
+            )
+        ]
+    )
+    # Set expected status to "failed" to ensure the test fails if the connector.
+    instance.status = "failed"
+    result = run_test_job(
+        "read",
+        test_instance=instance,
+        catalog=asdict(invalid_configured_catalog),
+    )
+    assert result.errors, "Expected errors but got none."
+    assert result.trace_messages, "Expected trace messages but got none."
 
 
 @pytest.mark.parametrize(
