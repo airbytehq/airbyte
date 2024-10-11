@@ -136,7 +136,7 @@ T : ScopedTask {
         }
 
         override fun toString(): String {
-            return "IdWrapper(innerTask=$innerTask)"
+            return "NoHandlingWrapper(innerTask=$innerTask)"
         }
     }
 
