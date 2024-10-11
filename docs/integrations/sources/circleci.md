@@ -42,6 +42,7 @@ This directory contains the manifest-only connector for [`source-circleci`](http
 
 | Version          | Date       |PR| Subject        |
 |------------------|------------|---|----------------|
+| 0.1.0 | 2024-10-11 |[46729](https://github.com/airbytehq/airbyte/pull/46729)| Remove unwanted optional config parameters |
 | 0.0.1 | 2024-09-29 |[46249](https://github.com/airbytehq/airbyte/pull/46249)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
