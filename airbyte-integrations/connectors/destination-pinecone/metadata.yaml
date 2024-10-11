@@ -33,6 +33,7 @@ data:
   releaseStage: beta
   releases:
     isReleaseCandidate: true
+    breakingChanges:
   resourceRequirements:
     jobSpecific:
       - jobType: sync
