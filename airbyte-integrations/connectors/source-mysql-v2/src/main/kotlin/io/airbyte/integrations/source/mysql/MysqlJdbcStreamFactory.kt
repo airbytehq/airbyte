@@ -26,7 +26,7 @@ class MysqlJdbcStreamFactory(val base: JdbcAirbyteStreamFactory) : AirbyteStream
         return AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
             (jsonSchema["properties"] as ObjectNode).apply {
                 for (metaField in MysqlCDCMetaFields.entries) {
-                    set<ObjectNode>(metaField.id, metaField.type.airbyteType.asJsonSchema())
+                    set<ObjectNode>(metaField.id, metaField.type.airbyteSchemaType.asJsonSchema())
                 }
             }
             if (base.hasValidPrimaryKey(discoveredStream)) {
