@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dd9a9d23-a64a-483c-b1ed-da1391d13f91
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-circleci
   githubIssueLabel: source-circleci
   icon: icon.svg
