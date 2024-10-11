@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 import orjson
-
 from airbyte_cdk import (
     AirbyteEntrypoint,
     ConfiguredAirbyteCatalog,
@@ -17,16 +16,13 @@ from airbyte_cdk import (
     is_cloud_environment,
     launch,
 )
-from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalogSerializer,
-)
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
-
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
