@@ -148,46 +148,13 @@ class SourceShopify(AbstractSource):
     def format_stream_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
     
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        for shop_config in config.get("shops"):
-            catalog = super().discover(logger, shop_config)
-            logger.info("Discover succeeded for %s. Stopping now", self.get_shop_name(shop_config))
-            return catalog
-    
-    def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage] = None) -> Iterator[AirbyteMessage]:
-        result = []
-        errored_stores = []
-        shops = config.get("shops", [])
-        if not shops:
-            logger.info("No shops to read data from")
-            return []
-        for shop_config in shops:
-            try:
-                logger.info(f"Starting syncing store: {self.get_shop_name(shop_config)}")
-                yield from super().read(logger, shop_config, catalog, state)
-                logger.info("Read succeeded for %s", self.get_shop_name(shop_config))
-            
-            except Exception as e:
-                errored_stores.append(self.get_shop_name(shop_config))
-                logging.error(f"Error processing {self.get_shop_name(shop_config)}: {e}")
-        if errored_stores:
-            logging.error("Following stores had errors while reading:%s", errored_stores)
-        logger.info("Read completed.")
-        return result
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
-        shops = config.get("shops", [])
-        if not shops:
-            logger.info("No shops to test connection on")
-            return True, None
-        for shop_config in shops:
-            shop_config["authenticator"] = ShopifyAuthenticator(shop_config)
-            #only test the first shop
-            logger.info("Checking connection for %s", self.get_shop_name(shop_config))
-            return ConnectionCheckTest(shop_config).test_connection()
+        config["shop"] = self.get_shop_name(config)
+        config["authenticator"] = ShopifyAuthenticator(config)
+        return ConnectionCheckTest(config).test_connection()
         
     def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
         """
@@ -265,3 +232,75 @@ class SourceShopify(AbstractSource):
         return [
             stream_instance for stream_instance in stream_instances if self.format_stream_name(stream_instance.name) in permitted_streams
         ]
+
+class LTKSourceShopify(SourceShopify):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.cfg = ConfigCreator()
+        self._shops = None
+    
+    @property
+    def shops(self):
+        return self._shops
+    
+    @shops.setter
+    def shops(self, shops):
+        if self._shops is None:
+            self._shops = shops
+        else:
+            raise ValueError("Shops have already been gathered.")
+        
+    def gatherLTKShops(self, config):
+        aws_credentials = {"aws_access_key_id": config.get('aws_access_key_id', ""),
+                           "aws_secret_access_key": config.get('aws_secret_access_key', ""),
+                           "aws_session_token": config.get('aws_session_token', ""),
+                           }
+        env = config.get('env', 'local')
+        return self.cfg.gatherShopifyStores(config['db_uri'], env, aws_credentials)
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        """
+        Testing connection availability for the connector.
+        """
+        if not self.shops:
+            self.shops = self.gatherLTKShops(config)
+        
+        if not self.shops:
+            logger.info("No shops to test connection on")
+            return True, None
+        for shop_config in self.shops:
+            shop_config["authenticator"] = ShopifyAuthenticator(shop_config)
+            #only test the first shop
+            logger.info("Checking connection for %s", self.get_shop_name(shop_config))
+            return ConnectionCheckTest(shop_config).test_connection()
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        if not self.shops:
+            self.shops = self.gatherLTKShops(config)
+        for shop_config in self.shops:
+            catalog = super().discover(logger, shop_config)
+            logger.info("Discover succeeded for %s. Stopping now", self.get_shop_name(shop_config))
+            return catalog
+        
+    def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage] = None) -> Iterator[AirbyteMessage]:
+        result = []
+        errored_stores = []
+        if not self.shops:
+            self.shops = self.gatherLTKShops(config)
+        if not self.shops:
+            logger.info("No shops to read data from")
+            return []
+        for shop_config in self.shops:
+            try:
+                logger.info(f"Starting syncing store: {self.get_shop_name(shop_config)}")
+                yield from super().read(logger, shop_config, catalog, state)
+                logger.info("Read succeeded for %s", self.get_shop_name(shop_config))
+            
+            except Exception as e:
+                errored_stores.append(self.get_shop_name(shop_config))
+                logging.error(f"Error processing {self.get_shop_name(shop_config)}: {e}")
+        if errored_stores:
+            logging.error("Following stores had errors while reading:%s", errored_stores)
+        logger.info("Read completed.")
+        return result

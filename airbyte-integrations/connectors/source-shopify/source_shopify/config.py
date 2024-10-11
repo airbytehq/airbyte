@@ -2,6 +2,7 @@ import botocore.exceptions
 import boto3
 import mysql.connector
 from mysql.connector import Error
+import logging
 
 
 from typing import Any, List, Mapping
@@ -13,6 +14,7 @@ from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .constants import ADVERTISERS_QUERY, SHOPIFY_ACCESS_TOKEN_PATH
 
 class ConfigCreator:
+    logger = logging.getLogger("airbyte")
     
     def extract_db_info(self, db_uri):
     
@@ -31,6 +33,7 @@ class ConfigCreator:
     
         return db_info
 
+
     def _get_shopify_token(self, shopify_id: str, aws_credentials: dict) -> str:
         try:
             if self.env == "local":
@@ -38,10 +41,12 @@ class ConfigCreator:
                                         aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
                                         aws_session_token=aws_credentials['aws_session_token'], 
                                         region_name="us-east-1")
+                sid = SHOPIFY_ACCESS_TOKEN_PATH.format("prod", shopify_id)
             else:
-                session = boto3.session.Session()
+                session = boto3.session.Session(region_name="us-east-1")
+
             client = session.client("secretsmanager")
-            sid = SHOPIFY_ACCESS_TOKEN_PATH.format(shopify_id)
+            sid = SHOPIFY_ACCESS_TOKEN_PATH.format(self.env, shopify_id)
             resp = client.get_secret_value(SecretId=sid)
 
             return resp["SecretString"]
@@ -65,6 +70,7 @@ class ConfigCreator:
                 cursor = connection.cursor(dictionary=True)
                 cursor.execute(ADVERTISERS_QUERY)
                 results = cursor.fetchall()
+                self.logger.info("Fetched %d stores from Milk and Honey", len(results))
 
                 return results
 
@@ -97,46 +103,6 @@ class ConfigCreator:
                 print(f"shopify: failed to get access token for active shop: {shop_name}. It will be excluded from the sync.")
                 continue
             shops.append(shop_config)
+        self.logger.info("Fetched %d well-formed (M&H +  SecretManager) stores from Milk and Honey for extraction", len(shops))
         return shops
-
-class LTKShopifyConfigCreator:
-    """
-    Gather all the LTK shopify stores
-    """
-    cfg = ConfigCreator()
-    migrate_key: str = "shops"
-
-    @classmethod
-    def modify_config(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
-        aws_credentials = {"aws_access_key_id": config.get('aws_access_key_id', ""),
-                           "aws_secret_access_key": config.get('aws_secret_access_key', ""),
-                           "aws_session_token": config.get('aws_session_token', ""),
-                           }
-        env = config.get('env', 'local')
-        config[cls.migrate_key] = cls.cfg.gatherShopifyStores(config['db_uri'], env, aws_credentials)
-        return config
-
-    @classmethod
-    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        # modify the config
-        migrated_config = cls.modify_config(config, source)
-        # save the config
-        source.write_config(migrated_config, config_path)
-        # return modified config
-        return migrated_config
-
-
-    @classmethod
-    def adjustConfig(cls, args: List[str], source: Source) -> None:
-        """
-        This method checks the input args, should the config be migrated,
-        transform if neccessary and emit the CONTROL message.
-        """
-        # get config path
-        config_path = AirbyteEntrypoint(source).extract_config(args)
-        # proceed only if `--config` arg is provided
-        if config_path:
-            # read the existing config
-            config = source.read_config(config_path)
-            cls.modify_and_save(config_path, source, config)
     
