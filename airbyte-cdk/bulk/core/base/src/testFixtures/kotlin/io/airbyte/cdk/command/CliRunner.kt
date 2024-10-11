@@ -59,6 +59,7 @@ data object CliRunner {
                 .singleton(true)
                 .build()
         val out = CliRunnerOutputStream()
+        println("config in $config")
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
@@ -123,6 +124,9 @@ data object CliRunner {
     private fun inputFile(contents: Any?): Path? =
         contents?.let {
             Files.createTempFile(null, null).also { file ->
+                println("file: $file")
+                println("contents: $contents")
+                println("contents json: ${Jsons.writeValueAsString(contents)}")
                 Files.writeString(file, Jsons.writeValueAsString(contents))
             }
         }

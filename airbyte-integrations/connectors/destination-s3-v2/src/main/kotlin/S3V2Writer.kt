@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong
 class S3V2Writer(
     private val s3Client: S3Client,
     private val pathFactory: ObjectStoragePathFactory,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
+    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta,
 ) : DestinationWriter {
     sealed interface S3V2Batch : Batch
     data class StagedObject(

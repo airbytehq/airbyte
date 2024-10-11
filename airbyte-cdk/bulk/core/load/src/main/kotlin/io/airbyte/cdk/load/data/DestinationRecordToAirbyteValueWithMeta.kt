@@ -7,10 +7,12 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecord.Meta
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.*
 
 @Singleton
+@Secondary
 class DestinationRecordToAirbyteValueWithMeta(private val catalog: DestinationCatalog) {
     fun decorate(record: DestinationRecord): ObjectValue {
         val streamActual = catalog.getStream(record.stream.name, record.stream.namespace)

@@ -42,6 +42,7 @@ class NonDockerizedDestination(
                 TestDeploymentMode.CLOUD -> mapOf("deployment.mode" to "CLOUD")
                 TestDeploymentMode.OSS -> mapOf("deployment.mode" to "OSS")
             }
+        println("JSCHMIDT loaded config: $config")
         destination =
             CliRunner.destination(
                 command,
