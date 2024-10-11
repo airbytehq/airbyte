@@ -1297,7 +1297,7 @@ files = [
 
 [[package]]
 name = "metadata-service"
-version = "0.19.0"
+version = "0.19.2"
 description = ""
 optional = false
 python-versions = "^3.10"
