@@ -38,6 +38,7 @@ class KlaviyoCheckpointDatetimeBasedCursor(DatetimeBasedCursor):
             step: P1M
             cursor_granularity: PT1S
     """
+
     def get_request_params(
         self,
         *,
@@ -51,7 +52,4 @@ class KlaviyoCheckpointDatetimeBasedCursor(DatetimeBasedCursor):
         field = self.cursor_field.eval(self.config)
         start_value = stream_slice.get(self._partition_field_start.eval(self.config))
         end_value = stream_slice.get(self._partition_field_end.eval(self.config))
-        return {
-            "filter": f"greater-or-equal({field},{start_value}),less-or-equal({field},{end_value})",
-            "sort": field
-        }
+        return {"filter": f"greater-or-equal({field},{start_value}),less-or-equal({field},{end_value})", "sort": field}
