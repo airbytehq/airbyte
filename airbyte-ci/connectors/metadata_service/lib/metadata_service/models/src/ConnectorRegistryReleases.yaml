@@ -27,7 +27,7 @@ definitions:
     minProperties: 1
     maxProperties: 1
     patternProperties:
-      "^\\d+\\.\\d+\\.\\d+$":
+      "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?$":
         $ref: "#/definitions/VersionReleaseCandidate"
   VersionReleaseCandidate:
     description: Contains information about a release candidate version of a connector.

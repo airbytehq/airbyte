@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "5.11.1"
+version = "5.13.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-5.11.1-py3-none-any.whl", hash = "sha256:efddee85179128cb7d65b11a9a4aba353ea5b01daaa56fc3069d12ce156d2857"},
-    {file = "airbyte_cdk-5.11.1.tar.gz", hash = "sha256:0cc1cdc1d50909bbb2791a9c389c0f3db32474502addf65eb745d87af7d36fd9"},
+    {file = "airbyte_cdk-5.13.0-py3-none-any.whl", hash = "sha256:b26c99631e797c0bdb8373a6a05c81bf62b7d7397ca41b6ee05702d1013bd389"},
+    {file = "airbyte_cdk-5.13.0.tar.gz", hash = "sha256:ab5799a238366dff61a8cded347b02deb63818513af4e61e2d1a51608a2280df"},
 ]
 
 [package.dependencies]
@@ -38,6 +38,7 @@ requests = "*"
 requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
 wcmatch = "8.4"
+xmltodict = ">=0.13.0,<0.14.0"
 
 [package.extras]
 file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
@@ -1731,7 +1732,18 @@ files = [
     {file = "wrapt-1.16.0.tar.gz", hash = "sha256:5f370f952971e7d17c7d1ead40e49f32345a7f7a5373571ef44d800d06b1899d"},
 ]
 
+[[package]]
+name = "xmltodict"
+version = "0.13.0"
+description = "Makes working with XML feel like you are working with JSON"
+optional = false
+python-versions = ">=3.4"
+files = [
+    {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
+    {file = "xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "72f8e394847086ab4840af7a04b4c64d0a3219ac254a1a673f0d89f434d44ef7"
+content-hash = "b4c5b44380eaf01b9b396b1ea4f3e7a6ce03ce0eb40393cc8d4e2868a5a7a4f8"
