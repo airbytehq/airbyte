@@ -4,25 +4,37 @@
 from __future__ import annotations
 
 import sys
+import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 import orjson
+
 from airbyte_cdk import (
     AirbyteEntrypoint,
-    ConfiguredAirbyteCatalog,
     ConnectorSpecification,
     emit_configuration_as_airbyte_control_message,
     is_cloud_environment,
     launch,
 )
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
+from source_s3.utils import airbyte_message_from_json, airbyte_message_to_json
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
+
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
@@ -170,17 +182,33 @@ class SourceS3(FileBasedSource):
         We should consider refactoring the constructor so that these inputs don't need to be
         provided by the caller. This probably requires changes to the base class in the CDK.
 
-        NOTE: If we fail in this method, we will not have a chance to wrap the error in an
-        AirbyteTracedException, and if we are running `CHECK`, we won't properly emit the
-        CONNECTION_STATUS message. For that reason, we do as little as possible here.
-
         We prefer to fail in the `launch` method, where proper error handling is in place.
         """
-        configured_catalog: ConfiguredAirbyteCatalog | None = (
-            ConfiguredAirbyteCatalogSerializer.load(orjson.loads(Path(configured_catalog_path).read_text()))
-            if configured_catalog_path
-            else None
-        )
+        try:
+            configured_catalog: ConfiguredAirbyteCatalog | None = (
+                ConfiguredAirbyteCatalogSerializer.load(orjson.loads(Path(configured_catalog_path).read_text()))
+                if configured_catalog_path
+                else None
+            )
+        except Exception as ex:
+            print(
+                airbyte_message_to_json(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
+                                internal_message=str(ex),
+                            ),
+                        ),
+                    )
+                )
+            )
+            raise
+
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
             stream_reader=SourceS3StreamReader(),

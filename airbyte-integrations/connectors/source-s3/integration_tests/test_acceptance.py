@@ -123,6 +123,9 @@ def run_test_job(
     if test_instance.expect_exception and not result.errors:
         raise AssertionError("Expected exception but got none.")  # noqa: TRY003
 
+    if not result.records:
+        raise AssertionError("Expected records but got none.")  # noqa: TRY003
+
     return result
 
 
