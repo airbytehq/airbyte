@@ -6,6 +6,60 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
+      "format" : {
+        "oneOf" : [ {
+          "title" : "JSON Lines: Newline-delimited JSON",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "JSONL" ],
+              "default" : "JSONL"
+            }
+          },
+          "required" : [ "format_type" ]
+        }, {
+          "title" : "CSV: Comma-Separated Values",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "CSV" ],
+              "default" : "CSV"
+            }
+          },
+          "required" : [ "format_type" ]
+        }, {
+          "title" : "Avro: Apache Avro",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "AVRO" ],
+              "default" : "AVRO"
+            }
+          },
+          "required" : [ "format_type" ]
+        }, {
+          "title" : "Parquet: Columnar Storage",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "PARQUET" ],
+              "default" : "PARQUET"
+            }
+          },
+          "required" : [ "format_type" ]
+        } ],
+        "description" : "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
+        "title" : "Output Format",
+        "type" : "object"
+      },
       "access_key_id" : {
         "type" : "string",
         "description" : "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
@@ -63,7 +117,7 @@
         "examples" : [ "__staging/data_sync/test" ]
       }
     },
-    "required" : [ "access_key_id", "secret_access_key", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region" ]
+    "required" : [ "format", "access_key_id", "secret_access_key", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,
