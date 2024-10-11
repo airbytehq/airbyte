@@ -29,12 +29,31 @@ definitions:
           request_parameters:
             templates: "{{ config['templates'] }}"
             recipients: "{{ config['recipients'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('links', []) | selectattr('rel', 'equalto',
+              'next') | map(attribute='href') | first }}
+            stop_condition: >-
+              {{ not response.get('links', []) | selectattr('rel', 'equalto',
+              'next') | list }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -50,6 +69,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/sending-domains
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -71,6 +97,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/ab-test
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -92,6 +125,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/templates
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -113,6 +153,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/recipient-lists
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -135,6 +182,13 @@ definitions:
           request_parameters:
             from: "{{ config['from'] }}"
             metrics: "{{ config['metrics'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -155,6 +209,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/subaccounts
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -185,11 +246,27 @@ definitions:
           request_parameters:
             from: "{{ config[\"from\"] }}"
             metrics: "{{ config[\"metrics\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -205,6 +282,13 @@ definitions:
           http_method: GET
           request_parameters:
             from: "{{ config[\"from\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -212,12 +296,13 @@ definitions:
             field_path: []
         paginator:
           type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next', {}).get('cursor') }}"
-            stop_condition: "{{ response.get('results', []) | length == 0 }}"
+            type: OffsetIncrement
+            page_size: 10
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -231,6 +316,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/metrics/
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -254,6 +346,13 @@ definitions:
           request_parameters:
             from: "{{ config[\"from\"] }}"
             metrics: "{{ config[\"metrics\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -287,6 +386,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/labs/snippets
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -386,89 +492,89 @@ metadata:
     snippets: true
   testedStreams:
     search_message_events:
-      streamHash: 56ecf214fa00b84f5cd0394a11a571a781b5a445
+      streamHash: a1b4a7e1302c6213be4f8b0abe7a844b41fbb65f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sending_domains:
-      streamHash: 2e067932d8646fc20c3d09e9675399dd3f5e0fc9
+      streamHash: decc0a269094e86d446fe3b0da956bddbffd451a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     ab_test:
-      hasRecords: true
-      streamHash: 3fffde7e69a6b0c40c797ac3bdb74d0b57e80ad7
+      streamHash: b2064cfe16bc7101bf1663fcc7735b7625728882
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     templates:
-      hasRecords: true
-      streamHash: 8602c4fde7555941f8180a2690787867323677bb
+      streamHash: 3f676a92796d906d7cbd7da237657a86c58b0ea9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     recipients:
-      streamHash: 1a6e7c3b2bcb3c84212faf0c7b40269a48e75988
+      streamHash: 0b9a997331a015945d337324455007084cc52b1d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics_summary:
-      hasRecords: true
-      streamHash: a77134e429046d8895dac6f7c26e3dfad406c06f
+      streamHash: 186232fd2769b3bdf0f569a09112d26d886375da
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     subaccounts:
-      streamHash: eeeed7f7f8e835baac642f534c133057e76df161
+      streamHash: c7e073222e498fd45ab0f6e691bdc47cc1409a08
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     engagement_details:
-      streamHash: 4105b42236ea8f959a10ed1c466fb7f2bbc83372
+      streamHash: 6a041a63dfac7e9ecd18095dabe4e81d553c8c7e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     rejection_reason_metrics:
-      streamHash: 15032918fb3341b2755ee52edc930fac7e88a585
+      streamHash: 2ed33dc4467778a8e0358e2bd7d31f03f5e61540
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics:
-      streamHash: d058af3890a76d3488240709cf64e4fc77bcc5ba
+      streamHash: 4661c83a90a98c1506424b58b04f6f32b7c69617
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics_by_template:
-      streamHash: 830c4d05570fbbd2659fe10a9190b510df8e4fea
+      streamHash: 52753ff8535567c54ee7260f1784d0d207357902
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     snippets:
-      streamHash: 442812272b6c943908326d537929a4c88f5dcf38
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c5667b83c0afa440d5f9e4c01a0a339063169058
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developers.sparkpost.com/api/
 
@@ -503,6 +609,47 @@ schemas:
       friendly_from:
         type:
           - string
+          - "null"
+      geo_ip:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          continent:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - number
+              - "null"
+      initial_pixel:
+        type:
+          - boolean
           - "null"
       injection_time:
         type:
@@ -540,6 +687,10 @@ schemas:
         type:
           - string
           - "null"
+      open_tracking:
+        type:
+          - boolean
+          - "null"
       outbound_tls:
         type:
           - string
@@ -556,6 +707,11 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          unique_id:
+            type:
+              - string
+              - "null"
       rcpt_tags:
         type:
           - array
@@ -573,6 +729,10 @@ schemas:
           - string
           - "null"
       routing_domain:
+        type:
+          - string
+          - "null"
+      scheduled_time:
         type:
           - string
           - "null"
@@ -604,6 +764,47 @@ schemas:
         type:
           - string
           - "null"
+      user_agent:
+        type:
+          - string
+          - "null"
+      user_agent_parsed:
+        type:
+          - object
+          - "null"
+        properties:
+          agent_family:
+            type:
+              - string
+              - "null"
+          device_brand:
+            type:
+              - string
+              - "null"
+          device_family:
+            type:
+              - string
+              - "null"
+          is_mobile:
+            type:
+              - boolean
+              - "null"
+          is_prefetched:
+            type:
+              - boolean
+              - "null"
+          is_proxy:
+            type:
+              - boolean
+              - "null"
+          os_family:
+            type:
+              - string
+              - "null"
+          os_version:
+            type:
+              - string
+              - "null"
     required:
       - event_id
   sending_domains:
@@ -806,6 +1007,10 @@ schemas:
         type:
           - string
           - "null"
+      last_use:
+        type:
+          - string
+          - "null"
       name:
         type:
           - string
@@ -889,7 +1094,7 @@ schemas:
             - object
             - "null"
           properties:
-            count_targeted:
+            count_clicked:
               type:
                 - number
                 - "null"
@@ -942,9 +1147,13 @@ schemas:
                 - "null"
   rejection_reason_metrics:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      results:
+        type:
+          - array
+          - "null"
   metrics:
     type: object
     $schema: http://json-schema.org/schema#
@@ -980,7 +1189,7 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      count_injected:
+      count_clicked:
         type:
           - number
           - "null"
