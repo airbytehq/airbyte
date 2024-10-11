@@ -113,6 +113,25 @@ def test_full_refresh(instance: AcceptanceTestInstance) -> None:
 
 @pytest.mark.parametrize(
     "instance",
+    _get_acceptance_tests("basic_read"),
+    ids=lambda instance: instance.config_path.split("/")[-1],
+)
+def test_basic_read(instance: AcceptanceTestInstance) -> None:
+    """Run acceptance tests."""
+    _run_test_job(
+        args=[
+            "read",
+            "--config",
+            instance.config_path,
+            "--catalog",
+            instance.configured_catalog_path,
+        ],
+        expecting_exception=False,
+    )
+
+
+@pytest.mark.parametrize(
+    "instance",
     _get_acceptance_tests("connection"),
     ids=lambda instance: instance.config_path.split("/")[-1],
 )
