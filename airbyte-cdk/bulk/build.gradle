@@ -62,9 +62,7 @@ allprojects {
 }
 
 tasks.register('bulkCdkIntegrationTest').configure {
-    // findByName returns the task, or null if no such task exists.
-    // we need this because not all submodules have an integrationTest task.
-    dependsOn allprojects.collect {it.tasks.findByName('integrationTest')}.findAll {it != null}
+    dependsOn allprojects.collect {it.tasks.matching { it.name == 'integrationTest' }}
 }
 
 if (buildNumberFile.exists()) {
