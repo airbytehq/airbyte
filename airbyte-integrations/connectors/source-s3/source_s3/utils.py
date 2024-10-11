@@ -11,6 +11,7 @@ from typing import Any, Callable, List, Mapping, cast
 
 import dill
 import orjson
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer
 
 
@@ -57,9 +58,20 @@ def get_value_or_json_if_empty_string(options: str = None) -> str:
     return options.strip() if options else "{}"
 
 
-def airbyte_message_to_json(message: AirbyteMessage) -> str:
-    """Dump the provided AirbyteMessage to a JSON string."""
-    return orjson.dumps(cast(dict, AirbyteMessageSerializer.dump(message))).decode()
+def airbyte_message_to_json(
+    message: AirbyteMessage,
+    *,
+    newline: bool = False,
+) -> str:
+    """Dump the provided AirbyteMessage to a JSON string.
+
+    Optionally append a newline character to the end of the string.
+    """
+    result = orjson.dumps(cast(dict, AirbyteMessageSerializer.dump(message))).decode()
+    if newline:
+        result += "\n"
+
+    return result
 
 
 def airbyte_message_from_json(message_json: str) -> AirbyteMessage:

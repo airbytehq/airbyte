@@ -204,7 +204,8 @@ class SourceS3(FileBasedSource):
                                 internal_message=str(ex),
                             ),
                         ),
-                    )
+                    ),
+                    newline=True,
                 )
             )
             raise
