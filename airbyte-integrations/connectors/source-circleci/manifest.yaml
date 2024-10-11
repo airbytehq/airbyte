@@ -1,4 +1,4 @@
-version: 5.7.5
+version: 5.12.0
 
 type: DeclarativeSource
 
@@ -57,8 +57,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -67,7 +67,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -117,8 +117,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -163,8 +163,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -209,8 +209,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -219,7 +219,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -269,8 +269,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -316,8 +316,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -326,7 +326,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -378,8 +378,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -395,7 +395,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             v2/project/circleci/{{ config["org_id"] }}/{{ config["project_id"]
-            }}/job/{{ config['job_number'] }}
+            }}/job/{{ config['job_number'] or
+            stream_partition['job_parent_number'] }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -424,8 +425,16 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: job_number
+              partition_field: job_parent_number
+              stream:
+                $ref: "#/definitions/streams/workflow_jobs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -468,8 +477,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -478,7 +487,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -530,8 +539,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -578,8 +587,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -623,8 +632,8 @@ definitions:
             field_name: page-token
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next_page_token", {}) }}'
-            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: started_at
@@ -633,7 +642,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -648,7 +657,7 @@ definitions:
     url_base: https://circleci.com/api/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
         field_name: Circle-Token
@@ -699,29 +708,25 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       project_id:
         type: string
-        description: Project ID found in the project settings
+        description: >-
+          Project ID found in the project settings, Visit
+          `https://app.circleci.com/settings/project/circleci/ORG_SLUG/YYYYY`
         order: 3
         title: Project ID
-      job_id:
-        type: string
-        description: Job ID for fetching information
-        order: 4
-        title: Job ID
       workflow_id:
         type: string
-        description: workflow ID of a project pipeline
-        order: 5
+        description: >-
+          Workflow ID of a project pipeline, Could be seen in the URL of
+          pipeline build, Example
+          `https://app.circleci.com/pipelines/circleci/55555xxxxxx/7yyyyyyyyxxxxx/2/workflows/WORKFLOW_ID`
+        order: 4
         title: Workflow ID
-      workflow_name:
-        type: string
-        description: Workflow name for fetching information
-        order: 6
-        title: Workflow Name
-        default: build-and-test
       job_number:
         type: string
-        description: Job Number of the workflow
-        order: 7
+        description: >-
+          Job Number of the workflow for `jobs` stream, Auto fetches from
+          `workflow_jobs` stream, if not configured
+        order: 5
         title: Job Number
         default: "2"
     additionalProperties: true
@@ -742,12 +747,12 @@ metadata:
     workflow_jobs: true
   testedStreams:
     context:
-      hasRecords: true
       streamHash: 2db58db8647b6dbeb05e3040a85515adeba9c208
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     self_ids:
       hasRecords: true
       streamHash: 81183e512a17f46ff1b436e73de0539cbfe6273e
@@ -756,75 +761,75 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     self_collaborations:
-      hasRecords: true
       streamHash: 65dfddfb9cf5a1846147a6925a9e6bfc82b2f8e1
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     me:
-      hasRecords: true
-      streamHash: 8c378e8221bef781f6911329df100ab02e9fd4e7
+      streamHash: 6cd46ab3c9df033838055a491c0e9611d8eea230
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    projects:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
       streamHash: 39e7dd96dbfb02f9cf73f35c9e0c6600193cea08
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    pipelines:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pipelines:
       streamHash: 6fe654076efd6526c3fadc28c19f1353f6a9c88c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    specific_project:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    specific_project:
       streamHash: 99bd62345fe14caaffbdf0da10bab16f7540ecf2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     jobs:
-      hasRecords: true
-      streamHash: b511617fbc1ceebf2c437fa734235fb734596639
+      streamHash: 9ca6198aa728f9f1e31d71dce691a6695c018865
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    workflow:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflow:
       streamHash: 6dd1bd7a73fbd4d3b13700520f202302440284a3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     insights_metrics:
-      hasRecords: true
-      streamHash: 1704e974421625cfb99ba8a7111b7e8d0475a90d
+      streamHash: 302be4c8dc97111d547b66a8c2783ee59d5346d1
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     insights_branches:
-      hasRecords: true
-      streamHash: 818709056ee69d5ce1e90b4cdb798cf1db8ef6c4
+      streamHash: 3f055bae287f05353be4b7e30c7c3b1024e63afc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    workflow_jobs:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflow_jobs:
       streamHash: 3a91f3982bc42fc8b860f5f42ea217d2b46ecde1
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -985,33 +990,7 @@ schemas:
           - object
           - "null"
         properties:
-          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/1bf14e34-a4d9-4e18-bfdf-20e74b13a7df:
-            type:
-              - object
-              - "null"
-            properties:
-              emails:
-                type:
-                  - string
-                  - "null"
-              on_dashboard:
-                type:
-                  - boolean
-                  - "null"
-          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/ac888fc0-0fe8-4382-a8dc-1850261359ce:
-            type:
-              - object
-              - "null"
-            properties:
-              emails:
-                type:
-                  - string
-                  - "null"
-              on_dashboard:
-                type:
-                  - boolean
-                  - "null"
-          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/cb29099f-feac-4587-8dcc-7c83b44fb0e3:
+          //circleci.com/206c584e-39c0-488d-ad95-b26563202e9b/33c9922c-635b-4e9c-ae77-3de50a1c7b0c:
             type:
               - object
               - "null"
@@ -1849,10 +1828,18 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       all_workflows:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       org_id:
         type:
           - string
@@ -1918,10 +1905,116 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            branch:
+              type:
+                - string
+                - "null"
+            metrics:
+              type:
+                - object
+                - "null"
+              properties:
+                p95_duration_secs:
+                  type:
+                    - number
+                    - "null"
+                success_rate:
+                  type:
+                    - number
+                    - "null"
+                total_credits_used:
+                  type:
+                    - number
+                    - "null"
+                total_runs:
+                  type:
+                    - number
+                    - "null"
+            trends:
+              type:
+                - object
+                - "null"
+              properties:
+                p95_duration_secs:
+                  type:
+                    - number
+                    - "null"
+                success_rate:
+                  type:
+                    - number
+                    - "null"
+                total_credits_used:
+                  type:
+                    - number
+                    - "null"
+                total_runs:
+                  type:
+                    - number
+                    - "null"
+            workflow_name:
+              type:
+                - string
+                - "null"
       project_workflow_data:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metrics:
+              type:
+                - object
+                - "null"
+              properties:
+                p95_duration_secs:
+                  type:
+                    - number
+                    - "null"
+                success_rate:
+                  type:
+                    - number
+                    - "null"
+                total_credits_used:
+                  type:
+                    - number
+                    - "null"
+                total_runs:
+                  type:
+                    - number
+                    - "null"
+            trends:
+              type:
+                - object
+                - "null"
+              properties:
+                p95_duration_secs:
+                  type:
+                    - number
+                    - "null"
+                success_rate:
+                  type:
+                    - number
+                    - "null"
+                total_credits_used:
+                  type:
+                    - number
+                    - "null"
+                total_runs:
+                  type:
+                    - number
+                    - "null"
+            workflow_name:
+              type:
+                - string
+                - "null"
     required:
       - project_id
   insights_branches:
@@ -1933,6 +2026,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       org_id:
         type:
           - string

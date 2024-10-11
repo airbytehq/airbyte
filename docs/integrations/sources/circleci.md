@@ -15,11 +15,9 @@ This directory contains the manifest-only connector for [`source-circleci`](http
 | `api_key` | `string` | API Key.  |  |
 | `org_id` | `string` | Organization ID. The org ID found in `https://app.circleci.com/settings/organization/circleci/xxxxx/overview` |  |
 | `start_date` | `string` | Start date.  |  |
-| `project_id` | `string` | Project ID found in the project settings.  |  |
-| `job_id` | `string` | Job ID for fetching information found in URL.  |  |
-| `workflow_id` | `string` | Workflow ID of a project pipeline.  |  |
-| `workflow_name` | `string` | Workflow name for fetching information.  |  |
-| `job_number` | `string` | Job Number of the workflow.  | `2` |
+| `project_id` | `string` | Project ID found in the project settings, Visit `https://app.circleci.com/settings/project/circleci/ORG_SLUG/YYYYY`  |  |
+| `workflow_id` | `string` | Workflow ID of a project pipeline, Could be seen in the URL of pipeline build, Example `https://app.circleci.com/pipelines/circleci/55555xxxxxx/7yyyyyyyyxxxxx/2/workflows/WORKFLOW_ID`  |  |
+| `job_number` | `string` | Job Number of the workflow for `jobs` stream, Auto fetches from `workflow_jobs` stream, if not configured  | `2` |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
