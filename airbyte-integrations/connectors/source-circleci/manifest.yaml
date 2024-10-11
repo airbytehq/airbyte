@@ -448,7 +448,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/workflow/{{ config['workflow_id'] }}
+          path: v2/workflow/{{ stream_partition['workflow_id'] }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -479,6 +479,10 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
             stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"workflow_id\"] }}"
+          cursor_field: workflow_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -602,7 +606,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/workflow/{{ config['workflow_id'] }}/job
+          path: v2/workflow/{{ stream_partition['workflow_id'] }}/job
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -634,6 +638,10 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
             stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"workflow_id\"] }}"
+          cursor_field: workflow_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: started_at
@@ -714,7 +722,7 @@ spec:
         order: 3
         title: Project ID
       workflow_id:
-        type: string
+        type: array
         description: >-
           Workflow ID of a project pipeline, Could be seen in the URL of
           pipeline build, Example
@@ -747,12 +755,12 @@ metadata:
     workflow_jobs: true
   testedStreams:
     context:
+      hasRecords: true
       streamHash: 2db58db8647b6dbeb05e3040a85515adeba9c208
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     self_ids:
       hasRecords: true
       streamHash: 81183e512a17f46ff1b436e73de0539cbfe6273e
@@ -761,12 +769,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     self_collaborations:
+      hasRecords: true
       streamHash: 65dfddfb9cf5a1846147a6925a9e6bfc82b2f8e1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     me:
       streamHash: 6cd46ab3c9df033838055a491c0e9611d8eea230
       hasResponse: true
@@ -775,56 +783,56 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     projects:
+      hasRecords: true
       streamHash: 39e7dd96dbfb02f9cf73f35c9e0c6600193cea08
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pipelines:
+      hasRecords: true
       streamHash: 6fe654076efd6526c3fadc28c19f1353f6a9c88c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     specific_project:
+      hasRecords: true
       streamHash: 99bd62345fe14caaffbdf0da10bab16f7540ecf2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     jobs:
-      streamHash: 9ca6198aa728f9f1e31d71dce691a6695c018865
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: d0fe3dba75e934ed195c75962373439a8199e0de
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     workflow:
-      streamHash: 6dd1bd7a73fbd4d3b13700520f202302440284a3
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c975f570f0ed40db2e3ecc17bef6a5fd411812eb
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     insights_metrics:
+      hasRecords: true
       streamHash: 302be4c8dc97111d547b66a8c2783ee59d5346d1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     insights_branches:
+      hasRecords: true
       streamHash: 3f055bae287f05353be4b7e30c7c3b1024e63afc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     workflow_jobs:
-      streamHash: 3a91f3982bc42fc8b860f5f42ea217d2b46ecde1
+      streamHash: 9859eab944d1c5212477c3cd549b4e1f9cd8c6f6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -989,7 +997,20 @@ schemas:
         type:
           - object
           - "null"
-        properties: {}
+        properties:
+          //circleci.com/206c584e-39c0-488d-ad95-b26563202e9b/33c9922c-635b-4e9c-ae77-3de50a1c7b0c:
+            type:
+              - object
+              - "null"
+            properties:
+              emails:
+                type:
+                  - string
+                  - "null"
+              on_dashboard:
+                type:
+                  - boolean
+                  - "null"
       pusher_id:
         type:
           - string
