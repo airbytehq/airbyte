@@ -148,6 +148,7 @@ class ActorType(Enum):
 
 class ConnectionSubset(Enum):
     """Signals which connection pool to consider for this live test — just the Airbyte sandboxes, or all possible connctions on Cloud."""
+
     SANDBOXES = "sandboxes"
     ALL = "all"
 
