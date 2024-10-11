@@ -681,40 +681,45 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
             if reset_release_candidate_results.success:
                 all_modified_files.update(await reset_release_candidate.export_modified_files(context.connector.code_directory))
 
+            if not all([result.success for result in results]):
+                context.logger.error("The metadata update failed. Skipping PR creation.")
+                connector_report = create_connector_report(results, context)
+                return connector_report
+
             # Open PR when all previous steps are successful
-            if all([result.success for result in results]):
-                promoted_version = set_promoted_version.promoted_version
-                initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True)
+            promoted_version = set_promoted_version.promoted_version
+            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True)
+            pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
+                all_modified_files, context, results, current_version, promoted_version
+            )
+            initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
+            results.append(initial_pr_creation_result)
+            # Update changelog and update PR
+            if initial_pr_creation_result.success:
+                created_pr = initial_pr_creation_result.output
+                documentation_directory = await context.get_repo_dir(
+                    include=[str(context.connector.local_connector_documentation_directory)]
+                ).directory(str(context.connector.local_connector_documentation_directory))
+                add_changelog_entry = AddChangelogEntry(
+                    context,
+                    documentation_directory,
+                    promoted_version,
+                    f"Promoting release candidate {current_version} to a main version.",
+                    created_pr.number,
+                )
+                add_changelog_entry_result = await add_changelog_entry.run()
+                results.append(add_changelog_entry_result)
+                if add_changelog_entry_result.success:
+                    all_modified_files.update(
+                        await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
+                    )
+                post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
                 pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                     all_modified_files, context, results, current_version, promoted_version
                 )
-                initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
-                results.append(initial_pr_creation_result)
-                # Update changelog and update PR
-                if initial_pr_creation_result.success:
-                    created_pr = initial_pr_creation_result.output
-                    documentation_directory = await context.get_repo_dir(
-                        include=[str(context.connector.local_connector_documentation_directory)]
-                    ).directory(str(context.connector.local_connector_documentation_directory))
-                    add_changelog_entry = AddChangelogEntry(
-                        context,
-                        documentation_directory,
-                        promoted_version,
-                        f"Promoting release candidate {current_version} to a main version.",
-                        created_pr.number,
-                    )
-                    add_changelog_entry_result = await add_changelog_entry.run()
-                    results.append(add_changelog_entry_result)
-                    if add_changelog_entry_result.success:
-                        all_modified_files.update(
-                            await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
-                        )
-                    post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
-                    pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
-                        all_modified_files, context, results, current_version, promoted_version
-                    )
-                    post_changelog_pr_update_result = await post_changelog_pr_update.run(*pr_creation_args, **pr_creation_kwargs)
-                    results.append(post_changelog_pr_update_result)
+                post_changelog_pr_update_result = await post_changelog_pr_update.run(*pr_creation_args, **pr_creation_kwargs)
+                results.append(post_changelog_pr_update_result)
+
             connector_report = create_connector_report(results, context)
     return connector_report
 

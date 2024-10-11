@@ -81,6 +81,7 @@ class PoetryUpdate(StepModifyingFiles):
             original_poetry_lock != await connector_container.file(POETRY_LOCK_FILE_NAME).contents()
             or original_pyproject_file != await connector_container.file(PYPROJECT_FILE_NAME).contents()
         ):
+            self.modified_directory = await connector_container.directory(".")
             self.modified_files = [POETRY_LOCK_FILE_NAME, PYPROJECT_FILE_NAME]
             return StepResult(step=self, status=StepStatus.SUCCESS, output=connector_container.directory("."))
 
