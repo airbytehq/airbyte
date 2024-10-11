@@ -59,6 +59,44 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Create Export Request"
+    Export Cohort Analytics:
+      type: DeclarativeStream
+      name: Export Cohort Analytics
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50000
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics
+          http_method: POST
+          request_headers:
+            access-token: "{{ config[\"access_token\"] }}"
+          request_body_json:
+            end_date: "{{ config[\"end_date\"] }}"
+            measures: "{{ config['measures'] }}"
+            start_date: "{{ config[\"start_date\"] }}"
+            data_source: "{{ config['data_source'] }}"
+            granularity_band_count: "{{ config['granularity_band_count'] }}"
+          request_parameters:
+            app_id: "{{ config[\"app_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Export Cohort Analytics"
     Read Existing Deep Link:
       type: DeclarativeStream
       name: Read Existing Deep Link
@@ -80,44 +118,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Read Existing Deep Link"
-    Export Cohort Analytics:
-      type: DeclarativeStream
-      name: Export Cohort Analytics
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v2/analytics
-          http_method: POST
-          request_parameters:
-            app_id: "{{ config[\"app_id\"] }}"
-          request_headers:
-            access-token: "{{ config[\"access_token\"] }}"
-          request_body_json:
-            start_date: "{{ config[\"start_date\"] }}"
-            end_date: "{{ config[\"end_date\"] }}"
-            data_source: "{{ config['data_source'] }}"
-            measures: "{{ config['measures'] }}"
-            granularity_band_count: "{{ config['granularity_band_count'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50000
-            inject_on_first_request: true
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Export Cohort Analytics"
     Get Export Download Status:
       type: DeclarativeStream
       name: Get Export Download Status
@@ -127,10 +127,10 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/analytics/{{ config['job_id'] }}
           http_method: GET
-          request_parameters:
-            app_id: "{{ config[\"app_id\"] }}"
           request_headers:
             access-token: "{{ config[\"access_token\"] }}"
+          request_parameters:
+            app_id: "{{ config[\"app_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,31 +174,51 @@ spec:
       - granularity_band_count
       - job_id
     properties:
-      branch_secret:
+      url:
         type: string
-        description: branch secret
-        order: 0
-        title: branch_secret
-      export_date:
-        type: string
-        description: export date
-        order: 1
-        title: export_date
+        description: " The deep link url against which the details are to be fetched."
+        order: 11
+        title: url
+      limit:
+        type: integer
+        description: The maximum number of results to return.
+        order: 8
+        title: limit
+        default: "1"
       app_id:
         type: string
         description: The App Id
         order: 2
         title: app_id
+      fields:
+        type: array
+        description: An array representing fields/columns available in your report
+        order: 9
+        title: fields
+      job_id:
+        type: string
+        description: >-
+          Unique identifier for job. Obtained from POST Export Cohort Analytics
+          API.
+        order: 15
+        title: job_id
+      end_date:
+        type: string
+        description: >-
+          The end of the interval time range represented as an ISO-8601 complete
+          datetime including Hours, Minutes, Seconds, and Milliseconds.
+        order: 6
+        title: end_date
+      measures:
+        type: array
+        description: The cohort measures to return.
+        order: 13
+        title: measures
       branch_key:
         type: string
         description: branch key
         order: 3
         title: branch_key
-      access_token:
-        type: string
-        description: "Access Token "
-        order: 4
-        title: access-token
       start_date:
         type: string
         description: >-
@@ -207,133 +227,113 @@ spec:
           Datetime must be within the last 120 days.
         order: 5
         title: start_date
-      end_date:
+      data_source:
         type: string
-        description: >-
-          The end of the interval time range represented as an ISO-8601 complete
-          datetime including Hours, Minutes, Seconds, and Milliseconds.
-        order: 6
-        title: end_date
+        description: A string value representing the cohort type
+        order: 12
+        title: data source
+      export_date:
+        type: string
+        description: export date
+        order: 1
+        title: export_date
       report_type:
         type: string
         description: An array representing event type of your report.
         order: 7
         title: report_type
-      limit:
-        type: integer
-        description: The maximum number of results to return.
-        order: 8
-        title: limit
-        default: "1"
-      fields:
-        type: array
-        description: An array representing fields/columns available in your report
-        order: 9
-        title: fields
+      access_token:
+        type: string
+        description: "Access Token "
+        order: 4
+        title: access-token
+      branch_secret:
+        type: string
+        description: branch secret
+        order: 0
+        title: branch_secret
       request_handle:
         type: string
         description: The ID returned by the log export queue.
         order: 10
         title: request_handle
-      url:
-        type: string
-        description: " The deep link url against which the details are to be fetched."
-        title: url
-        order: 11
-      data_source:
-        type: string
-        description: A string value representing the cohort type
-        title: data source
-        order: 12
-      measures:
-        type: array
-        description: The cohort measures to return.
-        title: measures
-        order: 13
       granularity_band_count:
         type: integer
         description: Number of time units since the cohort event to return to the user.
+        order: 14
         title: granularity band count
         default: "7"
-        order: 14
-      job_id:
-        type: string
-        description: >-
-          Unique identifier for job. Obtained from POST Export Cohort Analytics
-          API.
-        title: job_id
-        order: 15
     additionalProperties: true
 
 metadata:
+  assist:
+    docsUrl: https://help.branch.io/developers-hub/reference/apis-overview
+  testedStreams:
+    GET Export Request:
+      hasRecords: true
+      streamHash: 114856ed000f6b491b31bf2382041780d6eb288a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Create Export Request:
+      hasRecords: true
+      streamHash: bdb0f76170f591c434de19e5d5b24cb7e1d313d1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Export Cohort Analytics:
+      hasRecords: true
+      streamHash: a631b02fee45419fdbf6f3b201c2abd7a7371f11
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Read Existing Deep Link:
+      hasRecords: true
+      streamHash: aed8cf4484552d1c38c07fec2afc414f9f3cf2fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Get Export Download Status:
+      hasRecords: true
+      streamHash: dce451e1b274b69208ff7e99f53268303afda07d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     GET Export Request: false
     Create Export Request: false
-    Read Existing Deep Link: false
     Export Cohort Analytics: false
+    Read Existing Deep Link: false
     Get Export Download Status: false
-  testedStreams:
-    GET Export Request:
-      streamHash: 114856ed000f6b491b31bf2382041780d6eb288a
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Create Export Request:
-      streamHash: bdb0f76170f591c434de19e5d5b24cb7e1d313d1
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Read Existing Deep Link:
-      streamHash: aed8cf4484552d1c38c07fec2afc414f9f3cf2fe
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Export Cohort Analytics:
-      streamHash: a631b02fee45419fdbf6f3b201c2abd7a7371f11
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Get Export Download Status:
-      streamHash: dce451e1b274b69208ff7e99f53268303afda07d
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-  assist:
-    docsUrl: https://help.branch.io/developers-hub/reference/apis-overview
 
 schemas:
   GET Export Request:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties: {}
+    additionalProperties: true
   Create Export Request:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties: {}
-  Read Existing Deep Link:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
   Export Cohort Analytics:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties: {}
+    additionalProperties: true
+  Read Existing Deep Link:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
   Get Export Download Status:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties: {}
+    additionalProperties: true

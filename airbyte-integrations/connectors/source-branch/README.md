@@ -1,12 +1,7 @@
 # Branch
-This directory contains the manifest-only connector for `source-branch` (https://branch.io/).
+This directory contains the manifest-only connector for `source-branch`.
 
 Branch Connector
-## Documentation reference:
-- Visit `https://help.branch.io/developers-hub/reference/apis-overview` for API documentation
-
-## Authentication setup
-`Branch` uses different authentication methods depending on the API in use, Visit `https://help.branch.io/developers-hub/reference/trying-apis#authentication` for more information
 
 ## Usage
 There are multiple ways to use this connector:
