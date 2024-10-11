@@ -29,3 +29,7 @@ class AirbyteValueToJson {
         }
     }
 }
+
+fun AirbyteValue.toJson(): JsonNode {
+    return AirbyteValueToJson().convert(this)
+}

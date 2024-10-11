@@ -104,13 +104,13 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
+        config: ConfigurationSpecification,
         canonicalExpectedRecords: List<OutputRecord>,
-        streamName: String,
-        streamNamespace: String?,
+        stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
     ) {
-        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(streamName, streamNamespace)
+        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
 

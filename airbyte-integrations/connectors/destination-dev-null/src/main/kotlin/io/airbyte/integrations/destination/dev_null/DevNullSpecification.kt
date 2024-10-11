@@ -77,7 +77,7 @@ sealed class TestDestinationOSS(
 
 @JsonSchemaTitle("Logging")
 data class LoggingDestination(
-    @JsonProperty("test_destination_type") override val testDestinationType: Type = Type.LOGGING,
+   o
     @JsonPropertyDescription("Configurate how the messages are logged.")
     @JsonProperty("logging_config")
     val loggingConfig: LoggingConfig = FirstNEntriesConfig()
