@@ -1,6 +1,8 @@
 # AdRoll
 This directory contains the manifest-only connector for `source-adroll`.
 
+AdRoll is an ecommerce marketing platform that gives growing D2C brands the power to connect with customers wherever they are.
+This connector allows you to extract data from various AdRoll APIs such as Advertisables , Ads , Campaigns , Strategies and many more
 Docs : https://developers.adroll.com/apis
 
 ## Usage

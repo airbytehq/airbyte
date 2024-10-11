@@ -1,4 +1,6 @@
 # AdRoll
+AdRoll is an ecommerce marketing platform that gives growing D2C brands the power to connect with customers wherever they are.
+This connector allows you to extract data from various AdRoll APIs such as Advertisables , Ads , Campaigns , Strategies and many more
 Docs : https://developers.adroll.com/apis
 
 ## Configuration
@@ -6,39 +8,30 @@ Docs : https://developers.adroll.com/apis
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `Authorization` | `string` | Person Access Token (Authorization).  |  |
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
+| `client_id` | `string` | Client ID. The key ID of your app |  |
+| `client_secret` | `string` | Client secret. The secret of your app |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
 | `oauth_access_token` | `string` | Access token. The current access token. This field might be overridden by the connector based on the token refresh endpoint response. |  |
 | `oauth_token_expiry_date` | `string` | Token expiry date. The date the current access token expires in. This field might be overridden by the connector based on the token refresh endpoint response. |  |
-| `advertisable` | `string` | Advertisable EID .  |  |
-| `adgroup_eid` | `string` | AdGroup EID.  |  |
-| `campaign_eid` | `string` | Campaign EID.  |  |
-| `strategy_eid` | `string` | Strategy EID.  |  |
-| `pixel_eid` | `string` | Pixel EID.  |  |
-| `eid_of_asset` | `string` | EID of Asset.  |  |
-| `eid_of_ad` | `string` | EID of Ad.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Assets by EID | eid | No pagination | ✅ |  ❌  |
-| Segments | segment_id | No pagination | ✅ |  ❌  |
-| AdGroup |  | No pagination | ✅ |  ❌  |
-| Campaign |  | No pagination | ✅ |  ❌  |
+| Segments | segment_id | DefaultPaginator | ✅ |  ❌  |
+| Campaign | campaign_eid | DefaultPaginator | ✅ |  ❌  |
 | Strategy |  | No pagination | ✅ |  ❌  |
-| All Startegies |  | No pagination | ✅ |  ❌  |
-| Geo Target |  | No pagination | ✅ |  ❌  |
+| Strategies | eid | No pagination | ✅ |  ❌  |
 | Advertisable |  | No pagination | ✅ |  ❌  |
-| Active Pixels for an Advertisable |  | No pagination | ✅ |  ❌  |
+| Active Pixels for an Advertisable | eid | No pagination | ✅ |  ❌  |
 | Consent Banner Config for an Advertisable |  | No pagination | ✅ |  ❌  |
 | Pixel | eid | No pagination | ✅ |  ❌  |
 | Segments for a Pixel | eid | No pagination | ✅ |  ❌  |
-| All Campaigns | eid | No pagination | ✅ |  ❌  |
-| All AdGroups | eid | No pagination | ✅ |  ❌  |
-| All Ads | eid | No pagination | ✅ |  ❌  |
-| All Ads by AdGroup | eid | No pagination | ✅ |  ❌  |
-| All AdGroups by Campaign |  | No pagination | ✅ |  ❌  |
+| Campaigns | eid | DefaultPaginator | ✅ |  ❌  |
+| AdGroups by Advertisables | eid | DefaultPaginator | ✅ |  ❌  |
+| Ads | eid | DefaultPaginator | ✅ |  ❌  |
+| All Ads by AdGroup |  | DefaultPaginator | ✅ |  ❌  |
+| AdGroups by Campaigns |  | DefaultPaginator | ✅ |  ❌  |
+| Advertisables | eid | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -47,6 +40,6 @@ Docs : https://developers.adroll.com/apis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-06 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-11 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
