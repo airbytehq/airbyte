@@ -60,7 +60,7 @@ from source_facebook_marketing.streams import (
 from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
-UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
+UNSUPPORTED_FIELDS = {"adset_start"}
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -94,13 +94,14 @@ class SourceFacebookMarketing(AbstractSource):
             return False, f"error: {repr(e)}"
         except AirbyteTracedException as traced_exc:
             return False, traced_exc.message
-
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
-        for stream in self.get_custom_insights_streams(api, config):
-            try:
+        try:
+            for stream in self.get_custom_insights_streams(api, config):
                 stream.check_breakdowns()
-            except facebook_business.exceptions.FacebookRequestError as e:
-                return False, e._api_error_message
+        except facebook_business.exceptions.FacebookRequestError as e:
+            return False, e._api_error_message
+        except AirbyteTracedException as traced_exc:
+            return False, traced_exc.message
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
