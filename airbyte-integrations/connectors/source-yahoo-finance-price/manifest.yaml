@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 5.10.3
 
 type: DeclarativeSource
 
@@ -73,16 +73,16 @@ spec:
     properties:
       tickers:
         type: string
-        order: 0
-        title: Tickers
         description: >-
           Comma-separated identifiers for the stocks to be queried. Whitespaces
           are allowed.
+        order: 0
+        title: Tickers
       interval:
         type: string
+        description: The interval of between prices queried.
         order: 1
         title: Interval
-        description: The interval of between prices queried.
         enum:
           - 1m
           - 5m
@@ -97,9 +97,9 @@ spec:
           - 3mo
       range:
         type: string
+        description: The range of prices to be queried.
         order: 2
         title: Range
-        description: The range of prices to be queried.
         enum:
           - 1d
           - 5d
@@ -117,11 +117,21 @@ spec:
 metadata:
   autoImportSchema:
     price: false
+  testedStreams:
+    price:
+      streamHash: a0a230cd5819407ed14498207b281b51be6545d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   price:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       chart:
         type: object
@@ -352,4 +362,3 @@ schemas:
                     description: Timestamp of the price data.
     required:
       - chart
-    additionalProperties: true

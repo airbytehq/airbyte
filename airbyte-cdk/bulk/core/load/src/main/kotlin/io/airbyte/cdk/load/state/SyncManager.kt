@@ -35,11 +35,14 @@ interface SyncManager {
     /** Suspend until all streams are complete. Returns false if any stream was failed/killed. */
     suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean
 
+    suspend fun markInputConsumed()
+    suspend fun markCheckpointsProcessed()
     suspend fun markFailed(causedBy: Exception): SyncFailure
     suspend fun markSucceeded()
 
     fun isActive(): Boolean
 
+    suspend fun awaitInputProcessingComplete(): Unit
     suspend fun awaitSyncResult(): SyncResult
 }
 
@@ -53,6 +56,8 @@ class DefaultSyncManager(
     private val syncResult = CompletableDeferred<SyncResult>()
     private val streamLoaders =
         ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>>()
+    private val inputConsumed = CompletableDeferred<Boolean>()
+    private val checkpointsProcessed = CompletableDeferred<Boolean>()
 
     override fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager {
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
@@ -103,6 +108,19 @@ class DefaultSyncManager(
 
     override suspend fun awaitSyncResult(): SyncResult {
         return syncResult.await()
+    }
+
+    override suspend fun awaitInputProcessingComplete() {
+        inputConsumed.await()
+        checkpointsProcessed.await()
+    }
+
+    override suspend fun markInputConsumed() {
+        inputConsumed.complete(true)
+    }
+
+    override suspend fun markCheckpointsProcessed() {
+        checkpointsProcessed.complete(true)
     }
 }
 
