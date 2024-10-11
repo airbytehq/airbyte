@@ -227,14 +227,13 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         manager.markEndOfStream()
         manager.markSucceeded()
 
-        // This won't throw, because the sync wrapper will catch it and call it a sync error
         CoroutineTestUtils.assertThrows(IllegalStateException::class) { wrappedTask.execute() }
         mockFailStreamTaskFactory.didRunFor.close()
     }
 
     @Test
-    fun testHandleTeardownComplete(scopeProvider: MockScopeProvider) = runTest {
-        exceptionHandler.handleTeardownComplete()
+    fun testHandleSyncFailed(scopeProvider: MockScopeProvider) = runTest {
+        exceptionHandler.handleSyncFailed()
         Assertions.assertTrue(scopeProvider.didKill)
     }
 }

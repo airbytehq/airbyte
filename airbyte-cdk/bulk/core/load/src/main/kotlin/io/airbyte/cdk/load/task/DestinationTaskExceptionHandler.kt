@@ -33,7 +33,7 @@ interface StreamLevel : LeveledTask {
 interface DestinationTaskExceptionHandler<T : Task, U : Task> : TaskExceptionHandler<T, U> {
     suspend fun handleSyncFailure(e: Exception)
     suspend fun handleStreamFailure(stream: DestinationStream, e: Exception)
-    suspend fun handleTeardownComplete()
+    suspend fun handleSyncFailed()
 }
 
 interface WrappedTask<T : Task> : Task {
@@ -76,6 +76,7 @@ T : ScopedTask {
                         "Task $innerTask run after sync has succeeded. This should not happen."
                     )
                 }
+                log.info { "Sync task $innerTask skipped because sync has already failed." }
                 return
             }
 
@@ -110,6 +111,7 @@ T : ScopedTask {
                         "Task $innerTask run after its stream ${stream.descriptor} has succeeded. This should not happen."
                     )
                 }
+                log.info { "Stream task $innerTask skipped because stream has already failed." }
                 return
             }
 
@@ -164,7 +166,7 @@ T : ScopedTask {
         taskScopeProvider.launch(NoHandlingWrapper(failStreamTask))
     }
 
-    override suspend fun handleTeardownComplete() {
+    override suspend fun handleSyncFailed() {
         taskScopeProvider.kill()
     }
 }

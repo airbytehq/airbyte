@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskExceptionHandler
 import io.airbyte.cdk.load.task.ShutdownScope
@@ -25,19 +26,23 @@ class DefaultFailSyncTask(
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
+    private val checkpointManager: CheckpointManager<*, *>
 ) : FailSyncTask {
     private val log = KotlinLogging.logger {}
 
     companion object {
-        private val teardownHasRun = AtomicBoolean(false)
+        private val syncFailedHasRun = AtomicBoolean(false)
     }
 
     override suspend fun execute() {
-        if (teardownHasRun.setOnce()) {
+        if (syncFailedHasRun.setOnce()) {
+            // Ensure any remaining ready state gets captured: don't waste work!
+            checkpointManager.flushReadyCheckpointMessages()
             val result = syncManager.markFailed(exception) // awaits stream completion
             log.info { "Calling teardown with failure result $result" }
+            exceptionHandler.handleSyncFailed()
+            // Do this cleanup last, after all the tasks have had a decent chance to finish.
             destinationWriter.teardown(result)
-            exceptionHandler.handleTeardownComplete()
         } else {
             log.info { "Fail sync task already initiated, doing nothing." }
         }
@@ -55,6 +60,7 @@ interface FailSyncTaskFactory {
 @Secondary
 class DefaultFailSyncTaskFactory(
     private val syncManager: SyncManager,
+    private val checkpointManager: CheckpointManager<*, *>,
     private val destinationWriter: DestinationWriter
 ) : FailSyncTaskFactory {
 
@@ -67,6 +73,7 @@ class DefaultFailSyncTaskFactory(
             destinationWriter,
             exception,
             syncManager,
+            checkpointManager
         )
     }
 }

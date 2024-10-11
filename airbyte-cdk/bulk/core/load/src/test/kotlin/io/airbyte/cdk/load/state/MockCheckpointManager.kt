@@ -57,6 +57,6 @@ class MockCheckpointManager : CheckpointManager<DestinationStream.Descriptor, Ch
     }
 
     override suspend fun awaitAllCheckpointsFlushed() {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 }

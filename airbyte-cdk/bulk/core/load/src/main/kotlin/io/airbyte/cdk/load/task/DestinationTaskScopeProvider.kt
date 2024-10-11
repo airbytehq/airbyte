@@ -91,15 +91,14 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
         // (except things like force flush, which loop). So
         // - it's safe to force cancel the internal tasks
         // - implementor scope should join immediately
-        internalScope.job.cancel()
-        log.info { "Cancelled internal tasks, waiting for implementor tasks to complete" }
         implementorScope.job.join()
-        log.info { "Implementor tasks completed" }
+        log.info { "Implementor tasks completed, cancelling internal tasks." }
+        internalScope.job.cancel()
     }
 
     override suspend fun kill() {
         log.info { "Killing task scopes" }
-        internalScope.job.cancel()
+
         // Give the implementor tasks a chance to fail gracefully
         withTimeoutOrNull(timeoutMs) {
             log.info {
@@ -112,5 +111,8 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
                 log.error { "Implementor tasks did not complete within ${timeoutMs}ms, cancelling" }
                 implementorScope.job.cancel()
             }
+
+        log.info { "Cancelling internal tasks" }
+        internalScope.job.cancel()
     }
 }
