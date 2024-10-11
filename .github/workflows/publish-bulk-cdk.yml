@@ -81,6 +81,7 @@ jobs:
         env:
           CI: true
         with:
+          read-only: true
           job-id: bulk-cdk-publish
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false

@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.test.util.DestinationDataDumper
-import io.airbyte.cdk.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.OutputRecord
 
 object DevNullDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(streamName: String, streamNamespace: String?): List<OutputRecord> {

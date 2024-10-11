@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.test.check.CheckIntegrationTest
-import io.airbyte.cdk.test.check.CheckTestConfig
-import io.airbyte.cdk.test.util.destination_process.TestDeploymentMode
+import io.airbyte.cdk.load.check.CheckIntegrationTest
+import io.airbyte.cdk.load.check.CheckTestConfig
+import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import java.util.regex.Pattern
 import org.junit.jupiter.api.Test
 
