@@ -10,14 +10,18 @@ up iteration cycles.
 
 from __future__ import annotations
 
+import tempfile
+import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+import orjson
 import pytest
 import yaml
 from pydantic import BaseModel
 from source_s3.run import get_source
 
+from airbyte_cdk import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, Type
 from airbyte_cdk.test import entrypoint_wrapper
 
@@ -67,26 +71,39 @@ def _get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
 
 
 def _run_test_job(
-    args: list[str],
-    *,
-    expecting_exception: bool,
+    verb: Literal["read", "check", "discover"],
+    test_instance: AcceptanceTestInstance,
+    catalog: dict | None = None,
 ) -> entrypoint_wrapper.EntrypointOutput:
-    source: Source | None = get_source(args=args)
+    source: Source | None = get_source()
     assert source
+    args = [verb]
+    if test_instance.config_path:
+        args += ["--config", test_instance.config_path]
+
+    if verb not in ["discover", "check"]:
+        if catalog:
+            # Write the catalog to a temp json file and pass the path to the file as an argument.
+            tmp_catalog_path = Path(tempfile.gettempdir()) / "airbyte-test" / f"temp_catalog_{uuid.uuid4().hex}.json"
+            tmp_catalog_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_catalog_path.write_text(orjson.dumps(catalog).decode())
+            args += ["--catalog", str(tmp_catalog_path)]
+        elif test_instance.configured_catalog_path:
+            args += ["--catalog", test_instance.configured_catalog_path]
 
     result: entrypoint_wrapper.EntrypointOutput = entrypoint_wrapper._run_command(  # noqa: SLF001  # Non-public API
         source=source,
         args=args,
-        expecting_exception=expecting_exception,
+        expecting_exception=test_instance.expect_exception,
     )
-    if result.errors and not expecting_exception:
+    if result.errors and not test_instance.expect_exception:
         raise AssertionError(
             "\n\n".join(
                 [str(err.trace.error).replace("\\n", "\n") for err in result.errors],
             )
         )
 
-    if expecting_exception and not result.errors:
+    if test_instance.expect_exception and not result.errors:
         raise AssertionError("Expected exception but got none.")
 
     return result
@@ -100,14 +117,8 @@ def _run_test_job(
 def test_full_refresh(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
     _run_test_job(
-        args=[
-            "read",
-            "--config",
-            instance.config_path,
-            "--catalog",
-            instance.configured_catalog_path,
-        ],
-        expecting_exception=False,
+        "read",
+        test_instance=instance,
     )
 
 
@@ -118,15 +129,25 @@ def test_full_refresh(instance: AcceptanceTestInstance) -> None:
 )
 def test_basic_read(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
+    discover_result = _run_test_job(
+        "discover",
+        test_instance=instance,
+    )
+    assert discover_result.catalog, "Expected a non-empty catalog."
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=stream,
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+            )
+            for stream in discover_result.catalog.catalog.streams
+        ]
+    )
     _run_test_job(
-        args=[
-            "read",
-            "--config",
-            instance.config_path,
-            "--catalog",
-            instance.configured_catalog_path,
-        ],
-        expecting_exception=False,
+        "read",
+        test_instance=instance,
+        catalog=configured_catalog,
     )
 
 
@@ -138,12 +159,8 @@ def test_basic_read(instance: AcceptanceTestInstance) -> None:
 def test_check(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
     result: entrypoint_wrapper.EntrypointOutput = _run_test_job(
-        args=[
-            "check",
-            "--config",
-            instance.config_path,
-        ],
-        expecting_exception=instance.expect_exception,
+        "check",
+        test_instance=instance,
     )
     conn_status_messages: list[AirbyteMessage] = [msg for msg in result._messages if msg.type == Type.CONNECTION_STATUS]  # noqa: SLF001  # Non-public API
     assert len(conn_status_messages) == 1, "Expected exactly one CONNECTION_STATUS message. Got: \n" + "\n".join(result._messages)
@@ -157,10 +174,6 @@ def test_check(instance: AcceptanceTestInstance) -> None:
 def test_discover(instance: AcceptanceTestInstance) -> None:
     """Run acceptance tests."""
     _run_test_job(
-        args=[
-            "discover",
-            "--config",
-            instance.config_path,
-        ],
-        expecting_exception=False,
+        "check",
+        test_instance=instance,
     )
