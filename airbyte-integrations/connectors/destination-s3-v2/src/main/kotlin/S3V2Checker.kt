@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.load.command.s3.S3Client
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.s3.S3Client
 import jakarta.inject.Singleton
