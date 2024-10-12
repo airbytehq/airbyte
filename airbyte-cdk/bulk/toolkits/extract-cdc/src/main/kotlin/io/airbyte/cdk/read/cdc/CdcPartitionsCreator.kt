@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.read.cdc
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
@@ -59,8 +60,16 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             if (incumbentOpaqueStateValue == null) {
                 syntheticInput
             } else {
-                creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
+                // validate if existing state is still valid on DB.
+                try {
+                    creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
+                } catch (ex: ConfigErrorException) {
+                    log.error(ex) { "Existing state is invalid." }
+                    globalLockResource.markCdcAsComplete()
+                    throw ex
+                }
             }
+
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
             CdcPartitionReader(concurrencyResource, outputConsumer, readerOps, upperBound, input)
