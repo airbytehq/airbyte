@@ -31,15 +31,10 @@ connectionSpecification:
       title: Bucket
       description: The name of the bucket to sync data from
       order: 3
-    use_incremental:
-      type: boolean
-      title: Use Incremental Sync
-      description: Whether to use incremental sync for collections that support it
-      default: false
-      order: 4
-    cursor_field:
+    start_date:
       type: string
-      title: Cursor Field
-      description: The field to use as a cursor for incremental syncs. This should be a field that is updated when a record is modified and is always present in the data.
-      default: "updated_at"
-      order: 5
+      title: Start Date
+      description: The date from which you'd like to replicate data for incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. If not set, all data will be replicated.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      format: date-time
+      order: 4

@@ -1,13 +1,13 @@
-FROM python:3.9.13-alpine3.15 AS base
+FROM python:3.11.10-bullseye AS base
 
 # build and load all requirements
 FROM base AS builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version and install poetry
-RUN apk --no-cache upgrade \
+RUN apt-get update && apt-get upgrade -y \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base openssl-dev linux-headers libstdc++ \
+    && apt-get install -y --no-install-recommends tzdata build-essential libssl-dev \
     && pip install poetry
 
 # Copy poetry files
@@ -27,8 +27,7 @@ COPY --from=builder /usr/local /usr/local
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
-# bash is installed for more convenient debugging.
-RUN apk --no-cache add bash libstdc++
+# bash is already installed in Debian, so we don't need to install it separately
 
 # copy payload code only
 COPY main.py ./

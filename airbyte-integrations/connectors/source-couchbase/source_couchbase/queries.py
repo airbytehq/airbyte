@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Couchbase, Inc., all rights reserved.
 
 from typing import Optional
 

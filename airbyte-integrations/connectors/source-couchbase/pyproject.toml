@@ -15,8 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{include = "source_couchbase"}, {include = "main.py"}]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+python = ">=3.10,<3.12"
+airbyte-cdk = "^5.13.0"
 couchbase = "^4.3.1"
 pendulum = "==2.1.2"
 requests = "^2.32.3"
