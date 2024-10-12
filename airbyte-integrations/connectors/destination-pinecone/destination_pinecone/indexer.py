@@ -169,7 +169,7 @@ class PineconeIndexer(Indexer):
             actual_dimension = int(description.dimension)
             if actual_dimension != self.embedding_dimensions:
                 return f"Your embedding configuration will produce vectors with dimension {self.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
-            
+
             index_description = self.pinecone_index.describe_index_stats()
             all_namespaces = index_description.namespaces.keys()
             if self.config.default_namespace not in all_namespaces:

@@ -17,7 +17,11 @@ class PineconeIndexingModel(BaseModel):
         ..., title="Pinecone Environment", description="Pinecone Cloud environment to use", examples=["us-west1-gcp", "gcp-starter"]
     )
     index: str = Field(..., title="Index", description="Pinecone index in your project to load data into")
-    namespace: str = Field(..., title="Default Namespace", description="The default namespace tables are written to if the source does not specify a namespace. See more <a href=\"https://docs.pinecone.io/guides/indexes/use-namespaces\">here</a>.")
+    namespace: str = Field(
+        ...,
+        title="Default Namespace",
+        description='The default namespace tables are written to if the source does not specify a namespace. See more <a href="https://docs.pinecone.io/guides/indexes/use-namespaces">here</a>.',
+    )
 
     class Config:
         title = "Indexing"
