@@ -26,7 +26,7 @@ def _get_paginator(config, time_field_name) -> ZendeskChatTimeOffsetIncrementPag
 )
 def test_time_offset_increment_pagination_next_page_token(requests_mock, config, time_field_name, response, last_records, expected) -> None:
     paginator = _get_paginator(config, time_field_name)
-    test_url = "https://www.zopim.com/api/v2/chats"
+    test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/chats"
     requests_mock.get(test_url, json=response)
     test_response = requests.get(test_url)
     assert paginator.next_page_token(test_response, last_records) == expected
