@@ -13,7 +13,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.2.0-rc.1
+  dockerImageTag: 1.0.0-rc.1
   dockerRepository: airbyte/destination-pinecone
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pinecone
   githubIssueLabel: destination-pinecone
@@ -34,6 +34,9 @@ data:
   releases:
     isReleaseCandidate: true
     breakingChanges:
+      1.0.0:
+        message: In this release, the `Default Namespace` config is introduced and required as a fallback in case the user does not define a namespace in the settings.
+        upgradeDeadline: "2024-10-27"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
