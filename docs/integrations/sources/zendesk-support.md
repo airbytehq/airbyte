@@ -184,6 +184,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.1 | 2024-10-12 | [46794](https://github.com/airbytehq/airbyte/pull/46794) | Update dependencies |
 | 4.3.0 | 2024-10-09 | [46096](https://github.com/airbytehq/airbyte/pull/46096) | Updates `TicketMetrics` stream for improved reliability for long syncs, updates state cursor field to `_ab_updated_at`, automatically migrates legacy state |
 | 4.2.3 | 2024-10-05 | [46408](https://github.com/airbytehq/airbyte/pull/46408) | Update dependencies |
 | 4.2.2 | 2024-09-28 | [45784](https://github.com/airbytehq/airbyte/pull/45784) | Update dependencies |
