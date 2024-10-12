@@ -208,7 +208,9 @@ class SourceS3(FileBasedSource):
                     newline=True,
                 )
             )
-            raise
+            # Ideally we'd call `raise` here, but sometimes the stack trace bleeds into
+            # the Airbyte logs, which is not ideal. So we'll just exit with an error code instead.
+            sys.exit(1)
 
         return cls(
             # These are the defaults for the source. No need for a caller to change them:
