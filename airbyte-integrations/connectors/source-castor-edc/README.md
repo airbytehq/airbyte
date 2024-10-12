@@ -1,7 +1,10 @@
 # Castor EDC
-This directory contains the manifest-only connector for `source-castor-edc`.
+This directory contains the manifest-only connector for [`source-castor-edc`](https://uk.castoredc.com/api#/).
 
 Documentation: https://uk.castoredc.com/api#/
+
+## Authentication
+Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your client id and secret
 
 ## Usage
 There are multiple ways to use this connector:

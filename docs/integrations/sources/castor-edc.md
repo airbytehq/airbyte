@@ -1,5 +1,11 @@
 # Castor EDC
+This document provides the specifications of the [`source-castor-edc`](https://uk.castoredc.com/api#/), describing the currently available
+API endpoints and methods. 
+
 Documentation: https://uk.castoredc.com/api#/
+
+## Authentication
+Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your client id and secret
 
 ## Configuration
 
@@ -37,6 +43,6 @@ Documentation: https://uk.castoredc.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-12 | | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
+| 0.0.1 | 2024-10-12 | [46759](https://github.com/airbytehq/airbyte/pull/46759) | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
 
 </details>
