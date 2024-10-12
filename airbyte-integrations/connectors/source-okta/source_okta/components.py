@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import time
 import uuid
 from dataclasses import InitVar, dataclass
@@ -12,6 +13,8 @@ import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -52,6 +55,7 @@ class CustomOauth2Authenticator(DeclarativeOauth2Authenticator):
         }
 
     def refresh_access_token(self) -> Tuple[str, int]:
+        logger.info(self.token_refresh_endpoint)
         try:
             response = requests.request(
                 method="POST",
@@ -81,6 +85,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
     @property
     def token(self) -> str:
         domain = self.config["domain"]
+        environment_domain = self.config["environment_domain"] if self.config.get("environment_domain") else "okta.com"
         client_id = self.config["credentials"]["client_id"]
         key_id = self.config["credentials"]["key_id"]
         private_key = self.config["credentials"]["private_key"]
@@ -90,7 +95,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         jwt_payload = {
             "iss": client_id,
             "sub": client_id,
-            "aud": f"https://{domain}.okta.com/oauth2/v1/token",
+            "aud": f"https://{domain}.{environment_domain}/oauth2/v1/token",
             "iat": now,
             "exp": now + 3600,
             "jti": str(uuid.uuid4()),
@@ -98,7 +103,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         jwt_headers = {"kid": key_id, "alg": "RS256"}
 
         client_assertion = jwt.encode(jwt_payload, private_key, algorithm="RS256", headers=jwt_headers)
-        token_url = f"https://{domain}.okta.com/oauth2/v1/token"
+        token_url = f"https://{domain}.{environment_domain}/oauth2/v1/token"
         token_response = requests.post(
             token_url,
             data={

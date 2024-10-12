@@ -1,5 +1,5 @@
 {
-  "environment_domain": "okta.com",
+  "environment_domain": "abc.com",
   "domain": "myorg",
   "start_date": "2022-07-22T00:00:00Z",
   "credentials": {
