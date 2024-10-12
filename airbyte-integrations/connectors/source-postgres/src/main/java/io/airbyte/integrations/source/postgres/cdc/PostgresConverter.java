@@ -12,6 +12,8 @@ import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
+import static org.apache.kafka.connect.transforms.TimestampConverter.OPTIONAL_TIMESTAMP_SCHEMA;
+import static org.apache.kafka.connect.transforms.TimestampConverter.OPTIONAL_TIME_SCHEMA;
 
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
@@ -96,7 +98,9 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         }
       }
       case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
-      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
+      case "_NAME", "_DATE", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
+      case "_TIMESTAMP" -> SchemaBuilder.array(OPTIONAL_TIMESTAMP_SCHEMA).optional();
+      case "_TIME" -> SchemaBuilder.array(OPTIONAL_TIME_SCHEMA).optional();
       case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA).optional();
       default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
     };
