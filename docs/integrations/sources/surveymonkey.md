@@ -1,53 +1,56 @@
 # SurveyMonkey
-
-This page guides you through the process of setting up the SurveyMonkey source connector.
-
-:::note
-
-OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
-
-:::
+<!-- Jason: Edited text to be more consistenct with other Source intros. -->
+This page contains the setup guide and reference information for the [SurveyMonkey](https://www.surveymonkey.com/) source connector.
+<!-- Jason: Used the formal Note syntax to add some elegance. -->
+> [!NOTE]
+> OAuth for SurveyMonkey is officially supported only for the US. We are testing how to enable authentication in the EU. If you run into any issues, please [contact us](mailto:product@airbyte.io) so we can assist you promptly.
 
 <!-- env:oss -->
 
 ## Prerequisites
 
 **For Airbyte Open Source:**
-
-- Access Token
+<!-- Jason: Added more context consistent with better Source guides. -->
+- Access to the SurveyMonkey account containing the data you wish to replicate
+- SurveyMonkey access token
 <!-- /env:oss -->
 
 ## Setup guide
-
+<!-- Jason: Changed text to numbered list. Moved the recommended reading out of list and before the action. -->
 ### Step 1: Set up SurveyMonkey
+For more details on the SurveyMonkey API, read the [SurveyMonkey API documentation](https://developer.surveymonkey.com/api/v3/#overview).
 
-Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
+1. Log in to your [SurveyMonkey account](https://www.surveymonkey.com/).
+2. Register your application [here](https://developer.surveymonkey.com/apps/).
+3. Go to **Settings** and copy your access token.
 
-### Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the SurveyMonkey source connector in Airbyte
 
 <!-- env:cloud -->
-
+<!-- Jason: Action words first. Made conventions consistent for bold text, i.e. things you click or select. Using "select" in replace of "choose". -->
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the SurveyMonkey account
-6. Choose required Start date
-7. click `Set up source`.
+2. Click **Sources** in the left navigation bar.
+3. Click **+ new source** in the top right corner.
+4. Select **SurveyMonkey** from the Source type dropdown list and enter a name for this connector.
+5. Click **Authenticate your account**.
+6. Log in and authorize to the SurveyMonkey account.
+7. Select the required *Start date*.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. Add **Access Token**
-5. Choose required Start date
-6. Click `Set up source`.
+1. Go to the Airbyte Open Source dashboard.
+2. Click **Sources** from the left navigation bar.
+3. Click **+ new source** In the top right corner.
+4. Select **SurveyMonkey** from the Source type dropdown list and enter a name for this connector.
+5. Add the SurveyMonkey access token in **Access Token**.
+6. Select the required *Start date*.
+7. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -61,12 +64,12 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ### Performance considerations
 
-The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
-
-- 125 requests per minute
+The SurveyMonkey API applies [heavy API quotas](https://developer.surveymonkey.com/api/v3/#request-and-response-limits) for default private apps, which have the following limits:
+<!-- Jason: Changed to 120 after reviewing SurveyMonkey documentation. -->
+- 120 requests per minute
 - 500 requests per day
 
-To cover more data from this source we use caching.
+To cover more data from this source, we use caching.
 
 ## Changelog
 
