@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executors
@@ -76,6 +77,10 @@ constructor(
     private fun printQueueInfo() {
         val queueInfo = StringBuilder().append("[ASYNC QUEUE INFO] ")
         val messages = mutableListOf<String>()
+
+        messages.add(
+            "Disk usage: ${AirbyteFileUtils.byteCountToDisplaySize(FileUtils.sizeOfDirectory(File("/tmp")))}"
+        )
 
         messages.add(
             "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} (${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), %% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}",
