@@ -17,6 +17,7 @@ dependencies {
 
     // For ranges and rangesets
     implementation("com.google.guava:guava:33.3.0-jre")
+    implementation("joda-time:joda-time:2.12.5")
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 

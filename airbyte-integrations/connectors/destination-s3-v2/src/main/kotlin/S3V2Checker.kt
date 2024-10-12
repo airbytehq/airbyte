@@ -6,13 +6,23 @@ package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.command.s3.createS3Client
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.file.TimeProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import kotlin.io.path.Path
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-class S3V2Checker : DestinationChecker<S3V2Configuration> {
+class S3V2Checker(
+    private val timeProvider: TimeProvider,
+) : DestinationChecker<S3V2Configuration> {
+    private val log = KotlinLogging.logger {}
+
     override fun check(config: S3V2Configuration) {
-        runBlocking { config.createS3Client().list(Path("/")) }
+        runBlocking {
+            val pathFactory = config.createPathFactory(timeProvider.currentTimeMillis())
+            val path = pathFactory.getStagingDirectory(mockStream())
+            log.info { "Checking if destination can list objects in $path" }
+            config.createS3Client().list(path)
+        }
     }
 }
