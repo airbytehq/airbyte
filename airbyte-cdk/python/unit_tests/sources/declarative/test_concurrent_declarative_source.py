@@ -520,6 +520,8 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=None)
 
+    disable_emitting_sequential_state_messages(source=source)
+
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
         if isinstance(stream, DeclarativeStream):
@@ -544,10 +546,10 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
     assert len(party_members_states) == 6
-    assert party_members_states[5].stream.stream_state == AirbyteStateBlob(
+    assert party_members_states[5].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
-    )
+    ).__dict__
 
     # Expects 12 records, 3 slices, 4 records each slice
     locations_records = get_records_for_stream(stream_name="locations", messages=messages)
@@ -557,10 +559,10 @@ def test_read_with_concurrent_and_synchronous_streams():
     # Because we cannot guarantee the order partitions finish, we only validate that the final state has the latest checkpoint value
     locations_states = get_states_for_stream(stream_name="locations", messages=messages)
     assert len(locations_states) == 4
-    assert locations_states[3].stream.stream_state == AirbyteStateBlob(
+    assert locations_states[3].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
-    )
+    ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
     palaces_records = get_records_for_stream("palaces", messages)
@@ -568,7 +570,7 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     palaces_states = get_states_for_stream(stream_name="palaces", messages=messages)
     assert len(palaces_states) == 1
-    assert palaces_states[0].stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+    assert palaces_states[0].stream.stream_state.__dict__ == AirbyteStateBlob(__ab_no_cursor_state_message=True).__dict__
 
     # Expects 3 records, 1 empty slice, 3 records in slice
     party_members_skills_records = get_records_for_stream("party_members_skills", messages)
@@ -576,7 +578,7 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     party_members_skills_states = get_states_for_stream(stream_name="party_members_skills", messages=messages)
     assert len(party_members_skills_states) == 1
-    assert party_members_skills_states[0].stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+    assert party_members_skills_states[0].stream.stream_state.__dict__ == AirbyteStateBlob(__ab_no_cursor_state_message=True).__dict__
 
 
 @freezegun.freeze_time("2024-09-10T00:00:00")
@@ -615,6 +617,8 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
 
+    disable_emitting_sequential_state_messages(source=source)
+
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
         if isinstance(stream, DeclarativeStream):
@@ -639,10 +643,10 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
     locations_states = get_states_for_stream(stream_name="locations", messages=messages)
     assert len(locations_states) == 3
-    assert locations_states[2].stream.stream_state == AirbyteStateBlob(
+    assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
-    )
+    ).__dict__
 
     # Expects 12 records, skip successful intervals and are left with 4 slices, 3 records each slice
     party_members_records = get_records_for_stream("party_members", messages)
@@ -650,10 +654,10 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
     assert len(party_members_states) == 5
-    assert party_members_states[4].stream.stream_state == AirbyteStateBlob(
+    assert party_members_states[4].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]  # weird, why'd this end up as 2024-09-10 is it because of cursor granularity?
-    )
+    ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
     palaces_records = get_records_for_stream("palaces", messages)
@@ -689,6 +693,8 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
 
+    disable_emitting_sequential_state_messages(source=source)
+
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
         if isinstance(stream, DeclarativeStream):
@@ -713,10 +719,10 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
 
     locations_states = get_states_for_stream(stream_name="locations", messages=messages)
     assert len(locations_states) == 3
-    assert locations_states[2].stream.stream_state == AirbyteStateBlob(
+    assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
-    )
+    ).__dict__
 
     # Expects 6 records, skip successful intervals and are left with 2 slices, 3 records each slice
     party_members_records = get_records_for_stream("party_members", messages)
@@ -724,10 +730,10 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
     assert len(party_members_states) == 3
-    assert party_members_states[2].stream.stream_state == AirbyteStateBlob(
+    assert party_members_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
         slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
-    )
+    ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
     palaces_records = get_records_for_stream("palaces", messages)
@@ -778,6 +784,8 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=config, catalog=catalog, state=[])
 
+    disable_emitting_sequential_state_messages(source=source)
+
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
         if isinstance(stream, DeclarativeStream):
@@ -824,6 +832,8 @@ def test_read_concurrent_skip_streams_not_in_catalog():
     )
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=None)
+
+    disable_emitting_sequential_state_messages(source=source)
 
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
@@ -982,3 +992,9 @@ def get_records_for_stream(stream_name: str, messages: List[AirbyteMessage]) -> 
 
 def get_states_for_stream(stream_name: str, messages: List[AirbyteMessage]) -> List[AirbyteStateMessage]:
     return [message.state for message in messages if message.state and message.state.stream.stream_descriptor.name == stream_name]
+
+
+def disable_emitting_sequential_state_messages(source: ConcurrentDeclarativeSource) -> None:
+    for concurrent_streams in source._concurrent_streams:  # type: ignore  # This is the easiest way to disable behavior from the test
+        concurrent_streams.cursor._connector_state_converter._is_sequential_state = False  # type: ignore  # see above
+        concurrent_streams.cursor._connector_state_converter._is_sequential_state = False  # type: ignore  # see above

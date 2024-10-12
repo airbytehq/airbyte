@@ -382,7 +382,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
     def get_start_datetime(self) -> MinMaxDatetime:
         return self._start_datetime
 
-    def get_end_datetime(self) -> MinMaxDatetime:
+    def get_end_datetime(self) -> Optional[MinMaxDatetime]:
         return self._end_datetime
 
     def get_step(self) -> Union[timedelta, Duration]:

@@ -1459,7 +1459,7 @@ class SessionTokenAuthenticator(BaseModel):
         title='Data Request Authentication',
     )
     decoder: Optional[JsonDecoder] = Field(
-        None, description='Component decoding the response', title='Decoder'
+        None, description='Component used to decode the response.', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

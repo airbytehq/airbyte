@@ -411,7 +411,7 @@ class CursorPartitionGenerator(PartitionGenerator):
             )
 
 
-@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
+@deprecated("Availability strategy has been soft deprecated. Do not use. Class is subject to removal", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy

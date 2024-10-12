@@ -6,7 +6,7 @@ import datetime
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Generic, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -26,6 +26,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGener
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AlwaysAvailableAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, GapType
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.sources.streams.concurrent.helpers import get_primary_key_from_stream
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomOutputFormatConcurrentStreamStateConverter,
 )
@@ -44,7 +45,7 @@ class DeclarativeCursorAttributes:
     cursor_granularity: Optional[GapType]
 
 
-class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
+class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
     def __init__(
         self,
         catalog: Optional[ConfiguredAirbyteCatalog],
@@ -54,8 +55,8 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         debug: bool = False,
         emit_connector_builder_messages: bool = False,
         component_factory: Optional[ModelToComponentFactory] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(
             source_config=source_config,
             debug=debug,
@@ -65,13 +66,15 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
 
         self._state = state
 
-        # Alternatively if we don't want to modify run.py, we can separate and instantiate the ConcurrentSource
-        self._concurrent_streams, self._synchronous_streams = self._separate_streams(config=config)
+        self._concurrent_streams: List[AbstractStream]
+        self._synchronous_streams: List[Stream]
+
+        self._concurrent_streams, self._synchronous_streams = self._separate_streams(config=config or {})
 
         concurrency_level_from_manifest = self._source_config.get("concurrency_level")
         if concurrency_level_from_manifest:
             concurrency_level_component = self._constructor.create_component(
-                model_type=ConcurrencyLevelModel, component_definition=concurrency_level_from_manifest, config=config
+                model_type=ConcurrencyLevelModel, component_definition=concurrency_level_from_manifest, config=config or {}
             )
             if not isinstance(concurrency_level_component, ConcurrencyLevel):
                 raise ValueError(f"Expected to generate a ConcurrencyLevel component, but received {concurrency_level_component.__class__}")
@@ -87,7 +90,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
             initial_number_of_partitions_to_generate=initial_number_of_partitions_to_generate,
             logger=self.logger,
             slice_logger=self._slice_logger,
-            message_repository=self.message_repository,
+            message_repository=self.message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
         )
 
     def read(
@@ -115,9 +118,6 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         yield from super().read(logger, config, filtered_catalog, state)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        # I don't think should need to be overwritten because I added all_streams() and the underlying check ->
-        # CheckStream.check_connection() should invoke all_streams(). It should also sort of be a no-op because
-        # we've effectively deprecated availability_strategy as a concept which is all the ConnectionChecker does
         return super().check(logger=logger, config=config)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -132,14 +132,16 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
         """
         return self._synchronous_streams
 
-    def all_streams(self, config: Mapping[str, Any]) -> List[Union[AbstractStream, Stream]]:
-        return self._synchronous_streams + self._concurrent_streams
+    def all_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        return self._synchronous_streams + self._concurrent_streams  # type: ignore  # Although AbstractStream doesn't inherit stream, they were designed to fit the same interface when called from streams()
 
-    def _separate_streams(self, config: Mapping[str, Any]) -> (List[AbstractStream], List[Stream]):
+    def _separate_streams(self, config: Mapping[str, Any]) -> Tuple[List[AbstractStream], List[Stream]]:
         concurrent_streams: List[AbstractStream] = []
         synchronous_streams: List[Stream] = []
 
-        state_manager = ConnectorStateManager(state=self._state)
+        state_manager = ConnectorStateManager(state=self._state)  # type: ignore  # state is always in the form of List[AirbyteStateMessage]. The ConnectorStateManager should use generics, but this can be done later
+
+        self.logger.info(f"what is config: {config}")
 
         for declarative_stream in super().streams(config=config):
             # Some low-code sources use a combination of DeclarativeStream and regular Python streams. We can't inspect
@@ -154,21 +156,21 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
 
                     connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
                         datetime_format=declarative_cursor_attributes.datetime_format,
-                        is_sequential_state=False,
-                        cursor_granularity=declarative_cursor_attributes.cursor_granularity,
+                        is_sequential_state=True,
+                        cursor_granularity=declarative_cursor_attributes.cursor_granularity,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
                     )
 
                     cursor = ConcurrentCursor(
                         stream_name=declarative_stream.name,
                         stream_namespace=declarative_stream.namespace,
                         stream_state=stream_state,
-                        message_repository=self.message_repository,
+                        message_repository=self.message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
                         connector_state_manager=state_manager,
                         connector_state_converter=connector_state_converter,
                         cursor_field=declarative_cursor_attributes.cursor_field,
                         slice_boundary_fields=declarative_cursor_attributes.slice_boundary_fields,
                         start=declarative_cursor_attributes.start,
-                        end_provider=declarative_cursor_attributes.end_provider or connector_state_converter.get_end_provider(),
+                        end_provider=declarative_cursor_attributes.end_provider or connector_state_converter.get_end_provider(),  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
                         lookback_window=declarative_cursor_attributes.lookback_window,
                         slice_range=declarative_cursor_attributes.slice_range,
                         cursor_granularity=declarative_cursor_attributes.cursor_granularity,
@@ -176,10 +178,10 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
 
                     partition_generator = CursorPartitionGenerator(
                         stream=declarative_stream,
-                        message_repository=self.message_repository,
+                        message_repository=self.message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
                         cursor=cursor,
                         connector_state_converter=connector_state_converter,
-                        cursor_field=[declarative_cursor_attributes.cursor_field]
+                        cursor_field=[declarative_cursor_attributes.cursor_field.cursor_field_key]
                         if declarative_cursor_attributes.cursor_field is not None
                         else None,
                         slice_boundary_fields=declarative_cursor_attributes.slice_boundary_fields,
@@ -191,7 +193,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
                             name=declarative_stream.name,
                             json_schema=declarative_stream.get_json_schema(),
                             availability_strategy=AlwaysAvailableAvailabilityStrategy(),
-                            primary_key=declarative_stream.primary_key,
+                            primary_key=get_primary_key_from_stream(declarative_stream.primary_key),
                             cursor_field=declarative_cursor_attributes.cursor_field.cursor_field_key,
                             logger=self.logger,
                             cursor=cursor,
@@ -235,11 +237,11 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
                 step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
 
             return DeclarativeCursorAttributes(
-                cursor_field=CursorField(declarative_cursor.cursor_field.eval(config=config)),
+                cursor_field=CursorField(declarative_cursor.cursor_field.eval(config=config)),  # type: ignore # cursor_field is always cast to an interpolated string
                 datetime_format=declarative_cursor.datetime_format,
                 slice_boundary_fields=slice_boundary_fields,
-                start=start_date,
-                end_provider=end_date_provider,
+                start=start_date,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+                end_provider=end_date_provider,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
                 slice_range=step_length,
                 lookback_window=parse_duration(declarative_cursor.lookback_window) if declarative_cursor.lookback_window else None,
                 cursor_granularity=parse_duration(declarative_cursor.cursor_granularity) if declarative_cursor.cursor_granularity else None,

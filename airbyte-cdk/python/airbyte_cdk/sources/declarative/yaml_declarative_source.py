@@ -3,16 +3,15 @@
 #
 
 import pkgutil
-from typing import Any, Mapping, Optional
+from typing import Any, List, Mapping, Optional
 
 import yaml
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
-from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.types import ConnectionDefinition
 
 
-class YamlDeclarativeSource(ConcurrentDeclarativeSource):
+class YamlDeclarativeSource(ConcurrentDeclarativeSource[List[AirbyteStateMessage]]):
     """Declarative source defined by a yaml file"""
 
     def __init__(
@@ -21,7 +20,7 @@ class YamlDeclarativeSource(ConcurrentDeclarativeSource):
         debug: bool = False,
         catalog: Optional[ConfiguredAirbyteCatalog] = None,
         config: Optional[Mapping[str, Any]] = None,
-        state: Optional[TState] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> None:
         """
         :param path_to_yaml: Path to the yaml file describing the source
@@ -32,7 +31,7 @@ class YamlDeclarativeSource(ConcurrentDeclarativeSource):
         super().__init__(
             catalog=catalog or ConfiguredAirbyteCatalog(streams=[]),
             config=config or {},
-            state=state or {},
+            state=state or [],
             source_config=source_config,
         )
 
