@@ -42,7 +42,6 @@ class PineconeIndexer(Indexer):
 
         self.pinecone_index = self.pc.Index(config.index)
         self.embedding_dimensions = embedding_dimensions
-        self.namespace = self.config.default_namespace
 
     def determine_spec_type(self, index_name):
         description = self.pc.describe_index(index_name)
@@ -60,7 +59,8 @@ class PineconeIndexer(Indexer):
         for stream in catalog.streams:
             stream_identifier = create_stream_identifier(stream.stream)
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.delete_vectors(filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=self.namespace, prefix=stream_identifier)
+                namespace = self._get_namespace(namespace=stream.stream.namespace)
+                self.delete_vectors(filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=namespace, prefix=stream_identifier)
 
     def post_sync(self):
         return []
@@ -124,6 +124,7 @@ class PineconeIndexer(Indexer):
         return result
 
     def index(self, document_chunks, namespace, streamName):
+        namespace = self._get_namespace(namespace=namespace)
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
@@ -137,24 +138,25 @@ class PineconeIndexer(Indexer):
             async_results = []
             for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE):
                 async_result = self.pinecone_index.upsert(
-                    vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=self.namespace
+                    vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=namespace
                 )
                 async_results.append(async_result)
             # Wait for and retrieve responses (this raises in case of error)
             [async_result.result() for async_result in async_results]
 
     def delete(self, delete_ids, namespace, stream):
+        namespace = self._get_namespace(namespace=namespace)
         filter = {METADATA_RECORD_ID_FIELD: {"$in": delete_ids}}
         if len(delete_ids) > 0:
             if self._pod_type == "starter":
                 # Starter pod types have a maximum of 100000 rows
                 top_k = 10000
-                self.delete_by_metadata(filter=filter, top_k=top_k, namespace=self.namespace)
+                self.delete_by_metadata(filter=filter, top_k=top_k, namespace=namespace)
             elif self._pod_type == "serverless":
-                self.pinecone_index.delete(ids=delete_ids, namespace=self.namespace)
+                self.pinecone_index.delete(ids=delete_ids, namespace=namespace)
             else:
                 # Pod spec
-                self.pinecone_index.delete(filter=filter, namespace=self.namespace)
+                self.pinecone_index.delete(filter=filter, namespace=namespace)
 
     def check(self) -> Optional[str]:
         try:
@@ -167,6 +169,11 @@ class PineconeIndexer(Indexer):
             actual_dimension = int(description.dimension)
             if actual_dimension != self.embedding_dimensions:
                 return f"Your embedding configuration will produce vectors with dimension {self.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
+            
+            index_description = self.pinecone_index.describe_index_stats()
+            all_namespaces = index_description.namespaces.keys()
+            if self.config.default_namespace not in all_namespaces:
+                return f"Namespace {self.config.default_namespace} does not exist in index {self.config.index}."
         except Exception as e:
             if isinstance(e, urllib3.exceptions.MaxRetryError):
                 if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):
@@ -179,3 +186,10 @@ class PineconeIndexer(Indexer):
             formatted_exception = format_exception(e)
             return formatted_exception
         return None
+
+    def _get_namespace(self, namespace):
+        """
+        Gets the default namespace if one is not defined
+        """
+        default_namespace = self.config.namespace
+        return namespace if namespace else default_namespace
