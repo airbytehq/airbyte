@@ -58,6 +58,8 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.11 | 2024-10-11 | [46736](https://github.com/airbytehq/airbyte/pull/46736) | Added possibility to toggle groupping by `Country` for `Active Users` stream |
+| 0.6.10 | 2024-10-05 | [46489](https://github.com/airbytehq/airbyte/pull/46489) | Update dependencies |
 | 0.6.10 | 2024-10-05 | [46489](https://github.com/airbytehq/airbyte/pull/46489) | Update dependencies |
 | 0.6.9 | 2024-09-28 | [46121](https://github.com/airbytehq/airbyte/pull/46121) | Update dependencies |
 | 0.6.8 | 2024-09-21 | [45732](https://github.com/airbytehq/airbyte/pull/45732) | Update dependencies |

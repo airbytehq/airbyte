@@ -145,6 +145,7 @@ class MysqlSourceDatatypeIntegrationTest {
             Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
 
         val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: listOf()
+
         val actual: JsonNode = sortedRecordData(actualRecords.mapNotNull { it.data })
         log.info { "test case $streamName: emitted records $actual" }
         val expected: JsonNode = sortedRecordData(allStreamNamesAndRecordData[streamName]!!)
