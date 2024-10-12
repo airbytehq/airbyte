@@ -14,6 +14,7 @@ python = "^3.10"
 airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = [] }
 duckdb = "0.10.3"
 pyarrow = "15.0.2"
+sqlalchemy = ">=1.4.51,<3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
