@@ -833,3 +833,50 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
         assert final_state["states"] == expected_substream_state["states"], "State for substreams is not valid!"
     else:
         assert final_state == expected_substream_state, "State for substreams with incremental dependency is not valid!"
+
+
+@pytest.mark.parametrize(
+    "parent_stream_configs, expected_slices",
+    [
+        (
+            [
+                ParentStreamConfig(
+                    stream=MockStream([{}], [{"id": 1, "field_1": "value_1", "field_2": {"nested_field": "nested_value_1"}}, {"id": 2, "field_1": "value_2", "field_2": {"nested_field": "nested_value_2"}}], "first_stream"),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    extra_fields=[["field_1"], ["field_2", "nested_field"]],
+                    parameters={},
+                    config={},
+                )
+            ],
+            [
+                {"field_1": "value_1", "field_2.nested_field": "nested_value_1"},
+                {"field_1": "value_2", "field_2.nested_field": "nested_value_2"}
+            ],
+        ),
+        (
+            [
+                ParentStreamConfig(
+                    stream=MockStream([{}], [{"id": 1, "field_1": "value_1"}, {"id": 2, "field_1": "value_2"}], "first_stream"),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    extra_fields=[["field_1"]],
+                    parameters={},
+                    config={},
+                )
+            ],
+            [
+                {"field_1": "value_1"},
+                {"field_1": "value_2"}
+            ],
+        )
+    ],
+    ids=[
+        "test_with_nested_extra_keys",
+        "test_with_single_extra_key",
+    ]
+)
+def test_substream_partition_router_with_extra_keys(parent_stream_configs, expected_slices):
+    partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
+    slices = [s.extra_fields for s in partition_router.stream_slices()]
+    assert slices == expected_slices
