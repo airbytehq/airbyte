@@ -299,7 +299,19 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+            UpdatedCursorIncrementalStripeStream(
+                name="accounts",
+                path="accounts",
+                legacy_cursor_field="created",
+                event_types=[
+                    "account.updated",
+                    "account.external_account.created",
+                    "account.external_account.updated",
+                    "account.external_account.deleted",
+                ],
+                use_cache=USE_CACHE,
+                **args
+            ),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),

@@ -186,6 +186,7 @@ Table "accounts" {
     "company" object
     "country" string
     "created" integer
+    "updated" integer
     "default_currency" string
     "details_submitted" boolean
     "email" string

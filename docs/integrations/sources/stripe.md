@@ -127,7 +127,7 @@ The Stripe source connector supports the following streams:
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
+- [Usage Records](https://stripe.com/docs/api/usage_records/)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -239,6 +239,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.3 | 2024-10-12 | [46864](https://github.com/airbytehq/airbyte/pull/46864) | Add incremental stream support to `accounts` stream |
 | 5.6.2 | 2024-10-05 | [43881](https://github.com/airbytehq/airbyte/pull/43881) | Update dependencies |
 | 5.6.1 | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327) | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches |
 | 5.6.0 | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891) | Update `Payment Methods` stream |

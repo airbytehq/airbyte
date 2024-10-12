@@ -3289,6 +3289,10 @@
             "description": "The timestamp when the account was created.",
             "type": ["null", "integer"]
           },
+          "updated": {
+            "description": "The timestamp when the account was updated.",
+            "type": ["null", "integer"]
+          },
           "default_currency": {
             "description": "The default currency used for transactions.",
             "type": ["null", "string"]
@@ -3839,9 +3843,10 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_primary_key": [["id"]],
-      "is_resumable": true
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "shipping_rates",
