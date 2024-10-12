@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Couchbase, Inc., all rights reserved.
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -43,13 +43,11 @@ class CouchbaseStream(Stream, ABC):
                 }
             }
         }
-
+    @abstractmethod
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_documents_query(self.bucket, self.scope, self.collection)
-        for row in self.cluster.query(query):
-            yield row
+        pass
 
-class IncrementalCouchbaseStream(CouchbaseStream, IncrementalMixin):
+class DocumentStream(CouchbaseStream, IncrementalMixin):
     def __init__(self, cluster: Cluster, bucket: str, scope: str, collection: str, cursor_field: str, state: MutableMapping[str, Any] = None):
         super().__init__(cluster, bucket, scope, collection)
         self._cursor_field = cursor_field
@@ -68,16 +66,21 @@ class IncrementalCouchbaseStream(CouchbaseStream, IncrementalMixin):
         return self._cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = latest_record.get(self.cursor_field)
-        if latest_benchmark is not None:
+        if self.cursor_field in latest_record:
+            latest_benchmark = latest_record[self.cursor_field]
             current_stream_state = current_stream_state or {}
             max_value = max(latest_benchmark, current_stream_state.get(self.cursor_field, latest_benchmark))
             return {self.cursor_field: max_value}
         return current_stream_state
 
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        cursor_value = stream_state.get(self.cursor_field) if stream_state else None
-        query = get_incremental_documents_query(self.bucket, self.scope, self.collection, cursor_value)
+        if sync_mode == SyncMode.full_refresh:
+            query = get_documents_query(self.bucket, self.scope, self.collection)
+        elif sync_mode == SyncMode.incremental:
+            cursor_value = stream_state.get(self.cursor_field) if stream_state else None
+            query = get_incremental_documents_query(self.bucket, self.scope, self.collection, cursor_value)
+        else:
+            raise ValueError(f"Unknown sync mode: {sync_mode}")
         
         for row in self.cluster.query(query):
             yield row
