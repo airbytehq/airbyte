@@ -1,0 +1,925 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Tempo.io source connector that ingests data from the tempo.io
+  API. 
+
+  Tempo is a flexible and modular portfolio management solutions for Jira.
+  https://www.tempo.io/
+
+
+  In order to use this source, you must first create an account on Tempo.io and
+  be a business plan user. Once logged in, you will have to add it to your Jira
+  cloud account as an App. 
+
+
+  This source uses OAuth Bearer token for authentication. To obtain your token,
+  head over to Tempo>Settings, scroll down to Data Access and select API
+  integration.
+
+  You can find more about the API here https://apidocs.tempo.io/
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    workload-schemes:
+      type: DeclarativeStream
+      name: workload-schemes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workload-schemes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workload-schemes"
+    account-categories:
+      type: DeclarativeStream
+      name: account-categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account-categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account-categories"
+    account-category-types:
+      type: DeclarativeStream
+      name: account-category-types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account-category-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account-category-types"
+    holiday-schemes:
+      type: DeclarativeStream
+      name: holiday-schemes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /holiday-schemes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holiday-schemes"
+    programs:
+      type: DeclarativeStream
+      name: programs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /programs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/programs"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    skills:
+      type: DeclarativeStream
+      name: skills
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /skills
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/skills"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    work-attributes:
+      type: DeclarativeStream
+      name: work-attributes
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /work-attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/work-attributes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tempo.io/4
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/workload-schemes"
+  - $ref: "#/definitions/streams/account-categories"
+  - $ref: "#/definitions/streams/account-category-types"
+  - $ref: "#/definitions/streams/holiday-schemes"
+  - $ref: "#/definitions/streams/programs"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/skills"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/work-attributes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: true
+    customers: true
+    workload-schemes: false
+    account-categories: false
+    account-category-types: true
+    holiday-schemes: false
+    programs: false
+    roles: false
+    skills: true
+    teams: false
+    work-attributes: true
+  testedStreams:
+    accounts:
+      streamHash: 275a1edbfaa28caf93578ae14927ee61d4ddc23d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: 44e304809cdadfdaa9bee93de87bb88b545b914d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workload-schemes:
+      streamHash: 1fc96a0b5f4358c440856c0a631ed93f7f7a716f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account-categories:
+      streamHash: b31c3509b27880ae6eb9a8c7cdf0193a8b1d74bd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account-category-types:
+      streamHash: 59b597fcb26313d8e0a076e4626e30b8d4d05a2c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    holiday-schemes:
+      streamHash: a32c848046d3f060827d9e26aa77f879dd6140e0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    programs:
+      streamHash: dd9a5fbddd3f2cce8e6abfd1c4b995ec18d9fe8c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: 02156ea5dd3572591a6a676b7df2c57c8b73bf08
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    skills:
+      streamHash: 49448140c434dfd693731848b57efde59f8a1721
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: 3ec74cc92e110052b03703234b54f33dee91cd66
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    work-attributes:
+      streamHash: df8239a7516bdef470fc72be1f4dce6d036459b4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://apidocs.tempo.io/
+    openapiSpecUrl: https://apidocs.tempo.io/tempo-core.yaml
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      global:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      lead:
+        type:
+          - object
+          - "null"
+        properties:
+          accountId:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  workload-schemes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      days:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            day:
+              type:
+                - string
+                - "null"
+            requiredSeconds:
+              type:
+                - number
+                - "null"
+      defaultScheme:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      memberCount:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  account-categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  account-category-types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+  holiday-schemes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            defaultScheme:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            memberCount:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            self:
+              type:
+                - string
+                - "null"
+      self:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  programs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          values:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                self:
+                  type:
+                    - string
+                    - "null"
+    required:
+      - id
+    additionalProperties: true
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  skills:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      administrative:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      lead:
+        type:
+          - object
+          - "null"
+        properties:
+          accountId:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      members:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      program:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      self:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  work-attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      key:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+    required:
+      - key
