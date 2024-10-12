@@ -107,8 +107,10 @@ def test_large_table_name() -> str:
 def table_schema() -> str:
     schema = {
         "type": "object",
-        "properties": {"key1": {"type": ["null", "string"]}},
-        "key2": {"type": ["null", "integer"]},
+        "properties": {
+            "key1": {"type": ["null", "string"]},
+            "key2": {"type": ["null", "integer"]},
+        },
     }
     return schema
 
@@ -220,14 +222,17 @@ def test_write(
     )
     with con:
         cursor = con.execute(
-            "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
-            f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
+            # "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
+            "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+            f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY key1"
         )
         result = cursor.fetchall()
 
     assert len(result) == 2
-    assert result[0][2] == json.dumps(airbyte_message1.record.data)
-    assert result[1][2] == json.dumps(airbyte_message2.record.data)
+    assert result[0][0] == "value1"
+    assert result[1][0] == "value2"
+    assert result[0][1] == 3
+    assert result[1][1] == 2
 
 
 def _airbyte_messages(

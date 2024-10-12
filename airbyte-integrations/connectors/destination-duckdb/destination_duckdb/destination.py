@@ -9,12 +9,17 @@ from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 
+from airbyte_cdk import ConfiguredAirbyteStream
 import duckdb
 import pyarrow as pa
 
 import logging
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.sql.types import SQLTypeConverter
+from airbyte_cdk.sql.constants import AB_RAW_ID_COLUMN, AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN
+from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer
+import sqlalchemy
 
 
 logger = getLogger("airbyte")
@@ -34,6 +39,9 @@ def validated_sql_name(sql_name: Any) -> str:
 
 
 class DestinationDuckdb(Destination):
+    type_converter_class = SQLTypeConverter
+    normalizer = LowerCaseNormalizer
+
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
         """
@@ -53,6 +61,29 @@ class DestinationDuckdb(Destination):
             )
 
         return destination_path
+
+    def _get_sql_column_definitions(
+        self,
+        stream: ConfiguredAirbyteStream,
+    ) -> dict[str, sqlalchemy.types.TypeEngine]:
+        """Return the column definitions for the given stream."""
+        columns: dict[str, sqlalchemy.types.TypeEngine] = {}
+        properties = stream.stream.json_schema["properties"]
+        for property_name, json_schema_property_def in properties.items():
+            clean_prop_name = self.normalizer.normalize(property_name)
+            columns[clean_prop_name] = self.type_converter_class().to_sql_type(
+                json_schema_property_def,
+            )
+
+        columns[AB_RAW_ID_COLUMN] = self.type_converter_class.get_string_type()
+        columns[AB_EXTRACTED_AT_COLUMN] = sqlalchemy.TIMESTAMP()
+        columns[AB_META_COLUMN] = self.type_converter_class.get_json_type()
+
+        return columns
+    
+    def _quote_identifier(self, identifier: str) -> str:
+        """Return the given identifier, quoted."""
+        return f'"{identifier}"'
 
     def write(
         self,
@@ -99,12 +130,18 @@ class DestinationDuckdb(Destination):
                 logger.info(f"Dropping tables for overwrite: {table_name}")
                 query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
                 con.execute(query)
+
+            # Get the SQL column definitions
+            sql_columns = self._get_sql_column_definitions(configured_stream)
+            column_definition_str = ",\n                ".join(
+                f"{self._quote_identifier(column_name)} {sql_type}"
+                for column_name, sql_type in sql_columns.items()
+            )
+
             # create the table if needed
             query = f"""
             CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
-                _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at DATETIME,
-                _airbyte_data JSON
+                {column_definition_str}
             )
             """
 
@@ -129,9 +166,13 @@ class DestinationDuckdb(Destination):
                     logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
                 # add to buffer
-                buffer[stream_name]["_airbyte_ab_id"].append(str(uuid.uuid4()))
-                buffer[stream_name]["_airbyte_emitted_at"].append(datetime.datetime.now().isoformat())
-                buffer[stream_name]["_airbyte_data"].append(json.dumps(data))
+                logs = {"logs": "test"}
+                for column_name in sql_columns:
+                    if column_name in data:
+                        buffer[stream_name][column_name].append(data[column_name])
+                buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
+                buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
+                buffer[stream_name][AB_META_COLUMN].append({json.dumps(logs)})
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
@@ -149,14 +190,17 @@ class DestinationDuckdb(Destination):
             logger.exception(
                 f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
             )
+            column_names_list = buffer[stream_name].keys()
+            column_names = ", ".join(column_names_list.keys())
+            params = ", ".join(["?"] * len(column_names_list))
             query = f"""
             INSERT INTO {schema_name}.{table_name}
-                (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
-            VALUES (?,?,?)
+                ({column_names})
+            VALUES ({params})
             """
             entries_to_write = buffer[stream_name]
             con.executemany(
-                query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"])
+                query, zip(entries_to_write[column_name] for column_name in column_names_list)
             )
         else:
             # DuckDB will automatically find and SELECT from the `pa_table`
