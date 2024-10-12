@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "graph.microsoft.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-microsoft-lists
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cd25cfe8-5164-47fb-877b-3e2d09757ba6
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-microsoft-lists
+  githubIssueLabel: source-microsoft-lists
+  icon: icon.svg
+  license: MIT
+  name: Microsoft Lists
+  releaseDate: 2024-10-12
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-lists
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
