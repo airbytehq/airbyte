@@ -310,7 +310,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "account.external_account.deleted",
                 ],
                 use_cache=USE_CACHE,
-                **args
+                **args,
             ),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
