@@ -3,6 +3,7 @@
 #
 
 """This module declares common (abstract) classes and methods used by all base images."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -41,10 +42,8 @@ class AirbyteConnectorBaseImage(ABC):
         """
         return f"{self.repository}:{self.version}"
 
-    # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
-
+    # Child classes should define their root image if the image is indeed managed by base_images.
     @property
-    @abstractmethod
     def root_image(self) -> PublishedImage:
         """Returns the base image used to build the Airbyte base image.
 
@@ -55,6 +54,8 @@ class AirbyteConnectorBaseImage(ABC):
             PublishedImage: The base image used to build the Airbyte base image.
         """
         raise NotImplementedError("Subclasses must define a 'root_image' attribute.")
+
+    # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
 
     @property
     @abstractmethod
