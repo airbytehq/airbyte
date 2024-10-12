@@ -1,0 +1,595 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "login": {
+        "description": "Username of the user.",
+        "type": ["null", "string"]
+      },
+      "id": {
+        "description": "The unique identifier of the team..",
+        "type": "integer"
+      },
+      "node_id": {
+        "description": "The node identifier of the team..",
+        "type": ["null", "string"]
+      },
+      "name": {
+        "description": "Name of the team's repository associated with the user.",
+        "type": ["null", "string"]
+      },
+      "full_name": {
+        "description": "Name of the repository along with the team name associated with the user.",
+        "type": ["null", "string"]
+      },
+    "owner": {
+      "description": "Information about the owner of the repo.",
+      "type": ["null", "object"],
+      "properties": {
+        "name":{
+          "description": "Name of the GitHub user.",
+          "type": ["null", "string"]
+        },
+        "email": {
+          "description": "Email address associated to the GitHub user.",
+          "type": ["null", "string"]
+        },
+        "login": {
+          "description": "The username of the user.",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "The unique identification number of the user.",
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "description": "The ID assigned to the user in the GraphQL API.",
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "description": "The URL of the user's avatar image.",
+          "type": ["null", "string"]
+        },
+        "gravatar_id": {
+          "description": "The Gravatar ID associated with the user's email.",
+          "type": ["null", "string"]
+        },
+        "url": {
+          "description": "The user's GitHub API URL.",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "The URL of the user's GitHub page.",
+          "type": ["null", "string"]
+        },
+        "followers_url": {
+          "description": "The URL listing the user's followers.",
+          "type": ["null", "string"]
+        },
+        "following_url": {
+          "description": "The URL listing the users being followed by the user.",
+          "type": ["null", "string"]
+        },
+        "gists_url": {
+          "description": "The URL of the user's gists.",
+          "type": ["null", "string"]
+        },
+        "starred_url": {
+          "description": "The URL listing repositories starred by the user.",
+          "type": ["null", "string"]
+        },
+        "subscriptions_url": {
+          "description": "The URL listing repositories the user is subscribed to.",
+          "type": ["null", "string"]
+        },
+        "organizations_url": {
+          "description": "The URL listing organizations the user belongs to.",
+          "type": ["null", "string"]
+        },
+        "repos_url": {
+          "description": "The URL listing repositories owned by the user.",
+          "type": ["null", "string"]
+        },
+        "events_url": {
+          "description": "The URL of the events that the user has been involved in.",
+          "type": ["null", "string"]
+        },
+        "received_events_url": {
+          "description": "The URL of events received by the user.",
+          "type": ["null", "string"]
+        },
+        "type": {
+          "description.": "The type of user account (e.g., User or Organization.)",
+          "type": ["null", "string"]
+        },
+        "site_admin": {
+          "description": "Specifies if the user is a GitHub site administrator.",
+          "type": ["null", "boolean"]
+        },
+        "starred_at": {
+          "description": "Timestamp of the date the repository was starred by the user.",
+          "type": "string",
+          "format": "date-time"        }
+      }
+    },
+      "private": {
+        "description": "Boolean indicating if repository is private.",
+        "type": ["null", "boolean"]
+      },
+      "html_url": {
+        "description": "HTML url of the repository.",
+        "type": ["null", "string"]
+      },
+      "description": {
+        "description": "Description of the repository.",
+        "type": ["null", "string"]
+      },
+      "fork": {
+        "description": "Boolean indicating if repository is a fork.",
+        "type": ["null", "boolean"]
+      },
+      "url": {
+        "description": "API url of the repository.",
+        "type": ["null", "string"]
+      },
+      "archive_url": {
+        "description": "Archive url of the repository.",
+        "type": ["null", "string"]
+      },
+      "assignees_url": {
+        "description": "URL of the assignees associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "blobs_url": {
+        "description": "URL of the blobs associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "branches_url": {
+        "description": "URL of the branches associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "collaborators_url": {
+        "description": "URL of the collaborators associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "comments_url": {
+        "description": "URL of the comments associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "commits_url": {
+        "description": "URL of the commits associated with the repository.",
+        "type": ["null", "string"]
+      },
+      "compare_url": {
+        "description": "URL of comparing of the base of the repository to it's head.",
+        "type": ["null", "string"]
+      },
+      "contents_url": {
+        "description": "URL of the contents associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "contributors_url": {
+        "description": "URL of the contributors associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "deployments_url": {
+        "description": "URL of the deployments associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "downloads_url": {
+        "description": "URL of the downloads associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "events_url": {
+        "description": "URL of the events associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "forks_url": {
+        "description": "URL of the forks associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "git_commits_url": {
+        "description": "URL of the git commits associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "git_refs_url": {
+        "description": "URL of the git refs associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "git_tags_url": {
+        "description": "URL of the git tags associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "git_url": {
+        "description": "URL of the git associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "issue_comment_url": {
+        "description": "URL of the issue comments associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "issue_events_url": {
+        "description": "URL of the issue events associated tot he repository.",
+        "type": ["null", "string"]
+      },
+      "issues_url": {
+        "description": "URL of the issues associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "keys_url": {
+        "description": "URL of the keys associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "labels_url": {
+        "description": "URL of the labels associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "languages_url": {
+        "description": "URL of the languages associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "merges_url": {
+        "description": "URL of the merges associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "milestones_url": {
+        "description": "URL of the milestones associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "notifications_url": {
+        "description": "URL of the notifications associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "pulls_url": {
+        "description": "URL of the pulls associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "releases_url": {
+        "description": "URL of the releases associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "ssh_url": {
+        "description": "URL of the SSH associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "stargazers_url": {
+        "description": "URL of the stargazers associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "statuses_url": {
+        "description": "URL of the statuses associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "subscribers_url": {
+        "description": "URL of the subscribers associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "subscription_url": {
+        "description": "URL of the subscription associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "tags_url": {
+        "description": "URL of the tags associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "teams_url": {
+        "description": "URL of the teams associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "trees_url": {
+        "description": "URL of the trees associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "clone_url": {
+        "description": "URL of the clone associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "mirror_url": {
+        "description": "URL of the mirror of the repository.",
+        "type": ["null","string"]
+      },
+      "hooks_url": {
+        "description": "URL of the hooks of the repository.",
+        "type": ["null", "string"]
+      },
+      "svn_url": {
+        "description": "URL of the SVN of the repository.",
+        "type": ["null", "string"]
+      },
+      "homepage": {
+        "description": "Name of the homepage of the repository.",
+        "type": ["null", "string"]
+      },
+      "language": {
+        "description": "Language used in the repository.",
+        "type": ["null","string"]
+      },
+      "forks_count": {
+        "description": "Count of the number of forks of the repository.",
+        "type": ["null", "integer"]
+      },
+      "stargazers_count": {
+        "description": "Count of the number of stargazers of the repository.",
+        "type": ["null", "integer"]
+      },
+      "watchers_count": {
+        "description": "Count of the number of watchers of the repository.",
+        "type": ["null", "integer"]
+      },
+      "size": {
+        "description": "The size of the repository, in kilobytes. Size is calculated hourly. When a repository is initially created, the size is 0..",
+        "type": ["null", "integer"]
+      },
+      "default_branch": {
+        "description": "Name of the default branch of the repository.",
+        "type": ["null", "string"]
+      },
+      "open_issues_count": {
+        "description": "Count of the number of open issues in the repository.",
+        "type": ["null", "integer"]
+      },
+      "is_template": {
+        "description": "Boolean indicating if repository is a template.",
+        "type": ["null", "boolean"]
+      },
+      "topics": {
+        "description": "Topics associated to the repository.",
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
+        }
+      },
+      "has_issues": {
+        "description": "Boolean indicating if repository has issues.",
+        "type": ["null", "boolean"]
+      },
+      "has_projects": {
+        "description": "Boolean indicating if repository has projects.",
+        "type": ["null", "boolean"]
+      },
+      "has_wiki": {
+        "description": "Boolean indicating if repository has a wiki.",
+        "type": ["null", "boolean"]
+      },
+      "has_pages": {
+        "description": "Boolean indicating if repository has pages.",
+        "type": ["null", "boolean"]
+      },
+      "has_downloads": {
+        "description": "Boolean indicating if repository has downloads.",
+        "type": ["null", "boolean"]
+      },
+      "has_discussions": {
+        "description": "Boolean indicating if repository has discussions.",
+        "type": ["null", "boolean"]
+      },
+      "archived": {
+        "description": "Boolean indicating if repository is archived.",
+        "type": ["null", "boolean"]
+      },
+      "disabled": {
+        "description": "Boolean indicating if repository is disabled.",
+        "type": ["null", "boolean"]
+      },
+      "visibility": {
+        "description": "Boolean indicating if repository is visible.",
+        "type": ["null", "string"]
+      },
+      "pushed_at": {
+        "description": "Timestamp of when the repository was pushed.",
+        "type": ["null","string"],
+        "format": "date-time"
+      },
+      "created_at": {
+        "description": "Timestamp of when the repository was created.",
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "updated_at": {
+        "description": "Timestamp of when the repository was last updated.",
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "permissions": {
+        "description": "Permissions of the repository.",
+        "type": ["null", "object"],
+        "properties": {
+          "admin": {
+            "description": "Boolean indicating if repository has an admin.",
+            "type": ["null", "boolean"]
+          },
+          "maintain": {
+            "description": "Boolean indicating if repository has a maintainer.",
+            "type": ["null", "boolean"]
+          },
+          "push": {
+            "description": "Boolean indicating if repository can be pushed.",
+            "type": ["null", "boolean"]
+          },
+          "triage": {
+            "description": "Boolean indicating if repository can be triaged.",
+            "type": ["null", "boolean"]
+          },
+          "pull": {
+            "description": "Boolean indicating if repository can be pulled.",
+            "type": ["null", "boolean"]
+          }
+        }
+      },
+      "role_name": {
+        "description": "Name of any roles associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "temp_clone_token": {
+        "description": "Name of the temporary clone token associated to the repository.",
+        "type": ["null", "string"]
+      },
+      "delete_branch_on_merge": {
+        "description": "Boolean indicating if repository branch is deleted on merge of pull request.",
+        "type": ["null", "boolean"]
+      },
+      "subscribers_count": {
+        "description": "Count of subscribers associated to the repository.",
+        "type": ["null", "integer"]
+      },
+      "network_count": {
+        "description": "Count of networks associated to the repository.",
+        "type": ["null", "integer"]
+      },
+      "code_of_conduct": {
+        "title": "Code Of Conduct",
+        "description": "Code Of Conduct.",
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "description": "Name of the key associated to the code of conduct.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "Name of the code of conduct.",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "ULR of the code of conduct.",
+            "type": ["null", "string"]
+          },
+          "body": {
+            "description": "Body of the code of conduct.",
+            "type": ["null", "string"]
+          },
+          "html_url": {
+            "description": "URL of the code of conduct.",
+            "type": ["null", "string"]
+        }
+      },
+      "license": {
+        "description": "License of the repository.",
+        "type": ["null","object"],
+        "properties": {
+          "key": {
+            "description": "The name of the key.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name of the license.",
+            "type": ["null", "string"]
+          },
+          "spdx_id": {
+            "description": "The SPX ID of the license. ",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "The URL of the license.",
+            "type": ["null", "string"]
+          },
+          "node_id": {
+            "description": "The node identifier of the license.",
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "forks": {
+        "description": "Count of number of forks.",
+        "type": ["null", "integer"],
+        "examples": [
+          0
+        ]
+      },
+      "open_issues": {
+        "description": "Count of number of open issues.",
+        "type": ["null", "integer"],
+        "examples": [
+          0
+        ]
+      },
+      "watchers": {
+        "description": "Count of number of watchers.",
+        "type": ["null", "integer"],
+        "examples": [
+          0
+        ]
+      },
+      "allow_forking": {
+        "description": "Boolean indicating forking is allowed.",
+        "type": ["null", "boolean"]
+      },
+      "web_commit_signoff_required": {
+        "description": "Boolean indicating web commit sign off required.",
+        "type": ["null", "boolean"],
+        "examples": [
+          false
+        ]
+      },
+      "security_and_analysis": {
+        "description": "Security and analysis of the repository.",
+        "type": ["null", "object"],
+        "properties": {
+          "advanced_security": {
+            "description": "Advanced security of the repository.",
+            "type": ["null", "object"],
+            "properties": {
+              "status": {
+                "description": "Status indicating security and analysis.",
+                "type": ["null", "string"],
+                "enum": ["enabled", "disabled"]
+              }
+            }
+          },
+          "dependabot_security_updates": {
+            "description": "Enable or disable Dependabot security updates for the repository..",
+            "type": ["null", "object"],
+            "properties": {
+              "status": {
+                "description": "The enablement status of Dependabot security updates for the repository..",
+                "type": ["null", "string"],
+                "enum": [ "enabled", "disabled"]
+              }
+            }
+          },
+          "secret_scanning": {
+            "description": "Secret scanning of the repository.",
+            "type": ["null", "object"],
+            "properties": {
+              "status": {
+                "description": "Status indicating secret scanning.",
+                "type": ["null", "string"],
+                "enum": [
+                  "enabled",
+                  "disabled"
+                ]
+              }
+            }
+          },
+          "secret_scanning_push_protection": {
+            "description": "Push protection for the repository.",
+            "type": ["null", "object"],
+            "properties": {
+              "status": {
+                "description": "Status indicating secret scanning for push protection.",
+                "type": "string",
+                "enum": [
+                  "enabled",
+                  "disabled"
+                ]
+              }
+            }
+          },
+          "secret_scanning_non_provider_patterns": {
+            "description": "Provider patterns of the repository.",
+            "type": "object",
+            "properties": {
+              "status": {
+                "description": "Status indicating secret scanning for non provider patterns.",
+                "type": "string",
+                "enum": [
+                  "enabled",
+                  "disabled"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

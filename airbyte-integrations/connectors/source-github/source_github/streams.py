@@ -1530,6 +1530,39 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         params["filter"] = "all"
         return params
 
+class TeamRepos(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-team-repositories
+    """
+
+    use_cache = True
+    primary_key = ["id", "team_slug"]
+
+    def __init__(self, parent: Teams, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['team_slug']}/repos"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"organization": record["organization"], "team_slug": record["slug"]}
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        record["team_slug"] = stream_slice["team_slug"]
+        return record
+
 
 class TeamMembers(GithubStream):
     """
