@@ -104,7 +104,7 @@ def test_large_table_name() -> str:
 
 @pytest.fixture
 def table_schema() -> str:
-    schema = {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
+    schema = {"type": "object", "properties": {"key1": {"type": ["null", "string"]}}, "key2": {"type": ["null", "integer"]}}
     return schema
 
 
