@@ -297,6 +297,14 @@
           }
         }
       }
+    },
+    "created": {
+      "description": "The creation timestamp of the invoice line item",
+      "type": ["null", "integer"]
+    },
+    "updated": {
+      "description": "The last update timestamp of the invoice line item",
+      "type": ["null", "integer"]
     }
   }
 }
