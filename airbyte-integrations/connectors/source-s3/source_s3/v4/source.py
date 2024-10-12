@@ -29,7 +29,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
-from source_s3.utils import airbyte_message_from_json, airbyte_message_to_json
+from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
