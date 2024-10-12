@@ -20,7 +20,7 @@ class TestDestinationPinecone(unittest.TestCase):
                 "pinecone_key": "mykey",
                 "pinecone_environment": "myenv",
                 "index": "myindex",
-                "default_namespace": "mynamespace"
+                "namespace": "mynamespace"
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
@@ -75,7 +75,7 @@ class TestDestinationPinecone(unittest.TestCase):
                 "pinecone_key": "mykey",
                 "pinecone_environment": "myenv",
                 "index": "myindex",
-                "default_namespace": "mynamespace"
+                "namespace": "mynamespace"
             },
         }
         destination = DestinationPinecone()

@@ -16,7 +16,7 @@ from pinecone.models import IndexList
 
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
-    config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex", default_namespace="mynamespace")
+    config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex", namespace="mynamespace")
 
     with patch.object(PineconeGRPC, 'Index') as mock_index:
         indexer = PineconeIndexer(config, 3)
@@ -98,7 +98,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         "some_stream",
     )
     indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, namespace="mynamespace")
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, namespace="ns1")
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
@@ -106,7 +106,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         ),
         async_req=True,
         show_progress=False,
-        namespace="mynamespace",
+        namespace="ns1",
     )
 
 
@@ -128,10 +128,10 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index, mock_dete
     )
     indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
     indexer.pinecone_index.query.assert_called_with(
-        vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000, namespace="mynamespace"
+        vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000, namespace="ns1"
     )
     indexer.pinecone_index.delete.assert_has_calls(
-        [call(ids=["doc_id1", "doc_id2"], namespace="mynamespace"), call(ids=["doc_id3"], namespace="mynamespace")]
+        [call(ids=["doc_id1", "doc_id2"], namespace="ns1"), call(ids=["doc_id3"], namespace="ns1")]
     )
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -140,7 +140,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index, mock_dete
         ),
         async_req=True,
         show_progress=False,
-        namespace="mynamespace",
+        namespace="ns1",
     )
 
 def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determine_spec_type):
@@ -161,7 +161,7 @@ def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determin
     )
     indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
     indexer.pinecone_index.delete.assert_has_calls(
-        [call(filter={'_ab_record_id': {'$in': ['delete_id1', 'delete_id2']}}, namespace='mynamespace')]
+        [call(filter={'_ab_record_id': {'$in': ['delete_id1', 'delete_id2']}}, namespace='ns1')]
     )
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -170,7 +170,7 @@ def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determin
         ),
         async_req=True,
         show_progress=False,
-        namespace="mynamespace",
+        namespace="ns1",
     )
 
 def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_determine_spec_type):
@@ -191,7 +191,7 @@ def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_d
     )
     indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
     indexer.pinecone_index.delete.assert_has_calls(
-        [call(ids=['delete_id1', 'delete_id2'], namespace='mynamespace')]
+        [call(ids=['delete_id1', 'delete_id2'], namespace='ns1')]
     )
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -200,7 +200,7 @@ def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_d
         ),
         async_req=True,
         show_progress=False,
-        namespace="mynamespace",
+        namespace="ns1",
     )
 
 
@@ -214,8 +214,8 @@ def test_pinecone_index_delete_1k_limit(mock_describe_index):
     indexer.delete(["delete_id1"], "ns1", "some_stream")
     indexer.pinecone_index.delete.assert_has_calls(
         [
-            call(ids=[f"doc_id_{str(i)}" for i in range(1000)], namespace="mynamespace"),
-            call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)], namespace="mynamespace"),
+            call(ids=[f"doc_id_{str(i)}" for i in range(1000)], namespace="ns1"),
+            call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)], namespace="ns1"),
         ]
     )
 
@@ -287,7 +287,7 @@ def generate_catalog():
 def test_pinecone_pre_sync(mock_describe_index, mock_determine_spec_type):
     indexer = create_pinecone_indexer()
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "ns2_example_stream2"}, namespace="mynamespace")
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "ns2_example_stream2"}, namespace="ns2")
 
 
 def test_pinecone_pre_sync_starter(mock_describe_index, mock_determine_spec_type):
@@ -300,9 +300,9 @@ def test_pinecone_pre_sync_starter(mock_describe_index, mock_determine_spec_type
     ]
     indexer.pre_sync(generate_catalog())
     indexer.pinecone_index.query.assert_called_with(
-        vector=[0, 0, 0], filter={"_ab_stream": "ns2_example_stream2"}, top_k=10_000, namespace="mynamespace"
+        vector=[0, 0, 0], filter={"_ab_stream": "ns2_example_stream2"}, top_k=10_000, namespace="ns2"
     )
-    indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"], namespace="mynamespace")
+    indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"], namespace="ns2")
 
 
 @pytest.mark.parametrize(
