@@ -34,6 +34,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -55,6 +63,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -100,6 +116,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -139,6 +163,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -163,6 +195,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -184,6 +224,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -202,6 +250,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -223,6 +279,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -241,6 +305,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -259,6 +331,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -363,28 +443,28 @@ metadata:
   testedStreams:
     users:
       hasRecords: true
-      streamHash: 6b2318cf94dc4439e002532e76f46b4fbb43c479
+      streamHash: dd41401b728952458bcc0a720aec01842d7ac4b8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups:
-      hasRecords: true
-      streamHash: 30c445a04e0c687408160377d85022ccf0c11b7a
+      streamHash: 0ef4a1da2a6adbb8fa70634626ff6be48fda5850
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     applications:
+      hasRecords: true
       streamHash: 1c5aa96a538cd939eb17c9d816e9c6c5562bba16
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     user_owned_deleted_items:
       hasRecords: true
-      streamHash: 5dd302e288a34adb6eeb0751419ec4ffa38a1b58
+      streamHash: 60de06a8c0016c96c72308270fb30f7de4fe1e8f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -398,53 +478,53 @@ metadata:
       responsesAreSuccessful: true
     auditlogs:
       hasRecords: true
-      streamHash: 4781f8ffcecbb9899dc98b8b856016b9964c260d
+      streamHash: 3acf166b8ce596258587a8e9619911a4f53685ba
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     directoryobjects:
       hasRecords: true
-      streamHash: fe39f386e946e92dc06ea229cedfca74805de875
+      streamHash: 7a299107f71cf091bd1e7aaeb4972c5237667f5e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     directoryroletemplates:
-      hasRecords: true
-      streamHash: e885ecb2033544abad560f266f37176ade361abd
+      streamHash: e67e252d7a0d60b1d64ff3b198f400b24b2168b5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     directoryaudits:
-      hasRecords: true
-      streamHash: 8d223786e3640a21ad1fc3011a71ebe90ef01d22
+      streamHash: 928ae047454ca9ccb09452e453b4cba96bf484be
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     serviceprincipals:
-      streamHash: f2d1d36b95c9c5fa35a3d6dde60c2487adb4e254
+      streamHash: 3e70444c901e287d8fc3fa2ec740abf9c2d8ccb8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     identityproviders:
-      streamHash: 1edf7261e64a2755a5ffed8b4b363fee65571ad5
+      streamHash: c392df8042a2795f8e26cd4d4a0c57021237bf0f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adminconsentrequestpolicy:
-      streamHash: 1d432a7d39bbc14b5db1d34387eeaa7d6116c17b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 166c5089995602f14aadb34e2b04ae8093a9d550
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: >-
       https://learn.microsoft.com/en-us/graph/api/resources/identity-network-access-overview?view=graph-rest-1.0
@@ -1096,6 +1176,10 @@ schemas:
                       type:
                         - string
                         - "null"
+                    servicePrincipalName:
+                      type:
+                        - string
+                        - "null"
                 user:
                   type:
                     - object
@@ -1184,23 +1268,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
       "@odata.type":
         type:
           - string
           - "null"
       businessPhones:
-        type:
-          - array
-          - "null"
-      createdDateTime:
-        type:
-          - string
-          - "null"
-      creationOptions:
         type:
           - array
           - "null"
@@ -1212,55 +1284,11 @@ schemas:
         type:
           - string
           - "null"
-      groupTypes:
-        type:
-          - array
-          - "null"
       id:
         type: string
-      mailEnabled:
-        type:
-          - boolean
-          - "null"
-      mailNickname:
-        type:
-          - string
-          - "null"
-      onPremisesProvisioningErrors:
-        type:
-          - array
-          - "null"
       preferredLanguage:
         type:
           - string
-          - "null"
-      proxyAddresses:
-        type:
-          - array
-          - "null"
-      renewedDateTime:
-        type:
-          - string
-          - "null"
-      resourceBehaviorOptions:
-        type:
-          - array
-          - "null"
-      resourceProvisioningOptions:
-        type:
-          - array
-          - "null"
-      securityEnabled:
-        type:
-          - boolean
-          - "null"
-      securityIdentifier:
-        type:
-          - string
-          - "null"
-      serviceProvisioningErrors:
-        type:
-          - array
           - "null"
       surname:
         type:
@@ -1359,6 +1387,10 @@ schemas:
                         - string
                         - "null"
                     servicePrincipalId:
+                      type:
+                        - string
+                        - "null"
+                    servicePrincipalName:
                       type:
                         - string
                         - "null"

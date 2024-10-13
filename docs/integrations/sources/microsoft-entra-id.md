@@ -17,18 +17,18 @@ The Microsoft Entra ID Connector for Airbyte allows seamless integration with Mi
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| users | id | No pagination | ✅ |  ❌  |
-| groups | id | No pagination | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| groups | id | DefaultPaginator | ✅ |  ❌  |
 | applications | id | No pagination | ✅ |  ❌  |
-| user_owned_deleted_items | id | No pagination | ✅ |  ❌  |
+| user_owned_deleted_items | id | DefaultPaginator | ✅ |  ❌  |
 | directoryroles | id | No pagination | ✅ |  ❌  |
-| auditlogs |  | No pagination | ✅ |  ❌  |
-| directoryobjects | id | No pagination | ✅ |  ❌  |
-| directoryroletemplates | id | No pagination | ✅ |  ❌  |
-| directoryaudits |  | No pagination | ✅ |  ❌  |
-| serviceprincipals | id | No pagination | ✅ |  ❌  |
-| identityproviders |  | No pagination | ✅ |  ❌  |
-| adminconsentrequestpolicy |  | No pagination | ✅ |  ❌  |
+| auditlogs |  | DefaultPaginator | ✅ |  ❌  |
+| directoryobjects | id | DefaultPaginator | ✅ |  ❌  |
+| directoryroletemplates | id | DefaultPaginator | ✅ |  ❌  |
+| directoryaudits |  | DefaultPaginator | ✅ |  ❌  |
+| serviceprincipals | id | DefaultPaginator | ✅ |  ❌  |
+| identityproviders |  | DefaultPaginator | ✅ |  ❌  |
+| adminconsentrequestpolicy |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -37,6 +37,6 @@ The Microsoft Entra ID Connector for Airbyte allows seamless integration with Mi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-11 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-13 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
