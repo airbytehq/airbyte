@@ -13,8 +13,7 @@ from destination_pinecone.indexer import PineconeIndexer
 from pinecone import IndexDescription, exceptions, DescribeIndexStatsResponse
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
-from pinecone.core.openapi.data.models import NamespaceSummary
-
+from pinecone.core.client.models import NamespaceSummary
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
     config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex", namespace="mynamespace")
