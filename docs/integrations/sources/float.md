@@ -7,7 +7,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `float_access_token` | `string` | Float Access Token. API token obtained from your Float Account Settings page |  |
+| `access_token` | `string` | Float Access Token. API token obtained from your Float Account Settings page |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
