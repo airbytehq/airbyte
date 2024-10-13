@@ -32,7 +32,7 @@ def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
             indexer.pc.describe_index.return_value = create_index_description(dimensions=embedding_dimensions)
 
         indexer.pinecone_index.describe_index_stats = MagicMock()
-        indexer.pinecone_index.describe_index_stats.return_value.namespaces = create_index_stats()
+        indexer.pinecone_index.describe_index_stats.return_value = create_index_stats()
         
         return indexer
     
@@ -40,7 +40,7 @@ def create_index_stats():
     namespace_summaries = {"mynamespace": NamespaceSummary(vector_count=1)}
     index_stats = DescribeIndexStatsResponse(
         dimension = 1024,
-        index_fullness= 0,
+        index_fullness= 0.4,
         total_vector_count=1,
         namespaces = namespace_summaries
         )
