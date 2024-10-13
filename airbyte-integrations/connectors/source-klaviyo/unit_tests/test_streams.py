@@ -3,6 +3,8 @@
 #
 
 
+import urllib.parse
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional
 from unittest import mock
 from unittest.mock import patch
@@ -14,13 +16,11 @@ import requests
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-import urllib.parse
 
 _ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
