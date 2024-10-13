@@ -15,6 +15,7 @@ from pinecone.core.client.models import NamespaceSummary
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
 
+
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
     config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex", namespace="mynamespace")
 
