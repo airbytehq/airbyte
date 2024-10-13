@@ -10,10 +10,10 @@ import urllib3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
-from pinecone import IndexDescription, exceptions, DescribeIndexStatsResponse
+from pinecone import DescribeIndexStatsResponse, IndexDescription, exceptions
+from pinecone.core.openapi.data.models import NamespaceSummary
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
-from pinecone.core.openapi.data.models import NamespaceSummary
 
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
