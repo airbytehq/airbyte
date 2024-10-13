@@ -66,11 +66,11 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest {
+class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var mockScopeProvider: MockScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
-    @Inject lateinit var mockExceptionHandler: MockExceptionHandler
+    @Inject lateinit var mockExceptionHandler: MockExceptionHandler<T>
 
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTask
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
@@ -272,16 +272,26 @@ class DestinationTaskLauncherTest {
 
     @Singleton
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockExceptionHandler : TaskExceptionHandler<LeveledTask, ScopedTask> {
+    class MockExceptionHandler<T> : TaskExceptionHandler<T, WrappedTask<ScopedTask>> where
+    T : LeveledTask,
+    T : ScopedTask {
         val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
 
-        override fun withExceptionHandling(task: LeveledTask): ScopedTask {
-            runBlocking { wrappedTasks.send(task) }
-            return object : InternalTask {
-                override suspend fun execute() {
-                    task.execute()
-                }
+        inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
+            override suspend fun execute() {
+                innerTask.execute()
             }
+        }
+
+        override fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+            runBlocking { wrappedTasks.send(task) }
+            val innerTask =
+                object : InternalScope {
+                    override suspend fun execute() {
+                        task.execute()
+                    }
+                }
+            return IdentityWrapper(innerTask)
         }
     }
 
