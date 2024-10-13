@@ -2,22 +2,23 @@
 
 from typing import Optional
 
-def get_documents_query(bucket: str, scope: str, collection: str) -> str:
-    return f"""
-    SELECT META().id as _id, *
-    FROM `{bucket}`.`{scope}`.`{collection}`
-    """
-
-def get_incremental_documents_query(bucket: str, scope: str, collection: str, cursor_value: Optional[int] = None) -> str:
+def get_documents_query(bucket: str, scope: str, collection: str, cursor_field: str, cursor_value: Optional[int] = None) -> str:
     query = f"""
     SELECT META().id as _id, 
-           to_number(meta().xattrs.`$document`.last_modified) as _ab_cdc_updated_at,
+           lm as {cursor_field},
            *
     FROM `{bucket}`.`{scope}`.`{collection}`
+    LET lm = TO_NUMBER(meta().xattrs.`$document`.last_modified)
     """
     
-    if cursor_value:
-        query += f"\nWHERE meta().xattrs.`$document`.last_modified > {cursor_value}"
+    if cursor_value is not None:
+        query += f"\nWHERE lm > {cursor_value}"
     
-    query += "\nORDER BY meta().xattrs.`$document`.last_modified ASC"
+    query += f"\nORDER BY lm ASC"
     return query
+
+def get_max_cursor_value_query(bucket: str, scope: str, collection: str) -> str:
+    return f"""
+    SELECT MAX(TO_NUMBER(meta().xattrs.`$document`.last_modified)) as max_cursor_value
+    FROM `{bucket}`.`{scope}`.`{collection}`
+    """

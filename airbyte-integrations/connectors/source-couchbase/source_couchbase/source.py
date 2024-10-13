@@ -50,7 +50,6 @@ class SourceCouchbase(AbstractSource):
         except Exception as e:
             logging.warning(f"Failed to create primary index for {bucket}.{scope}.{collection}: {str(e)}")
             
-            
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         self._set_config_values(config)
         try:
@@ -76,8 +75,7 @@ class SourceCouchbase(AbstractSource):
                     cluster,
                     self.bucket_name,
                     scope.name,
-                    collection.name,
-                    cursor_field='_ab_cdc_updated_at'
+                    collection.name
                 )
                 streams.append(stream)
                 logging.info(f"Added stream for {scope.name}.{collection.name}")
