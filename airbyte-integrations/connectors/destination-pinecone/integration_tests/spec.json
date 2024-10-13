@@ -32,7 +32,12 @@
             "type": "string"
           }
         },
-        "required": ["pinecone_key", "pinecone_environment", "index", "namespace"],
+        "required": [
+          "pinecone_key",
+          "pinecone_environment",
+          "index",
+          "namespace"
+        ],
         "description": "The default namespace tables are written to if the source does not specify a namespace. See more <a href='https://docs.pinecone.io/guides/indexes/use-namespaces/'>here</a>.",
         "group": "indexing"
       },
