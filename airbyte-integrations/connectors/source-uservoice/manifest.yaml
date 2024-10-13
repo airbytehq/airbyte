@@ -1,0 +1,4174 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for UserVoice.com allows users to efficiently extract data
+  from the UserVoice  and integrate it with various data destinations. This
+  connector can sync data such as user feedback, suggestions, comments, tickets,
+  and support metrics, providing a streamlined way to analyze and act on
+  customer feedback. It supports incremental data syncs, ensuring that new or
+  updated data is captured without duplication. The connector is designed for
+  easy setup, enabling seamless integration with UserVoice's API to ensure your
+  customer insights are always up to date.
+
+check:
+  type: CheckStream
+  stream_names:
+    - forums
+
+definitions:
+  streams:
+    notes:
+      type: DeclarativeStream
+      name: notes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/notes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    forums:
+      type: DeclarativeStream
+      name: forums
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/forums
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forums
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forums"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    labels:
+      type: DeclarativeStream
+      name: labels
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/labels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - labels
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    features:
+      type: DeclarativeStream
+      name: features
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/features
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - features
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/features"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    statuses:
+      type: DeclarativeStream
+      name: statuses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - statuses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statuses"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    supporters:
+      type: DeclarativeStream
+      name: supporters
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/supporters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - supporters
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supporters"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attachments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    permissions:
+      type: DeclarativeStream
+      name: permissions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/permissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - permissions
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/permissions"
+    suggestions:
+      type: DeclarativeStream
+      name: suggestions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/suggestions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - suggestions
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suggestions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - custom_fields
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    product_areas:
+      type: DeclarativeStream
+      name: product_areas
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/product_areas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - product_areas
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_areas"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    external_users:
+      type: DeclarativeStream
+      name: external_users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/external_users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - external_users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/external_users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    internal_flags:
+      type: DeclarativeStream
+      name: internal_flags
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/internal_flags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - internal_flags
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/internal_flags"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    status_updates:
+      type: DeclarativeStream
+      name: status_updates
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/status_updates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - status_updates
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/status_updates"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    feature_statuses:
+      type: DeclarativeStream
+      name: feature_statuses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/feature_statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - feature_statuses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/feature_statuses"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    feedback_records:
+      type: DeclarativeStream
+      name: feedback_records
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/feedback_records
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - feedback_records
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/feedback_records"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    segmented_values:
+      type: DeclarativeStream
+      name: segmented_values
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/segmented_values
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segmented_values
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segmented_values"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    suggested_merges:
+      type: DeclarativeStream
+      name: suggested_merges
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/suggested_merges
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - suggested_merges
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suggested_merges"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    external_accounts:
+      type: DeclarativeStream
+      name: external_accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/external_accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - external_accounts
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/external_accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    forum_invitations:
+      type: DeclarativeStream
+      name: forum_invitations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/forum_invitations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forum_invitations
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forum_invitations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    importance_scores:
+      type: DeclarativeStream
+      name: importance_scores
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/importance_scores
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - importance_scores
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/importance_scores"
+    internal_statuses:
+      type: DeclarativeStream
+      name: internal_statuses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/internal_statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - internal_statuses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/internal_statuses"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    service_hook_logs:
+      type: DeclarativeStream
+      name: service_hook_logs
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/service_hook_logs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - service_hook_logs
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/service_hook_logs"
+    supporter_messages:
+      type: DeclarativeStream
+      name: supporter_messages
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/supporter_messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - supporter_messages
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supporter_messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    importance_responses:
+      type: DeclarativeStream
+      name: importance_responses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/importance_responses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - importance_responses
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/importance_responses"
+    translatable_strings:
+      type: DeclarativeStream
+      name: translatable_strings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/translatable_strings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/translatable_strings"
+    internal_status_updates:
+      type: DeclarativeStream
+      name: internal_status_updates
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/internal_status_updates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - internal_status_updates
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/internal_status_updates"
+    suggestion_activity_entries:
+      type: DeclarativeStream
+      name: suggestion_activity_entries
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pagination', {}).get('cursor') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('cursor') is not defined }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/suggestion_activity_entries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - suggestion_activity_entries
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suggestion_activity_entries"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.uservoice.com/api/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/forums"
+  - $ref: "#/definitions/streams/external_accounts"
+  - $ref: "#/definitions/streams/external_users"
+  - $ref: "#/definitions/streams/features"
+  - $ref: "#/definitions/streams/feedback_records"
+  - $ref: "#/definitions/streams/suggestions"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/feature_statuses"
+  - $ref: "#/definitions/streams/forum_invitations"
+  - $ref: "#/definitions/streams/importance_responses"
+  - $ref: "#/definitions/streams/importance_scores"
+  - $ref: "#/definitions/streams/internal_status_updates"
+  - $ref: "#/definitions/streams/internal_flags"
+  - $ref: "#/definitions/streams/internal_statuses"
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/permissions"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/product_areas"
+  - $ref: "#/definitions/streams/segmented_values"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/service_hook_logs"
+  - $ref: "#/definitions/streams/status_updates"
+  - $ref: "#/definitions/streams/statuses"
+  - $ref: "#/definitions/streams/supporter_messages"
+  - $ref: "#/definitions/streams/suggested_merges"
+  - $ref: "#/definitions/streams/suggestion_activity_entries"
+  - $ref: "#/definitions/streams/supporters"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/translatable_strings"
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - subdomain
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        name: subdomain
+        order: 0
+        title: subdomain
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.uservoice.com/docs/api/v2/reference/
+    openapiSpecUrl: https://uservoice.uservoice.com/api/v2/public/doc/api-v2-reference
+  testedStreams:
+    notes:
+      hasRecords: true
+      streamHash: d4729d37e72814f6f73da0648e0c3e063566a9a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: fbe334519ea618739b875d20c064dcdae41a5a6d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 849e764ab97501d7ae2d5768c0d6cf0285ff50b9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    forums:
+      hasRecords: true
+      streamHash: 891ce604fb30e8a484b555d4e6c3e6cf3aae9845
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    labels:
+      hasRecords: true
+      streamHash: 96a6182c3ddc32aa02adbeab65ce21f2569d8196
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    comments:
+      hasRecords: true
+      streamHash: a679a832b26131d5b96f309baf7153dbefe71880
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    features:
+      hasRecords: true
+      streamHash: 65c5256a5d88747ac97c0859e21cad99af16d7fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segments:
+      hasRecords: true
+      streamHash: 5cb20dc784f06af76254306b51914c9474c7dd3d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    statuses:
+      hasRecords: true
+      streamHash: f42c8278771483dfb001aa9df49e9415f1457008
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories:
+      hasRecords: true
+      streamHash: ba4d1d0d4d7a5c691a9af9865ec371459b33d9fa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    supporters:
+      hasRecords: true
+      streamHash: f44d3839662e7229c1929485db360b51188bff02
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attachments:
+      hasRecords: true
+      streamHash: 2b3d494bbf88474a7e9bf474e2064eb004820d16
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    permissions:
+      hasRecords: true
+      streamHash: 597b282aaafed9a2470d7f56abba1deef8f92f97
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suggestions:
+      hasRecords: true
+      streamHash: 5e62fee81d259f02483d6b742336e057ae7dd99b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: aea6233aaa89439ae42fc193892914ed02498f76
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_areas:
+      hasRecords: true
+      streamHash: d4ad45a9587d28307ff953ca8febf63a10dadf10
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    external_users:
+      hasRecords: true
+      streamHash: b7a022e1e6af321062cd412441690f72eacc8f42
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    internal_flags:
+      hasRecords: true
+      streamHash: b18303fc89acd8ab40a9c69f530a8e9e2ad8c542
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    status_updates:
+      hasRecords: true
+      streamHash: d4629992cae8179c909f7303501179fd8e75dff0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    feature_statuses:
+      hasRecords: true
+      streamHash: 4ee9f1581eee111bc630c620ded88267fd7a2afa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    feedback_records:
+      hasRecords: true
+      streamHash: 52ca68c87b96babbe2a3a378d823f5ff6dad82c8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segmented_values:
+      hasRecords: true
+      streamHash: f5098477ec99b3ea78c0fd5afbf76158237c78e9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suggested_merges:
+      hasRecords: true
+      streamHash: 49b3bde4af8a258fefd4133825a88df534bbaff6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    external_accounts:
+      hasRecords: true
+      streamHash: 785ce69f2240e6afe013c4ea798c85888ca000d8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    forum_invitations:
+      hasRecords: true
+      streamHash: 69d700b06d55f0bcfa2179238c214b8657d843b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    importance_scores:
+      hasRecords: true
+      streamHash: e5259c011982399c04855a9b703ceba4cf6be0e9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    internal_statuses:
+      hasRecords: true
+      streamHash: 566ebe9e31bfc2368613ff9914187e40b57795c4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    service_hook_logs:
+      hasRecords: true
+      streamHash: b8913239a1bbac3dca1f75522ea306dcc15d4836
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    supporter_messages:
+      hasRecords: true
+      streamHash: cf80e223117cf73277ce60db0f2d5c881663ae4d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    importance_responses:
+      hasRecords: true
+      streamHash: 474e2750ce7e2b60d8bf3682e2f771514bda168f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    translatable_strings:
+      hasRecords: true
+      streamHash: 8d2ecfa37ee97d1d1fe3bcc53018a4e9b5c9dfe7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    internal_status_updates:
+      hasRecords: true
+      streamHash: 0e80cf0aacf3acf4f2e6fba13f039ce23a51ec8b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suggestion_activity_entries:
+      hasRecords: true
+      streamHash: 50e4448d6e870c7e1347105970be50e479d96ed7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    notes: true
+    teams: true
+    users: true
+    forums: true
+    labels: true
+    comments: true
+    features: false
+    segments: true
+    statuses: true
+    categories: true
+    supporters: true
+    attachments: true
+    permissions: true
+    suggestions: true
+    custom_fields: true
+    product_areas: true
+    external_users: false
+    internal_flags: true
+    status_updates: true
+    feature_statuses: true
+    feedback_records: false
+    segmented_values: true
+    suggested_merges: true
+    external_accounts: false
+    forum_invitations: true
+    importance_scores: true
+    internal_statuses: true
+    service_hook_logs: true
+    supporter_messages: true
+    importance_responses: true
+    translatable_strings: true
+    internal_status_updates: true
+    suggestion_activity_entries: true
+
+schemas:
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          mentions:
+            type:
+              - array
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      body_mime_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      members_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          crm_account:
+            type:
+              - number
+              - "null"
+          external_users:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      state:
+        type:
+          - string
+          - "null"
+      traits:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          account_name:
+            type:
+              - string
+              - "null"
+          account_created_at:
+            type:
+              - number
+              - "null"
+          account_internal_id:
+            type:
+              - number
+              - "null"
+          account_monthly_rate:
+            type:
+              - number
+              - "null"
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      is_owner:
+        type:
+          - boolean
+          - "null"
+      avatar_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          billing:
+            type:
+              - string
+              - "null"
+          tickets:
+            type:
+              - string
+              - "null"
+          features:
+            type:
+              - string
+              - "null"
+          settings:
+            type:
+              - string
+              - "null"
+          suggestions:
+            type:
+              - string
+              - "null"
+          license_type:
+            type:
+              - string
+              - "null"
+          knowledgebase:
+            type:
+              - string
+              - "null"
+      allowed_state:
+        type:
+          - string
+          - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      email_confirmed:
+        type:
+          - boolean
+          - "null"
+      is_validation_admin:
+        type:
+          - boolean
+          - "null"
+      status_notifications:
+        type:
+          - boolean
+          - "null"
+      comment_notifications:
+        type:
+          - boolean
+          - "null"
+      supported_suggestions_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  forums:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          updated_by:
+            type:
+              - number
+              - "null"
+      prompt:
+        type:
+          - string
+          - "null"
+      is_open:
+        type:
+          - boolean
+          - "null"
+      is_public:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      portal_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      classic_voting:
+        type:
+          - boolean
+          - "null"
+      category_required:
+        type:
+          - boolean
+          - "null"
+      suggestions_count:
+        type:
+          - number
+          - "null"
+      importance_enabled:
+        type:
+          - boolean
+          - "null"
+      moderation_enabled:
+        type:
+          - boolean
+          - "null"
+      open_suggestions_count:
+        type:
+          - number
+          - "null"
+      welcome_message_mime_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      level:
+        type:
+          - number
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          parent:
+            type:
+              - number
+              - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      open_suggestions_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      state:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      body_mime_type:
+        type:
+          - string
+          - "null"
+      sentiment_score:
+        type:
+          - number
+          - "null"
+      is_admin_comment:
+        type:
+          - boolean
+          - "null"
+      inappropriate_flags_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  features:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          roadmap:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+          suggestions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          product_area:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          feature_status:
+            type:
+              - number
+              - "null"
+      cv_rice:
+        type:
+          - number
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      cf_effort:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      cf_goal_1:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      cf_goal_2:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      cf_mockups:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      cf_confidence:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      cv_cost_benefit:
+        type:
+          - number
+          - "null"
+      cv_lost_revenue:
+        type:
+          - number
+          - "null"
+      jira_link_count:
+        type:
+          - number
+          - "null"
+      vsts_link_count:
+        type:
+          - number
+          - "null"
+      suggestions_count:
+        type:
+          - number
+          - "null"
+      supporter_revenue:
+        type:
+          - number
+          - "null"
+      supporter_mrr_cents:
+        type:
+          - number
+          - "null"
+      cv_potential_revenue:
+        type:
+          - number
+          - "null"
+      cv_lost_opportunities:
+        type:
+          - number
+          - "null"
+      cv_open_opportunities:
+        type:
+          - number
+          - "null"
+      supporting_users_count:
+        type:
+          - number
+          - "null"
+      cv_sample_segment.revenue:
+        type:
+          - number
+          - "null"
+      supporting_accounts_count:
+        type:
+          - number
+          - "null"
+      cv_potential_revenue_blockers:
+        type:
+          - number
+          - "null"
+      cv_sample_segment.users_count:
+        type:
+          - number
+          - "null"
+      cv_open_opportunities_blockers:
+        type:
+          - number
+          - "null"
+      cv_sample_segment.accounts_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      filters:
+        type:
+          - object
+          - "null"
+        properties:
+          column:
+            type:
+              - string
+              - "null"
+          operand:
+            type:
+              - object
+              - "null"
+            properties:
+              val:
+                type:
+                  - string
+                  - "null"
+          operator:
+            type:
+              - string
+              - "null"
+          expressions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                column:
+                  type:
+                    - string
+                    - "null"
+                operand:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    val:
+                      type:
+                        - string
+                        - "null"
+                operator:
+                  type:
+                    - string
+                    - "null"
+                expressions:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      column:
+                        type:
+                          - string
+                          - "null"
+                      operand:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          val:
+                            type:
+                              - string
+                              - "null"
+                      operator:
+                        type:
+                          - string
+                          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      is_open:
+        type:
+          - boolean
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      hex_color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      allow_comments:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          forum:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      suggestions_count:
+        type:
+          - number
+          - "null"
+      open_suggestions_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  supporters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      how:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      is_subscribed:
+        type:
+          - boolean
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      requests_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  attachments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          suggestion:
+            type:
+              - number
+              - "null"
+      file_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      content_type:
+        type:
+          - string
+          - "null"
+      size_in_bytes:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  permissions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+      tickets:
+        type:
+          - string
+          - "null"
+      features:
+        type:
+          - string
+          - "null"
+      feedback:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - string
+          - "null"
+      license_type:
+        type:
+          - string
+          - "null"
+      knowledgebase:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  suggestions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          forum:
+            type:
+              - number
+              - "null"
+          labels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          status:
+            type:
+              - number
+              - "null"
+          category:
+            type:
+              - number
+              - "null"
+          features:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          captured_by:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - array
+              - "null"
+          last_status_update:
+            type:
+              - number
+              - "null"
+          last_internal_status_update:
+            type:
+              - number
+              - "null"
+      state:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      admin_url:
+        type:
+          - string
+          - "null"
+      closed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator_os:
+        type:
+          - string
+          - "null"
+      portal_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      notes_count:
+        type:
+          - number
+          - "null"
+      redirect_url:
+        type:
+          - string
+          - "null"
+      supporter_mrr:
+        type:
+          - number
+          - "null"
+      body_mime_type:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      creator_mobile:
+        type:
+          - boolean
+          - "null"
+      requests_count:
+        type:
+          - number
+          - "null"
+      creator_browser:
+        type:
+          - string
+          - "null"
+      cv_lost_revenue:
+        type:
+          - number
+          - "null"
+      jira_link_count:
+        type:
+          - number
+          - "null"
+      sentiment_score:
+        type:
+          - number
+          - "null"
+      vsts_link_count:
+        type:
+          - number
+          - "null"
+      creator_referrer:
+        type:
+          - string
+          - "null"
+      engagement_trend:
+        type:
+          - number
+          - "null"
+      supporters_count:
+        type:
+          - number
+          - "null"
+      recent_engagement:
+        type:
+          - number
+          - "null"
+      supporter_revenue:
+        type:
+          - number
+          - "null"
+      average_engagement:
+        type:
+          - number
+          - "null"
+      creator_user_agent:
+        type:
+          - string
+          - "null"
+      cv_potential_revenue:
+        type:
+          - number
+          - "null"
+      importance_low_count:
+        type:
+          - number
+          - "null"
+      internal_flags_count:
+        type:
+          - number
+          - "null"
+      cv_lost_opportunities:
+        type:
+          - number
+          - "null"
+      cv_open_opportunities:
+        type:
+          - number
+          - "null"
+      importance_high_count:
+        type:
+          - number
+          - "null"
+      last_internal_flag_at:
+        type:
+          - string
+          - "null"
+      total_sentiment_score:
+        type:
+          - number
+          - "null"
+      importance_low_percent:
+        type:
+          - number
+          - "null"
+      importance_total_count:
+        type:
+          - number
+          - "null"
+      merge_candidates_count:
+        type:
+          - number
+          - "null"
+      creator_browser_version:
+        type:
+          - string
+          - "null"
+      importance_high_percent:
+        type:
+          - number
+          - "null"
+      importance_medium_count:
+        type:
+          - number
+          - "null"
+      account_supporters_count:
+        type:
+          - number
+          - "null"
+      all_internal_flags_count:
+        type:
+          - number
+          - "null"
+      importance_score_average:
+        type:
+          - string
+          - "null"
+      cv_sample_segment.revenue:
+        type:
+          - number
+          - "null"
+      importance_medium_percent:
+        type:
+          - number
+          - "null"
+      inappropriate_flags_count:
+        type:
+          - number
+          - "null"
+      supporting_accounts_count:
+        type:
+          - number
+          - "null"
+      satisfaction_neutral_count:
+        type:
+          - number
+          - "null"
+      satisfaction_promoter_count:
+        type:
+          - number
+          - "null"
+      satisfaction_detractor_count:
+        type:
+          - number
+          - "null"
+      supporter_satisfaction_score:
+        type:
+          - number
+          - "null"
+      cv_potential_revenue_blockers:
+        type:
+          - number
+          - "null"
+      cv_sample_segment.users_count:
+        type:
+          - number
+          - "null"
+      cv_open_opportunities_blockers:
+        type:
+          - number
+          - "null"
+      cv_sample_segment.accounts_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties: {}
+      created_at:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      object_type:
+        type:
+          - string
+          - "null"
+      combined_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  product_areas:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  external_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          external_account:
+            type:
+              - number
+              - "null"
+      seen_days:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  internal_flags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      reason:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  status_updates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          new_status:
+            type:
+              - number
+              - "null"
+          old_status:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      html_body:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      thumbs_up_count:
+        type:
+          - number
+          - "null"
+      reactions_enabled:
+        type:
+          - boolean
+          - "null"
+      thumbs_down_count:
+        type:
+          - number
+          - "null"
+      supporters_notified:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  feature_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      position:
+        type:
+          - number
+          - "null"
+      hex_color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_default:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  feedback_records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          supporter:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      severity:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      source_guid:
+        type:
+          - string
+          - "null"
+      source_type:
+        type:
+          - string
+          - "null"
+      body_mime_type:
+        type:
+          - string
+          - "null"
+      has_attachments:
+        type:
+          - boolean
+          - "null"
+      sentiment_score:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  segmented_values:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          segment:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      column_type:
+        type:
+          - string
+          - "null"
+      object_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  suggested_merges:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          suggestion_a:
+            type:
+              - number
+              - "null"
+          suggestion_b:
+            type:
+              - number
+              - "null"
+      score:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      subdomain_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  external_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      mrr:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties: {}
+      revenue:
+        type:
+          - number
+          - "null"
+      mrr_cents:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      users_count:
+        type:
+          - number
+          - "null"
+      requests_count:
+        type:
+          - number
+          - "null"
+      cf_crm_industry:
+        type:
+          - string
+          - "null"
+      cf_crm_account_type:
+        type:
+          - string
+          - "null"
+      cf_crm_company_size:
+        type:
+          - number
+          - "null"
+      cf_crm_account_status:
+        type:
+          - string
+          - "null"
+      cf_crm_market_segment:
+        type:
+          - string
+          - "null"
+      supported_ideas_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  forum_invitations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      code:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          forum:
+            type:
+              - number
+              - "null"
+          claimed_by:
+            type:
+              - number
+              - "null"
+          invited_by:
+            type:
+              - number
+              - "null"
+      action:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      reply_to:
+        type:
+          - string
+          - "null"
+      return_to:
+        type:
+          - string
+          - "null"
+      claimed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      satisfaction_score:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  importance_scores:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+          response:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  internal_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      hex_color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_default:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  service_hook_logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      event:
+        type:
+          - string
+          - "null"
+      exception:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      http_status:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  supporter_messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - updated_at
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      reply_count:
+        type:
+          - number
+          - "null"
+      body_mime_type:
+        type:
+          - string
+          - "null"
+      mail_sent_count:
+        type:
+          - number
+          - "null"
+      mail_opened_count:
+        type:
+          - number
+          - "null"
+      mail_clicked_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  importance_responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      label:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - number
+              - "null"
+      value:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  translatable_strings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      html:
+        type:
+          - object
+          - "null"
+        properties:
+          forum.964208.welcome_message:
+            type:
+              - string
+              - "null"
+          forum.964211.welcome_message:
+            type:
+              - string
+              - "null"
+      plain:
+        type:
+          - object
+          - "null"
+        properties:
+          forum.964205.name:
+            type:
+              - string
+              - "null"
+          forum.964208.name:
+            type:
+              - string
+              - "null"
+          forum.964211.name:
+            type:
+              - string
+              - "null"
+          forum.964214.name:
+            type:
+              - string
+              - "null"
+          forum.964208.prompt:
+            type:
+              - string
+              - "null"
+          forum.964211.prompt:
+            type:
+              - string
+              - "null"
+          forum.964214.prompt:
+            type:
+              - string
+              - "null"
+          status.5391407.name:
+            type:
+              - string
+              - "null"
+          status.5391410.name:
+            type:
+              - string
+              - "null"
+          status.5391413.name:
+            type:
+              - string
+              - "null"
+          status.5391416.name:
+            type:
+              - string
+              - "null"
+          status.5391419.name:
+            type:
+              - string
+              - "null"
+          category.510566.name:
+            type:
+              - string
+              - "null"
+          category.510569.name:
+            type:
+              - string
+              - "null"
+          category.510572.name:
+            type:
+              - string
+              - "null"
+          category.510575.name:
+            type:
+              - string
+              - "null"
+          category.510578.name:
+            type:
+              - string
+              - "null"
+          category.510581.name:
+            type:
+              - string
+              - "null"
+          category.510584.name:
+            type:
+              - string
+              - "null"
+          category.510587.name:
+            type:
+              - string
+              - "null"
+          category.510590.name:
+            type:
+              - string
+              - "null"
+          category.510593.name:
+            type:
+              - string
+              - "null"
+          category.510596.name:
+            type:
+              - string
+              - "null"
+          category.510599.name:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  internal_status_updates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+          new_internal_status:
+            type:
+              - number
+              - "null"
+          old_internal_status:
+            type:
+              - number
+              - "null"
+      hex_color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      teams_notified:
+        type:
+          - boolean
+          - "null"
+      thumbs_up_count:
+        type:
+          - number
+          - "null"
+      thumbs_down_count:
+        type:
+          - number
+          - "null"
+      internal_status_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  suggestion_activity_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      kind:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          note:
+            type:
+              - number
+              - "null"
+          comment:
+            type:
+              - number
+              - "null"
+          created_by:
+            type:
+              - number
+              - "null"
+          suggestion:
+            type:
+              - number
+              - "null"
+          internal_flag:
+            type:
+              - number
+              - "null"
+          status_update:
+            type:
+              - number
+              - "null"
+          feedback_record:
+            type:
+              - number
+              - "null"
+          internal_status_update:
+            type:
+              - number
+              - "null"
+      new_body:
+        type:
+          - string
+          - "null"
+      new_title:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      linkable_is_spam:
+        type:
+          - boolean
+          - "null"
+      linkable_needs_review:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
