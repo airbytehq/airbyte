@@ -60,12 +60,12 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             else :
                 print("Nothing to delete in default namespace. No data in the index/namespace.")
         try:
-            self.pinecone_index.delete(delete_all=True, namespace="mynamespace")
+            self.pinecone_index.delete(delete_all=True, namespace="ns1")
         except PineconeException as e:
             if "Namespace not found" not in str(e):
                 raise(e)
             else :
-                print("Nothing to delete in mynamespace namespace. No data in the index/namespace.")
+                print("Nothing to delete in ns1 namespace. No data in the index/namespace.")
 
     def test_integration_test_flag_is_set(self):
         assert "PYTEST_CURRENT_TEST" in os.environ
@@ -85,7 +85,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
                     "pinecone_key": "mykey",
                     "index": "testdata",
                     "pinecone_environment": "us-west1-gcp",
-                    "default_namespace": "mynamespace",
+                    "namespace": "mynamespace",
                 },
             },
         )
@@ -146,7 +146,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         overwrite_stream = ConfiguredAirbyteStream(
             stream=AirbyteStream(
                 name="mystream", 
-                # namespace="ns1",
+                namespace="ns1",
                 json_schema=stream_schema, 
                 supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
             ),
@@ -160,7 +160,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
     def _record_with_namespace(self, stream: str, str_value: str, int_value: int) -> AirbyteMessage:
         return AirbyteMessage(
             type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, 
-                                                        #   namespace="ns1",
+                                                          namespace="ns1",
                                                           data={"str_col": str_value, "int_col": int_value}, 
                                                           emitted_at=0)
         )

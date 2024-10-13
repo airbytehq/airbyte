@@ -12,6 +12,6 @@
     "pinecone_key": "mykey",
     "index": "myindex",
     "pinecone_environment": "us-east-1-aws",
-    "default_namespace": "mynamespace"
+    "namespace": "mynamespace"
   }
 }

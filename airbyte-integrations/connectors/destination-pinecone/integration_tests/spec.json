@@ -26,14 +26,14 @@
             "description": "Pinecone index in your project to load data into",
             "type": "string"
           },
-          "default_namespace": {
+          "namespace": {
             "title": "Pinecone Namespace",
             "description": "Pinecone Namespace to partition the records in an index",
             "type": "string"
           }
         },
-        "required": ["pinecone_key", "pinecone_environment", "index"],
-        "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings.",
+        "required": ["pinecone_key", "pinecone_environment", "index", "namespace"],
+        "description": "The default namespace tables are written to if the source does not specify a namespace. See more <a href='https://docs.pinecone.io/guides/indexes/use-namespaces/'>here</a>.",
         "group": "indexing"
       },
       "embedding": {
