@@ -66,7 +66,6 @@ from .streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
-from .config import ConfigCreator
 
 
 class ConnectionCheckTest:
@@ -235,10 +234,11 @@ class SourceShopify(AbstractSource):
 
 class LTKSourceShopify(SourceShopify):
 
-    def __init__(self) -> None:
+    def __init__(self, db_client, aws_client) -> None:
         super().__init__()
-        self.cfg = ConfigCreator()
         self._shops = None
+        self._db_client = db_client
+        self._aws_client = aws_client
     
     @property
     def shops(self):
@@ -250,21 +250,36 @@ class LTKSourceShopify(SourceShopify):
             self._shops = shops
         else:
             raise ValueError("Shops have already been gathered.")
-        
-    def gatherLTKShops(self, config):
-        aws_credentials = {"aws_access_key_id": config.get('aws_access_key_id', ""),
-                           "aws_secret_access_key": config.get('aws_secret_access_key', ""),
-                           "aws_session_token": config.get('aws_session_token', ""),
-                           }
-        env = config.get('env', 'local')
-        return self.cfg.gatherShopifyStores(config['db_uri'], env, aws_credentials)
+
+    
+    def gatherLTKShopifyStores(self, logger: logging.Logger):
+        shops = []
+        shopify_stores = self._db_client._get_shopify_store_info()
+        if not shopify_stores:
+            raise Exception("No Shopify Store data available in Milk And Honey.")
+
+        for row in shopify_stores:
+            shop_config = {}
+            shop_name = row['advertiser_homepage'].replace("https://", "")
+            shop_name = shop_name.replace('.myshopify.com', "")
+            shop_config['shop'] = shop_name
+            shop_config['shop_id'] = row['affiliateId']
+            api_password = self._aws_client._get_shopify_token(row['affiliateId'])
+            shop_config["credentials"] =  {"auth_method": "api_password", 
+                                           "api_password": api_password}
+            if not api_password: 
+                print(f"shopify: failed to get access token for active shop: {shop_name}. It will be excluded from the sync.")
+                continue
+            shops.append(shop_config)
+        logger.info("Fetched %d well-formed (M&H +  SecretManager) stores from Milk and Honey for extraction", len(shops))
+        return shops
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
         if not self.shops:
-            self.shops = self.gatherLTKShops(config)
+            self.shops = self.gatherLTKShopifyStores(logger)
         
         if not self.shops:
             logger.info("No shops to test connection on")
@@ -277,7 +292,7 @@ class LTKSourceShopify(SourceShopify):
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         if not self.shops:
-            self.shops = self.gatherLTKShops(config)
+            self.shops = self.gatherLTKShopifyStores(logger)
         for shop_config in self.shops:
             catalog = super().discover(logger, shop_config)
             logger.info("Discover succeeded for %s. Stopping now", self.get_shop_name(shop_config))
@@ -287,7 +302,7 @@ class LTKSourceShopify(SourceShopify):
         result = []
         errored_stores = []
         if not self.shops:
-            self.shops = self.gatherLTKShops(config)
+            self.shops = self.gatherLTKShopifyStores(logger)
         if not self.shops:
             logger.info("No shops to read data from")
             return []

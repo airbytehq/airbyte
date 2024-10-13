@@ -5,21 +5,49 @@ from mysql.connector import Error
 import logging
 
 
-from typing import Any, List, Mapping
+from typing import Any, Dict, List, Mapping
 from urllib.parse import urlparse, parse_qs
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources import Source
-from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .constants import ADVERTISERS_QUERY, SHOPIFY_ACCESS_TOKEN_PATH
 
-class ConfigCreator:
-    logger = logging.getLogger("airbyte")
+class AWSClient:
+    def __init__(self, config: Mapping[str, Any]): 
+        region_name: str = "us-east-1"
+        env = config.get("env", "local")
+        self.sid = SHOPIFY_ACCESS_TOKEN_PATH.format(account_id=config.get("secret_manager_account"))
+        
+        if env == "local":
+            self.session = boto3.Session(
+                aws_access_key_id=config.get('aws_access_key_id'),
+                aws_secret_access_key=config.get('aws_secret_access_key'),
+                aws_session_token=config.get('aws_session_token'),
+                region_name=region_name
+            )
+            self.sid = self.sid.replace("{env}", "prod")
+        else:
+            self.session = boto3.Session(region_name=region_name)
+            self.sid = self.sid.replace("{env}", env)
+        
+        self.secrets_manager_client = self.session.client('secretsmanager')
+
+    def _get_shopify_token(self, shopify_id: str) -> str:
+        try:
+            sid = self.sid.replace("{shop_id}",shopify_id)
+            resp = self.secrets_manager_client.get_secret_value(SecretId=sid)
+            return resp["SecretString"]
+        except botocore.exceptions.ClientError as exc:
+            print(
+                f"shopify: failed to get access token for active shop_id: {shopify_id} ({exc}). Shop will be excluded from the sync."
+            )
+            return None
+
+class DatabaseClient:
+    def __init__(self, config: Mapping[str, Any]):
+        self.connection = self.create_connection(config)
+        self.logger = logging.getLogger("airbyte")
     
     def extract_db_info(self, db_uri):
-    
         parsed_uri = urlparse(db_uri)
-        
         # Extract the components
         db_info = {
             'scheme': parsed_uri.scheme,  
@@ -30,44 +58,30 @@ class ConfigCreator:
             'database': parsed_uri.path[1:],  
             'query_params': parse_qs(parsed_uri.query)
         }
-    
         return db_info
-
-
-    def _get_shopify_token(self, shopify_id: str, aws_credentials: dict) -> str:
-        try:
-            if self.env == "local":
-                session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
-                                        aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
-                                        aws_session_token=aws_credentials['aws_session_token'], 
-                                        region_name="us-east-1")
-                sid = SHOPIFY_ACCESS_TOKEN_PATH.format("prod", shopify_id)
-            else:
-                session = boto3.session.Session(region_name="us-east-1")
-
-            client = session.client("secretsmanager")
-            sid = SHOPIFY_ACCESS_TOKEN_PATH.format(self.env, shopify_id)
-            resp = client.get_secret_value(SecretId=sid)
-
-            return resp["SecretString"]
-        except botocore.exceptions.ClientError as exc:
-            print(
-                f"shopify: failed to get access token for active shop_id: {shopify_id} ({exc}). Shop will be excluded from the sync."
-            )
-            return None
-
-    def _get_shopify_store_info(self):
-        connection = None
+    
+    def create_connection(self, config: Mapping[str, Any]):
+        db_uri = config.get("db_uri", "")
+        if not db_uri:
+            raise Exception("Please pass in a DB_URI for Milk and Honey")
+        
+        db_info = self.extract_db_info(db_uri)
         try:
             connection =mysql.connector.connect(
-                host = self.db_info['host'],     
-                user = self.db_info['username'], 
-                password = self.db_info['password'], 
-                database = self.db_info['database'], 
+                host = db_info['host'],     
+                user = db_info['username'], 
+                password = db_info['password'], 
+                database = db_info['database'], 
                 )
-
-            if connection and connection.is_connected():
-                cursor = connection.cursor(dictionary=True)
+            return connection
+        except Error as e:
+            print(f"Error while attempting to connecting to M&H db: {e}")
+            return None
+        
+    def _get_shopify_store_info(self):
+        try:
+            if self.connection.is_connected():
+                cursor = self.connection.cursor(dictionary=True)
                 cursor.execute(ADVERTISERS_QUERY)
                 results = cursor.fetchall()
                 self.logger.info("Fetched %d stores from Milk and Honey", len(results))
@@ -78,31 +92,8 @@ class ConfigCreator:
             print(f"Error executing query: {e}")
 
         finally:
-            if connection and connection.is_connected():
+            if self.connection and self.connection.is_connected():
                 cursor.close()
-                connection.close()
-
-    def gatherShopifyStores(self, db_uri, env, aws_credentials):
-        self.db_info = self.extract_db_info(db_uri)
-        self.env = env
-        shops = []
-        shopify_stores = self._get_shopify_store_info()
-        if not shopify_stores:
-            raise Exception("No Shopify Store data available in Milk And Honey.")
-
-        for row in shopify_stores:
-            shop_config = {}
-            shop_name = row['advertiser_homepage'].replace("https://", "")
-            shop_name = shop_name.replace('.myshopify.com', "")
-            shop_config['shop'] = shop_name
-            shop_config['shop_id'] = row['affiliateId']
-            api_password = self._get_shopify_token(row['affiliateId'], aws_credentials)
-            shop_config["credentials"] =  {"auth_method": "api_password", 
-                                           "api_password": api_password}
-            if not api_password: 
-                print(f"shopify: failed to get access token for active shop: {shop_name}. It will be excluded from the sync.")
-                continue
-            shops.append(shop_config)
-        self.logger.info("Fetched %d well-formed (M&H +  SecretManager) stores from Milk and Honey for extraction", len(shops))
-        return shops
+                self.connection.close()
+    
     
