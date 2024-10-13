@@ -364,3 +364,28 @@ This function:
 - Prints the report to the console
 - Uploads the report to remote storage if we're in CI
 - Updates the per connector commit status check
+
+## How to add CI to a Poetry package
+
+*You can use [this PR](https://github.com/airbytehq/airbyte/pull/44427/) as reference.*
+
+The `airbyte-ci test -p <path-to-poetry-package>` command is made to run CI on our poetry packages.
+*It's not well named ATM as it can do more than just run tests.*
+This command is made to run [`poe` tasks](https://poethepoet.natn.io/index.html) that are declared in `pyproject.toml` of the package.
+The idea is that the CI logic is declared in the package itself and `airbyte-ci` is just orchestrating the execution of the tasks.
+Configuring what's running in CI is done by adding a `[tool.airbyte_ci]` section in the `pyproject.toml` file of the package (example [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/pyproject.toml#L112)).
+
+So to add a `poe` task to be run automatically in CI you have to:
+1. Declare your package as an internal one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L7) and [there](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/airbyte-ci-tests.yml#L46)
+2. Define the `poe` task in the `pyproject.toml` of the package under the `[tool.poe.tasks]` section.
+3. Add it to the list of `poe_tasks` in the `[tool.airbyte_ci]` section of the `pyproject.toml` file (this determines which poe tasks runs in CI).
+
+### `poe` tasks that depend on environment variables
+If your `poe` task depends on environment variables you have to declare them in the `required_environment_variables` list of the `[tool.airbyte_ci]` section of the `pyproject.toml` file. To set these env var in CI you have to add them to the `env` section of the `airbyte-ci-tests` Github action [here](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/airbyte-ci-tests.yml).
+
+### `poe` tasks that depend on a Docker engine
+If your `poe` task needs to interact with a Docker engine you have to set `mount_docker_socket = true` in the `[tool.airbyte_ci]` section of the `pyproject.toml` file. This will mount the docker socket of the Github runner to the container running the `poe` task.
+
+### `poe` tasks that depend on `extras`
+If your `poe` task depends on `extras` you have to declare them in the `poetry_extras` list of the `[tool.airbyte_ci]` section of the `pyproject.toml` file. This will install the extras when running the `poe` task. 
+
