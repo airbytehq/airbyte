@@ -225,7 +225,6 @@ const EnabledIcon = ({ isEnabled }) => {
 const ConnectorMetadataCallout = ({
   isCloud,
   isOss,
-  isPypiPublished,
   isEnterprise,
   supportLevel,
   github_url,
@@ -236,7 +235,6 @@ const ConnectorMetadataCallout = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
-  sbomUrl,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -256,12 +254,8 @@ const ConnectorMetadataCallout = ({
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Airbyte OSS
               </Chip>
-              <Chip
-                className={
-                  isPypiPublished ? styles.available : styles.unavailable
-                }
-              >
-                <EnabledIcon isEnabled={isPypiPublished} /> PyAirbyte
+              <Chip className={styles.available}>
+                <EnabledIcon isEnabled={true} /> PyAirbyte
               </Chip>
             </>
           )}
@@ -279,10 +273,9 @@ const ConnectorMetadataCallout = ({
           </a>
           {lastUpdated && (
             <span className={styles.deemphasizeText}>{`(Last updated ${dayjs(
-              lastUpdated
+              lastUpdated,
             ).fromNow()})`}</span>
           )}
-
         </MetadataStat>
       )}
       {cdkVersion && (
@@ -290,16 +283,7 @@ const ConnectorMetadataCallout = ({
           <a target="_blank" href={cdkVersionUrl}>
             {cdkVersion}
           </a>
-          {isLatestCDK && (
-            <span className={styles.deemphasizeText}>{"(Latest)"}</span>
-          )}
-        </MetadataStat>
-      )}
-      {sbomUrl && (
-        <MetadataStat label="SBOM">
-          <a target="_blank" href={sbomUrl}>
-            SPDX JSON
-          </a>
+          {isLatestCDK && <span className={styles.deemphasizeText}>{"(Latest)"}</span>}
         </MetadataStat>
       )}
       {syncSuccessRate && (
@@ -334,7 +318,6 @@ const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
 export const HeaderDecoration = ({
   isOss: isOssString,
   isCloud: isCloudString,
-  isPypiPublished: isPypiPublishedString,
   isEnterprise: isEnterpriseString,
   dockerImageTag,
   supportLevel,
@@ -348,11 +331,9 @@ export const HeaderDecoration = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
-  sbomUrl,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
-  const isPypiPublished = boolStringToBool(isPypiPublishedString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
@@ -368,7 +349,6 @@ export const HeaderDecoration = ({
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}
-        isPypiPublished={isPypiPublished}
         isEnterprise={isEnterprise}
         supportLevel={supportLevel}
         github_url={github_url}
@@ -379,7 +359,6 @@ export const HeaderDecoration = ({
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
         lastUpdated={lastUpdated}
-        sbomUrl={sbomUrl}
       />
     </>
   );

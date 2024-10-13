@@ -71,6 +71,8 @@ Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connecto
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.0 | 2024-08-26 | [44780](https://github.com/airbytehq/airbyte/pull/44780) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-24 | [44661](https://github.com/airbytehq/airbyte/pull/44661) | Update dependencies |
 | 0.1.13 | 2024-08-17 | [44254](https://github.com/airbytehq/airbyte/pull/44254) | Update dependencies |
 | 0.1.12 | 2024-08-12 | [43891](https://github.com/airbytehq/airbyte/pull/43891) | Update dependencies |
 | 0.1.11 | 2024-08-10 | [43658](https://github.com/airbytehq/airbyte/pull/43658) | Update dependencies |

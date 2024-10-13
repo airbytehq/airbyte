@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: db04ecd1-42e7-4115-9cec-95812905c626
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.23
   dockerRepository: airbyte/source-retently
   documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   githubIssueLabel: source-retently

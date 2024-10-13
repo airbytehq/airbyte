@@ -36,6 +36,14 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.20 | 2024-10-12 | [46852](https://github.com/airbytehq/airbyte/pull/46852) | Update dependencies |
+| 0.2.19 | 2024-10-05 | [46469](https://github.com/airbytehq/airbyte/pull/46469) | Update dependencies |
+| 0.2.18 | 2024-09-28 | [46167](https://github.com/airbytehq/airbyte/pull/46167) | Update dependencies |
+| 0.2.17 | 2024-09-21 | [45781](https://github.com/airbytehq/airbyte/pull/45781) | Update dependencies |
+| 0.2.16 | 2024-09-14 | [45582](https://github.com/airbytehq/airbyte/pull/45582) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45235](https://github.com/airbytehq/airbyte/pull/45235) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [44948](https://github.com/airbytehq/airbyte/pull/44948) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44729](https://github.com/airbytehq/airbyte/pull/44729) | Update dependencies |
 | 0.2.12 | 2024-08-17 | [44280](https://github.com/airbytehq/airbyte/pull/44280) | Update dependencies |
 | 0.2.11 | 2024-08-12 | [43833](https://github.com/airbytehq/airbyte/pull/43833) | Update dependencies |
 | 0.2.10 | 2024-08-10 | [43518](https://github.com/airbytehq/airbyte/pull/43518) | Update dependencies |

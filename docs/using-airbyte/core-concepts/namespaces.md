@@ -82,7 +82,13 @@ The following table summarises how this works. In this example, we're looking at
 
 ## Using Namespaces with Basic Normalization
 
-As part of the connection settings, it is possible to configure the namespace used by: 1. destination connectors: to store the `_airbyte_raw_*` tables. 2. basic normalization: to store the final normalized tables.
+:::note
+Basic normalization has been deprecated in favor of [Typing & Deduping](/using-airbyte/core-concepts/typing-deduping).
+:::
+
+As part of the connection settings, it is possible to configure the namespace used by: 
+1. destination connectors: to store the `_airbyte_raw_*` tables. 
+2. basic normalization: to store the final normalized tables.
 
 When basic normalization is enabled, this is the location that both your normalized and raw data will get written to. Your raw data will show up with the prefix `_airbyte_raw_` in the namespace you define. If you don't enable basic normalization, you will only receive the raw tables.
 

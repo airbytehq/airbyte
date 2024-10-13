@@ -83,6 +83,14 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.14 | 2024-10-12 | [46814](https://github.com/airbytehq/airbyte/pull/46814) | Update dependencies |
+| 0.6.13 | 2024-10-05 | [46399](https://github.com/airbytehq/airbyte/pull/46399) | Update dependencies |
+| 0.6.12 | 2024-09-28 | [46155](https://github.com/airbytehq/airbyte/pull/46155) | Update dependencies |
+| 0.6.11 | 2024-09-21 | [45828](https://github.com/airbytehq/airbyte/pull/45828) | Update dependencies |
+| 0.6.10 | 2024-09-14 | [45518](https://github.com/airbytehq/airbyte/pull/45518) | Update dependencies |
+| 0.6.9 | 2024-09-07 | [45221](https://github.com/airbytehq/airbyte/pull/45221) | Update dependencies |
+| 0.6.8 | 2024-08-31 | [45029](https://github.com/airbytehq/airbyte/pull/45029) | Update dependencies |
+| 0.6.7 | 2024-08-24 | [44636](https://github.com/airbytehq/airbyte/pull/44636) | Update dependencies |
 | 0.6.6 | 2024-08-17 | [44260](https://github.com/airbytehq/airbyte/pull/44260) | Update dependencies |
 | 0.6.5 | 2024-08-12 | [43899](https://github.com/airbytehq/airbyte/pull/43899) | Update dependencies |
 | 0.6.4 | 2024-08-10 | [43527](https://github.com/airbytehq/airbyte/pull/43527) | Update dependencies |

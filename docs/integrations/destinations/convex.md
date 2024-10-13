@@ -56,7 +56,8 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.8   | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
 | 0.2.7   | 2024-07-31 | [42585](https://github.com/airbytehq/airbyte/pull/42585) | Improve error handling                                            |
 | 0.2.6   | 2024-07-09 | [41275](https://github.com/airbytehq/airbyte/pull/41275) | Update dependencies                                               |
 | 0.2.5   | 2024-07-06 | [40987](https://github.com/airbytehq/airbyte/pull/40987) | Update dependencies                                               |

@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.read.TestFixtures.assertFailures
 import io.airbyte.cdk.read.TestFixtures.factory
 import io.airbyte.cdk.read.TestFixtures.id
@@ -28,7 +29,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                         // absurdly low value to create many partitions
@@ -112,7 +113,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                         // absurdly low value to create many partitions
@@ -224,7 +225,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                     ),
@@ -327,7 +328,7 @@ class JdbcPartitionsCreatorTest {
         val stream = stream()
         val sharedState =
             sharedState(
-                constants = DefaultJdbcSharedState.Constants(withSampling = true),
+                constants = DefaultJdbcConstants(withSampling = true),
                 // The JdbcSequentialPartitionsCreator is not expected to query anything.
                 mockedQueries = arrayOf()
             )
@@ -400,7 +401,7 @@ class JdbcPartitionsCreatorTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -408,19 +409,19 @@ class JdbcPartitionsCreatorTest {
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         // Run
         val partitionReaders: List<PartitionReader> = runBlocking { run() }
         // Release resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         releaseResources()
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         // Return result
         return partitionReaders

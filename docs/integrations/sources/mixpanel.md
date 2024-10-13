@@ -58,6 +58,13 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.8 | 2024-10-12 | [46792](https://github.com/airbytehq/airbyte/pull/46792) | Update dependencies |
+| 3.4.7 | 2024-10-05 | [46428](https://github.com/airbytehq/airbyte/pull/46428) | Update dependencies |
+| 3.4.6 | 2024-09-28 | [45747](https://github.com/airbytehq/airbyte/pull/45747) | Update dependencies |
+| 3.4.5 | 2024-09-14 | [45473](https://github.com/airbytehq/airbyte/pull/45473) | Update dependencies |
+| 3.4.4 | 2024-09-07 | [45264](https://github.com/airbytehq/airbyte/pull/45264) | Update dependencies |
+| 3.4.3 | 2024-08-31 | [45059](https://github.com/airbytehq/airbyte/pull/45059) | Update dependencies |
+| 3.4.2 | 2024-08-24 | [44643](https://github.com/airbytehq/airbyte/pull/44643) | Update dependencies |
 | 3.4.1 | 2024-08-17 | [44274](https://github.com/airbytehq/airbyte/pull/44274) | Update dependencies |
 | 3.4.0 | 2024-07-16 | [41969](https://github.com/airbytehq/airbyte/pull/41969) | Update to v4 CDK |
 | 3.3.3 | 2024-08-10 | [43575](https://github.com/airbytehq/airbyte/pull/43575) | Update dependencies |

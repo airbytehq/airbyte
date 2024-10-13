@@ -54,7 +54,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
 
-    @property
+    @property  # type: ignore # mypy complains wrong type, but AbstractFileBasedCursor is parent of file-based cursors
     def cursor(self) -> Optional[AbstractFileBasedCursor]:
         return self._cursor
 
@@ -75,6 +75,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
+
+    def transform_record(self, record: dict[str, Any], file: RemoteFile, last_updated: str) -> dict[str, Any]:
+        # adds _ab_source_file_last_modified and _ab_source_file_url to the record
+        record[self.ab_last_mod_col] = last_updated
+        record[self.ab_file_name_col] = file.uri
+        return record
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """
@@ -102,8 +108,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     elif not self.record_passes_validation_policy(record):
                         n_skipped += 1
                         continue
-                    record[self.ab_last_mod_col] = file_datetime_string
-                    record[self.ab_file_name_col] = file.uri
+                    record = self.transform_record(record, file, file_datetime_string)
                     yield stream_data_to_airbyte_message(self.name, record)
                 self._cursor.add_file(file)
 
@@ -172,13 +177,14 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         try:
             schema = self._get_raw_json_schema()
         except InvalidSchemaError as config_exception:
-            self.logger.exception(FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exc_info=config_exception)
             raise AirbyteTracedException(
                 internal_message="Please check the logged errors for more information.",
                 message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
                 exception=AirbyteTracedException(exception=config_exception),
                 failure_type=FailureType.config_error,
             )
+        except AirbyteTracedException as ate:
+            raise ate
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
@@ -279,6 +285,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             for task in done:
                 try:
                     base_schema = merge_schemas(base_schema, task.result())
+                except AirbyteTracedException as ate:
+                    raise ate
                 except Exception as exc:
                     self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 
@@ -287,6 +295,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
             return await self.get_parser().infer_schema(self.config, file, self.stream_reader, self.logger)
+        except AirbyteTracedException as ate:
+            raise ate
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,

@@ -49,6 +49,14 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.24 | 2024-10-12 | [46809](https://github.com/airbytehq/airbyte/pull/46809) | Update dependencies |
+| 0.1.23 | 2024-10-05 | [46508](https://github.com/airbytehq/airbyte/pull/46508) | Update dependencies |
+| 0.1.22 | 2024-09-28 | [46188](https://github.com/airbytehq/airbyte/pull/46188) | Update dependencies |
+| 0.1.21 | 2024-09-21 | [45761](https://github.com/airbytehq/airbyte/pull/45761) | Update dependencies |
+| 0.1.20 | 2024-09-14 | [45559](https://github.com/airbytehq/airbyte/pull/45559) | Update dependencies |
+| 0.1.19 | 2024-09-07 | [45299](https://github.com/airbytehq/airbyte/pull/45299) | Update dependencies |
+| 0.1.18 | 2024-08-31 | [44951](https://github.com/airbytehq/airbyte/pull/44951) | Update dependencies |
+| 0.1.17 | 2024-08-24 | [44691](https://github.com/airbytehq/airbyte/pull/44691) | Update dependencies |
 | 0.1.16 | 2024-08-17 | [44229](https://github.com/airbytehq/airbyte/pull/44229) | Update dependencies |
 | 0.1.15 | 2024-08-10 | [43476](https://github.com/airbytehq/airbyte/pull/43476) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43095](https://github.com/airbytehq/airbyte/pull/43095) | Update dependencies |

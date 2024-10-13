@@ -62,10 +62,6 @@ class MountPath:
     def __str__(self) -> str:
         return str(self.path)
 
-    @property
-    def is_file(self) -> bool:
-        return self.get_path().is_file()
-
 
 @dataclass(kw_only=True, frozen=True)
 class Result:

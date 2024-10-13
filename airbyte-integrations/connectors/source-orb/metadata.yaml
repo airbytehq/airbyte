@@ -4,7 +4,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
-  dockerImageTag: 2.0.8
+  dockerImageTag: 2.0.13
   dockerRepository: airbyte/source-orb
   githubIssueLabel: source-orb
   icon: orb.svg

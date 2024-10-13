@@ -85,6 +85,15 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.13 | 2024-10-12 | [46805](https://github.com/airbytehq/airbyte/pull/46805) | Update dependencies |
+| 1.0.12 | 2024-10-05 | [46397](https://github.com/airbytehq/airbyte/pull/46397) | Update dependencies |
+| 1.0.11 | 2024-09-28 | [46191](https://github.com/airbytehq/airbyte/pull/46191) | Update dependencies |
+| 1.0.10 | 2024-09-21 | [45762](https://github.com/airbytehq/airbyte/pull/45762) | Update dependencies |
+| 1.0.9 | 2024-09-14 | [45564](https://github.com/airbytehq/airbyte/pull/45564) | Update dependencies |
+| 1.0.8 | 2024-09-07 | [45305](https://github.com/airbytehq/airbyte/pull/45305) | Update dependencies |
+| 1.0.7 | 2024-09-05 | [45161](https://github.com/airbytehq/airbyte/pull/45161) | Enable connector in Cloud registry |
+| 1.0.6 | 2024-08-31 | [45014](https://github.com/airbytehq/airbyte/pull/45014) | Update dependencies |
+| 1.0.5 | 2024-08-24 | [44730](https://github.com/airbytehq/airbyte/pull/44730) | Update dependencies |
 | 1.0.4 | 2024-08-17 | [44252](https://github.com/airbytehq/airbyte/pull/44252) | Update dependencies |
 | 1.0.3 | 2024-08-12 | [43873](https://github.com/airbytehq/airbyte/pull/43873) | Update dependencies |
 | 1.0.2 | 2024-08-10 | [43504](https://github.com/airbytehq/airbyte/pull/43504) | Update dependencies |

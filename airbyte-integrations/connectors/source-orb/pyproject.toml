@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.0.8"
+version = "2.0.13"
 name = "source-orb"
 description = "Source implementation for Orb."
 authors = [ "Airbyte <contact@airbyte.io>",]

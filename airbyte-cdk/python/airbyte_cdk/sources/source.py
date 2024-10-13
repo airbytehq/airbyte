@@ -8,7 +8,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Iterable, List, Mapping, Optional, TypeVar
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+)
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
@@ -61,7 +68,7 @@ class Source(
             state_obj = BaseConnector._read_json_file(state_path)
             if state_obj:
                 for state in state_obj:  # type: ignore  # `isinstance(state_obj, List)` ensures that this is a list
-                    parsed_message = AirbyteStateMessage.parse_obj(state)
+                    parsed_message = AirbyteStateMessageSerializer.load(state)
                     if not parsed_message.stream and not parsed_message.data and not parsed_message.global_:
                         raise ValueError("AirbyteStateMessage should contain either a stream, global, or state field")
                     parsed_state_messages.append(parsed_message)
@@ -70,7 +77,7 @@ class Source(
     # can be overridden to change an input catalog
     @classmethod
     def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(cls._read_json_file(catalog_path))
+        return ConfiguredAirbyteCatalogSerializer.load(cls._read_json_file(catalog_path))
 
     @property
     def name(self) -> str:

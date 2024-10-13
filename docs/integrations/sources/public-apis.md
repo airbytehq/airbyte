@@ -46,6 +46,14 @@ This source requires no setup.
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.20 | 2024-10-12 | [46839](https://github.com/airbytehq/airbyte/pull/46839) | Update dependencies |
+| 0.2.19 | 2024-10-05 | [46440](https://github.com/airbytehq/airbyte/pull/46440) | Update dependencies |
+| 0.2.18 | 2024-09-28 | [46198](https://github.com/airbytehq/airbyte/pull/46198) | Update dependencies |
+| 0.2.17 | 2024-09-21 | [45797](https://github.com/airbytehq/airbyte/pull/45797) | Update dependencies |
+| 0.2.16 | 2024-09-14 | [45515](https://github.com/airbytehq/airbyte/pull/45515) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45273](https://github.com/airbytehq/airbyte/pull/45273) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [44947](https://github.com/airbytehq/airbyte/pull/44947) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44360](https://github.com/airbytehq/airbyte/pull/44360) | Update dependencies |
 | 0.2.12 | 2024-08-12 | [43763](https://github.com/airbytehq/airbyte/pull/43763) | Update dependencies |
 | 0.2.11 | 2024-08-10 | [43632](https://github.com/airbytehq/airbyte/pull/43632) | Update dependencies |
 | 0.2.10 | 2024-08-03 | [43202](https://github.com/airbytehq/airbyte/pull/43202) | Update dependencies |

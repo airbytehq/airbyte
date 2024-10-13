@@ -70,6 +70,14 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.21 | 2024-10-12 | [46785](https://github.com/airbytehq/airbyte/pull/46785) | Update dependencies |
+| 0.2.20 | 2024-10-05 | [46422](https://github.com/airbytehq/airbyte/pull/46422) | Update dependencies |
+| 0.2.19 | 2024-09-28 | [46136](https://github.com/airbytehq/airbyte/pull/46136) | Update dependencies |
+| 0.2.18 | 2024-09-21 | [45733](https://github.com/airbytehq/airbyte/pull/45733) | Update dependencies |
+| 0.2.17 | 2024-09-14 | [45540](https://github.com/airbytehq/airbyte/pull/45540) | Update dependencies |
+| 0.2.16 | 2024-09-07 | [45268](https://github.com/airbytehq/airbyte/pull/45268) | Update dependencies |
+| 0.2.15 | 2024-08-31 | [45006](https://github.com/airbytehq/airbyte/pull/45006) | Update dependencies |
+| 0.2.14 | 2024-08-24 | [44625](https://github.com/airbytehq/airbyte/pull/44625) | Update dependencies |
 | 0.2.13 | 2024-08-17 | [44243](https://github.com/airbytehq/airbyte/pull/44243) | Update dependencies |
 | 0.2.12 | 2024-08-10 | [43480](https://github.com/airbytehq/airbyte/pull/43480) | Update dependencies |
 | 0.2.11 | 2024-08-03 | [43089](https://github.com/airbytehq/airbyte/pull/43089) | Update dependencies |

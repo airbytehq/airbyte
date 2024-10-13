@@ -50,6 +50,14 @@ The website also provides a free bearer token for testing with its interface.
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.1.19 | 2024-10-12 | [46768](https://github.com/airbytehq/airbyte/pull/46768) | Update dependencies |
+| 0.1.18 | 2024-10-05 | [46446](https://github.com/airbytehq/airbyte/pull/46446) | Update dependencies |
+| 0.1.17 | 2024-09-28 | [46205](https://github.com/airbytehq/airbyte/pull/46205) | Update dependencies |
+| 0.1.16 | 2024-09-21 | [45827](https://github.com/airbytehq/airbyte/pull/45827) | Update dependencies |
+| 0.1.15 | 2024-09-14 | [45565](https://github.com/airbytehq/airbyte/pull/45565) | Update dependencies |
+| 0.1.14 | 2024-09-07 | [45286](https://github.com/airbytehq/airbyte/pull/45286) | Update dependencies |
+| 0.1.13 | 2024-08-31 | [45015](https://github.com/airbytehq/airbyte/pull/45015) | Update dependencies |
+| 0.1.12 | 2024-08-24 | [44641](https://github.com/airbytehq/airbyte/pull/44641) | Update dependencies |
 | 0.1.11 | 2024-08-17 | [44235](https://github.com/airbytehq/airbyte/pull/44235) | Update dependencies |
 | 0.1.10 | 2024-08-12 | [43916](https://github.com/airbytehq/airbyte/pull/43916) | Update dependencies |
 | 0.1.9 | 2024-08-10 | [43469](https://github.com/airbytehq/airbyte/pull/43469) | Update dependencies |

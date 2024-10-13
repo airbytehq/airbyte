@@ -39,6 +39,13 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.21 | 2024-10-12 | [46476](https://github.com/airbytehq/airbyte/pull/46476) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [46122](https://github.com/airbytehq/airbyte/pull/46122) | Update dependencies |
+| 0.1.19 | 2024-09-21 | [45723](https://github.com/airbytehq/airbyte/pull/45723) | Update dependencies |
+| 0.1.18 | 2024-09-14 | [45529](https://github.com/airbytehq/airbyte/pull/45529) | Update dependencies |
+| 0.1.17 | 2024-09-07 | [45314](https://github.com/airbytehq/airbyte/pull/45314) | Update dependencies |
+| 0.1.16 | 2024-08-31 | [44949](https://github.com/airbytehq/airbyte/pull/44949) | Update dependencies |
+| 0.1.15 | 2024-08-24 | [44750](https://github.com/airbytehq/airbyte/pull/44750) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44320](https://github.com/airbytehq/airbyte/pull/44320) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43668](https://github.com/airbytehq/airbyte/pull/43668) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [42662](https://github.com/airbytehq/airbyte/pull/42662) | Update dependencies |

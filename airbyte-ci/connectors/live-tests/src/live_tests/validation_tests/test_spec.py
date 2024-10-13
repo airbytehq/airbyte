@@ -112,22 +112,32 @@ async def test_oneof_usage(target_spec: ConnectorSpecification):
         assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"
 
         const_common_props = set()
+        enum_common_props = set()
         for common_prop in common_props:
             if all(["const" in variant["properties"][common_prop] for variant in variants]):
                 const_common_props.add(common_prop)
-        assert (
-            len(const_common_props) == 1
-        ), f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
+            if all(["enum" in variant["properties"][common_prop] for variant in variants]):
+                enum_common_props.add(common_prop)
+        assert len(const_common_props) == 1 or (
+            len(const_common_props) == 0 and len(enum_common_props) == 1
+        ), f"There should be exactly one common property with 'const' keyword (or equivalent) for {oneof_path} subobjects. {docs_msg}"
 
-        const_common_prop = const_common_props.pop()
+        const_common_prop = const_common_props.pop() if const_common_props else enum_common_props.pop()
         for n, variant in enumerate(variants):
             prop_obj = variant["properties"][const_common_prop]
-            assert (
-                "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
-            ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
-            assert "enum" not in prop_obj or (
-                len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
-            ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
+            prop_info = f"common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`."
+            if "const" in prop_obj:
+                const_value = prop_obj["const"]
+                assert (
+                    "default" not in prop_obj or prop_obj["default"] == const_value
+                ), f"'default' needs to be identical to 'const' in {prop_info}. {docs_msg}"
+                assert "enum" not in prop_obj or prop_obj["enum"] == [
+                    const_value
+                ], f"'enum' needs to be an array with a single item identical to 'const' in {prop_info}. {docs_msg}"
+            else:
+                assert (
+                    "enum" in prop_obj and "default" in prop_obj and prop_obj["enum"] == [prop_obj["default"]]
+                ), f"'enum' needs to be an array with a single item identical to 'default' in {prop_info}. {docs_msg}"
 
 
 def _is_spec_property_name_secret(path: str, secret_property_names) -> Tuple[Optional[str], bool]:

@@ -16,10 +16,12 @@ from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
@@ -27,6 +29,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from orjson import orjson
 
 
 @pytest.fixture(name="destination")
@@ -194,7 +197,7 @@ class TestRun:
         parsed_args = argparse.Namespace(**args)
         destination.run_cmd(parsed_args)
 
-        spec = {'type': 'integer'}
+        spec = {"type": "integer"}
         spec_msg = ConnectorSpecification(connectionSpecification=spec)
 
         mocker.patch.object(destination, "spec", return_value=spec_msg)
@@ -214,7 +217,7 @@ class TestRun:
         assert returned_check_result.type == Type.CONNECTION_STATUS
         assert returned_check_result.connectionStatus.status == Status.FAILED
         # the specific phrasing is not relevant, so only check for the keywords
-        assert 'validation error' in returned_check_result.connectionStatus.message
+        assert "validation error" in returned_check_result.connectionStatus.message
 
     def test_run_write(self, mocker, destination: Destination, tmp_path, monkeypatch):
         config_path, dummy_config = tmp_path / "config.json", {"user": "sherif"}
@@ -230,7 +233,7 @@ class TestRun:
             ]
         )
         catalog_path = tmp_path / "catalog.json"
-        write_file(catalog_path, dummy_catalog.json(exclude_unset=True))
+        write_file(catalog_path, ConfiguredAirbyteCatalogSerializer.dump(dummy_catalog))
 
         args = {"command": "write", "config": config_path, "catalog": catalog_path}
         parsed_args = argparse.Namespace(**args)
@@ -244,7 +247,7 @@ class TestRun:
         validate_mock = mocker.patch("airbyte_cdk.destinations.destination.check_config_against_spec_or_exit")
         # mock input is a record followed by some state messages
         mocked_input: List[AirbyteMessage] = [_wrapped(_record("s1", {"k1": "v1"})), *expected_write_result]
-        mocked_stdin_string = "\n".join([record.json(exclude_unset=True) for record in mocked_input])
+        mocked_stdin_string = "\n".join([orjson.dumps(AirbyteMessageSerializer.dump(record)).decode() for record in mocked_input])
         mocked_stdin_string += "\n add this non-serializable string to verify the destination does not break on malformed input"
         mocked_stdin = io.TextIOWrapper(io.BytesIO(bytes(mocked_stdin_string, "utf-8")))
 

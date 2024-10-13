@@ -56,6 +56,14 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.21 | 2024-10-12 | [46764](https://github.com/airbytehq/airbyte/pull/46764) | Update dependencies |
+| 1.0.20 | 2024-10-05 | [46405](https://github.com/airbytehq/airbyte/pull/46405) | Update dependencies |
+| 1.0.19 | 2024-09-28 | [46118](https://github.com/airbytehq/airbyte/pull/46118) | Update dependencies |
+| 1.0.18 | 2024-09-21 | [45749](https://github.com/airbytehq/airbyte/pull/45749) | Update dependencies |
+| 1.0.17 | 2024-09-14 | [45578](https://github.com/airbytehq/airbyte/pull/45578) | Update dependencies |
+| 1.0.16 | 2024-09-07 | [45285](https://github.com/airbytehq/airbyte/pull/45285) | Update dependencies |
+| 1.0.15 | 2024-08-31 | [45056](https://github.com/airbytehq/airbyte/pull/45056) | Update dependencies |
+| 1.0.14 | 2024-08-24 | [44653](https://github.com/airbytehq/airbyte/pull/44653) | Update dependencies |
 | 1.0.13 | 2024-08-17 | [44238](https://github.com/airbytehq/airbyte/pull/44238) | Update dependencies |
 | 1.0.12 | 2024-08-12 | [43790](https://github.com/airbytehq/airbyte/pull/43790) | Update dependencies |
 | 1.0.11 | 2024-08-10 | [43648](https://github.com/airbytehq/airbyte/pull/43648) | Update dependencies |

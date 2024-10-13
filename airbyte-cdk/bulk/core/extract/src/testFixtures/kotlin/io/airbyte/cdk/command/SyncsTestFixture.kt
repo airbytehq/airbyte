@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions
 data object SyncsTestFixture {
     fun testSpec(expectedSpec: ConnectorSpecification) {
         val expected: String = Jsons.writeValueAsString(expectedSpec)
-        val output: BufferingOutputConsumer = CliRunner.runSource("spec")
+        val output: BufferingOutputConsumer = CliRunner.source("spec").run()
         val actual: String = Jsons.writeValueAsString(output.specs().last())
 
         val jsonMatcher: JsonMatcher =
@@ -49,10 +49,10 @@ data object SyncsTestFixture {
         )
 
     fun testCheck(
-        configPojo: ConfigurationJsonObjectBase,
+        configPojo: ConfigurationSpecification,
         expectedFailure: String? = null,
     ) {
-        val checkOutput: BufferingOutputConsumer = CliRunner.runSource("check", configPojo)
+        val checkOutput: BufferingOutputConsumer = CliRunner.source("check", configPojo).run()
         Assertions.assertEquals(1, checkOutput.statuses().size, checkOutput.statuses().toString())
         if (expectedFailure == null) {
             Assertions.assertEquals(
@@ -70,15 +70,15 @@ data object SyncsTestFixture {
     }
 
     fun testDiscover(
-        configPojo: ConfigurationJsonObjectBase,
+        configPojo: ConfigurationSpecification,
         expectedCatalog: AirbyteCatalog,
     ) {
-        val discoverOutput: BufferingOutputConsumer = CliRunner.runSource("discover", configPojo)
+        val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", configPojo).run()
         Assertions.assertEquals(listOf(expectedCatalog), discoverOutput.catalogs())
     }
 
     fun testDiscover(
-        configPojo: ConfigurationJsonObjectBase,
+        configPojo: ConfigurationSpecification,
         expectedCatalogResource: String,
     ) {
         testDiscover(configPojo, catalogFromResource(expectedCatalogResource))
@@ -90,29 +90,31 @@ data object SyncsTestFixture {
             AirbyteCatalog::class.java,
         )
 
-    fun <T : ConfigurationJsonObjectBase> testReads(
+    fun <T : ConfigurationSpecification> testReads(
         configPojo: T,
         connectionSupplier: Supplier<Connection>,
         prelude: (Connection) -> Unit,
         configuredCatalog: ConfiguredAirbyteCatalog,
+        initialState: List<AirbyteStateMessage> = listOf(),
         vararg afterRead: AfterRead,
     ) {
         connectionSupplier.get().use(prelude)
-        var state: List<AirbyteStateMessage> = listOf()
+        var state: List<AirbyteStateMessage> = initialState
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
-                CliRunner.runSource("read", configPojo, configuredCatalog, state)
+                CliRunner.source("read", configPojo, configuredCatalog, state).run()
             step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
         }
     }
 
-    fun <T : ConfigurationJsonObjectBase> testReads(
+    fun <T : ConfigurationSpecification> testReads(
         configPojo: T,
         connectionSupplier: Supplier<Connection>,
         prelude: (Connection) -> Unit,
         configuredCatalogResource: String,
+        initialStateResource: String?,
         vararg afterRead: AfterRead,
     ) {
         testReads(
@@ -120,11 +122,12 @@ data object SyncsTestFixture {
             connectionSupplier,
             prelude,
             configuredCatalogFromResource(configuredCatalogResource),
+            initialStateFromResource(initialStateResource),
             *afterRead,
         )
     }
 
-    fun <T : ConfigurationJsonObjectBase> testSyncs(
+    fun <T : ConfigurationSpecification> testSyncs(
         configPojo: T,
         connectionSupplier: Supplier<Connection>,
         prelude: (Connection) -> Unit,
@@ -138,14 +141,14 @@ data object SyncsTestFixture {
         var state: List<AirbyteStateMessage> = listOf()
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
-                CliRunner.runSource("read", configPojo, configuredCatalog, state)
+                CliRunner.source("read", configPojo, configuredCatalog, state).run()
             step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
         }
     }
 
-    fun <T : ConfigurationJsonObjectBase> testSyncs(
+    fun <T : ConfigurationSpecification> testSyncs(
         configPojo: T,
         connectionSupplier: Supplier<Connection>,
         prelude: (Connection) -> Unit,
@@ -169,6 +172,14 @@ data object SyncsTestFixture {
             ConfiguredAirbyteCatalog::class.java,
         )
 
+    fun initialStateFromResource(initialStateResource: String?): List<AirbyteStateMessage> =
+        if (initialStateResource == null) {
+            listOf()
+        } else {
+            val initialStateJson: String = ResourceUtils.readResource(initialStateResource)
+            ValidatedJsonUtils.parseList(AirbyteStateMessage::class.java, initialStateJson)
+        }
+
     interface AfterRead {
         fun validate(actualOutput: BufferingOutputConsumer)
 
@@ -182,7 +193,7 @@ data object SyncsTestFixture {
                 object : AfterRead {
                     override fun validate(actualOutput: BufferingOutputConsumer) {
                         // State messages are timing-sensitive and therefore non-deterministic.
-                        // Ignore them.
+                        // Ignore them for now.
                         val expectedWithoutStates: List<AirbyteMessage> =
                             expectedMessages
                                 .filterNot { it.type == AirbyteMessage.Type.STATE }
@@ -193,6 +204,19 @@ data object SyncsTestFixture {
                                 .filterNot { it.type == AirbyteMessage.Type.STATE }
                                 .sortedBy { Jsons.writeValueAsString(it) }
                         Assertions.assertIterableEquals(expectedWithoutStates, actualWithoutStates)
+                        // Check for state message counts (null if no state messages).
+                        val expectedCount: Double? =
+                            expectedMessages
+                                .filter { it.type == AirbyteMessage.Type.STATE }
+                                .mapNotNull { it.state?.sourceStats?.recordCount }
+                                .reduceRightOrNull { a: Double, b: Double -> a + b }
+                        val actualCount: Double? =
+                            actualOutput
+                                .messages()
+                                .filter { it.type == AirbyteMessage.Type.STATE }
+                                .mapNotNull { it.state?.sourceStats?.recordCount }
+                                .reduceRightOrNull { a: Double, b: Double -> a + b }
+                        Assertions.assertEquals(expectedCount, actualCount)
                     }
 
                     override fun update(connection: Connection) {

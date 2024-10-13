@@ -20,11 +20,12 @@ data class H2SourceConfiguration(
     override val sshTunnel: SshTunnelMethodConfiguration,
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
-    override val schemas: Set<String>,
+    override val namespaces: Set<String>,
     val cursor: CursorConfiguration,
     val resumablePreferred: Boolean,
     override val maxConcurrency: Int,
     override val checkpointTargetInterval: Duration,
+    override val maxSnapshotReadDuration: Duration? = null,
 ) : JdbcSourceConfiguration {
     override val global: Boolean = cursor is CdcCursor
     override val jdbcProperties: Map<String, String> = mapOf()
@@ -38,9 +39,9 @@ data class H2SourceConfiguration(
 @Requires(env = [Environment.TEST])
 @Secondary
 class H2SourceConfigurationFactory :
-    SourceConfigurationFactory<H2SourceConfigurationJsonObject, H2SourceConfiguration> {
+    SourceConfigurationFactory<H2SourceConfigurationSpecification, H2SourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: H2SourceConfigurationJsonObject,
+        pojo: H2SourceConfigurationSpecification,
     ): H2SourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
@@ -50,7 +51,7 @@ class H2SourceConfigurationFactory :
             sshTunnel = pojo.getTunnelMethodValue() ?: SshNoTunnelMethod,
             sshConnectionOptions = sshConnectionOptions,
             jdbcUrlFmt = "jdbc:h2:tcp://%s:%d/mem:${pojo.database}",
-            schemas = pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC"),
+            namespaces = pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC"),
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             resumablePreferred = pojo.resumablePreferred != false,
             maxConcurrency = 1,

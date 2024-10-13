@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.15"
+version = "0.1.23"
 name = "source-kyriba"
 description = "Source implementation for Kyriba."
 authors = [ "Airbyte <contact@airbyte.io>",]

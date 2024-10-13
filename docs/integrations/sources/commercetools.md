@@ -52,6 +52,14 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
+| 0.2.20 | 2024-10-12 | [46779](https://github.com/airbytehq/airbyte/pull/46779) | Update dependencies |
+| 0.2.19 | 2024-10-05 | [46497](https://github.com/airbytehq/airbyte/pull/46497) | Update dependencies |
+| 0.2.18 | 2024-09-28 | [46103](https://github.com/airbytehq/airbyte/pull/46103) | Update dependencies |
+| 0.2.17 | 2024-09-21 | [45778](https://github.com/airbytehq/airbyte/pull/45778) | Update dependencies |
+| 0.2.16 | 2024-09-14 | [45552](https://github.com/airbytehq/airbyte/pull/45552) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45287](https://github.com/airbytehq/airbyte/pull/45287) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [45022](https://github.com/airbytehq/airbyte/pull/45022) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44744](https://github.com/airbytehq/airbyte/pull/44744) | Update dependencies |
 | 0.2.12 | 2024-08-17 | [44209](https://github.com/airbytehq/airbyte/pull/44209) | Update dependencies |
 | 0.2.11 | 2024-08-12 | [43770](https://github.com/airbytehq/airbyte/pull/43770) | Update dependencies |
 | 0.2.10 | 2024-08-03 | [43131](https://github.com/airbytehq/airbyte/pull/43131) | Update dependencies |

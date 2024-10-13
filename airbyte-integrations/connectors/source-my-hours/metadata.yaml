@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 722ba4bf-06ec-45a4-8dd5-72e4a5cf3903
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.20
   dockerRepository: airbyte/source-my-hours
   githubIssueLabel: source-my-hours
   icon: my-hours.svg

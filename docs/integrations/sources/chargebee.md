@@ -104,6 +104,15 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.16 | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies |
+| 0.6.15 | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies |
+| 0.6.14 | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams |
+| 0.6.13 | 2024-10-01 | [46294](https://github.com/airbytehq/airbyte/pull/46294) | Update CDK version to `^5`, increased the `maxSecondsBetweenMessages` to 6 hours |
+| 0.6.12 | 2024-09-28 | [46169](https://github.com/airbytehq/airbyte/pull/46169) | Update dependencies |
+| 0.6.11 | 2024-09-21 | [45805](https://github.com/airbytehq/airbyte/pull/45805) | Update dependencies |
+| 0.6.10 | 2024-09-14 | [45254](https://github.com/airbytehq/airbyte/pull/45254) | Update dependencies |
+| 0.6.9 | 2024-08-31 | [45028](https://github.com/airbytehq/airbyte/pull/45028) | Update dependencies |
+| 0.6.8 | 2024-08-24 | [44662](https://github.com/airbytehq/airbyte/pull/44662) | Update dependencies |
 | 0.6.7 | 2024-08-17 | [44265](https://github.com/airbytehq/airbyte/pull/44265) | Update dependencies |
 | 0.6.6 | 2024-08-10 | [43640](https://github.com/airbytehq/airbyte/pull/43640) | Update dependencies |
 | 0.6.5 | 2024-08-03 | [43081](https://github.com/airbytehq/airbyte/pull/43081) | Update dependencies |

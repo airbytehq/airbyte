@@ -1,6 +1,10 @@
 # Amazon Seller Partner
 
-This page contains the setup guide and reference information for the Amazon Seller Partner source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Amazon Seller Partner](https://developer.amazonservices.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -30,7 +34,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 <!-- /env:oss -->
 
-## Setup Guide
+## Setup guide
 
 ## Step 1: Set up Amazon Seller Partner
 
@@ -50,11 +54,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Amazon Seller Partner** from the **Source type** dropdown.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 4. Enter a name for the Amazon Seller Partner connector.
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
@@ -68,12 +72,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-2. Go to local Airbyte page.
-3. On the Set up the source page, select **Amazon Seller Partner** from the **Source type** dropdown.
-4. Enter a name for the Amazon Seller Partner connector.
+1. Navigate to the Airbyte Open Source dashboard.
+2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown. 
+3. Enter a name for the Amazon Seller Partner connector. 
+4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
@@ -84,12 +88,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 ## Supported sync modes
 
-The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 - [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [All Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
@@ -145,6 +149,12 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 <!-- /env:oss -->
+
+<HideInUI>
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+</HideInUI>
 
 ## Report options
 
@@ -218,6 +228,9 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.4 | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817) | Update dependencies |
+| 4.4.3 | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473) | Update dependencies |
+| 4.4.2 | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748) | Update dependencies |
 | 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
 | 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
 | 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
@@ -231,7 +244,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 | 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
 | 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
 | 4.3.1 | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969) | [autopull] Upgrade base image to v1.2.1 |
-| 4.3.0   | 2024-05-24 | [#00000](https://github.com/airbytehq/airbyte/pull/00000) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
+| 4.3.0   | 2024-05-24 | [#38657](https://github.com/airbytehq/airbyte/pull/38657) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
 | 4.2.4   | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
 | 4.2.3   | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
 | 4.2.2   | 2024-04-24 | [#36630](https://github.com/airbytehq/airbyte/pull/36630) | Schema descriptions and CDK 0.80.0                                                                                                                                                  |

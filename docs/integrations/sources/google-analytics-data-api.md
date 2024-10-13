@@ -272,6 +272,14 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 2.5.12 | 2024-10-12 | [46819](https://github.com/airbytehq/airbyte/pull/46819) | Update dependencies |
+| 2.5.11 | 2024-10-05 | [46475](https://github.com/airbytehq/airbyte/pull/46475) | Update dependencies |
+| 2.5.10 | 2024-09-28 | [46158](https://github.com/airbytehq/airbyte/pull/46158) | Update dependencies |
+| 2.5.9 | 2024-09-21 | [45773](https://github.com/airbytehq/airbyte/pull/45773) | Update dependencies |
+| 2.5.8 | 2024-09-14 | [45503](https://github.com/airbytehq/airbyte/pull/45503) | Update dependencies |
+| 2.5.7 | 2024-09-07 | [45289](https://github.com/airbytehq/airbyte/pull/45289) | Update dependencies |
+| 2.5.6 | 2024-08-31 | [44980](https://github.com/airbytehq/airbyte/pull/44980) | Update dependencies |
+| 2.5.5 | 2024-08-24 | [44645](https://github.com/airbytehq/airbyte/pull/44645) | Update dependencies |
 | 2.5.4 | 2024-08-17 | [44337](https://github.com/airbytehq/airbyte/pull/44337) | Update dependencies |
 | 2.5.3 | 2024-08-13 | [43929](https://github.com/airbytehq/airbyte/pull/43929) | Increase streams max_time to backoff |
 | 2.5.2 | 2024-08-12 | [43909](https://github.com/airbytehq/airbyte/pull/43909) | Update dependencies |

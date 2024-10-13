@@ -105,6 +105,14 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.23 | 2024-10-12 | [46833](https://github.com/airbytehq/airbyte/pull/46833) | Update dependencies |
+| 1.2.22 | 2024-10-05 | [46491](https://github.com/airbytehq/airbyte/pull/46491) | Update dependencies |
+| 1.2.21 | 2024-09-28 | [46186](https://github.com/airbytehq/airbyte/pull/46186) | Update dependencies |
+| 1.2.20 | 2024-09-21 | [45726](https://github.com/airbytehq/airbyte/pull/45726) | Update dependencies |
+| 1.2.19 | 2024-09-14 | [45500](https://github.com/airbytehq/airbyte/pull/45500) | Update dependencies |
+| 1.2.18 | 2024-09-07 | [45238](https://github.com/airbytehq/airbyte/pull/45238) | Update dependencies |
+| 1.2.17 | 2024-08-31 | [44967](https://github.com/airbytehq/airbyte/pull/44967) | Update dependencies |
+| 1.2.16 | 2024-08-24 | [44642](https://github.com/airbytehq/airbyte/pull/44642) | Update dependencies |
 | 1.2.15 | 2024-08-17 | [44301](https://github.com/airbytehq/airbyte/pull/44301) | Update dependencies |
 | 1.2.14 | 2024-08-12 | [43910](https://github.com/airbytehq/airbyte/pull/43910) | Update dependencies |
 | 1.2.13 | 2024-08-10 | [43524](https://github.com/airbytehq/airbyte/pull/43524) | Update dependencies |

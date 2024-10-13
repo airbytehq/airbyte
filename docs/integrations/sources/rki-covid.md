@@ -56,6 +56,14 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.23 | 2024-10-12 | [46791](https://github.com/airbytehq/airbyte/pull/46791) | Update dependencies |
+| 0.1.22 | 2024-10-05 | [46495](https://github.com/airbytehq/airbyte/pull/46495) | Update dependencies |
+| 0.1.21 | 2024-09-28 | [46123](https://github.com/airbytehq/airbyte/pull/46123) | Update dependencies |
+| 0.1.20 | 2024-09-21 | [45833](https://github.com/airbytehq/airbyte/pull/45833) | Update dependencies |
+| 0.1.19 | 2024-09-14 | [45478](https://github.com/airbytehq/airbyte/pull/45478) | Update dependencies |
+| 0.1.18 | 2024-09-07 | [45284](https://github.com/airbytehq/airbyte/pull/45284) | Update dependencies |
+| 0.1.17 | 2024-08-31 | [44993](https://github.com/airbytehq/airbyte/pull/44993) | Update dependencies |
+| 0.1.16 | 2024-08-24 | [44639](https://github.com/airbytehq/airbyte/pull/44639) | Update dependencies |
 | 0.1.15 | 2024-08-17 | [44290](https://github.com/airbytehq/airbyte/pull/44290) | Update dependencies |
 | 0.1.14 | 2024-08-10 | [43557](https://github.com/airbytehq/airbyte/pull/43557) | Update dependencies |
 | 0.1.13 | 2024-08-03 | [43070](https://github.com/airbytehq/airbyte/pull/43070) | Update dependencies |

@@ -6,10 +6,10 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
-from airbyte_protocol.models import FailureType
 from requests import Response
 
 SOME_BACKOFF_TIME = 60
@@ -44,7 +44,9 @@ def test_given_retry_after_smaller_than_max_time_then_raise_transient_error():
     response_mock = MagicMock(spec=Response)
     retry_after = _A_MAX_TIME - 1
     response_mock.headers = {_A_RETRY_HEADER: str(retry_after)}
-    backoff_strategy = WaitTimeFromHeaderBackoffStrategy(header=_A_RETRY_HEADER, max_waiting_time_in_seconds=_A_MAX_TIME, parameters={}, config={})
+    backoff_strategy = WaitTimeFromHeaderBackoffStrategy(
+        header=_A_RETRY_HEADER, max_waiting_time_in_seconds=_A_MAX_TIME, parameters={}, config={}
+    )
 
     assert backoff_strategy.backoff_time(response_mock, 1) == retry_after
 
@@ -52,7 +54,9 @@ def test_given_retry_after_smaller_than_max_time_then_raise_transient_error():
 def test_given_retry_after_greater_than_max_time_then_raise_transient_error():
     response_mock = MagicMock(spec=Response)
     response_mock.headers = {_A_RETRY_HEADER: str(_A_MAX_TIME + 1)}
-    backoff_strategy = WaitTimeFromHeaderBackoffStrategy(header=_A_RETRY_HEADER, max_waiting_time_in_seconds=_A_MAX_TIME, parameters={}, config={})
+    backoff_strategy = WaitTimeFromHeaderBackoffStrategy(
+        header=_A_RETRY_HEADER, max_waiting_time_in_seconds=_A_MAX_TIME, parameters={}, config={}
+    )
 
     with pytest.raises(AirbyteTracedException) as exception:
         backoff_strategy.backoff_time(response_mock, 1)

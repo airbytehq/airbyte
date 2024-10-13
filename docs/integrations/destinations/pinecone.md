@@ -79,6 +79,14 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.26 | 2024-10-12 | [46782](https://github.com/airbytehq/airbyte/pull/46782) | Update dependencies |
+| 0.1.25 | 2024-10-05 | [46474](https://github.com/airbytehq/airbyte/pull/46474) | Update dependencies |
+| 0.1.24 | 2024-09-28 | [46127](https://github.com/airbytehq/airbyte/pull/46127) | Update dependencies |
+| 0.1.23 | 2024-09-21 | [45791](https://github.com/airbytehq/airbyte/pull/45791) | Update dependencies |
+| 0.1.22 | 2024-09-14 | [45490](https://github.com/airbytehq/airbyte/pull/45490) | Update dependencies |
+| 0.1.21 | 2024-09-07 | [45247](https://github.com/airbytehq/airbyte/pull/45247) | Update dependencies |
+| 0.1.20 | 2024-08-31 | [45063](https://github.com/airbytehq/airbyte/pull/45063) | Update dependencies |
+| 0.1.19 | 2024-08-24 | [44669](https://github.com/airbytehq/airbyte/pull/44669) | Update dependencies |
 | 0.1.18 | 2024-08-17 | [44302](https://github.com/airbytehq/airbyte/pull/44302) | Update dependencies |
 | 0.1.17 | 2024-08-12 | [43932](https://github.com/airbytehq/airbyte/pull/43932) | Update dependencies |
 | 0.1.16 | 2024-08-10 | [43701](https://github.com/airbytehq/airbyte/pull/43701) | Update dependencies |

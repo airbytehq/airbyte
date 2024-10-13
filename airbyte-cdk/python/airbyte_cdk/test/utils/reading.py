@@ -3,9 +3,9 @@
 from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk import AbstractSource
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 
 
 def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:

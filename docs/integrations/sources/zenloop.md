@@ -77,6 +77,14 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.34 | 2024-10-12 | [46780](https://github.com/airbytehq/airbyte/pull/46780) | Update dependencies |
+| 0.1.33 | 2024-10-05 | [46431](https://github.com/airbytehq/airbyte/pull/46431) | Update dependencies |
+| 0.1.32 | 2024-09-28 | [46141](https://github.com/airbytehq/airbyte/pull/46141) | Update dependencies |
+| 0.1.31 | 2024-09-21 | [45823](https://github.com/airbytehq/airbyte/pull/45823) | Update dependencies |
+| 0.1.30 | 2024-09-14 | [45485](https://github.com/airbytehq/airbyte/pull/45485) | Update dependencies |
+| 0.1.29 | 2024-09-07 | [45249](https://github.com/airbytehq/airbyte/pull/45249) | Update dependencies |
+| 0.1.28 | 2024-08-31 | [45044](https://github.com/airbytehq/airbyte/pull/45044) | Update dependencies |
+| 0.1.27 | 2024-08-24 | [44680](https://github.com/airbytehq/airbyte/pull/44680) | Update dependencies |
 | 0.1.26 | 2024-08-17 | [44334](https://github.com/airbytehq/airbyte/pull/44334) | Update dependencies |
 | 0.1.25 | 2024-08-10 | [43647](https://github.com/airbytehq/airbyte/pull/43647) | Update dependencies |
 | 0.1.24 | 2024-08-03 | [43243](https://github.com/airbytehq/airbyte/pull/43243) | Update dependencies |

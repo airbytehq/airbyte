@@ -58,6 +58,14 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.2.21 | 2024-10-12 | [46840](https://github.com/airbytehq/airbyte/pull/46840) | Update dependencies |
+| 0.2.20 | 2024-10-05 | [46453](https://github.com/airbytehq/airbyte/pull/46453) | Update dependencies |
+| 0.2.19 | 2024-09-28 | [46206](https://github.com/airbytehq/airbyte/pull/46206) | Update dependencies |
+| 0.2.18 | 2024-09-21 | [45725](https://github.com/airbytehq/airbyte/pull/45725) | Update dependencies |
+| 0.2.17 | 2024-09-14 | [45539](https://github.com/airbytehq/airbyte/pull/45539) | Update dependencies |
+| 0.2.16 | 2024-09-07 | [45292](https://github.com/airbytehq/airbyte/pull/45292) | Update dependencies |
+| 0.2.15 | 2024-08-31 | [44979](https://github.com/airbytehq/airbyte/pull/44979) | Update dependencies |
+| 0.2.14 | 2024-08-24 | [44693](https://github.com/airbytehq/airbyte/pull/44693) | Update dependencies |
 | 0.2.13 | 2024-08-17 | [43827](https://github.com/airbytehq/airbyte/pull/43827) | Update dependencies |
 | 0.2.12 | 2024-08-10 | [43630](https://github.com/airbytehq/airbyte/pull/43630) | Update dependencies |
 | 0.2.11 | 2024-08-03 | [43124](https://github.com/airbytehq/airbyte/pull/43124) | Update dependencies |

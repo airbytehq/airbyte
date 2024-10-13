@@ -58,6 +58,13 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.0  | 2024-10-06 | [46522](https://github.com/airbytehq/airbyte/pull/46522) | Migrate to Manifest-only |
+| 0.1.21 | 2024-10-05 | [46509](https://github.com/airbytehq/airbyte/pull/46509) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [45793](https://github.com/airbytehq/airbyte/pull/45793) | Update dependencies |
+| 0.1.19 | 2024-09-14 | [45535](https://github.com/airbytehq/airbyte/pull/45535) | Update dependencies |
+| 0.1.18 | 2024-09-07 | [45259](https://github.com/airbytehq/airbyte/pull/45259) | Update dependencies |
+| 0.1.17 | 2024-08-31 | [44975](https://github.com/airbytehq/airbyte/pull/44975) | Update dependencies |
+| 0.1.16 | 2024-08-24 | [44705](https://github.com/airbytehq/airbyte/pull/44705) | Update dependencies |
 | 0.1.15 | 2024-08-17 | [44309](https://github.com/airbytehq/airbyte/pull/44309) | Update dependencies |
 | 0.1.14 | 2024-08-10 | [43592](https://github.com/airbytehq/airbyte/pull/43592) | Update dependencies |
 | 0.1.13 | 2024-08-03 | [43265](https://github.com/airbytehq/airbyte/pull/43265) | Update dependencies |

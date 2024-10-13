@@ -67,7 +67,16 @@ In addition, in the connector UI you define two set of fields for this connector
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.27 | 2024-10-12 | [46812](https://github.com/airbytehq/airbyte/pull/46812) | Update dependencies |
+| 0.2.26 | 2024-10-05 | [46438](https://github.com/airbytehq/airbyte/pull/46438) | Update dependencies |
+| 0.2.25 | 2024-09-28 | [46114](https://github.com/airbytehq/airbyte/pull/46114) | Update dependencies |
+| 0.2.24 | 2024-09-21 | [45806](https://github.com/airbytehq/airbyte/pull/45806) | Update dependencies |
+| 0.2.23 | 2024-09-14 | [45481](https://github.com/airbytehq/airbyte/pull/45481) | Update dependencies |
+| 0.2.22 | 2024-09-07 | [45324](https://github.com/airbytehq/airbyte/pull/45324) | Update dependencies |
+| 0.2.21 | 2024-08-31 | [45021](https://github.com/airbytehq/airbyte/pull/45021) | Update dependencies |
+| 0.2.20 | 2024-08-24 | [44657](https://github.com/airbytehq/airbyte/pull/44657) | Update dependencies |
+| 0.2.19 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.2.18 | 2024-08-17 | [44310](https://github.com/airbytehq/airbyte/pull/44310) | Update dependencies |
 | 0.2.17 | 2024-08-12 | [43858](https://github.com/airbytehq/airbyte/pull/43858) | Update dependencies |
 | 0.2.16 | 2024-08-10 | [43494](https://github.com/airbytehq/airbyte/pull/43494) | Update dependencies |

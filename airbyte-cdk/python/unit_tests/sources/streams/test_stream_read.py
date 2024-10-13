@@ -23,11 +23,15 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
@@ -433,8 +437,23 @@ def test_concurrent_incremental_read_two_slices():
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
+    handler = ConcurrentReadProcessor(
+        [stream],
+        Mock(spec=PartitionEnqueuer),
+        Mock(spec=ThreadPoolManager),
+        logger,
+        slice_logger,
+        message_repository,
+        Mock(spec=PartitionReader),
+    )
+
     for record in expected_records:
         assert record in actual_records
+
+    # We need run on_record to update cursor with record cursor value
+    for record in actual_records:
+        list(handler.on_record(Record(record, Mock(spec=Partition, **{"stream_name.return_value": "__mock_stream"}))))
+
     assert len(actual_records) == len(expected_records)
 
     # We don't have a real source that reads from the message_repository for state, so we read from the queue directly to verify
@@ -470,7 +489,9 @@ def test_configured_json_schema():
         },
     }
 
-    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(current_json_schema)
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(
+        current_json_schema
+    )
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
@@ -506,7 +527,9 @@ def test_configured_json_schema_with_invalid_properties():
     del stream_schema["properties"][old_user_insights]
     del stream_schema["properties"][old_feature_info]
 
-    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(configured_json_schema)
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(
+        configured_json_schema
+    )
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
@@ -521,7 +544,9 @@ def test_configured_json_schema_with_invalid_properties():
     assert old_user_insights not in configured_json_schema_properties
     assert old_feature_info not in configured_json_schema_properties
     for stream_schema_property in stream_schema["properties"]:
-        assert stream_schema_property in configured_json_schema_properties, f"Stream schema property: {stream_schema_property} missing in configured schema"
+        assert (
+            stream_schema_property in configured_json_schema_properties
+        ), f"Stream schema property: {stream_schema_property} missing in configured schema"
         assert stream_schema["properties"][stream_schema_property] == configured_json_schema_properties[stream_schema_property]
 
 
