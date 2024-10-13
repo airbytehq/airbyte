@@ -172,8 +172,8 @@ class PineconeIndexer(Indexer):
 
             index_description = self.pinecone_index.describe_index_stats()
             all_namespaces = index_description.namespaces.keys()
-            if self.config.default_namespace not in all_namespaces:
-                return f"Namespace {self.config.default_namespace} does not exist in index {self.config.index}."
+            if self.config.namespace not in all_namespaces:
+                return f"Namespace {self.config.namespace} does not exist in index {self.config.index}."
         except Exception as e:
             if isinstance(e, urllib3.exceptions.MaxRetryError):
                 if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):

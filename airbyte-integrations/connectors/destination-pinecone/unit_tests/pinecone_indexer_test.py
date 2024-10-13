@@ -10,9 +10,10 @@ import urllib3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
-from pinecone import IndexDescription, exceptions
+from pinecone import IndexDescription, exceptions, DescribeIndexStatsResponse
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
+from pinecone.core.openapi.data.models import NamespaceSummary
 
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
@@ -29,7 +30,21 @@ def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
             indexer.pc.describe_index.side_effect = side_effect
         else:
             indexer.pc.describe_index.return_value = create_index_description(dimensions=embedding_dimensions)
+
+        indexer.pinecone_index.describe_index_stats = MagicMock()
+        indexer.pinecone_index.describe_index_stats.return_value.namespaces = create_index_stats()
+        
         return indexer
+    
+def create_index_stats():
+    namespace_summaries = {"mynamespace": NamespaceSummary(vector_count=1)}
+    index_stats = DescribeIndexStatsResponse(
+        dimension = 1024,
+        index_fullness= 0,
+        total_vector_count=1,
+        namespaces = namespace_summaries
+        )
+    return index_stats
 
 def create_index_description(dimensions=3, pod_type="p1"):
     return IndexDescription(
