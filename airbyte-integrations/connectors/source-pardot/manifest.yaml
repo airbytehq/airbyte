@@ -1,15 +1,15 @@
-version: 4.3.2
+version: 5.13.0
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - Campaigns
+    - campaigns
 
 definitions:
   streams:
-    Campaigns:
+    campaigns:
       type: DeclarativeStream
       name: campaigns
       primary_key:
@@ -22,11 +22,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: id
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -42,13 +42,13 @@ definitions:
             field_name: id_greater_than
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("campaign", {})[-1].get("id", {}) }}'
-            stop_condition: '{{ not response.get("campaign", {})[-1].get("id", {}) }}'
+            cursor_value: "{{ response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
+            stop_condition: "{{ not response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Campaigns"
-    EmailClicks:
+          $ref: "#/schemas/campaigns"
+    email_clicks:
       type: DeclarativeStream
       name: email_clicks
       primary_key:
@@ -63,7 +63,7 @@ definitions:
             format: json
             created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -79,13 +79,13 @@ definitions:
             field_name: id_greater_than
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("emailClick", {})[-1].get("id", {}) }}'
-            stop_condition: '{{ not response.get("emailClick", {})[-1].get("id", {}) }}'
+            cursor_value: "{{ response.get(\"emailClick\", {})[-1].get(\"id\", {}) }}"
+            stop_condition: "{{ not response.get(\"emailClick\", {})[-1].get(\"id\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/EmailClicks"
-    ListMembership:
+          $ref: "#/schemas/email_clicks"
+    list_membership:
       type: DeclarativeStream
       name: list_membership
       primary_key:
@@ -98,11 +98,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: id
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,8 +127,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ListMembership"
-    Lists:
+          $ref: "#/schemas/list_membership"
+    lists:
       type: DeclarativeStream
       name: lists
       primary_key:
@@ -141,11 +141,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: updated_at
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -161,13 +161,13 @@ definitions:
             field_name: updated_after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("list", {})[-1].get("updated_at", {}) }}'
-            stop_condition: '{{ not response.get("list", {})[-1].get("updated_at", {}) }}'
+            cursor_value: "{{ response.get(\"list\", {})[-1].get(\"updated_at\", {}) }}"
+            stop_condition: "{{ not response.get(\"list\", {})[-1].get(\"updated_at\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Lists"
-    ProspectAccounts:
+          $ref: "#/schemas/lists"
+    prospect_accounts:
       type: DeclarativeStream
       name: prospect_accounts
       primary_key:
@@ -180,11 +180,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: updated_at
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -209,8 +209,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ProspectAccounts"
-    Prospects:
+          $ref: "#/schemas/prospect_accounts"
+    prospects:
       type: DeclarativeStream
       name: prospects
       primary_key:
@@ -223,11 +223,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: updated_at
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -243,13 +243,13 @@ definitions:
             field_name: updated_after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("prospect", {})[-1].get("updated_at", {}) }}'
-            stop_condition: '{{ not response.get("prospect", {})[-1].get("updated_at", {}) }}'
+            cursor_value: "{{ response.get(\"prospect\", {})[-1].get(\"updated_at\", {}) }}"
+            stop_condition: "{{ not response.get(\"prospect\", {})[-1].get(\"updated_at\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Prospects"
-    Users:
+          $ref: "#/schemas/prospects"
+    users:
       type: DeclarativeStream
       name: users
       primary_key:
@@ -264,7 +264,7 @@ definitions:
             format: json
             created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -280,13 +280,13 @@ definitions:
             field_name: created_after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("user", {})[-1].get("created_at", {}) }}'
-            stop_condition: '{{ not response.get("user", {})[-1].get("created_at", {}) }}'
+            cursor_value: "{{ response.get(\"user\", {})[-1].get(\"created_at\", {}) }}"
+            stop_condition: "{{ not response.get(\"user\", {})[-1].get(\"created_at\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Users"
-    VisitorActivities:
+          $ref: "#/schemas/users"
+    visitor_activities:
       type: DeclarativeStream
       name: visitor_activities
       primary_key:
@@ -301,7 +301,7 @@ definitions:
             format: json
             created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -317,13 +317,13 @@ definitions:
             field_name: id_greater_than
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("visitor_activity", {})[-1].get("id", {}) }}'
-            stop_condition: '{{ not response.get("visitor_activity", {})[-1].get("id", {}) }}'
+            cursor_value: "{{ response.get(\"visitor_activity\", {})[-1].get(\"id\", {}) }}"
+            stop_condition: "{{ not response.get(\"visitor_activity\", {})[-1].get(\"id\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/VisitorActivities"
-    Visitors:
+          $ref: "#/schemas/visitor_activities"
+    visitors:
       type: DeclarativeStream
       name: visitors
       primary_key:
@@ -336,11 +336,11 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_by: updated_at
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -356,13 +356,13 @@ definitions:
             field_name: updated_after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("visitor", {})[-1].get("updated_at", {}) }}'
-            stop_condition: '{{ not response.get("visitor", {})[-1].get("updated_at", {}) }}'
+            cursor_value: "{{ response.get(\"visitor\", {})[-1].get(\"updated_at\", {}) }}"
+            stop_condition: "{{ not response.get(\"visitor\", {})[-1].get(\"updated_at\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Visitors"
-    Visits:
+          $ref: "#/schemas/visitors"
+    visits:
       type: DeclarativeStream
       name: visits
       retriever:
@@ -373,10 +373,10 @@ definitions:
           http_method: GET
           request_parameters:
             format: json
-            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
             sort_order: ascending
+            created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -387,8 +387,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Visits"
-    Opportunities:
+          $ref: "#/schemas/visits"
+    opportunities:
       type: DeclarativeStream
       name: opportunities
       primary_key:
@@ -403,7 +403,7 @@ definitions:
             format: json
             created_after: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
           request_headers:
-            Pardot-Business-Unit-Id: '{{ config["pardot_business_unit_id"] }}'
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -419,96 +419,150 @@ definitions:
             field_name: created_after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("opportunity", {})[-1].get("created_at", {}) }}'
+            cursor_value: "{{ response.get(\"opportunity\", {})[-1].get(\"created_at\", {}) }}"
             stop_condition: >-
               {{ not response.get("opportunity", {})[-1].get("created_at", {})
               }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Opportunities"
+          $ref: "#/schemas/opportunities"
   base_requester:
     type: HttpRequester
     url_base: https://pi.pardot.com/api/
     authenticator:
       type: OAuthAuthenticator
-      refresh_request_body: {}
-      token_refresh_endpoint: https://{{ 'test' if config['is_sandbox'] else 'login' }}.salesforce.com/services/oauth2/token
+      client_id: "{{ config[\"client_id\"] }}"
       grant_type: refresh_token
-      client_id: '{{ config["client_id"] }}'
-      client_secret: '{{ config["client_secret"] }}'
-      refresh_token: '{{ config["client_refresh_token"] }}'
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: >-
+        https://{{ 'test' if config['is_sandbox'] else 'login'
+        }}.salesforce.com/services/oauth2/token
 
 streams:
-  - $ref: "#/definitions/streams/Campaigns"
-  - $ref: "#/definitions/streams/EmailClicks"
-  - $ref: "#/definitions/streams/ListMembership"
-  - $ref: "#/definitions/streams/Lists"
-  - $ref: "#/definitions/streams/ProspectAccounts"
-  - $ref: "#/definitions/streams/Prospects"
-  - $ref: "#/definitions/streams/Users"
-  - $ref: "#/definitions/streams/VisitorActivities"
-  - $ref: "#/definitions/streams/Visitors"
-  - $ref: "#/definitions/streams/Visits"
-  # - $ref: "#/definitions/streams/Opportunities" # Currently disabled because test account doesn't have any data
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/email_clicks"
+  - $ref: "#/definitions/streams/list_membership"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/prospect_accounts"
+  - $ref: "#/definitions/streams/prospects"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/visitor_activities"
+  - $ref: "#/definitions/streams/visitors"
+  - $ref: "#/definitions/streams/visits"
+  # - $ref: "#/definitions/streams/opportunities" # Currently disabled because test account doesn't have any data
+
 
 spec:
   type: Spec
   connection_specification:
-    "$schema": http://json-schema.org/draft-07/schema#
-    title: Pardot Spec
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-      - pardot_business_unit_id
       - client_id
       - client_secret
       - refresh_token
-    additionalProperties: false
+      - pardot_business_unit_id
     properties:
-      pardot_business_unit_id:
-        description:
-          Pardot Business ID, can be found at Setup > Pardot > Pardot Account
-          Setup
-        type: string
       client_id:
+        type: string
         description: The Consumer Key that can be found when viewing your app in Salesforce
-        type: string
         airbyte_secret: true
-      client_secret:
-        description:
-          The Consumer Secret that can be found when viewing your app in
-          Salesforce
-        type: string
-        airbyte_secret: true
-      refresh_token:
-        description:
-          Salesforce Refresh Token used for Airbyte to access your Salesforce
-          account. If you don't know what this is, follow this <a href="https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b">guide</a>
-          to retrieve it.
-        type: string
-        airbyte_secret: true
+        order: 0
+      is_sandbox:
+        type: boolean
+        description: >-
+          Whether or not the the app is in a Salesforce sandbox. If you do not
+          know what this, assume it is false.
+        default: false
+        order: 1
       start_date:
-        description:
-          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
-          before this date will not be replicated. Leave blank to skip this filter
         type: string
-        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-        default:
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated. Leave blank to skip this filter
+        default: null
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2021-07-25T00:00:00Z"
-      is_sandbox:
-        description:
-          Whether or not the the app is in a Salesforce sandbox. If you do
-          not know what this, assume it is false.
-        type: boolean
-        default: false
+        order: 2
+      client_secret:
+        type: string
+        description: >-
+          The Consumer Secret that can be found when viewing your app in
+          Salesforce
+        airbyte_secret: true
+        order: 3
+      refresh_token:
+        type: string
+        description: >-
+          Salesforce Refresh Token used for Airbyte to access your Salesforce
+          account. If you don't know what this is, follow this <a
+          href="https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b">guide</a>
+          to retrieve it.
+        airbyte_secret: true
+        order: 4
+      pardot_business_unit_id:
+        type: string
+        description: >-
+          Pardot Business ID, can be found at Setup > Pardot > Pardot Account
+          Setup
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: false
+    email_clicks: false
+    list_membership: false
+    lists: false
+    prospect_accounts: false
+    prospects: false
+    users: false
+    visitor_activities: false
+    visitors: false
+    visits: false
+    opportunities: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    campaigns:
+      streamHash: ef6fbf0ab7ffa8f81749103d94235abd001d0f39
+    email_clicks:
+      streamHash: 2d74c8aab6c19a77ed2315e36c2fcb18296b641a
+    list_membership:
+      streamHash: 33edc450360e922bd939bf7aea5bb756e8714d64
+    lists:
+      streamHash: 984611ea793da473a3cfa6968fb01a4a36b6145f
+    prospect_accounts:
+      streamHash: 5938979e371a63739b281c64cd4f61064331d513
+    prospects:
+      streamHash: 4bcf3735358cd3942c17750ef76e052faf5a034e
+    users:
+      streamHash: 21012c537f20aed85d8fca2a91c135a2ed9a8e34
+    visitor_activities:
+      streamHash: 857eb94e1cf16eac22e0386450e79abfeffdf347
+    visitors:
+      streamHash: 339bee895c4c803eccc98ba0b836fbc0cb36d937
+    visits:
+      streamHash: c526ae3538c2c4f9b434e803521c509c0e5271a2
+    opportunities:
+      streamHash: fe2484cadf31a482f5f5421ac4a70d14f03e8796
+  assist: {}
 
 schemas:
-  Campaigns:
+  campaigns:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      cost:
+        type:
+          - "null"
+          - integer
       id:
         type:
           - integer
@@ -516,31 +570,16 @@ schemas:
         type:
           - "null"
           - string
-      cost:
-        type:
-          - "null"
-          - integer
-  EmailClicks:
+  email_clicks:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-          - integer
-      prospect_id:
-        type:
-          - "null"
-          - integer
-      url:
+      created_at:
         type:
           - "null"
           - string
-        format: ""
-      list_email_id:
-        type:
-          - "null"
-          - integer
+        format: date-time
       drip_program_action_id:
         type:
           - "null"
@@ -549,56 +588,71 @@ schemas:
         type:
           - "null"
           - integer
+      id:
+        type:
+          - integer
+      list_email_id:
+        type:
+          - "null"
+          - integer
+      prospect_id:
+        type:
+          - "null"
+          - integer
       tracker_redirect_id:
         type:
           - "null"
           - integer
+      url:
+        type:
+          - "null"
+          - string
+  list_membership:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
       created_at:
         type:
           - "null"
           - string
         format: date-time
-  ListMembership:
-    type: object
-    "$schema": http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
       id:
         type:
           - integer
       list_id:
         type:
           - integer
-      prospect_id:
-        type:
-          - integer
       opted_out:
         type:
           - "null"
           - boolean
-      created_at:
+      prospect_id:
         type:
-          - "null"
-          - string
-        format: date-time
+          - integer
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  Lists:
+  lists:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-          - integer
-      name:
+      description:
         type:
           - "null"
           - string
-      is_public:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - integer
+      is_crm_visible:
         type:
           - "null"
           - boolean
@@ -606,33 +660,37 @@ schemas:
         type:
           - "null"
           - boolean
+      is_public:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
       title:
         type:
           - "null"
           - string
-      description:
-        type:
-          - "null"
-          - string
-      is_crm_visible:
-        type:
-          - "null"
-          - boolean
-      created_at:
-        type:
-          - "null"
-          - string
-        format: date-time
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  ProspectAccounts:
+  prospect_accounts:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      assigned_to:
+        type:
+          - "null"
+          - object
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
       id:
         type:
           - integer
@@ -645,71 +703,11 @@ schemas:
           - "null"
           - string
         format: date-time
-      created_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-      assigned_to:
-        type:
-          - "null"
-          - object
-  Prospects:
+  prospects:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-          - integer
-      campaign_id:
-        type:
-          - "null"
-          - integer
-      salutation:
-        type:
-          - "null"
-          - string
-      first_name:
-        type:
-          - "null"
-          - string
-      last_name:
-        type:
-          - "null"
-          - string
-      email:
-        type:
-          - "null"
-          - string
-      password:
-        type:
-          - "null"
-          - string
-      company:
-        type:
-          - "null"
-          - string
-      prospect_account_id:
-        type:
-          - "null"
-          - integer
-      website:
-        type:
-          - "null"
-          - string
-      job_title:
-        type:
-          - "null"
-          - string
-      department:
-        type:
-          - "null"
-          - string
-      country:
-        type:
-          - "null"
-          - string
       address_one:
         type:
           - "null"
@@ -718,47 +716,15 @@ schemas:
         type:
           - "null"
           - string
-      city:
-        type:
-          - "null"
-          - string
-      state:
-        type:
-          - "null"
-          - string
-      territory:
-        type:
-          - "null"
-          - string
-      zip:
-        type:
-          - "null"
-          - string
-      phone:
-        type:
-          - "null"
-          - string
-      fax:
-        type:
-          - "null"
-          - string
-      source:
-        type:
-          - "null"
-          - string
       annual_revenue:
         type:
           - "null"
           - string
-      employees:
+      campaign_id:
         type:
           - "null"
-          - string
-      industry:
-        type:
-          - "null"
-          - string
-      years_in_business:
+          - integer
+      city:
         type:
           - "null"
           - string
@@ -766,40 +732,24 @@ schemas:
         type:
           - "null"
           - string
-      notes:
+      company:
         type:
           - "null"
           - string
-      score:
-        type:
-          - "null"
-          - integer
-      grade:
+      country:
         type:
           - "null"
           - string
-      last_activity_at:
+      created_at:
         type:
           - "null"
           - string
         format: date-time
-      recent_interaction:
-        type:
-          - "null"
-          - string
-      crm_lead_fid:
+      crm_account_fid:
         type:
           - "null"
           - string
       crm_contact_fid:
-        type:
-          - "null"
-          - string
-      crm_owner_fid:
-        type:
-          - "null"
-          - string
-      crm_account_fid:
         type:
           - "null"
           - string
@@ -808,19 +758,54 @@ schemas:
           - "null"
           - string
         format: date-time
+      crm_lead_fid:
+        type:
+          - "null"
+          - string
+      crm_owner_fid:
+        type:
+          - "null"
+          - string
       crm_url:
         type:
           - "null"
           - string
-      is_do_not_email:
+      department:
         type:
           - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      employees:
+        type:
+          - "null"
+          - string
+      fax:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      grade:
+        type:
+          - "null"
+          - string
+      id:
+        type:
           - integer
+      industry:
+        type:
+          - "null"
+          - string
       is_do_not_call:
         type:
           - "null"
           - integer
-      opted_out:
+      is_do_not_email:
         type:
           - "null"
           - integer
@@ -832,24 +817,90 @@ schemas:
         type:
           - "null"
           - integer
-      created_at:
+      job_title:
+        type:
+          - "null"
+          - string
+      last_activity_at:
         type:
           - "null"
           - string
         format: date-time
+      last_name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      opted_out:
+        type:
+          - "null"
+          - integer
+      password:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      prospect_account_id:
+        type:
+          - "null"
+          - integer
+      recent_interaction:
+        type:
+          - "null"
+          - string
+      salutation:
+        type:
+          - "null"
+          - string
+      score:
+        type:
+          - "null"
+          - integer
+      source:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      territory:
+        type:
+          - "null"
+          - string
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  Users:
+      website:
+        type:
+          - "null"
+          - string
+      years_in_business:
+        type:
+          - "null"
+          - string
+      zip:
+        type:
+          - "null"
+          - string
+  users:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
+      created_at:
         type:
-          - integer
+          - "null"
+          - string
+        format: date-time
       email:
         type:
           - "null"
@@ -858,11 +909,14 @@ schemas:
         type:
           - "null"
           - string
-      last_name:
+      id:
+        type:
+          - integer
+      job_title:
         type:
           - "null"
           - string
-      job_title:
+      last_name:
         type:
           - "null"
           - string
@@ -870,44 +924,33 @@ schemas:
         type:
           - "null"
           - string
-      created_at:
-        type:
-          - "null"
-          - string
-        format: date-time
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  VisitorActivities:
+  visitor_activities:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-          - integer
-      prospect_id:
-        type:
-          - "null"
-          - integer
-      visitor_id:
-        type:
-          - "null"
-          - integer
-      campaign_id:
-        type:
-          - "null"
-          - integer
       type:
         type:
           - "null"
           - integer
-      type_name:
+      campaign:
+        type:
+          - "null"
+          - object
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      created_at:
         type:
           - "null"
           - string
+        format: date-time
       details:
         type:
           - "null"
@@ -920,11 +963,7 @@ schemas:
         type:
           - "null"
           - integer
-      list_email_id:
-        type:
-          - "null"
-          - integer
-      form_id:
+      file_id:
         type:
           - "null"
           - integer
@@ -932,15 +971,18 @@ schemas:
         type:
           - "null"
           - integer
-      site_search_query_id:
+      form_id:
         type:
           - "null"
+          - integer
+      id:
+        type:
           - integer
       landing_page_id:
         type:
           - "null"
           - integer
-      paid_search_id_id:
+      list_email_id:
         type:
           - "null"
           - integer
@@ -948,57 +990,41 @@ schemas:
         type:
           - "null"
           - integer
-      visitor_page_view_id:
+      paid_search_id_id:
         type:
           - "null"
           - integer
-      file_id:
+      prospect_id:
         type:
           - "null"
           - integer
-      campaign:
+      site_search_query_id:
         type:
           - "null"
-          - object
-      created_at:
+          - integer
+      type_name:
         type:
           - "null"
           - string
-        format: date-time
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  Visitors:
+      visitor_id:
+        type:
+          - "null"
+          - integer
+      visitor_page_view_id:
+        type:
+          - "null"
+          - integer
+  visitors:
     type: object
-    "$schema": http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-          - integer
-      page_view_count:
-        type:
-          - "null"
-          - integer
-      ip_address:
-        type:
-          - "null"
-          - string
-      hostname:
-        type:
-          - "null"
-          - string
       campaign_parameter:
-        type:
-          - "null"
-          - string
-      medium_parameter:
-        type:
-          - "null"
-          - string
-      source_parameter:
         type:
           - "null"
           - string
@@ -1006,7 +1032,61 @@ schemas:
         type:
           - "null"
           - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      hostname:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      ip_address:
+        type:
+          - "null"
+          - string
+      medium_parameter:
+        type:
+          - "null"
+          - string
+      page_view_count:
+        type:
+          - "null"
+          - integer
+      source_parameter:
+        type:
+          - "null"
+          - string
       term_parameter:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  visits:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - integer
+      campaign:
+        type:
+          - "null"
+          - object
+      campaign_parameter:
+        type:
+          - "null"
+          - string
+      content_parameter:
         type:
           - "null"
           - string
@@ -1015,24 +1095,73 @@ schemas:
           - "null"
           - string
         format: date-time
+      details:
+        type:
+          - "null"
+          - string
+      duration_in_seconds:
+        type:
+          - "null"
+          - integer
+      email:
+        type:
+          - "null"
+          - object
+      email_id:
+        type:
+          - "null"
+          - integer
+      email_template_id:
+        type:
+          - "null"
+          - integer
+      first_visitor_page_view_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - integer
+      last_visitor_page_view_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      list_email_id:
+        type:
+          - "null"
+          - integer
+      medium_parameter:
+        type:
+          - "null"
+          - string
+      prospect_id:
+        type:
+          - "null"
+          - integer
+      source_parameter:
+        type:
+          - "null"
+          - string
+      term_parameter:
+        type:
+          - "null"
+          - string
+      type_name:
+        type:
+          - "null"
+          - string
       updated_at:
         type:
           - "null"
           - string
         format: date-time
-  Visits:
-    type: object
-    "$schema": http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - integer
-      visitor_id:
+      visit_id:
         type:
           - "null"
           - integer
-      prospect_id:
+      visitor_id:
         type:
           - "null"
           - integer
@@ -1044,122 +1173,19 @@ schemas:
         type:
           - "null"
           - object
-      first_visitor_page_view_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-      last_visitor_page_view_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-      duration_in_seconds:
-        type:
-          - "null"
-          - integer
-      campaign_parameter:
-        type:
-          - "null"
-          - string
-      medium_parameter:
-        type:
-          - "null"
-          - string
-      source_parameter:
-        type:
-          - "null"
-          - string
-      content_parameter:
-        type:
-          - "null"
-          - string
-      term_parameter:
-        type:
-          - "null"
-          - string
-      created_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updated_at:
-        type:
-          - "null"
-          - string
-        format: date-time
+  opportunities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
       type:
         type:
           - "null"
-          - integer
-      type_name:
-        type:
-          - "null"
           - string
-      details:
-        type:
-          - "null"
-          - string
-      visit_id:
-        type:
-          - "null"
-          - integer
-      campaign:
-        type:
-          - "null"
-          - object
-      email_id:
-        type:
-          - "null"
-          - integer
-      email:
-        type:
-          - "null"
-          - object
-      list_email_id:
-        type:
-          - "null"
-          - integer
-      email_template_id:
-        type:
-          - "null"
-          - integer
-  Opportunities:
-    type: object
-    "$schema": http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - integer
       campaign_id:
         type:
           - "null"
           - integer
-      name:
-        type:
-          - "null"
-          - string
-      value:
-        type:
-          - "null"
-          - number
-      probability:
-        type:
-          - "null"
-          - integer
-      type:
-        type:
-          - "null"
-          - string
-      stage:
-        type:
-          - "null"
-          - string
-      status:
-        type:
-          - "null"
-          - string
       closed_at:
         type:
           - "null"
@@ -1170,8 +1196,31 @@ schemas:
           - "null"
           - string
         format: date-time
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      probability:
+        type:
+          - "null"
+          - integer
+      stage:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
       updated_at:
         type:
           - "null"
           - string
         format: date-time
+      value:
+        type:
+          - "null"
+          - number
