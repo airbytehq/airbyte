@@ -36,17 +36,7 @@ import jakarta.inject.Singleton
 @JsonSchemaTitle("Mysql Source Spec")
 @JsonPropertyOrder(
     value =
-        [
-            "host",
-            "port",
-            "username",
-            "password",
-            "database",
-            "jdbc_url_params",
-            "encryption",
-            "tunnel_method",
-            "cursor",
-        ],
+        ["host", "port", "database", "username", "tunnel_method", "ssl_mode", "replication_method"],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -96,17 +86,17 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "encryption")
-    val encryption = MicronautPropertiesFriendlyEncryption()
+    @ConfigurationBuilder(configurationPrefix = "ssl_mode")
+    var encryption = MicronautPropertiesFriendlyEncryption()
 
     @JsonIgnore var encryptionJson: Encryption? = null
 
-    @JsonSetter("encryption")
+    @JsonSetter("ssl_mode")
     fun setEncryptionValue(value: Encryption) {
         encryptionJson = value
     }
 
-    @JsonGetter("encryption")
+    @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
         "The encryption method with is used when communicating with the database.",
@@ -136,22 +126,22 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "cursor")
-    val cursor = MicronautPropertiesFriendlyCursorConfiguration()
+    @ConfigurationBuilder(configurationPrefix = "replication_method")
+    var replicationMethod = MicronautPropertiesFriendlyCursorMethodConfiguration()
 
-    @JsonIgnore var cursorJson: CursorConfiguration? = null
+    @JsonIgnore var replicationMethodJson: CursorMethodConfiguration? = null
 
-    @JsonSetter("cursor")
-    fun setCursorMethodValue(value: CursorConfiguration) {
-        cursorJson = value
+    @JsonSetter("replication_method")
+    fun setMethodValue(value: CursorMethodConfiguration) {
+        replicationMethodJson = value
     }
 
-    @JsonGetter("cursor")
+    @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
     @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
-    fun getCursorConfigurationValue(): CursorConfiguration =
-        cursorJson ?: cursor.asCursorConfiguration()
+    fun getCursorMethodConfigurationValue(): CursorMethodConfiguration =
+        replicationMethodJson ?: replicationMethod.asCursorMethodConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
@@ -193,7 +183,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
     }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "encryption_method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
 @JsonSubTypes(
     JsonSubTypes.Type(value = EncryptionPreferred::class, name = "preferred"),
     JsonSubTypes.Type(value = EncryptionRequired::class, name = "required"),
@@ -222,7 +212,7 @@ data object EncryptionRequired : Encryption
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : Encryption {
-    @JsonProperty("ssl_certificate", required = true)
+    @JsonProperty("ca_certificate", required = true)
     @JsonSchemaTitle("CA certificate")
     @JsonPropertyDescription(
         "CA certificate",
@@ -230,7 +220,7 @@ class SslVerifyCertificate : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     lateinit var sslCertificate: String
 
-    @JsonProperty("ssl_client_certificate", required = false)
+    @JsonProperty("client_certificate", required = false)
     @JsonSchemaTitle("Client certificate File")
     @JsonPropertyDescription(
         "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
@@ -238,7 +228,7 @@ class SslVerifyCertificate : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     var sslClientCertificate: String? = null
 
-    @JsonProperty("ssl_client_key")
+    @JsonProperty("client_key")
     @JsonSchemaTitle("Client Key")
     @JsonPropertyDescription(
         "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
@@ -246,7 +236,7 @@ class SslVerifyCertificate : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     var sslClientKey: String? = null
 
-    @JsonProperty("ssl_client_key_password")
+    @JsonProperty("client_key_password")
     @JsonSchemaTitle("Client key password")
     @JsonPropertyDescription(
         "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
@@ -261,7 +251,7 @@ class SslVerifyCertificate : Encryption {
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyIdentity : Encryption {
-    @JsonProperty("ssl_certificate", required = true)
+    @JsonProperty("ca_certificate", required = true)
     @JsonSchemaTitle("CA certificate")
     @JsonPropertyDescription(
         "CA certificate",
@@ -269,7 +259,7 @@ class SslVerifyIdentity : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     lateinit var sslCertificate: String
 
-    @JsonProperty("ssl_client_certificate", required = false)
+    @JsonProperty("client_certificate", required = false)
     @JsonSchemaTitle("Client certificate File")
     @JsonPropertyDescription(
         "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
@@ -277,7 +267,7 @@ class SslVerifyIdentity : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     var sslClientCertificate: String? = null
 
-    @JsonProperty("ssl_client_key")
+    @JsonProperty("client_key")
     @JsonSchemaTitle("Client Key")
     @JsonPropertyDescription(
         "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
@@ -285,7 +275,7 @@ class SslVerifyIdentity : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     var sslClientKey: String? = null
 
-    @JsonProperty("ssl_client_key_password")
+    @JsonProperty("client_key_password")
     @JsonSchemaTitle("Client key password")
     @JsonPropertyDescription(
         "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
@@ -294,7 +284,7 @@ class SslVerifyIdentity : Encryption {
     var sslClientPassword: String? = null
 }
 
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.encryption")
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
 class MicronautPropertiesFriendlyEncryption {
     var encryptionMethod: String = "preferred"
     var sslCertificate: String? = null
@@ -310,15 +300,14 @@ class MicronautPropertiesFriendlyEncryption {
         }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = UserDefinedCursor::class, name = "user_defined"),
-    JsonSubTypes.Type(value = CdcCursor::class, name = "cdc")
-    // TODO: port over additional Cdc options
-    )
+    JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
+    JsonSubTypes.Type(value = CdcCursor::class, name = "CDC")
+)
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
-sealed interface CursorConfiguration
+sealed interface CursorMethodConfiguration
 
 @JsonSchemaTitle("Scan Changes with User Defined Cursor")
 @JsonSchemaDescription(
@@ -327,7 +316,7 @@ sealed interface CursorConfiguration
         "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
         "(e.g. created_at, updated_at).",
 )
-data object UserDefinedCursor : CursorConfiguration
+data object UserDefinedCursor : CursorMethodConfiguration
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
@@ -336,7 +325,7 @@ data object UserDefinedCursor : CursorConfiguration
         "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
-class CdcCursor : CursorConfiguration {
+class CdcCursor : CursorMethodConfiguration {
     @JsonProperty("initial_waiting_seconds")
     @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
     @JsonSchemaDefault("300")
@@ -356,25 +345,16 @@ class CdcCursor : CursorConfiguration {
     @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
     var serverTimezone: String? = null
 
-    @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "invalid_cdc_behavior")
-    var invalidCdcBehavior = MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration()
-
-    @JsonIgnore var invalidCdcPositionBehaviorJson: InvalidCdcPositionBehavior? = null
-
-    @JsonSetter("invalid_cdc_behavior")
-    fun setInvalidCdcBehaviorValue(value: InvalidCdcPositionBehavior) {
-        invalidCdcPositionBehaviorJson = value
-    }
-
-    @JsonGetter("invalid_cdc_behavior")
-    @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
+    @JsonProperty("invalid_cdc_cursor_position_behavior")
+    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
     @JsonPropertyDescription(
-        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
     )
-    @JsonSchemaInject(json = """{"order":3, "always_show": true}""")
-    fun getInvalidCdcBehaviorValue(): InvalidCdcPositionBehavior? =
-        invalidCdcPositionBehaviorJson ?: invalidCdcBehavior.asInvalidCdcPositionBehavior()
+    @JsonSchemaDefault("Fail sync")
+    @JsonSchemaInject(
+        json = """{"order":3,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+    )
+    var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 
     @JsonProperty("initial_load_timeout_hours")
     @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
@@ -386,38 +366,14 @@ class CdcCursor : CursorConfiguration {
     var initialLoadTimeoutHours: Int? = 8
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "invalid_cdc_cursor_position_behavior")
-@JsonSubTypes(
-    JsonSubTypes.Type(value = FailSync::class, name = "fail_sync"),
-    JsonSubTypes.Type(value = ResyncData::class, name = "resync")
-)
-@JsonSchemaTitle("Update Method")
-sealed interface InvalidCdcPositionBehavior
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")
+class MicronautPropertiesFriendlyCursorMethodConfiguration {
+    var method: String = "STANDARD"
 
-@JsonSchemaTitle("Fail sync") data object FailSync : InvalidCdcPositionBehavior
-
-@JsonSchemaTitle("Re-sync data") data object ResyncData : InvalidCdcPositionBehavior
-
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.invalid_cdc_cursor_position_behavior")
-class MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration {
-    var invalidCdcBehavior: String = "fail_sync"
-
-    fun asInvalidCdcPositionBehavior(): InvalidCdcPositionBehavior =
-        when (invalidCdcBehavior) {
-            "fail_sync" -> FailSync
-            "resync" -> ResyncData
-            else -> throw ConfigErrorException("invalid value $invalidCdcBehavior")
-        }
-}
-
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
-class MicronautPropertiesFriendlyCursorConfiguration {
-    var cursorMethod: String = "user_defined"
-
-    fun asCursorConfiguration(): CursorConfiguration =
-        when (cursorMethod) {
-            "user_defined" -> UserDefinedCursor
-            "cdc" -> CdcCursor()
-            else -> throw ConfigErrorException("invalid value $cursorMethod")
+    fun asCursorMethodConfiguration(): CursorMethodConfiguration =
+        when (method) {
+            "STANDARD" -> UserDefinedCursor
+            "CDC" -> CdcCursor()
+            else -> throw ConfigErrorException("invalid value $method")
         }
 }
