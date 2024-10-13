@@ -8,19 +8,19 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskExceptionHandler
-import io.airbyte.cdk.load.task.ImplementorTask
+import io.airbyte.cdk.load.task.ShutdownScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailStreamTask : ImplementorTask
+interface FailStreamTask : ShutdownScope
 
 /**
  * FailStreamTask is a task that is executed when a stream fails. It is responsible for cleaning up
  * resources and reporting the failure.
  */
 class DefaultFailStreamTask(
-    private val exceptionHandler: DestinationTaskExceptionHandler<*>,
+    private val exceptionHandler: DestinationTaskExceptionHandler<*, *>,
     private val exception: Exception,
     private val syncManager: SyncManager,
     private val stream: DestinationStream,
@@ -64,7 +64,7 @@ class DefaultFailStreamTask(
 
 interface FailStreamTaskFactory {
     fun make(
-        exceptionHandler: DestinationTaskExceptionHandler<*>,
+        exceptionHandler: DestinationTaskExceptionHandler<*, *>,
         exception: Exception,
         stream: DestinationStream,
         kill: Boolean,
@@ -75,7 +75,7 @@ interface FailStreamTaskFactory {
 @Secondary
 class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailStreamTaskFactory {
     override fun make(
-        exceptionHandler: DestinationTaskExceptionHandler<*>,
+        exceptionHandler: DestinationTaskExceptionHandler<*, *>,
         exception: Exception,
         stream: DestinationStream,
         kill: Boolean,
