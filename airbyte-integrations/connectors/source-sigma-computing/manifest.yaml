@@ -57,9 +57,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -92,9 +92,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -127,9 +127,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -162,9 +162,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -197,9 +197,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,9 +232,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -265,9 +265,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -300,9 +300,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -384,8 +384,8 @@ spec:
       base_url:
         type: string
         description: The base url of your sigma organization
-        title: Base URL
         order: 5
+        title: Base URL
     additionalProperties: true
 
 metadata:
@@ -400,57 +400,57 @@ metadata:
     workbooks: true
   testedStreams:
     files:
-      streamHash: bbe3ea5ac4c96c70f2ee633dc0e6c606bdfbefcb
+      streamHash: 1d8bd67f61aa7a09da12502adbd85e4424e08fa6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     connections:
-      hasRecords: true
-      streamHash: 55a39395ce7d52d3106b0a37a1c0e55bdd131953
+      streamHash: 82a16ebc6d4d67ea0b0e493dbe0d52fe629fa4c6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     datasets:
-      hasRecords: true
-      streamHash: 8079d80a0479b355cb9ff842371d9e6baa839446
+      streamHash: d006e2b678deaa9e3f7c85c56dce867047036bdd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     members:
-      hasRecords: true
-      streamHash: 23bb61bf4450aafdddfa393560e50c331cb5084e
+      streamHash: 78fc1e2e11be3328b8185ac70739bdc7674800d0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      hasRecords: true
-      streamHash: 69b97d560f282e5cf88196350b68973cca49910c
+      streamHash: f7b8788e9bf9a67f498b67caf94ef47a51f06bbf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     templates:
-      hasRecords: true
-      streamHash: 7d1ac4ed95432e20aacf2558324bee4d7fcde8c7
+      streamHash: 4927cf0816f57f5e95170455469eed4100002786
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workspaces:
-      hasRecords: true
-      streamHash: 8991e5a6752187a20256c9cf347040c9f6ba64db
+      streamHash: d063c7b5740c9a12cfc0aca87b0cd0ea1e9318bd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workbooks:
       hasRecords: true
-      streamHash: 6825380b0f7c0e676f0e34eb6952f71031c2c210
+      streamHash: 7ce07f245f2f77e2fd0b1b737d909fa51d5eea6a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
