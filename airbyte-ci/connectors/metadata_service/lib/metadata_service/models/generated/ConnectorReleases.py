@@ -70,7 +70,7 @@ class ConnectorReleases(BaseModel):
 
     isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
     rolloutConfiguration: Optional[RolloutConfiguration] = None
-    breakingChanges: ConnectorBreakingChanges
+    breakingChanges: Optional[ConnectorBreakingChanges] = None
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
