@@ -22,7 +22,7 @@ from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
@@ -121,7 +121,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -151,6 +150,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -259,7 +260,7 @@ spec:
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -267,7 +268,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
@@ -724,7 +725,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -754,6 +754,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -828,7 +830,7 @@ spec:
     assert isinstance(stream.retriever.cursor, ResumableFullRefreshCursor)
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -836,7 +838,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10

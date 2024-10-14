@@ -78,7 +78,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
 class DefaultDestinationTaskLauncher(
-    private val taskScopeProvider: TaskScopeProvider<ScopedTask>,
+    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>>,
     private val catalog: DestinationCatalog,
     private val syncManager: SyncManager,
 
@@ -100,7 +100,7 @@ class DefaultDestinationTaskLauncher(
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
-    private val exceptionHandler: TaskExceptionHandler<LeveledTask, ScopedTask>
+    private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 

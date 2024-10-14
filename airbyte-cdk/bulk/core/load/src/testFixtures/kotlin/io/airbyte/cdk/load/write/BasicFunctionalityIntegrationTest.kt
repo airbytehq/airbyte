@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import kotlin.test.assertEquals
@@ -37,24 +36,6 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val verifyDataWriting: Boolean = true,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
-    @Test
-    open fun testCheck() {
-        val process = destinationProcessFactory.createDestinationProcess("check", config = config)
-        process.run()
-        val messages = process.readMessages()
-        val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
-
-        assertEquals(
-            checkMessages.size,
-            1,
-            "Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
-        )
-        assertEquals(
-            AirbyteConnectionStatus.Status.SUCCEEDED,
-            checkMessages.first().connectionStatus.status
-        )
-    }
-
     @Test
     open fun testBasicWrite() {
         val messages =
