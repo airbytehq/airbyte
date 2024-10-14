@@ -13,7 +13,12 @@ class S3V2CheckTest :
     CheckIntegrationTest<S3V2Specification>(
         S3V2Specification::class.java,
         successConfigFilenames =
-            listOf(CheckTestConfig("test-configs/default.json", TestDeploymentMode.CLOUD)),
+            listOf(
+                CheckTestConfig(
+                    "secrets/s3_dest_v2_minimal_required_config.json",
+                    TestDeploymentMode.CLOUD
+                )
+            ),
         failConfigFilenamesAndFailureReasons = emptyMap()
     ) {
     @Test
