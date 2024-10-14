@@ -10,7 +10,6 @@ from typing import Any, cast
 import sqlalchemy
 from rich import print  # noqa: A004  # Allow shadowing the built-in
 
-
 # Compare to documentation here: https://docs.airbyte.com/understanding-airbyte/supported-data-types
 CONVERSION_MAP = {
     "string": sqlalchemy.types.VARCHAR,

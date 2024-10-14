@@ -44,7 +44,6 @@ from pathlib import Path
 from textwrap import indent
 from typing import TYPE_CHECKING, Any
 
-
 if TYPE_CHECKING:
     from airbyte._util.api_duck_types import AirbyteApiResponseDuckType
     from airbyte.cloud.workspaces import CloudWorkspace
@@ -96,18 +95,12 @@ class PyAirbyteError(Exception):
             "original_exception",
         ]
         display_properties = {
-            k: v
-            for k, v in self.__dict__.items()
-            if k not in special_properties and not k.startswith("_") and v is not None
+            k: v for k, v in self.__dict__.items() if k not in special_properties and not k.startswith("_") and v is not None
         }
         display_properties.update(self.context or {})
-        context_str = "\n    ".join(
-            f"{str(k).replace('_', ' ').title()}: {v!r}" for k, v in display_properties.items()
-        )
+        context_str = "\n    ".join(f"{str(k).replace('_', ' ').title()}: {v!r}" for k, v in display_properties.items())
         exception_str = (
-            f"{self.get_message()} ({self.__class__.__name__})"
-            + VERTICAL_SEPARATOR
-            + f"\n{self.__class__.__name__}: {self.get_message()}"
+            f"{self.get_message()} ({self.__class__.__name__})" + VERTICAL_SEPARATOR + f"\n{self.__class__.__name__}: {self.get_message()}"
         )
 
         if self.guidance:
@@ -136,9 +129,7 @@ class PyAirbyteError(Exception):
     def __repr__(self) -> str:
         """Return a string representation of the exception."""
         class_name = self.__class__.__name__
-        properties_str = ", ".join(
-            f"{k}={v!r}" for k, v in self.__dict__.items() if not k.startswith("_")
-        )
+        properties_str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items() if not k.startswith("_"))
         return f"{class_name}({properties_str})"
 
     def safe_logging_dict(self) -> dict[str, Any]:
@@ -206,10 +197,7 @@ class PyAirbyteNoStreamsSelectedError(PyAirbyteInputError):
 class PyAirbyteNameNormalizationError(PyAirbyteError, ValueError):
     """Error occurred while normalizing a table or column name."""
 
-    guidance = (
-        "Please consider renaming the source object if possible, or "
-        "raise an issue in GitHub if not."
-    )
+    guidance = "Please consider renaming the source object if possible, or " "raise an issue in GitHub if not."
     help_url = NEW_ISSUE_URL
 
     raw_name: str | None = None
@@ -303,9 +291,7 @@ class AirbyteConnectorError(PyAirbyteError):
             logger = logging.getLogger(f"airbyte.{self.connector_name}")
 
             log_paths: list[Path] = [
-                Path(handler.baseFilename).absolute()
-                for handler in logger.handlers
-                if isinstance(handler, logging.FileHandler)
+                Path(handler.baseFilename).absolute() for handler in logger.handlers if isinstance(handler, logging.FileHandler)
             ]
 
             if log_paths:
@@ -353,17 +339,13 @@ class AirbyteConnectorMissingSpecError(AirbyteConnectorError):
 class AirbyteConnectorValidationFailedError(AirbyteConnectorError):
     """Connector config validation failed."""
 
-    guidance = (
-        "Please double-check your config and review the validation errors for more information."
-    )
+    guidance = "Please double-check your config and review the validation errors for more information."
 
 
 class AirbyteConnectorCheckFailedError(AirbyteConnectorError):
     """Connector check failed."""
 
-    guidance = (
-        "Please double-check your config or review the connector's logs for more information."
-    )
+    guidance = "Please double-check your config or review the connector's logs for more information."
 
 
 @dataclass
@@ -394,9 +376,7 @@ class PyAirbyteSecretNotFoundError(PyAirbyteError):
     """Secret not found."""
 
     guidance = "Please ensure that the secret is set."
-    help_url = (
-        "https://docs.airbyte.com/using-airbyte/airbyte-lib/getting-started#secrets-management"
-    )
+    help_url = "https://docs.airbyte.com/using-airbyte/airbyte-lib/getting-started#secrets-management"
 
     secret_name: str | None = None
     sources: list[str] | None = None

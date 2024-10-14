@@ -6,7 +6,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
 
 
@@ -42,11 +41,7 @@ DEFAULT_CACHE_SCHEMA_NAME = "airbyte_raw"
 Specific caches may override this value with a different schema name.
 """
 
-DEFAULT_CACHE_ROOT: Path = (
-    Path() / ".cache"
-    if "AIRBYTE_CACHE_ROOT" not in os.environ
-    else Path(os.environ["AIRBYTE_CACHE_ROOT"])
-)
+DEFAULT_CACHE_ROOT: Path = Path() / ".cache" if "AIRBYTE_CACHE_ROOT" not in os.environ else Path(os.environ["AIRBYTE_CACHE_ROOT"])
 """Default cache root is `.cache` in the current working directory.
 
 The default location can be overridden by setting the `AIRBYTE_CACHE_ROOT` environment variable.
@@ -62,12 +57,18 @@ DEFAULT_ARROW_MAX_CHUNK_SIZE = 100_000
 
 def _str_to_bool(value: str) -> bool:
     """Convert a string value of an environment values to a boolean value."""
-    return bool(value) and value.lower() not in {"", "0", "false", "f", "no", "n", "off"}
+    return bool(value) and value.lower() not in {
+        "",
+        "0",
+        "false",
+        "f",
+        "no",
+        "n",
+        "off",
+    }
 
 
-TEMP_DIR_OVERRIDE: Path | None = (
-    Path(os.environ["AIRBYTE_TEMP_DIR"]) if os.getenv("AIRBYTE_TEMP_DIR") else None
-)
+TEMP_DIR_OVERRIDE: Path | None = Path(os.environ["AIRBYTE_TEMP_DIR"]) if os.getenv("AIRBYTE_TEMP_DIR") else None
 """The directory to use for temporary files.
 
 This value is read from the `AIRBYTE_TEMP_DIR` environment variable. If the variable is not set,
