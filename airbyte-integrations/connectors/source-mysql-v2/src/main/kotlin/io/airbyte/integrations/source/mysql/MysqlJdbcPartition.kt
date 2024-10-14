@@ -185,11 +185,12 @@ class MysqlJdbcSnapshotPartition(
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
 
+    // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value in RFR case.
     override val completeState: OpaqueStateValue
         get() =
             MysqlJdbcStreamStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
-                primaryKeyCheckpoint = listOf(streamState.cursorUpperBound!!),
+                primaryKeyCheckpoint = listOf(),
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =

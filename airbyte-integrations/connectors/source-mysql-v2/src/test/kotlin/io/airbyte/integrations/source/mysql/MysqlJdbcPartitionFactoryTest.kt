@@ -25,27 +25,26 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class MysqlJdbcPartitionFactoryTest {
-
     companion object {
-        val selectQueryGenerator = MysqlSourceOperations()
-        val sharedState = sharedState()
-        val cdcSharedState = sharedState(global = true)
-        val mysqlJdbcPartitionFactory = MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator)
+        private val selectQueryGenerator = MysqlSourceOperations()
+        private val sharedState = sharedState()
+        private val cdcSharedState = sharedState(global = true)
 
+        val mysqlJdbcPartitionFactory = MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator)
         val mysqlCdcJdbcPartitionFactory =
             MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator)
 
         val fieldId = Field("id", IntFieldType)
         val stream =
             Stream(
-                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("id")),
+                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("stream1")),
                 fields = listOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
 
-        fun sharedState(
+        private fun sharedState(
             global: Boolean = false,
         ): DefaultJdbcSharedState {
 
@@ -87,7 +86,6 @@ class MysqlJdbcPartitionFactoryTest {
     @Test
     fun testColdStartWithPkCdc() {
         val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(stream, null)
-
         assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
     }
 
@@ -95,14 +93,13 @@ class MysqlJdbcPartitionFactoryTest {
     fun testColdStartWithoutPk() {
         val streamWithoutPk =
             Stream(
-                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("id")),
+                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("stream2")),
                 fields = listOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(),
                 configuredCursor = fieldId,
             )
         val jdbcPartition = mysqlJdbcPartitionFactory.create(streamWithoutPk, null)
-
         assertTrue(jdbcPartition is MysqlJdbcNonResumableSnapshotWithCursorPartition)
     }
 
