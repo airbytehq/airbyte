@@ -122,7 +122,6 @@ class DestinationDuckdb(Destination):
 
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
-        json_schemas = {}
         for configured_stream in configured_catalog.streams:
             name = configured_stream.stream.name
             table_name = f"_airbyte_raw_{name}"
@@ -148,8 +147,6 @@ class DestinationDuckdb(Destination):
 
             con.execute(query)
 
-            # get json schema
-            json_schemas[configured_stream.stream.name] = configured_stream.stream.json_schema["properties"]
 
         buffer = defaultdict(lambda: defaultdict(list))
 
@@ -158,7 +155,7 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name, json_schema=json_schemas[stream_name])
+                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
                 buffer = defaultdict(lambda: defaultdict(list))
 
@@ -185,10 +182,10 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name, json_schema=json_schemas[stream_name])
+            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
     @staticmethod
-    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str, json_schema: dict[str, Any]):
+    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
