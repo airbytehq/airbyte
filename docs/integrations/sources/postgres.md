@@ -58,7 +58,7 @@ To fill out the required information:
 2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
 </FieldAnchor>
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. 
+4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
@@ -135,7 +135,7 @@ az postgres server restart --resource-group group --name server
 ```
 
 #### Step 4: Create a replication slot on your Postgres database
-<FieldAnchor path="replication_method.replication_slot">
+<FieldAnchor field="replication_method.replication_slot">
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
@@ -148,7 +148,7 @@ The output of this command will include the name of the replication slot to fill
 </FieldAnchor>
 
 #### Step 5: Create publication and replication identities for each Postgres table
-<FieldAnchor path="replication_method.publication">
+<FieldAnchor field="replication_method.publication">
 For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
@@ -210,7 +210,7 @@ This is a good solution if:
 
 ### SSL Modes
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. 
+Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
 Here is a breakdown of available SSL connection modes:
 
