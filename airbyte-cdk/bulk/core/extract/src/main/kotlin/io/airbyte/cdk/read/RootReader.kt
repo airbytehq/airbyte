@@ -104,7 +104,6 @@ class RootReader(
                     }
                 throw cause
             }
-            if (streamExceptions.isNotEmpty()) throw RuntimeException()
         }
     }
 
