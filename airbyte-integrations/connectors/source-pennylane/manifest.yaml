@@ -824,10 +824,7 @@ streams:
         url_base: https://app.pennylane.com/api/external/v1/
         path: category_groups
         http_method: GET
-        request_parameters:
-          filter: >-
-            '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-            stream_interval.start_time }}" }]'
+        request_parameters: {}
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
@@ -853,20 +850,6 @@ streams:
           type: PageIncrement
           page_size: 1000
           start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: categories
     primary_key:
