@@ -109,7 +109,7 @@ def table_schema() -> str:
         "type": "object",
         "properties": {
             "key1": {"type": ["null", "string"]},
-            "key2": {"type": ["null", "integer"]},
+            "key2": {"type": ["null", "string"]},
         },
     }
     return schema
@@ -144,11 +144,13 @@ def configured_catalogue(
 
 @pytest.fixture
 def airbyte_message1(test_table_name: str):
+    fake = Faker()
+    Faker.seed(0)
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": "value1", "key2": 3},
+            data={"key1": fake.first_name(), "key2": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -156,11 +158,13 @@ def airbyte_message1(test_table_name: str):
 
 @pytest.fixture
 def airbyte_message2(test_table_name: str):
+    fake = Faker()
+    Faker.seed(0)
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": "value2", "key2": 2},
+            data={"key1": fake.first_name(), "key2": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -252,7 +256,7 @@ def _airbyte_messages(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=table_name,
-                    data={"key1": fake.first_name(), "key2": fake.ssn()},
+                    data={"key1": fake.first_name(), "key2": str(fake.ssn())},
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
@@ -280,14 +284,14 @@ def _airbyte_messages_with_inconsistent_json_fields(
                     # Throw in empty nested objects and see how pyarrow deals with them.
                     data={
                         "key1": fake.first_name(),
-                        "key2": fake.ssn()
+                        "key2": str(fake.ssn())
                         if random.random() < 0.5
                         else random.randrange(1000, 9999999999999),
                         "nested1": {}
                         if random.random() < 0.1
                         else {
                             "key3": fake.first_name(),
-                            "key4": fake.ssn()
+                            "key4": str(fake.ssn())
                             if random.random() < 0.5
                             else random.randrange(1000, 9999999999999),
                             "dictionary1": {}
