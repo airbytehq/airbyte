@@ -62,3 +62,12 @@ class DefaultLocalFile(val localFile: Path) : LocalFile {
         Files.delete(localFile)
     }
 }
+
+/**
+ * Represents a file of raw records staged to disk for pre-processing. Used internally by the
+ * framework
+ */
+data class SpilledRawMessagesLocalFile(
+    val localFile: LocalFile,
+    val totalSizeBytes: Long,
+)

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -12,11 +13,10 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.DestinationStreamComplete
 import io.airbyte.cdk.load.message.DestinationStreamIncomplete
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
-import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorTask
 import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.write.DestinationWriterInternal
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -32,23 +32,23 @@ interface ProcessRecordsTask : StreamTask, ImplementorTask
  * TODO: The batch handling logic here is identical to that in @[ProcessBatchTask]. Both should be
  * moved to the task launcher.
  */
-class DefaultProcessRecordsTask(
+class DefaultProcessRecordsTask<B>(
     override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher,
+    private val destinationWriter: DestinationWriterInternal<B>,
+    private val taskLauncher: DestinationTaskLauncher<B>,
     private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     private val deserializer: Deserializer<DestinationMessage>,
-    private val syncManager: SyncManager,
 ) : ProcessRecordsTask {
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
 
         log.info { "Fetching stream loader for ${stream.descriptor}" }
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = destinationWriter.getOrCreateStreamLoader(stream)
 
-        log.info { "Processing records from ${fileEnvelope.batch.localFile}" }
+        log.info { "Processing records from ${fileEnvelope.batch.payload.localFile}" }
         val nextBatch =
             try {
-                fileEnvelope.batch.localFile.toFileReader().use { reader ->
+                fileEnvelope.batch.payload.localFile.toFileReader().use { reader ->
                     val records =
                         reader
                             .lines()
@@ -67,11 +67,11 @@ class DefaultProcessRecordsTask(
                             }
                             .map { it as DestinationRecord }
                             .iterator()
-                    streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)
+                    streamLoader.processRecords(records, fileEnvelope.batch.payload.totalSizeBytes)
                 }
             } finally {
-                log.info { "Processing completed, deleting ${fileEnvelope.batch.localFile}" }
-                fileEnvelope.batch.localFile.delete()
+                log.info { "Processing completed, deleting ${fileEnvelope.batch.payload.localFile}" }
+                fileEnvelope.batch.payload.localFile.delete()
             }
 
         val wrapped = fileEnvelope.withBatch(nextBatch)
@@ -79,9 +79,9 @@ class DefaultProcessRecordsTask(
     }
 }
 
-interface ProcessRecordsTaskFactory {
+interface ProcessRecordsTaskFactory<B> {
     fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<B>,
         stream: DestinationStream,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask
@@ -89,21 +89,21 @@ interface ProcessRecordsTaskFactory {
 
 @Singleton
 @Secondary
-class DefaultProcessRecordsTaskFactory(
+class DefaultProcessRecordsTaskFactory<B>(
     private val deserializer: Deserializer<DestinationMessage>,
-    private val syncManager: SyncManager,
-) : ProcessRecordsTaskFactory {
+    private val destinationWriter: DestinationWriterInternal<B>,
+) : ProcessRecordsTaskFactory<B> {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<B>,
         stream: DestinationStream,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask {
         return DefaultProcessRecordsTask(
             stream,
+            destinationWriter,
             taskLauncher,
             fileEnvelope,
             deserializer,
-            syncManager
         )
     }
 }

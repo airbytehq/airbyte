@@ -7,12 +7,13 @@ package io.airbyte.cdk.load.task.internal
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.file.TempFileProvider
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.message.StreamCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
@@ -25,6 +26,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.awt.Taskbar.State
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
 
@@ -42,7 +44,7 @@ class DefaultSpillToDiskTask(
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
-    private val launcher: DestinationTaskLauncher,
+    private val launcher: DestinationTaskLauncher<*>,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
@@ -98,14 +100,14 @@ class DefaultSpillToDiskTask(
             return
         }
 
-        val batch = SpilledRawMessagesLocalFile(tmpFile, sizeBytes)
-        val wrapped = BatchEnvelope(batch, range)
+        val file = SpilledRawMessagesLocalFile(tmpFile, sizeBytes)
+        val wrapped = BatchEnvelope(Batch(Batch.State.LOCAL, file), range)
         launcher.handleNewSpilledFile(stream, wrapped, endOfStream)
     }
 }
 
 interface SpillToDiskTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
+    fun make(taskLauncher: DestinationTaskLauncher<*>, stream: DestinationStream): SpillToDiskTask
 }
 
 @Singleton
@@ -117,7 +119,7 @@ class DefaultSpillToDiskTaskFactory(
     private val flushStrategy: FlushStrategy,
 ) : SpillToDiskTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<*>,
         stream: DestinationStream
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(

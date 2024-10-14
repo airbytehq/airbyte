@@ -22,7 +22,7 @@ interface FailSyncTask : ImplementorTask
  */
 class DefaultFailSyncTask(
     private val exceptionHandler: DestinationTaskExceptionHandler<*>,
-    private val destinationWriter: DestinationWriter,
+    private val destinationWriter: DestinationWriter<*>,
     private val exception: Exception,
     private val syncManager: SyncManager,
 ) : FailSyncTask {
@@ -52,7 +52,7 @@ interface FailSyncTaskFactory {
 @Secondary
 class DefaultFailSyncTaskFactory(
     private val syncManager: SyncManager,
-    private val destinationWriter: DestinationWriter
+    private val destinationWriter: DestinationWriter<*>
 ) : FailSyncTaskFactory {
     override fun make(
         exceptionHandler: DestinationTaskExceptionHandler<*>,

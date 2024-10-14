@@ -31,10 +31,16 @@ class ObjectStoragePathFactory(
     inner class VariableContext(
         val stream: DestinationStream,
         val time: DateTime = loadedAt,
+        val extension: String? = null,
+        val partNumber: Long? = null,
     )
 
     data class PathVariable(val variable: String, val provider: (VariableContext) -> String) {
         fun toMacro(): String = "\${$variable}"
+    }
+
+    data class FileVariable(val variable: String, val provider: (VariableContext) -> String) {
+        fun toMacro(): String = "{$variable}"
     }
 
     companion object {
@@ -55,6 +61,15 @@ class ObjectStoragePathFactory(
                 PathVariable("EPOCH") { it.time.millis.toString() },
                 PathVariable("UUID") { UUID.randomUUID().toString() }
             )
+        const val DEFAULT_FILE_NAME_FORMAT = "{part_number}{format_extension}"
+        val FILE_NAME_VARIABLES =
+            listOf(
+                FileVariable("date") { it.time.toString("yyyy-MM-dd") },
+                FileVariable("timestamp") { it.time.toString("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") },
+                FileVariable("part_number") { it.partNumber?.toString() ?: throw IllegalStateException("part_number is required") },
+                FileVariable("sync_id") { it.stream.syncId.toString() },
+                FileVariable("format_extension") { it.extension?.let { ext -> ".$ext" } ?: "" }
+            )
     }
 
     fun getStagingDirectory(stream: DestinationStream): Path {
@@ -74,6 +89,20 @@ class ObjectStoragePathFactory(
         val pattern = pathConfig.pathSuffixPattern ?: DEFAULT_PATH_FORMAT
         return PATH_VARIABLES.fold(pattern) { acc, variable ->
             acc.replace(variable.toMacro(), variable.provider(VariableContext(stream)))
+        }
+    }
+
+    fun getPathWithFileName(stream: DestinationStream, extension: String? = null, isStaging: Boolean = false, partNumber: Long?): Path {
+        val directory = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
+        val fileName = getFormattedFileName(stream, extension, partNumber)
+        return directory.resolve(fileName)
+    }
+
+    private fun getFormattedFileName(stream: DestinationStream, extension: String? = null, partNumber: Long?): String {
+        val pattern = pathConfig.fileNamePattern ?: DEFAULT_FILE_NAME_FORMAT
+        val context = VariableContext(stream, loadedAt, extension, partNumber)
+        return FILE_NAME_VARIABLES.fold(pattern) { acc, variable ->
+            acc.replace(variable.toMacro(), variable.provider(context))
         }
     }
 }

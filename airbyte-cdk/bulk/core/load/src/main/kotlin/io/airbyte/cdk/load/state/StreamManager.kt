@@ -55,7 +55,7 @@ interface StreamManager {
     fun markCheckpoint(): Pair<Long, Long>
 
     /** Record that the given batch's state has been reached for the associated range(s). */
-    fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>)
+    fun updateBatchState(batch: BatchEnvelope<*>)
 
     /**
      * True if all are true:
@@ -139,7 +139,7 @@ class DefaultStreamManager(
         return Pair(index, index - lastCheckpoint)
     }
 
-    override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
+    override fun updateBatchState(batch: BatchEnvelope<*>) {
         val stateRanges =
             rangesState[batch.batch.state]
                 ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")

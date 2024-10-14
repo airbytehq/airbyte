@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.write
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 
 /**
@@ -31,11 +30,11 @@ import io.airbyte.cdk.load.state.StreamIncompleteResult
  * [close] is called once after all records have been processed, regardless of success or failure.
  * If there are failed batches, they are passed in as an argument.
  */
-interface StreamLoader {
+interface StreamLoader<B> {
     val stream: DestinationStream
 
     suspend fun start() {}
-    suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
-    suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
+    suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch<B>
+    suspend fun processBatch(batch: Batch<B>): Batch<B> = batch.copy(state = Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamIncompleteResult? = null) {}
 }

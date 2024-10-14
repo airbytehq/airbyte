@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorTask
 import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.write.DestinationWriterInternal
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -20,13 +21,14 @@ interface CloseStreamTask : StreamTask, ImplementorTask
  * teardown task.
  */
 class DefaultCloseStreamTask(
+    private val destinationWriterInternal: DestinationWriterInternal<*>,
     private val syncManager: SyncManager,
     override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher<*>
 ) : CloseStreamTask {
 
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = destinationWriterInternal.awaitStreamLoader(stream)
         streamLoader.close()
         syncManager.getStreamManager(stream.descriptor).markSucceeded()
         taskLauncher.handleStreamClosed(streamLoader.stream)
@@ -34,16 +36,19 @@ class DefaultCloseStreamTask(
 }
 
 interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): CloseStreamTask
+    fun make(taskLauncher: DestinationTaskLauncher<*>, stream: DestinationStream): CloseStreamTask
 }
 
 @Singleton
 @Secondary
-class DefaultCloseStreamTaskFactory(private val syncManager: SyncManager) : CloseStreamTaskFactory {
+class DefaultCloseStreamTaskFactory(
+    private val writer: DestinationWriterInternal<*>,
+    private val syncManager: SyncManager
+) : CloseStreamTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<*>,
         stream: DestinationStream
     ): CloseStreamTask {
-        return DefaultCloseStreamTask(syncManager, stream, taskLauncher)
+        return DefaultCloseStreamTask(writer, syncManager, stream, taskLauncher)
     }
 }

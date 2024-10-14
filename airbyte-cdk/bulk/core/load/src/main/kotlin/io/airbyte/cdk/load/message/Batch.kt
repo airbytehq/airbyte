@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
-import io.airbyte.cdk.load.file.LocalFile
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -45,9 +44,16 @@ import io.airbyte.cdk.load.file.LocalFile
  * // etc...
  * ```
  */
-interface Batch {
+data class Batch<B>(
+    val state: State,
+    val payload: B
+) {
+    /** Simple batch: use if you need no other metadata for processing. */
+    companion object {
+        fun simple(state: State) = Batch(state, Unit)
+    }
+
     enum class State {
-        SPILLED,
         LOCAL,
         PERSISTED,
         COMPLETE
@@ -59,50 +65,22 @@ interface Batch {
             State.COMPLETE -> true
             else -> false
         }
-
-    val state: State
 }
-
-/** Simple batch: use if you need no other metadata for processing. */
-data class SimpleBatch(override val state: Batch.State) : Batch
-
-/** Represents a file of records locally staged. */
-abstract class StagedLocalFile() : Batch {
-    abstract val localFile: LocalFile
-    abstract val totalSizeBytes: Long
-    override val state: Batch.State = Batch.State.LOCAL
-}
-
-/** Represents a remote object containing persisted records. */
-abstract class RemoteObject() : Batch {
-    override val state: Batch.State = Batch.State.PERSISTED
-    abstract val key: String
-}
-
-/**
- * Represents a file of raw records staged to disk for pre-processing. Used internally by the
- * framework
- */
-data class SpilledRawMessagesLocalFile(
-    override val localFile: LocalFile,
-    override val totalSizeBytes: Long,
-    override val state: Batch.State = Batch.State.SPILLED
-) : StagedLocalFile()
 
 /**
  * Internally-used wrapper for tracking the association between a batch and the range of records it
  * contains.
  */
-data class BatchEnvelope<B : Batch>(
-    val batch: B,
+data class BatchEnvelope<B>(
+    val batch: Batch<B>,
     val ranges: RangeSet<Long> = TreeRangeSet.create()
 ) {
     constructor(
-        batch: B,
+        batch: Batch<B>,
         range: Range<Long>
     ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
 
-    fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
+    fun <C> withBatch(newBatch: Batch<C>): BatchEnvelope<C> {
         return BatchEnvelope(newBatch, ranges)
     }
 }

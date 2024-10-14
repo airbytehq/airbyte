@@ -7,9 +7,9 @@ package io.airbyte.cdk.load.task
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
@@ -28,7 +28,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-interface DestinationTaskLauncher : TaskLauncher {
+interface DestinationTaskLauncher<B> : TaskLauncher {
     suspend fun handleSetupComplete()
     suspend fun handleStreamStarted(stream: DestinationStream)
     suspend fun handleNewSpilledFile(
@@ -36,7 +36,7 @@ interface DestinationTaskLauncher : TaskLauncher {
         wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
         endOfStream: Boolean
     )
-    suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
+    suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<B>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
 }
@@ -77,7 +77,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
-class DefaultDestinationTaskLauncher(
+class DefaultDestinationTaskLauncher<B>(
     private val taskScopeProvider: TaskScopeProvider<ScopedTask>,
     private val catalog: DestinationCatalog,
     private val syncManager: SyncManager,
@@ -89,8 +89,8 @@ class DefaultDestinationTaskLauncher(
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
-    private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
-    private val processBatchTaskFactory: ProcessBatchTaskFactory,
+    private val processRecordsTaskFactory: ProcessRecordsTaskFactory<B>,
+    private val processBatchTaskFactory: ProcessBatchTaskFactory<B>,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
 
@@ -101,7 +101,7 @@ class DefaultDestinationTaskLauncher(
 
     // Exception handling
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, ScopedTask>
-) : DestinationTaskLauncher {
+) : DestinationTaskLauncher<B> {
     private val log = KotlinLogging.logger {}
 
     private val batchUpdateLock = Mutex()
@@ -169,7 +169,7 @@ class DefaultDestinationTaskLauncher(
      * Called for each new batch. Enqueues processing for any incomplete batch, and enqueues closing
      * the stream if all batches are complete.
      */
-    override suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>) {
+    override suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<B>) {
         batchUpdateLock.withLock {
             val streamManager = syncManager.getStreamManager(stream.descriptor)
             streamManager.updateBatchState(wrapped)

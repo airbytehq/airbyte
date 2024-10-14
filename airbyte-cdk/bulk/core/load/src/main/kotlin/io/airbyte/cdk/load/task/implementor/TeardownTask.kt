@@ -24,8 +24,8 @@ interface TeardownTask : SyncTask
 class DefaultTeardownTask(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
-    private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val destination: DestinationWriter<*>,
+    private val taskLauncher: DestinationTaskLauncher<*>
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
 
@@ -54,7 +54,7 @@ class DefaultTeardownTask(
 }
 
 interface TeardownTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
+    fun make(taskLauncher: DestinationTaskLauncher<*>): TeardownTask
 }
 
 @Singleton
@@ -62,9 +62,9 @@ interface TeardownTaskFactory {
 class DefaultTeardownTaskFactory(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
-    private val destination: DestinationWriter,
+    private val destination: DestinationWriter<*>,
 ) : TeardownTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+    override fun make(taskLauncher: DestinationTaskLauncher<*>): TeardownTask {
         return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
     }
 }

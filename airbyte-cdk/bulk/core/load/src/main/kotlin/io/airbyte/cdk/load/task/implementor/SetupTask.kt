@@ -20,8 +20,8 @@ interface SetupTask : SyncTask, ImplementorTask
  * next.
  */
 class DefaultSetupTask(
-    private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val destination: DestinationWriter<*>,
+    private val taskLauncher: DestinationTaskLauncher<*>
 ) : SetupTask {
     override suspend fun execute() {
         destination.setup()
@@ -30,15 +30,15 @@ class DefaultSetupTask(
 }
 
 interface SetupTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): SetupTask
+    fun make(taskLauncher: DestinationTaskLauncher<*>): SetupTask
 }
 
 @Singleton
 @Secondary
 class DefaultSetupTaskFactory(
-    private val destination: DestinationWriter,
+    private val destination: DestinationWriter<*>,
 ) : SetupTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
+    override fun make(taskLauncher: DestinationTaskLauncher<*>): SetupTask {
         return DefaultSetupTask(destination, taskLauncher)
     }
 }

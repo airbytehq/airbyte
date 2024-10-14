@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorTask
 import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.write.DestinationWriterInternal
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -17,37 +18,39 @@ import jakarta.inject.Singleton
 interface ProcessBatchTask : StreamTask, ImplementorTask
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
-class DefaultProcessBatchTask(
-    private val syncManager: SyncManager,
-    private val batchEnvelope: BatchEnvelope<*>,
+class DefaultProcessBatchTask<B>(
+    private val destinationWriterInternal: DestinationWriterInternal<B>,
+    private val batchEnvelope: BatchEnvelope<B>,
     override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher<B>
 ) : ProcessBatchTask {
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = destinationWriterInternal.awaitStreamLoader(stream)
         val nextBatch = streamLoader.processBatch(batchEnvelope.batch)
         val nextWrapped = batchEnvelope.withBatch(nextBatch)
         taskLauncher.handleNewBatch(stream, nextWrapped)
     }
 }
 
-interface ProcessBatchTaskFactory {
+interface ProcessBatchTaskFactory<B> {
     fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<B>,
         stream: DestinationStream,
-        batchEnvelope: BatchEnvelope<*>
+        batchEnvelope: BatchEnvelope<B>
     ): ProcessBatchTask
 }
 
 @Singleton
 @Secondary
-class DefaultProcessBatchTaskFactory(private val syncManager: SyncManager) :
-    ProcessBatchTaskFactory {
+class DefaultProcessBatchTaskFactory<B>(
+    val destinationWriterInternal: DestinationWriterInternal<B>
+):
+    ProcessBatchTaskFactory<B> {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationTaskLauncher<B>,
         stream: DestinationStream,
-        batchEnvelope: BatchEnvelope<*>
+        batchEnvelope: BatchEnvelope<B>
     ): ProcessBatchTask {
-        return DefaultProcessBatchTask(syncManager, batchEnvelope, stream, taskLauncher)
+        return DefaultProcessBatchTask(destinationWriterInternal, batchEnvelope, stream, taskLauncher)
     }
 }

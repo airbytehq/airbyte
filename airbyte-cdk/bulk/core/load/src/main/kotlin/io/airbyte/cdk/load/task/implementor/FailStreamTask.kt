@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskExceptionHandler
 import io.airbyte.cdk.load.task.ImplementorTask
+import io.airbyte.cdk.load.write.DestinationWriterInternal
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -20,6 +21,7 @@ interface FailStreamTask : ImplementorTask
  * resources and reporting the failure.
  */
 class DefaultFailStreamTask(
+    private val writer: DestinationWriterInternal<*>,
     private val exceptionHandler: DestinationTaskExceptionHandler<*>,
     private val exception: Exception,
     private val syncManager: SyncManager,
@@ -52,13 +54,8 @@ class DefaultFailStreamTask(
             } else {
                 null
             }
-        // TODO: Bit of smell here, suggests we should be fetching the StreamLoader
-        // lazily+unconditionally
-        //  through the DestinationWriter (via an injected wrapper?)
-        syncManager.getStreamLoaderOrNull(stream.descriptor)?.close(incompleteResult)
-            ?: log.warn {
-                "StreamLoader not found for stream ${stream.descriptor}, cannot call close."
-            }
+        // We call getOrCreate here in case the failure occurred before open was complete
+        writer.getOrCreateStreamLoader(stream).close(incompleteResult)
     }
 }
 
@@ -73,13 +70,16 @@ interface FailStreamTaskFactory {
 
 @Singleton
 @Secondary
-class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailStreamTaskFactory {
+class DefaultFailStreamTaskFactory(
+    private val writer: DestinationWriterInternal<*>,
+    private val syncManager: SyncManager
+) : FailStreamTaskFactory {
     override fun make(
         exceptionHandler: DestinationTaskExceptionHandler<*>,
         exception: Exception,
         stream: DestinationStream,
         kill: Boolean,
     ): FailStreamTask {
-        return DefaultFailStreamTask(exceptionHandler, exception, syncManager, stream, kill)
+        return DefaultFailStreamTask(writer, exceptionHandler, exception, syncManager, stream, kill)
     }
 }

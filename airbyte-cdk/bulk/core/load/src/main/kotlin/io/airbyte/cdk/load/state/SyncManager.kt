@@ -28,10 +28,7 @@ interface SyncManager {
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
     fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager
 
-    fun registerStartedStreamLoader(streamLoader: StreamLoader)
-    suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
-    suspend fun getStreamLoaderOrNull(stream: DestinationStream.Descriptor): StreamLoader?
-
+    fun registerStartedStreamLoader(streamLoader: StreamLoader<*>)
     /** Suspend until all streams are complete. Returns false if any stream was failed/killed. */
     suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean
 
@@ -55,7 +52,7 @@ class DefaultSyncManager(
 ) : SyncManager {
     private val syncResult = CompletableDeferred<SyncResult>()
     private val streamLoaders =
-        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>>()
+        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader<*>>>()
     private val inputConsumed = CompletableDeferred<Boolean>()
     private val checkpointsProcessed = CompletableDeferred<Boolean>()
 
@@ -63,23 +60,10 @@ class DefaultSyncManager(
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
     }
 
-    override fun registerStartedStreamLoader(streamLoader: StreamLoader) {
+    override fun registerStartedStreamLoader(streamLoader: StreamLoader<*>) {
         streamLoaders
             .getOrPut(streamLoader.stream.descriptor) { CompletableDeferred() }
             .complete(streamLoader)
-    }
-
-    override suspend fun getOrAwaitStreamLoader(
-        stream: DestinationStream.Descriptor
-    ): StreamLoader {
-        return streamLoaders.getOrPut(stream) { CompletableDeferred() }.await()
-    }
-
-    override suspend fun getStreamLoaderOrNull(
-        stream: DestinationStream.Descriptor
-    ): StreamLoader? {
-        val completable = streamLoaders[stream]
-        return completable?.let { if (it.isCompleted) it.await() else null }
     }
 
     override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
