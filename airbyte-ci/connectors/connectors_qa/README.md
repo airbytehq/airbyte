@@ -108,7 +108,7 @@ poe lint
 
 ## Changelog
 
-### 1.18.1
+### 1.9.1
 
 Fail assets icon check if the icon is the default Airbyte icon.
 
