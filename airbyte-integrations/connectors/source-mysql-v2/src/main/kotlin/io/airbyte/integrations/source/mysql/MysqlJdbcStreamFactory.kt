@@ -45,8 +45,8 @@ class MysqlJdbcStreamFactory(val base: JdbcAirbyteStreamFactory) : AirbyteStream
         override val type: FieldType,
     ) : MetaField {
         CDC_CURSOR(CdcIntegerMetaFieldType),
-        CDC_UPDATED_AT(CdcOffsetDateTimeMetaFieldType),
-        CDC_DELETED_AT(CdcOffsetDateTimeMetaFieldType),
+        CDC_UPDATED_AT(CdcStringMetaFieldType),
+        CDC_DELETED_AT(CdcStringMetaFieldType),
         CDC_LOG_POS(CdcIntegerMetaFieldType),
         CDC_LOG_FILE(CdcStringMetaFieldType),
         ;
