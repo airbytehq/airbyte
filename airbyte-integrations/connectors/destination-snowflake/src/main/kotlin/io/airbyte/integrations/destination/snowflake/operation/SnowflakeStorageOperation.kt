@@ -100,7 +100,7 @@ class SnowflakeStorageOperation(
             generationIdNode =
                 results.first().get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
         }
-        return generationIdNode?.asLong()
+        return generationIdNode?.asLong() ?: 0
     }
 
     internal fun createTableQuery(streamId: StreamId, suffix: String): String {

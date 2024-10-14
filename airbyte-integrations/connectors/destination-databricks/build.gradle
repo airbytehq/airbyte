@@ -18,7 +18,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.38.3'
+    cdkVersionRequired = '0.46.0'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -43,8 +43,8 @@ application {
 
 dependencies {
     // Databricks JDBC driver
-    implementation 'com.databricks:databricks-jdbc:2.6.36'
-    implementation 'com.databricks:databricks-sdk-java:0.23.0'
+    implementation 'com.databricks:databricks-jdbc:2.6.40'
+    implementation 'com.databricks:databricks-sdk-java:0.31.0'
 }
 
 test {

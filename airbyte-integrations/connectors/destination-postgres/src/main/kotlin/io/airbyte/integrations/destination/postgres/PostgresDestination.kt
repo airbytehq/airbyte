@@ -24,11 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresRawTableAirbyteMetaMigration
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState
+import io.airbyte.integrations.destination.postgres.typing_deduping.*
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -38,11 +34,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class PostgresDestination :
-    AbstractJdbcDestination<PostgresState>(
-        DRIVER_CLASS,
-        PostgresSQLNameTransformer(),
-        PostgresSqlOperations()
-    ),
+    AbstractJdbcDestination<PostgresState>(DRIVER_CLASS, PostgresSQLNameTransformer()),
     Destination {
     override fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
@@ -152,17 +144,33 @@ class PostgresDestination :
     }
 
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
+        return PostgresSqlGenerator(PostgresSQLNameTransformer(), hasDropCascadeMode(config))
+    }
+    override fun getSqlOperations(config: JsonNode): PostgresSqlOperations {
+        return PostgresSqlOperations(hasDropCascadeMode(config))
+    }
+
+    override fun getGenerationHandler(): PostgresGenerationHandler {
+        return PostgresGenerationHandler()
+    }
+
+    private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
-        val dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean()
-        return PostgresSqlGenerator(PostgresSQLNameTransformer(), dropCascade)
+        return dropCascadeNode != null && dropCascadeNode.asBoolean()
     }
 
     override fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
     ): JdbcDestinationHandler<PostgresState> {
-        return PostgresDestinationHandler(databaseName, database, rawTableSchema)
+        return PostgresDestinationHandler(
+            databaseName,
+            database,
+            rawTableSchema,
+            getGenerationHandler(),
+        )
     }
 
     protected override fun getMigrations(
@@ -172,7 +180,8 @@ class PostgresDestination :
         destinationHandler: DestinationHandler<PostgresState>
     ): List<Migration<PostgresState>> {
         return java.util.List.of<Migration<PostgresState>>(
-            PostgresRawTableAirbyteMetaMigration(database, databaseName)
+            PostgresRawTableAirbyteMetaMigration(database, databaseName),
+            PostgresGenerationIdMigration(database, databaseName),
         )
     }
 
@@ -191,7 +200,7 @@ class PostgresDestination :
 
         val DRIVER_CLASS: String = DatabaseDriver.POSTGRESQL.driverClassName
 
-        private const val DROP_CASCADE_OPTION = "drop_cascade"
+        const val DROP_CASCADE_OPTION = "drop_cascade"
 
         @JvmStatic
         fun sshWrappedDestination(): Destination {
@@ -207,9 +216,9 @@ class PostgresDestination :
         fun main(args: Array<String>) {
             addThrowableForDeinterpolation(PSQLException::class.java)
             val destination = sshWrappedDestination()
-            LOGGER.info("starting destination-postgres: {}", PostgresDestination::class.java)
+            LOGGER.info("starting destination: {}", PostgresDestination::class.java)
             IntegrationRunner(destination).run(args)
-            LOGGER.info("completed destination-postgres: {}", PostgresDestination::class.java)
+            LOGGER.info("completed destination: {}", PostgresDestination::class.java)
         }
     }
 }

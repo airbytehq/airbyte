@@ -8,7 +8,7 @@ data:
   icon: kafka.svg
   license: MIT
   name: Kafka
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
     oss:

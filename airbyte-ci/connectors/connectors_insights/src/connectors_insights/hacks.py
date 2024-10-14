@@ -56,10 +56,13 @@ def get_ci_on_master_report(connector: Connector) -> Dict | None:
             except (IndexError, KeyError, TypeError):
                 continue
             json_report_url = report_url.replace(".html", ".json")
-            # The first table entry is the latest report
-            json_report = get_ci_json_report(json_report_url)
-            if json_report["connector_version"] == connector.version:
-                return json_report
+            # The first table entry is the latest report, but sometimes it's not there questionmark
+            try:
+                json_report = get_ci_json_report(json_report_url)
+                if json_report["connector_version"] == connector.version:
+                    return json_report
+            except Exception as e:
+                continue
             return None
 
     return None

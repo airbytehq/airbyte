@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 // TODO: This test is added to ensure coverage missed by disabling DATs. Redundant when DATs
 // enabled.
@@ -22,6 +23,7 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
             .withDatabase()
             .withResolvedHostAndPort()
             .withCredentials()
+            .with(PostgresDestination.DROP_CASCADE_OPTION, true)
             .withSsl(
                 ImmutableMap.builder<Any?, Any?>()
                     .put(
@@ -56,6 +58,16 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
 
     override val imageName: String
         get() = "airbyte/destination-postgres-strict-encrypt:dev"
+
+    @Test
+    override fun testDropCascade() {
+        super.testDropCascade()
+    }
+
+    @Test
+    override fun interruptedTruncateWithPriorData() {
+        super.interruptedTruncateWithPriorData()
+    }
 
     companion object {
         protected var testContainer: PostgresTestDatabase? = null

@@ -79,7 +79,22 @@ class ShopifyBulkTemplates:
 
 @dataclass
 class ShopifyBulkQuery:
-    shop_id: int
+    config: Mapping[str, Any]
+    parent_stream_name: Optional[str] = None
+    parent_stream_cursor: Optional[str] = None
+
+    @property
+    def has_parent_stream(self) -> bool:
+        return True if self.parent_stream_name and self.parent_stream_cursor else False
+
+    @property
+    def parent_cursor_key(self) -> Optional[str]:
+        if self.has_parent_stream:
+            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
+
+    @property
+    def shop_id(self) -> int:
+        return self.config.get("shop_id")
 
     @property
     def tools(self) -> BulkTools:
@@ -113,12 +128,52 @@ class ShopifyBulkQuery:
         return None
 
     @property
+    def supports_checkpointing(self) -> bool:
+        """
+        The presence of `sort_key = "UPDATED_AT"` for a query instance, usually means,
+        the server-side BULK Job results are fetched and ordered correctly, suitable for checkpointing.
+        """
+        return self.sort_key == "UPDATED_AT"
+
+    @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
         """
         Defines the fields for final graph selection.
         https://shopify.dev/docs/api/admin-graphql
         """
         return ["__typename", "id"]
+
+    def _inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
+        if self.has_parent_stream:
+            # inject parent cursor key as alias to the `updatedAt` parent cursor field
+            nodes.insert(index, Field(name="updatedAt", alias=self.parent_cursor_key))
+
+        return nodes
+
+    def _add_parent_record_state(self, record: MutableMapping[str, Any], items: List[dict], to_rfc3339: bool = False) -> List[dict]:
+        """
+        Adds a parent cursor value to each item in the list.
+
+        This method iterates over a list of dictionaries and adds a new key-value pair to each dictionary.
+        The key is the value of `self.query_name`, and the value is another dictionary with a single key "updated_at"
+        and the provided `parent_cursor_value`.
+
+        Args:
+            items (List[dict]): A list of dictionaries to which the parent cursor value will be added.
+            parent_cursor_value (str): The value to be set for the "updated_at" key in the nested dictionary.
+
+        Returns:
+            List[dict]: The modified list of dictionaries with the added parent cursor values.
+        """
+
+        if self.has_parent_stream:
+            parent_cursor_value: Optional[str] = record.get(self.parent_cursor_key, None)
+            parent_state = self.tools._datetime_str_to_rfc3339(parent_cursor_value) if to_rfc3339 and parent_cursor_value else None
+
+            for item in items:
+                item[self.parent_stream_name] = {self.parent_stream_cursor: parent_state}
+
+        return items
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -191,7 +246,7 @@ class MetafieldType(Enum):
     ORDERS = "orders"
     DRAFT_ORDERS = "draftOrders"
     PRODUCTS = "products"
-    PRODUCT_IMAGES = ["products", "images"]
+    PRODUCT_IMAGES = "products"
     PRODUCT_VARIANTS = "productVariants"
     COLLECTIONS = "collections"
     LOCATIONS = "locations"
@@ -273,15 +328,22 @@ class Metafield(ShopifyBulkQuery):
         List of available fields:
         https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
         """
+
+        nodes = super().query_nodes
+
         # define metafield node
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
 
         if isinstance(self.type.value, list):
-            return ["__typename", "id", self.get_edge_node(self.type.value[1], ["__typename", "id", metafield_node])]
+            nodes = [*nodes, self.get_edge_node(self.type.value[1], [*nodes, metafield_node])]
         elif isinstance(self.type.value, str):
-            return ["__typename", "id", metafield_node]
+            nodes = [*nodes, metafield_node]
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        nodes = self._inject_parent_cursor_field(nodes)
+
+        return nodes
+
+    def _process_metafield(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # resolve parent id from `str` to `int`
         record["owner_id"] = self.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
         # add `owner_resource` field
@@ -292,7 +354,28 @@ class Metafield(ShopifyBulkQuery):
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
         record = self.tools.fields_names_to_snake_case(record)
-        yield record
+        return record
+
+    def _process_components(self, entity: List[dict]) -> Iterable[MutableMapping[str, Any]]:
+        for item in entity:
+            # resolve the id from string
+            item["admin_graphql_api_id"] = item.get("id")
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+            yield self._process_metafield(item)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+        # process record components
+        if not record_components:
+            yield self._process_metafield(record)
+        else:
+            metafields = record_components.get("Metafield", [])
+            if len(metafields) > 0:
+                if self.has_parent_stream:
+                    # add parent state to each metafield
+                    metafields = self._add_parent_record_state(record, metafields, to_rfc3339=True)
+                yield from self._process_components(metafields)
 
 
 class MetafieldCollection(Metafield):
@@ -331,7 +414,9 @@ class MetafieldCustomer(Metafield):
         customers(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    customer_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -353,6 +438,11 @@ class MetafieldCustomer(Metafield):
     """
 
     type = MetafieldType.CUSTOMERS
+
+    record_composition = {
+        "new_record": "Customer",
+        "record_components": ["Metafield"],
+    }
 
 
 class MetafieldLocation(Metafield):
@@ -452,7 +542,9 @@ class MetafieldProduct(Metafield):
         products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    product_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -475,29 +567,40 @@ class MetafieldProduct(Metafield):
 
     type = MetafieldType.PRODUCTS
 
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
 
 class MetafieldProductImage(Metafield):
     """
     {
-        products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+        products(query: "updated_at:>='2023-01-08T00:00:00+00:00' AND updated_at:<='2024-08-02T15:12:41.689153+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
-                    images{
-                        edges{
-                            node{
+                    product_updated_at: updatedAt
+                    media {
+                        edges {
+                            node {
+                                __typename
                                 id
-                                metafields {
-                                    edges {
-                                        node {
-                                            id
-                                            namespace
-                                            value
-                                            key
-                                            description
-                                            createdAt
-                                            updatedAt
-                                            type
+                                ... on MediaImage {
+                                    metafields {
+                                        edges {
+                                            node {
+                                                __typename
+                                                id
+                                                namespace
+                                                value
+                                                key
+                                                description
+                                                createdAt
+                                                updatedAt
+                                                type
+                                            }
                                         }
                                     }
                                 }
@@ -511,6 +614,32 @@ class MetafieldProductImage(Metafield):
     """
 
     type = MetafieldType.PRODUCT_IMAGES
+
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        """
+        This is the overide for the default `query_nodes` method,
+        because the usual way of retrieving the metafields for product images` was suddently deprecated,
+        for `2024-10`, but the changes are reflected in the `2024-04` as well, starting: `2024-08-01T00:06:44`
+
+        More info here:
+        https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
+        """
+
+        # define metafield node
+        metafield_node = self.get_edge_node("metafields", self.metafield_fields)
+        media_fields: List[Field] = ["__typename", "id", InlineFragment(type="MediaImage", fields=[metafield_node])]
+        media_node = self.get_edge_node("media", media_fields)
+
+        fields: List[Field] = ["__typename", "id", media_node]
+        fields = self._inject_parent_cursor_field(fields)
+
+        return fields
 
 
 class MetafieldProductVariant(Metafield):
@@ -2199,6 +2328,7 @@ class ProductImage(ShopifyBulkQuery):
                 node {
                     __typename
                     id
+                    products_updated_at: updatedAt
                     # THE MEDIA NODE IS NEEDED TO PROVIDE THE CURSORS
                     media {
                         edges {
@@ -2275,8 +2405,7 @@ class ProductImage(ShopifyBulkQuery):
     # media property fields
     media_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=media_fragment)])]
 
-    # main query
-    query_nodes: List[Field] = [
+    nodes: List[Field] = [
         "__typename",
         "id",
         Field(name="media", fields=media_fields),
@@ -2290,6 +2419,10 @@ class ProductImage(ShopifyBulkQuery):
         # there could be multiple `MediaImage` and `Image` assigned to the product.
         "record_components": ["MediaImage", "Image"],
     }
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        return self._inject_parent_cursor_field(self.nodes)
 
     def _process_component(self, entity: List[dict]) -> List[dict]:
         for item in entity:
@@ -2366,6 +2499,8 @@ class ProductImage(ShopifyBulkQuery):
 
             # add the product_id to each `Image`
             record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
+            # add the product cursor to each `Image`
+            record["images"] = self._add_parent_record_state(record, record.get("images", []), to_rfc3339=True)
             record["images"] = self._merge_with_media(record_components)
             record.pop("record_components")
 
@@ -2374,7 +2509,6 @@ class ProductImage(ShopifyBulkQuery):
             if len(images) > 0:
                 # convert dates from ISO-8601 to RFC-3339
                 record["images"] = self._convert_datetime_to_rfc3339(images)
-
                 yield from self._emit_complete_records(images)
 
 
@@ -2382,8 +2516,7 @@ class ProductVariant(ShopifyBulkQuery):
     """
     {
         productVariants(
-            query: "updated_at:>='2019-04-13T00:00:00+00:00' AND updated_at:<='2024-04-30T12:16:17.273363+00:00'"
-            sortKey: UPDATED_AT
+            query: "updatedAt:>='2019-04-13T00:00:00+00:00' AND updatedAt:<='2024-04-30T12:16:17.273363+00:00'"
         ) {
             edges {
                 node {
@@ -2457,64 +2590,76 @@ class ProductVariant(ShopifyBulkQuery):
     """
 
     query_name = "productVariants"
-    sort_key = "ID"
 
-    prices_fields: List[str] = ["amount", "currencyCode"]
-    presentment_prices_fields: List[Field] = [
-        Field(
-            name="edges",
-            fields=[
-                Field(
-                    name="node",
-                    fields=["__typename", Field(name="price", fields=prices_fields), Field(name="compareAtPrice", fields=prices_fields)],
-                )
-            ],
+    @property
+    def _should_include_presentment_prices(self) -> bool:
+        return self.config.get("job_product_variants_include_pres_prices", True)
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+
+        prices_fields: List[str] = ["amount", "currencyCode"]
+        presentment_prices_fields: List[Field] = [
+            Field(
+                name="edges",
+                fields=[
+                    Field(
+                        name="node",
+                        fields=[
+                            "__typename",
+                            Field(name="price", fields=prices_fields),
+                            Field(name="compareAtPrice", fields=prices_fields),
+                        ],
+                    )
+                ],
+            )
+        ]
+        option_value_fields: List[Field] = [
+            "id",
+            "name",
+            Field(name="hasVariants", alias="has_variants"),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+        ]
+        option_fields: List[Field] = [
+            "name",
+            "value",
+            Field(name="optionValue", alias="option_value", fields=option_value_fields),
+        ]
+        presentment_prices = (
+            [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
-    ]
 
-    option_value_fields: List[Field] = [
-        "id",
-        "name",
-        Field(name="hasVariants", alias="has_variants"),
-        Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
-    ]
-    option_fields: List[Field] = [
-        "name",
-        "value",
-        Field(name="optionValue", alias="option_value", fields=option_value_fields),
-    ]
+        query_nodes: List[Field] = [
+            "__typename",
+            "id",
+            "title",
+            "price",
+            "sku",
+            "position",
+            "inventoryPolicy",
+            "compareAtPrice",
+            "inventoryManagement",
+            "createdAt",
+            "updatedAt",
+            "taxable",
+            "barcode",
+            "weight",
+            "weightUnit",
+            "inventoryQuantity",
+            "requiresShipping",
+            "availableForSale",
+            "displayName",
+            "taxCode",
+            Field(name="selectedOptions", alias="options", fields=option_fields),
+            Field(name="weight", alias="grams"),
+            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="inventoryQuantity", alias="old_inventory_quantity"),
+            Field(name="product", fields=[Field(name="id", alias="product_id")]),
+            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
+            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+        ] + presentment_prices
 
-    # main query
-    query_nodes: List[Field] = [
-        "__typename",
-        "id",
-        "title",
-        "price",
-        "sku",
-        "position",
-        "inventoryPolicy",
-        "compareAtPrice",
-        "inventoryManagement",
-        "createdAt",
-        "updatedAt",
-        "taxable",
-        "barcode",
-        "weight",
-        "weightUnit",
-        "inventoryQuantity",
-        "requiresShipping",
-        "availableForSale",
-        "displayName",
-        "taxCode",
-        Field(name="selectedOptions", alias="options", fields=option_fields),
-        Field(name="weight", alias="grams"),
-        Field(name="image", fields=[Field(name="id", alias="image_id")]),
-        Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-        Field(name="product", fields=[Field(name="id", alias="product_id")]),
-        Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-        Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
-        Field(name="presentmentPrices", fields=presentment_prices_fields),
-    ]
+        return query_nodes
 
     record_composition = {
         "new_record": "ProductVariant",

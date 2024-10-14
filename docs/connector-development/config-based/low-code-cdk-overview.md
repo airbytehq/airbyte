@@ -3,11 +3,7 @@
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
 
 :::info
-Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
-:::
-
-:::note
-The low-code framework is in **beta**, which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+Developer updates will be announced via our [#help-connector-development Slack channel](https://airbytehq.slack.com/archives/C027KKE4BCZ). If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
 ## Why low-code?
@@ -65,7 +61,7 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 ## Prerequisites
 
 - An API key for the source you want to build a connector for
-- Python >= 3.9
+- Python >= 3.10
 - Docker
 
 ## Overview of the process

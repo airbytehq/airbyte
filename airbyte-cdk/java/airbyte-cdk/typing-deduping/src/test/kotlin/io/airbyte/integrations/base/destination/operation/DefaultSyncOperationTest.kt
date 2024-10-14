@@ -79,7 +79,9 @@ class DefaultSyncOperationTest {
                         needsSoftReset = false,
                         softResetMigrationCompleted = false,
                         nonSoftResetMigrationCompleted = false,
-                    )
+                    ),
+                finalTableGenerationId = null,
+                finalTempTableGenerationId = null,
             )
         every { destinationHandler.gatherInitialState(any()) } returns listOf(appendInitialStatus)
 
@@ -178,7 +180,9 @@ class DefaultSyncOperationTest {
                         needsSoftReset = true,
                         softResetMigrationCompleted = true,
                         nonSoftResetMigrationCompleted = true,
-                    )
+                    ),
+                finalTableGenerationId = null,
+                finalTempTableGenerationId = null,
             )
         every { destinationHandler.gatherInitialState(any()) } returns listOf(appendInitialStatus)
 

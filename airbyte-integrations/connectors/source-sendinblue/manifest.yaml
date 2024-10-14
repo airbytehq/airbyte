@@ -1,0 +1,369 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /emailCampaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /smtp/templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['modifiedAt'] >= stream_interval['start_time'] }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        name: contacts
+        primary_key: id
+        path: /contacts
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2000-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modifiedSince
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.sendinblue.com/v3
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/contacts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API Key. See <a
+          href="https://developers.sendinblue.com/docs/getting-started">here</a>.
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      abTesting:
+        type:
+          - "null"
+          - boolean
+      createdAt:
+        type:
+          - "null"
+          - string
+      footer:
+        type:
+          - "null"
+          - string
+      header:
+        type:
+          - "null"
+          - string
+      htmlContent:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      inlineImageActivation:
+        type:
+          - "null"
+          - boolean
+      mirrorActive:
+        type:
+          - "null"
+          - boolean
+      modifiedAt:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      previewText:
+        type:
+          - "null"
+          - string
+      recipients:
+        type:
+          - "null"
+          - object
+      replyTo:
+        type:
+          - "null"
+          - string
+      scheduledAt:
+        type:
+          - "null"
+          - string
+      sendAtBestTime:
+        type:
+          - "null"
+          - boolean
+      sender:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      shareLink:
+        type:
+          - "null"
+          - string
+      statistics:
+        type:
+          - "null"
+          - object
+      status:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      tag:
+        type:
+          - "null"
+          - string
+      testSent:
+        type:
+          - "null"
+          - boolean
+      toField:
+        type:
+          - "null"
+          - string
+  templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+      htmlContent:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      isActive:
+        type:
+          - "null"
+          - boolean
+      modifiedAt:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      replyTo:
+        type:
+          - "null"
+          - string
+      sender:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      subject:
+        type:
+          - "null"
+          - string
+      tag:
+        type:
+          - "null"
+          - string
+      testSent:
+        type:
+          - "null"
+          - boolean
+      toField:
+        type:
+          - "null"
+          - string
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      createdAt:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      emailBlacklisted:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      listIds:
+        type:
+          - "null"
+          - array
+      modifiedAt:
+        type:
+          - "null"
+          - string
+      smsBlacklisted:
+        type:
+          - "null"
+          - boolean

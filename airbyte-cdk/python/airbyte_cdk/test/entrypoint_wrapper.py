@@ -16,6 +16,7 @@ than that, there are integrations point that are annoying to integrate with usin
 
 import json
 import logging
+import re
 import tempfile
 import traceback
 from io import StringIO
@@ -25,18 +26,23 @@ from typing import Any, List, Mapping, Optional, Union
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.sources import Source
-from airbyte_protocol.models import (
+from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     Level,
     TraceType,
     Type,
 )
+from airbyte_cdk.sources import Source
+from orjson import orjson
 from pydantic import ValidationError as V2ValidationError
+from serpyco_rs import SchemaValidationError
 
 
 class EntrypointOutput:
@@ -52,8 +58,8 @@ class EntrypointOutput:
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
         try:
-            return AirbyteMessage.parse_obj(json.loads(message))
-        except (json.JSONDecodeError, V2ValidationError):
+            return AirbyteMessageSerializer.load(orjson.loads(message))  # type: ignore[no-any-return] # Serializer.load() always returns AirbyteMessage
+        except (orjson.JSONDecodeError, SchemaValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
@@ -74,7 +80,7 @@ class EntrypointOutput:
         state_messages = self._get_message_by_types([Type.STATE])
         if not state_messages:
             raise ValueError("Can't provide most recent state as there are no state messages")
-        return state_messages[-1].state.stream
+        return state_messages[-1].state.stream  # type: ignore[union-attr] # state has `stream`
 
     @property
     def logs(self) -> List[AirbyteMessage]:
@@ -101,9 +107,9 @@ class EntrypointOutput:
 
     def get_stream_statuses(self, stream_name: str) -> List[AirbyteStreamStatus]:
         status_messages = map(
-            lambda message: message.trace.stream_status.status,
+            lambda message: message.trace.stream_status.status,  # type: ignore
             filter(
-                lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,
+                lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,  # type: ignore # callable; trace has `stream_status`
                 self._get_trace_message_by_trace_type(TraceType.STREAM_STATUS),
             ),
         )
@@ -113,7 +119,15 @@ class EntrypointOutput:
         return [message for message in self._messages if message.type in message_types]
 
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
+        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]  # type: ignore[union-attr] # trace has `type`
+
+    def is_in_logs(self, pattern: str) -> bool:
+        """Check if any log message case-insensitive matches the pattern."""
+        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)  # type: ignore[union-attr] # log has `message`
+
+    def is_not_in_logs(self, pattern: str) -> bool:
+        """Check if no log message matches the case-insensitive pattern."""
+        return not self.is_in_logs(pattern)
 
 
 def _run_command(source: Source, args: List[str], expecting_exception: bool = False) -> EntrypointOutput:
@@ -179,7 +193,9 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
+        catalog_file = make_file(
+            tmp_directory_path / "catalog.json", orjson.dumps(ConfiguredAirbyteCatalogSerializer.dump(catalog)).decode()
+        )
         args = [
             "read",
             "--config",
@@ -191,7 +207,10 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
+                    make_file(
+                        tmp_directory_path / "state.json",
+                        f"[{','.join([orjson.dumps(AirbyteStateMessageSerializer.dump(stream_state)).decode() for stream_state in state])}]",
+                    ),
                 ]
             )
 

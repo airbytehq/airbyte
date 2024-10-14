@@ -6,7 +6,7 @@ products: all
 
 Each connection you've set up in your Workspace has a **Status** page that displays the connection's current status, timing of the next scheduled sync, and a summary of historic sync trends. Reviewing this page allows you to monitor the health of your connection. 
 
-![Connection Status](./assets/connection-status-page.png)
+![Connection Status](./assets/cloud-status-page.png)
 
 :::note
 The Streams status and Records loaded graphs are available in Airbyte Cloud and Airbyte Enterprise.
@@ -33,15 +33,12 @@ The stream status allows you to monitor an individual stream's latest status. Co
 
 |   | Status                   | Description                                                                                     |
 | - | ------------------------ | ----------------------------------------------------------------------------------------------- |
-|![On time](./assets/connection_synced.png) | **On time**              | The stream is operating within the expected timeframe expectations set by the replication frequency |
+|![Synced](./assets/connection_synced.png) | **Synced**              | The stream's last sync was successful. |
 |![Syncing](./assets/connection_syncing.png) | **Syncing**              | The stream is currently actively syncing. The stream will also be highlighted in grey to indicate the sync is actively extracting or loading data.    |
 |![Queued](./assets/connection_not_yet_synced.png) | **Queued**               | The stream has not synced yet, and is scheduled to be synced in the current ongoing sync            |
 |![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream has not synced yet, and is scheduled to be synced in the next scheduled sync             |
-|![On track](./assets/connection_synced.png) | **On track**             | The connection is slightly delayed but is expected to catch up before the next sync. This can occur when a transient sync error occurs.    |
-|![Late](./assets/connection_incomplete.png) | **Late**               | The connection has not loaded data within the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 1 hour                                     |
-|![Error](./assets/connection_incomplete.png) | **Error**              | The connection has not loaded data in more than two times the scheduled replication frequency. For example, if the replication frequency is 1 hour, the connection has not loaded data for more than 2 hours                    |
+|![Error](./assets/connection_incomplete.png) | **Error**              | The connection did not succeed on its most recent sync, but is expected to recover on the next one                    |
 |![Action Required](./assets/connection_action_required.png) | **Action Required**    | A breaking change related to the source or destination requires attention to resolve                |
-|![Pending](./assets/connection_disabled.png) | **Pending**            | The stream has not been synced yet, so not status exists                   
 
 Once the sync is complete, each stream displays the time since the last record was loaded to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record was loaded.
 
@@ -60,17 +57,24 @@ The Status page offers users visibility into the recent history of your syncs. F
 
 ### Resolving Connection Errors
 
-If the most recent sync failed, you'll see the error message that will help to diagnose whether the failure is due to a configuration or system error. 
+If the most recent sync failed, you'll see the error message that will help to diagnose next steps. If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
-Configuration errors are highlighted in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
+#### Rate-Limited Syncs
+If a source is being rate-limited by Airbyte trying to extract data, an informational message will be displayed. This can occur more frequently when Airbyte is attempting to pull a large amount of data. If available from the source, Airbyte will also show a countdown to when the sync will attempt to start syncing again. 
+
+![Rate Limited Status](./assets/rate_limited.png)
+
+Airbyte will not continue attempting to sync until the rate limit is lifted. The Active Streams section will indicate which specific streams have been rate limited. The sync will automatically start attempting to sync again once the rate limit has lifted. 
+
+#### Configuration Errors
+Configuration errors are shown in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
 
 ![Configuration Error](./assets/configuration-error.png)
 
-All other errors are highlighted in yellow. These can range from transient errors to warnings from the source (e.g. rate limits). These types of errors usually resolve themselves without any action required. 
+#### System Errors
+Sync errors can also be shown in yellow. These can range from transient errors to warnings from the source (e.g. rate limits). These types of errors usually resolve themselves without any action required. 
 
 ![Warning Error](./assets/warning-error.png)
-
-If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
 ### Major Version Upgrades (Cloud only)
 If a new major version of the connector has been released in Cloud, you will also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.

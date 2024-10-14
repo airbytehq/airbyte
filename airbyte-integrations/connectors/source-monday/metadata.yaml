@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.1.3
+  dockerImageTag: 2.1.4
   releases:
     breakingChanges:
       2.0.0:
@@ -39,7 +39,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-monday
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -50,6 +50,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: monday_config_oauth_dev_null
+          id: 42a1b99a-0ef5-4442-945e-e4291376fb55
+        - name: monday_config_dev_null
+          id: 4533adbf-ea50-44ae-bafd-62bccad2ddf3
+        - name: monday_config_api_token_dev_null
+          id: 81b8f4db-d37f-4135-9a55-d62e0a163701
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

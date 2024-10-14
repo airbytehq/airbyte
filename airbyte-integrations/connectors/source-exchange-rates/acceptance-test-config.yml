@@ -2,7 +2,7 @@ connector_image: airbyte/source-exchange-rates:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_exchange_rates/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 1.3.0
   connection:

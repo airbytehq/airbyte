@@ -9,7 +9,7 @@ from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import MANIFEST_FILE_PATH
+from pipelines.consts import COMPONENTS_FILE_PATH, MANIFEST_FILE_PATH
 from pipelines.models.steps import StepResult
 from pydash.objects import get  # type: ignore
 
@@ -43,10 +43,19 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
 
+        # Mount manifest file
         base_container = self._get_base_container(platform).with_file(
             f"source_declarative_manifest/{MANIFEST_FILE_PATH}",
             (await self.context.get_connector_dir(include=[MANIFEST_FILE_PATH])).file(MANIFEST_FILE_PATH),
         )
+
+        # Mount components file if it exists
+        components_file = self.context.connector.manifest_only_components_path
+        if components_file.exists():
+            base_container = base_container.with_file(
+                f"source_declarative_manifest/{COMPONENTS_FILE_PATH}",
+                (await self.context.get_connector_dir(include=[COMPONENTS_FILE_PATH])).file(COMPONENTS_FILE_PATH),
+            )
 
         connector_container = build_customization.apply_airbyte_entrypoint(base_container, self.context.connector)
         return connector_container

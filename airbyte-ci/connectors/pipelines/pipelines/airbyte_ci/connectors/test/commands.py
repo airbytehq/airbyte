@@ -26,9 +26,6 @@ from pipelines.models.steps import STEP_PARAMS
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression Test Results Reviewed and Approved"
-TESTS_SKIPPED_BY_DEFAULT = [
-    CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
-]
 
 
 @click.command(
@@ -120,7 +117,6 @@ async def test(
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
         skip_steps = list(skip_steps)
-        skip_steps += TESTS_SKIPPED_BY_DEFAULT
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 

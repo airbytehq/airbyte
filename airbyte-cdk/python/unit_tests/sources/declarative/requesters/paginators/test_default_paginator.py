@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder, XmlDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import (
     DefaultPaginator,
@@ -21,7 +21,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
 @pytest.mark.parametrize(
-    "page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_record, expected_next_page_token, limit",
+    "page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_record, expected_next_page_token, limit, decoder, response_body",
     [
         (
             RequestPath(parameters={}),
@@ -34,6 +34,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
         ),
         (
             RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from", parameters={}),
@@ -46,6 +48,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
         ),
         (
             RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from", parameters={}),
@@ -58,6 +62,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             None,
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
         ),
         (
             RequestOption(inject_into=RequestOptionType.header, field_name="from", parameters={}),
@@ -70,6 +76,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
         ),
         (
             RequestOption(inject_into=RequestOptionType.body_data, field_name="from", parameters={}),
@@ -82,6 +90,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
         ),
         (
             RequestOption(inject_into=RequestOptionType.body_json, field_name="from", parameters={}),
@@ -94,6 +104,36 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
             {"id": 1},
             {"next_page_token": "https://airbyte.io/next_url"},
             2,
+            JsonDecoder,
+            {"next": "https://airbyte.io/next_url"},
+        ),
+        (
+            RequestPath(parameters={}),
+            None,
+            "/next_url",
+            {"limit": 2},
+            {},
+            {},
+            {},
+            {"id": 1},
+            {"next_page_token": "https://airbyte.io/next_url"},
+            2,
+            XmlDecoder,
+            b"<next>https://airbyte.io/next_url</next>",
+        ),
+        (
+            RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from", parameters={}),
+            None,
+            None,
+            {"limit": 2, "from": "https://airbyte.io/next_url"},
+            {},
+            {},
+            {},
+            {"id": 1},
+            {"next_page_token": "https://airbyte.io/next_url"},
+            2,
+            XmlDecoder,
+            b"<next>https://airbyte.io/next_url</next>",
         ),
     ],
     ids=[
@@ -103,6 +143,8 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
         "test_default_paginator_cursor_header",
         "test_default_paginator_cursor_body_data",
         "test_default_paginator_cursor_body_json",
+        "test_default_paginator_path_with_xml_decoder",
+        "test_default_paginator_request_param_xml_decoder",
     ],
 )
 def test_default_paginator_with_cursor(
@@ -116,6 +158,8 @@ def test_default_paginator_with_cursor(
     last_record,
     expected_next_page_token,
     limit,
+    decoder,
+    response_body
 ):
     page_size_request_option = RequestOption(
         inject_into=RequestOptionType.request_parameter, field_name="{{parameters['page_limit']}}", parameters={"page_limit": "limit"}
@@ -128,7 +172,7 @@ def test_default_paginator_with_cursor(
         page_size=limit,
         cursor_value=cursor_value,
         stop_condition=stop_condition,
-        decoder=JsonDecoder(parameters={}),
+        decoder=decoder(parameters={}),
         config=config,
         parameters=parameters,
     )
@@ -143,8 +187,7 @@ def test_default_paginator_with_cursor(
 
     response = requests.Response()
     response.headers = {"A_HEADER": "HEADER_VALUE"}
-    response_body = {"next": "https://airbyte.io/next_url"}
-    response._content = json.dumps(response_body).encode("utf-8")
+    response._content = json.dumps(response_body).encode("utf-8") if decoder == JsonDecoder else response_body
 
     actual_next_page_token = paginator.next_page_token(response, 2, last_record)
     actual_next_path = paginator.path()
@@ -247,7 +290,7 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
     ids=[
         "test_reset_inject_on_first_request",
         "test_reset_no_inject_on_first_request",
-    ]
+    ],
 )
 def test_reset(inject_on_first_request):
     page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})

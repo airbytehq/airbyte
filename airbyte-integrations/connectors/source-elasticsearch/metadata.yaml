@@ -8,7 +8,7 @@ data:
   icon: elasticsearch.svg
   license: MIT
   name: Elasticsearch
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

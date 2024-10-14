@@ -1,12 +1,19 @@
 # Intercom
 
-This page contains the setup guide and reference information for the Intercom source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Intercom](https://developers.intercom.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - Access to an Intercom account with the data you want to replicate
+- Start date - a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
 
 ## Setup guide
+
+### Set up Intercom
 
 <!-- env:oss -->
 
@@ -24,13 +31,24 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ### Set up the Intercom connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Intercom** from the list of available sources.
-4. Enter a **Source name** to help you identify this source.
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Intercom from the Source type dropdown.
+4. Enter a name for the Intercom connector.
 5. To authenticate:
 
 <!-- env:cloud -->
+
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Intercom from the Source type dropdown.
+4. Enter a name for the Intercom connector.
+<!-- /env:oss -->
 
 - For **Airbyte Cloud**, click **Authenticate your Intercom account**. When the pop-up appears, select the appropriate workspace from the dropdown and click **Authorize access**.
   <!-- /env:cloud -->
@@ -43,24 +61,24 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ## Supported sync modes
 
-The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 The Intercom source connector supports the following streams:
 
-- [Admins](https://developers.intercom.com/intercom-api-reference/reference/listadmins) \(Full table\)
+- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
 - [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
   - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
-- [Conversations](https://developers.intercom.com/intercom-api-reference/reference/listconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference/retrieveconversation) \(Incremental\)
-- [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/intercom-api-reference/reference/listcontacts) \(Incremental\)
+- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
 - [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
 - [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
@@ -78,6 +96,18 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.4 | 2024-10-12 | [46831](https://github.com/airbytehq/airbyte/pull/46831) | Update dependencies |
+| 0.7.3 | 2024-10-05 | [46447](https://github.com/airbytehq/airbyte/pull/46447) | Update dependencies |
+| 0.7.2 | 2024-09-28 | [45279](https://github.com/airbytehq/airbyte/pull/45279) | Update dependencies |
+| 0.7.1 | 2024-08-31 | [44966](https://github.com/airbytehq/airbyte/pull/44966) | Update dependencies |
+| 0.7.0 | 2024-08-29 | [44911](https://github.com/airbytehq/airbyte/pull/44911) | Migrate to CDK v4 |
+| 0.6.21 | 2024-08-24 | [44672](https://github.com/airbytehq/airbyte/pull/44672) | Update dependencies |
+| 0.6.20 | 2024-08-17 | [44296](https://github.com/airbytehq/airbyte/pull/44296) | Update dependencies |
+| 0.6.19 | 2024-08-12 | [43878](https://github.com/airbytehq/airbyte/pull/43878) | Update dependencies |
+| 0.6.18 | 2024-08-10 | [43500](https://github.com/airbytehq/airbyte/pull/43500) | Update dependencies |
+| 0.6.17 | 2024-08-03 | [43276](https://github.com/airbytehq/airbyte/pull/43276) | Update dependencies |
+| 0.6.16 | 2024-07-29 | [42094](https://github.com/airbytehq/airbyte/pull/42094) | Use latest CDK, raise config error on `Active subscription needed` error and transient errors for `Companies` stream. |
+| 0.6.15 | 2024-07-27 | [42654](https://github.com/airbytehq/airbyte/pull/42654) | Update dependencies |
 | 0.6.14 | 2024-07-20 | [42262](https://github.com/airbytehq/airbyte/pull/42262) | Update dependencies |
 | 0.6.13 | 2024-07-13 | [41712](https://github.com/airbytehq/airbyte/pull/41712) | Update dependencies |
 | 0.6.12 | 2024-07-10 | [41356](https://github.com/airbytehq/airbyte/pull/41356) | Update dependencies |

@@ -13544,6 +13544,7 @@
       "public": true,
       "custom": false,
       "releaseStage": "generally_available",
+      "erdUrl": "https://dbdocs.io/maximec5e237b90b/source-facebook-marketing",
       "allowedHosts": {
         "hosts": ["graph.facebook.com"]
       }

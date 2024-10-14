@@ -4,14 +4,18 @@
 
 package io.airbyte.cdk.integrations.destination.s3.parquet
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonRecordAvroPreprocessor
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaAvroPreprocessor
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
+import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -49,7 +53,8 @@ private val logger = KotlinLogging.logger {}
 class ParquetSerializedBuffer(
     uploadFormatConfig: UploadFormatConfig,
     stream: AirbyteStreamNameNamespacePair,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
+    private val useV2FeatureSet: Boolean = false,
 ) : SerializableBuffer {
     private val avroRecordFactory: AvroRecordFactory
     private val parquetWriter: ParquetWriter<GenericData.Record>
@@ -59,26 +64,56 @@ class ParquetSerializedBuffer(
     private var isClosed: Boolean
 
     init {
-        val schemaConverter = JsonToAvroSchemaConverter()
+        // Find the initial json schema
+        val initialSchema =
+            catalog.streams
+                .firstOrNull { s: ConfiguredAirbyteStream ->
+                    (s.stream.name == stream.name) &&
+                        StringUtils.equals(
+                            s.stream.namespace,
+                            stream.namespace,
+                        )
+                }
+                ?.stream
+                ?.jsonSchema
+                ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}")
+
+        // Build a pipeline of initial -> avro ready -> parquet ready
+        val (finalJsonSchema, jsonRecordPreprocessor) =
+            if (useV2FeatureSet) {
+                val mergedSchema = JsonSchemaUnionMerger().mapSchema(initialSchema as ObjectNode)
+                val avroJsonSchema = JsonSchemaAvroPreprocessor().mapSchema(mergedSchema)
+                val finalJsonSchema = JsonSchemaParquetPreprocessor().mapSchema(avroJsonSchema)
+                val preprocessor = { record: JsonNode ->
+                    val avroJsonRecord =
+                        JsonRecordAvroPreprocessor().mapRecordWithSchema(record, mergedSchema)
+                    JsonRecordParquetPreprocessor()
+                        .mapRecordWithSchema(avroJsonRecord, avroJsonSchema)
+                }
+                Pair(finalJsonSchema, preprocessor)
+            } else Pair(initialSchema as ObjectNode) { record -> record }
+
+        // Build the actual avro schema from the preprocessed json schema
         val schema: Schema =
-            schemaConverter.getAvroSchema(
-                catalog.streams
-                    .firstOrNull { s: ConfiguredAirbyteStream ->
-                        (s.stream.name == stream.name) &&
-                            StringUtils.equals(
-                                s.stream.namespace,
-                                stream.namespace,
-                            )
-                    }
-                    ?.stream
-                    ?.jsonSchema
-                    ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}"),
-                stream.name,
-                stream.namespace,
-            )
+            JsonToAvroSchemaConverter()
+                .getAvroSchema(
+                    finalJsonSchema,
+                    stream.name,
+                    stream.namespace,
+                    useV2FieldNames = useV2FeatureSet,
+                    addStringToLogicalTypes = false,
+                    appendExtraProps = !useV2FeatureSet
+                )
+
+        // Build the (preprocessed json record -> avro record) converter
         bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet")
         Files.deleteIfExists(bufferFile)
-        avroRecordFactory = AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER)
+        val converter =
+            if (useV2FeatureSet) AvroRecordFactory.createV2JsonToAvroConverter()
+            else AvroRecordFactory.createV1JsonToAvroConverter()
+        avroRecordFactory = AvroRecordFactory(schema, converter, jsonRecordPreprocessor)
+
+        // Build the actual parquet writer
         val uploadParquetFormatConfig: UploadParquetFormatConfig =
             uploadFormatConfig as UploadParquetFormatConfig
         val avroConfig = Configuration()
@@ -107,10 +142,21 @@ class ParquetSerializedBuffer(
 
     @Deprecated("Deprecated in Java")
     @Throws(Exception::class)
-    override fun accept(record: AirbyteRecordMessage): Long {
+    override fun accept(record: AirbyteRecordMessage, generationId: Long, syncId: Long): Long {
         if (inputStream == null && !isClosed) {
             val startCount: Long = byteCount
-            parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+            if (useV2FeatureSet) {
+                parquetWriter.write(
+                    avroRecordFactory.getAvroRecordV2(
+                        UUID.randomUUID(),
+                        generationId,
+                        syncId,
+                        record
+                    )
+                )
+            } else {
+                parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+            }
             return byteCount - startCount
         } else {
             throw IllegalCallerException("Buffer is already closed, it cannot accept more messages")
@@ -183,7 +229,10 @@ class ParquetSerializedBuffer(
 
     companion object {
         @JvmStatic
-        fun createFunction(s3DestinationConfig: S3DestinationConfig): BufferCreateFunction {
+        fun createFunction(
+            s3DestinationConfig: S3DestinationConfig,
+            useV2FieldNames: Boolean = false
+        ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
                 catalog: ConfiguredAirbyteCatalog ->
@@ -191,6 +240,7 @@ class ParquetSerializedBuffer(
                     s3DestinationConfig.formatConfig!!,
                     stream,
                     catalog,
+                    useV2FieldNames
                 )
             }
         }

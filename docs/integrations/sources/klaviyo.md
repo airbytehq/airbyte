@@ -1,6 +1,10 @@
 # Klaviyo
 
-This page contains the setup guide and reference information for the Klaviyo source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Klaviyo](https://www.klaviyo.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -16,17 +20,26 @@ This page contains the setup guide and reference information for the Klaviyo sou
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. Click **Sources** and then click **+ new source**.
-3. On the Set up the source page, select **Klaviyo** from the **Source type** dropdown.
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
 7. Click **Set up source**.
 
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Klaviyo from the Source type dropdown.
+4. Enter a name for the Klaviyo connector.
+
 ## Supported sync modes
 
-The Klaviyo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Klaviyo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -53,11 +66,18 @@ The connector is restricted by Klaviyo [requests limitation](https://apidocs.kla
 
 The Klaviyo connector should not run into Klaviyo API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
-Stream `Campaigns Detailed` contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
+The `Campaigns Detailed` stream contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
 
-Stream `Lists Detailed` contains field `profile_count` in addition to info from the `Lists` stream. Additional time is needed to fetch extra data due to Klaviyo API [limitation](https://developers.klaviyo.com/en/reference/get_list).
+The `Lists Detailed` stream contains field `profile_count` in addition to info from the `Lists` stream. Additional time is needed to fetch extra data due to Klaviyo API [limitation](https://developers.klaviyo.com/en/reference/get_list).
 
-Stream `Events Detailed` contains field `name` for `metric` relationship - addition to [info](https://developers.klaviyo.com/en/reference/get_event).
+The `Events Detailed` stream contains field `name` for `metric` relationship - addition to [info](https://developers.klaviyo.com/en/reference/get_event).
+
+The `Profiles` stream can experience transient API errors under heavy load. In order to mitigate this, you can use the "Disable Fetching Predictive Analytics" setting to improve the success rate of syncs.
+
+:::warning
+Using the "Disable Fetching Predictive Analytics" will stop records on the Profiles stream will no longer
+contain the `predictive_analytics` field and workflows depending on this field will stop working.
+:::
 
 ## Data type map
 
@@ -75,6 +95,24 @@ Stream `Events Detailed` contains field `name` for `metric` relationship - addit
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.9 | 2024-10-12 | [46787](https://github.com/airbytehq/airbyte/pull/46787) | Update dependencies |
+| 2.10.8 | 2024-10-05 | [46503](https://github.com/airbytehq/airbyte/pull/46503) | Update dependencies |
+| 2.10.7 | 2024-09-28 | [46174](https://github.com/airbytehq/airbyte/pull/46174) | Update dependencies |
+| 2.10.6 | 2024-09-21 | [45813](https://github.com/airbytehq/airbyte/pull/45813) | Update dependencies |
+| 2.10.5 | 2024-09-14 | [45530](https://github.com/airbytehq/airbyte/pull/45530) | Update dependencies |
+| 2.10.4 | 2024-09-07 | [45244](https://github.com/airbytehq/airbyte/pull/45244) | Update dependencies |
+| 2.10.3 | 2024-08-31 | [45064](https://github.com/airbytehq/airbyte/pull/45064) | Update dependencies |
+| 2.10.2 | 2024-08-30 | [44930](https://github.com/airbytehq/airbyte/pull/44930) | Fix typing in profiles stream for field `attributes.location.region` |
+| 2.10.1 | 2024-08-24 | [44628](https://github.com/airbytehq/airbyte/pull/44628) | Update dependencies |
+| 2.10.0 | 2024-08-18 | [44366](https://github.com/airbytehq/airbyte/pull/44366) | Add field[metrics] to events stream |
+| 2.9.4 | 2024-08-17 | [44317](https://github.com/airbytehq/airbyte/pull/44317) | Update dependencies |
+| 2.9.3 | 2024-08-12 | [43806](https://github.com/airbytehq/airbyte/pull/43806) | Update dependencies |
+| 2.9.2 | 2024-08-10 | [43613](https://github.com/airbytehq/airbyte/pull/43613) | Update dependencies |
+| 2.9.1 | 2024-08-03 | [43247](https://github.com/airbytehq/airbyte/pull/43247) | Update dependencies |
+| 2.9.0 | 2024-08-01 | [42891](https://github.com/airbytehq/airbyte/pull/42891) | Migrate to CDK v4.X and remove custom BackoffStrategy implementation |
+| 2.8.2 | 2024-07-31 | [42895](https://github.com/airbytehq/airbyte/pull/42895) | Add config option disable_fetching_predictive_analytics to prevent 503 Service Unavailable errors |
+| 2.8.1 | 2024-07-27 | [42664](https://github.com/airbytehq/airbyte/pull/42664) | Update dependencies |
+| 2.8.0 | 2024-07-19 | [42121](https://github.com/airbytehq/airbyte/pull/42121) | Migrate to CDK v3.9.0 |
 | 2.7.8 | 2024-07-20 | [42185](https://github.com/airbytehq/airbyte/pull/42185) | Update dependencies |
 | 2.7.7 | 2024-07-08 | [40608](https://github.com/airbytehq/airbyte/pull/40608) | Update the `events_detailed` stream to improve efficiency using the events API |
 | 2.7.6 | 2024-07-13 | [41903](https://github.com/airbytehq/airbyte/pull/41903) | Update dependencies |

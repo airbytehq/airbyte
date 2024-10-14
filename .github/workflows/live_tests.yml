@@ -25,6 +25,10 @@ on:
         required: true
       streams:
         description: Streams to include in tests
+      should_read_with_state:
+        description: Whether to run tests against the read command with state
+        default: "true"
+        type: boolean
       use_local_cdk:
         description: Use the local CDK when building the target connector
         default: "false"
@@ -93,6 +97,15 @@ jobs:
             echo "USE_LOCAL_CDK_FLAG=" >> $GITHUB_ENV
           fi
 
+      - name: Setup State Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.should_read_with_state }}; then
+            echo "READ_WITH_STATE_FLAG=--connector_live_tests.should-read-with-state" >> $GITHUB_ENV
+          else
+            echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
+          fi
+
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -114,4 +127,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}

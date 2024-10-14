@@ -8,7 +8,6 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -194,9 +193,13 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertTrue(iterators.get(0).hasNext(),
+    assertEquals(4, iterators.size(), "Should always have 4 iterators: 1 for the cdc stream, 1 for the initial snapshot and 2 for CDC status");
+    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the cdc stream, and 1 for the initial snapshot");
+    assertTrue(iterators.get(2).hasNext(),
         "Initial snapshot iterator should at least have one message if the initial snapshot state is set as in progress");
+    final AirbyteMessage collectionStreamMessage = iterators.get(2).next();
+    assertEquals(AirbyteMessage.Type.RECORD, collectionStreamMessage.getType());
+    assertEquals(COLLECTION, collectionStreamMessage.getRecord().getStream());
   }
 
   @Test
@@ -206,8 +209,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if its snapshot state is set as complete");
+    assertEquals(1, filterTraceIterator(iterators).size(), "Should always have 1 iterator for the cdc stream (due to WASS)");
   }
 
   @Test

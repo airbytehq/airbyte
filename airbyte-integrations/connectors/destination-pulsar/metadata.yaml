@@ -8,7 +8,7 @@ data:
   icon: pulsar.svg
   license: MIT
   name: Pulsar
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

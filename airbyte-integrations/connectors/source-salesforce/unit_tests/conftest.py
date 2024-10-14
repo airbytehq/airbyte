@@ -7,14 +7,14 @@ from typing import Any, List, Mapping
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateMessage
 from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = CatalogBuilder().build()
 _ANY_CONFIG = ConfigBuilder().build()
 _ANY_STATE = StateBuilder().build()
 
@@ -29,14 +29,14 @@ def time_sleep_mock(mocker):
 def bulk_catalog():
     with (pathlib.Path(__file__).parent / "bulk_catalog.json").open() as f:
         data = json.loads(f.read())
-    return ConfiguredAirbyteCatalog.parse_obj(data)
+    return ConfiguredAirbyteCatalogSerializer.load(data)
 
 
 @pytest.fixture(scope="module")
 def rest_catalog():
     with (pathlib.Path(__file__).parent / "rest_catalog.json").open() as f:
         data = json.loads(f.read())
-    return ConfiguredAirbyteCatalog.parse_obj(data)
+    return ConfiguredAirbyteCatalogSerializer.load(data)
 
 
 @pytest.fixture(scope="module")
@@ -131,39 +131,3 @@ def generate_stream(stream_name, stream_config, stream_api, state=None, legacy=T
         # we will access the legacy stream through the StreamFacade private field
         return stream._legacy_stream
     return stream
-
-
-def encoding_symbols_parameters():
-    return (
-        [
-            (x, {"Content-Type": "text/csv; charset=ISO-8859-1"}, b'"\xc4"\n,"4"\n\x00,"\xca \xfc"', [{"Ä": "4"}, {"Ä": "Ê ü"}])
-            for x in range(1, 11)
-        ]
-        + [
-            (
-                x,
-                {"Content-Type": "text/csv; charset=utf-8"},
-                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-            )
-            for x in range(1, 11)
-        ]
-        + [
-            (
-                x,
-                {"Content-Type": "text/csv"},
-                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-            )
-            for x in range(1, 11)
-        ]
-        + [
-            (
-                x,
-                {},
-                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-            )
-            for x in range(1, 11)
-        ]
-    )

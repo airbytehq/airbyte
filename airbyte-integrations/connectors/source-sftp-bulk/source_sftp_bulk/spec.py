@@ -5,7 +5,7 @@ from typing import Literal, Optional, Union
 
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class PasswordCredentials(BaseModel):

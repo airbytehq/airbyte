@@ -88,7 +88,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -96,7 +96,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s.stream for s in catalog.streams}, state=state)
+        state_manager = ConnectorStateManager(state=state)
         self._stream_to_instance_map = stream_instances
 
         stream_name_to_exception: MutableMapping[str, AirbyteTracedException] = {}
@@ -139,35 +139,26 @@ class AbstractSource(Source, ABC):
                     )
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
-                except AirbyteTracedException as e:
-                    yield from self._emit_queued_messages()
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    yield e.as_sanitized_airbyte_message(stream_descriptor=StreamDescriptor(name=configured_stream.stream.name))
-                    stream_name_to_exception[stream_instance.name] = e  # type: ignore # use configured_stream if stream_instance is None
-                    if self.stop_sync_on_stream_failure:
-                        logger.info(
-                            f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
-                        )
-                        break
+
                 except Exception as e:
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)  # type: ignore[union-attr]
+
                     stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
-                    if display_message:
-                        traced_exception = AirbyteTracedException.from_exception(
-                            e, message=display_message, stream_descriptor=stream_descriptor
-                        )
+
+                    if isinstance(e, AirbyteTracedException):
+                        traced_exception = e
+                        info_message = f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
                     else:
-                        traced_exception = AirbyteTracedException.from_exception(e, stream_descriptor=stream_descriptor)
-                    yield traced_exception.as_sanitized_airbyte_message()
-                    stream_name_to_exception[stream_instance.name] = traced_exception  # type: ignore
+                        traced_exception = self._serialize_exception(stream_descriptor, e, stream_instance=stream_instance)
+                        info_message = f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}"
+
+                    yield traced_exception.as_sanitized_airbyte_message(stream_descriptor=stream_descriptor)
+                    stream_name_to_exception[stream_instance.name] = traced_exception  # type: ignore # use configured_stream if stream_instance is None
                     if self.stop_sync_on_stream_failure:
-                        logger.info(f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}")
+                        logger.info(info_message)
                         break
                 finally:
                     # Finish read event only if the stream instance exists;
@@ -186,9 +177,18 @@ class AbstractSource(Source, ABC):
             raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         logger.info(f"Finished syncing {self.name}")
 
+    @staticmethod
+    def _serialize_exception(
+        stream_descriptor: StreamDescriptor, e: Exception, stream_instance: Optional[Stream] = None
+    ) -> AirbyteTracedException:
+        display_message = stream_instance.get_error_display_message(e) if stream_instance else None
+        if display_message:
+            return AirbyteTracedException.from_exception(e, message=display_message, stream_descriptor=stream_descriptor)
+        return AirbyteTracedException.from_exception(e, stream_descriptor=stream_descriptor)
+
     @property
     def raise_exception_on_missing_stream(self) -> bool:
-        return True
+        return False
 
     def _read_stream(
         self,
@@ -213,6 +213,13 @@ class AbstractSource(Source, ABC):
 
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
+
+        # This is a hack. Existing full refresh streams that are converted into resumable full refresh need to discard
+        # the state because the terminal state for a full refresh sync is not compatible with substream resumable full
+        # refresh state. This is only required when running live traffic regression testing since the platform normally
+        # handles whether to pass state
+        if stream_state == {"__ab_no_cursor_state_message": True}:
+            stream_state = {}
 
         if "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
@@ -251,10 +258,11 @@ class AbstractSource(Source, ABC):
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
-        if isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message
-        else:
-            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
+        match record_data_or_message:
+            case AirbyteMessage():
+                return record_data_or_message
+            case _:
+                return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:

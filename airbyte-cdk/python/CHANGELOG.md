@@ -1,5 +1,165 @@
 # Changelog
 
+## 5.13.0
+Add extra fields to StreamSlice
+
+## 5.12.1
+Low Code: Removes deprecated  and 
+
+## 5.12.0
+Low Code: Adds  component
+
+## 5.11.1
+Low Code: Consolidate manifest decoder selection under , , and 
+
+## 5.11.0
+concurrent-cdk: add per slice tracking of the most recent cursor
+
+## 5.10.3
+do not raise exception on missing stream by default
+
+## 5.10.2
+Remove PrintBuffer optimization due to dropped records
+
+## 5.10.1
+Async job component: improve memory usage
+
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
+## 5.9.0
+concurrent-cdk: change stream availability strategy to always available
+
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
+## 5.8.0
+Async job component: support Salesforce
+
+## 5.7.5
+Have headers match during HTTP cache hit
+
+## 5.7.4
+Always return a connection status even if an exception was raised
+
+## 5.7.3
+fix connector builder output serialization 
+
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
+## 5.7.1
+add python-snappy to file-based dependencies
+
+## 5.7.0
+concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
+
+## 5.6.0
+Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
+
+## 5.5.2
+Fix pandas missing dependency
+
+## 5.5.1
+Bug fix: Return a connection status failure on an expected check failure
+
+## 5.5.0
+Declarative async job components
+
+## 5.4.0
+add migration of global stream_state to per_partition format
+
+## 5.3.0
+Connector builder: add flag to disable cache 
+
+## 5.2.1
+Fix error in incremental sync docs
+
+## 5.2.0
+Add Global Parent State Cursor
+
+## 5.1.0
+Add limitation for number of partitions to PerPartitionCursor
+
+## 5.0.1
+Fix source-declarative-manifest
+
+## 5.0.0
+Replace pydantic BaseModel with dataclass
+
+## 4.6.2
+use orjson instead of json to speed up JSON parsing
+
+## 4.6.1
+Update json error message parser to identify additional error message fields in response bodies
+
+## 4.6.0
+Raise exceptions in file-based check, improve UI errors
+
+## 4.5.4
+add codeflash to dev environment
+
+## 4.5.3
+Cache the result of interpolated strings when the evaluated value is equal to its raw representation
+
+## 4.5.2
+CDK: refactor error handling in abstract source
+
+## 4.5.1
+Added support for RFR for Full-Refresh Substreams
+
+## 4.5.0
+Stop support for incoming legacy state message format
+
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
+## 4.4.1
+Added test utils for integration tests
+
+## 4.4.0
+file-based cdk: add excel file type support
+
+## 4.3.3
+Have better fallback error message on HTTP error
+
+## 4.3.2
+Ensure at least one element returned by decoder
+
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
+## 4.3.0
+Add PrintBuffer to emit records in batches
+
+## 4.2.0
+Resumable full refresh: Add SubstreamResumableFullRefreshCursor to Python CDK to allow connectors to allow checkpointing on parent records
+
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
+## 4.0.2
+Add ability to stop stream when retry-after is greater than a duration
+
+## 4.0.1
+Fix case where stream wont have a state attribute and needs to resolve get_updated_state
+
+## 4.0.0
+- General performance enhancement
+- Dropping Python 3.9 support
+
+## 3.9.6
+fix declarative schema refs for Decoder
+
+## 3.9.5
+Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
+
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
+## 3.9.3
+add name property to http_client for convenience
+
 ## 3.9.2
 low-code: fix record selector factory when using custom components
 

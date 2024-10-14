@@ -7,7 +7,6 @@ import os
 from typing import TYPE_CHECKING
 
 import asyncer
-import click
 import dagger
 import toml
 from pipelines.airbyte_ci.test.models import deserialize_airbyte_ci_config
