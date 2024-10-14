@@ -1,7 +1,11 @@
 # Zoho Desk
-This directory contains the manifest-only connector for `source-zoho-desk`.
+This directory contains the manifest-only connector for `source-zoho-desk`(https://www.zoho.com/desk).
 
-This directory contains the manifest-only connector for source-zoho-desk
+## Documentation reference:
+- Visit `https://desk.zoho.com/DeskAPIDocument#Introduction` for API documentation
+
+## Authentication setup
+`Zoho Desk's` APIs use the industry-standard OAuth 2.0 protocol for authentication and authorization, Visit `https://desk.zoho.com/DeskAPIDocument#OauthTokens` for getting your api keys.
 
 ## Usage
 There are multiple ways to use this connector:
