@@ -57,7 +57,7 @@ Airbyte offers multiple user roles to enable teams to securely access workspaces
 | **Workspace Reader:** View information within a workspace, cannot modify anything within a workspace                    |       | ✅          | ✅         |
 
 
-More information about specific roles can be found in our [Role-Based Access Control documentation](../../access-management/rbac.md).
+More information about specific roles can be found in our [Role-Based Access Control documentation](../access-management/rbac.md).
 
 ## Switch between multiple workspaces
 
