@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.AirbyteStreamFactory
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
-import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.FieldType
