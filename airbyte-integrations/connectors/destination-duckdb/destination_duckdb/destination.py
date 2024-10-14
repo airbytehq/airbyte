@@ -174,6 +174,8 @@ class DestinationDuckdb(Destination):
                 for column_name in sql_columns:
                     if column_name in data:
                         buffer[stream_name][column_name].append(data[column_name])
+                    elif column_name not in [AB_RAW_ID_COLUMN, AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN]:
+                        buffer[stream_name][column_name].append(None)
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
                 buffer[stream_name][AB_META_COLUMN].append({json.dumps(logs)})
