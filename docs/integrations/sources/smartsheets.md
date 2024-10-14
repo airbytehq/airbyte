@@ -117,6 +117,22 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 1.1.23 | 2024-10-12 | [46783](https://github.com/airbytehq/airbyte/pull/46783) | Update dependencies |
+| 1.1.22 | 2024-10-05 | [46427](https://github.com/airbytehq/airbyte/pull/46427) | Update dependencies |
+| 1.1.21 | 2024-09-28 | [46154](https://github.com/airbytehq/airbyte/pull/46154) | Update dependencies |
+| 1.1.20 | 2024-09-21 | [45722](https://github.com/airbytehq/airbyte/pull/45722) | Update dependencies |
+| 1.1.19 | 2024-09-14 | [45575](https://github.com/airbytehq/airbyte/pull/45575) | Update dependencies |
+| 1.1.18 | 2024-09-07 | [45214](https://github.com/airbytehq/airbyte/pull/45214) | Update dependencies |
+| 1.1.17 | 2024-08-31 | [45012](https://github.com/airbytehq/airbyte/pull/45012) | Update dependencies |
+| 1.1.16 | 2024-08-24 | [44738](https://github.com/airbytehq/airbyte/pull/44738) | Update dependencies |
+| 1.1.15 | 2024-08-17 | [44244](https://github.com/airbytehq/airbyte/pull/44244) | Update dependencies |
+| 1.1.14 | 2024-08-10 | [43686](https://github.com/airbytehq/airbyte/pull/43686) | Update dependencies |
+| 1.1.13 | 2024-08-03 | [43108](https://github.com/airbytehq/airbyte/pull/43108) | Update dependencies |
+| 1.1.12 | 2024-07-27 | [42632](https://github.com/airbytehq/airbyte/pull/42632) | Update dependencies |
+| 1.1.11 | 2024-07-20 | [42359](https://github.com/airbytehq/airbyte/pull/42359) | Update dependencies |
+| 1.1.10 | 2024-07-13 | [41825](https://github.com/airbytehq/airbyte/pull/41825) | Update dependencies |
+| 1.1.9 | 2024-07-10 | [41410](https://github.com/airbytehq/airbyte/pull/41410) | Update dependencies |
+| 1.1.8 | 2024-07-09 | [41092](https://github.com/airbytehq/airbyte/pull/41092) | Update dependencies |
 | 1.1.7 | 2024-07-06 | [40844](https://github.com/airbytehq/airbyte/pull/40844) | Update dependencies |
 | 1.1.6 | 2024-06-25 | [40285](https://github.com/airbytehq/airbyte/pull/40285) | Update dependencies |
 | 1.1.5 | 2024-06-22 | [40003](https://github.com/airbytehq/airbyte/pull/40003) | Update dependencies |

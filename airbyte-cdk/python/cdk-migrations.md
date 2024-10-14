@@ -1,5 +1,73 @@
 # CDK Migration Guide
 
+## Upgrading to 5.0.0
+
+Version 5.0.0 of the CDK updates the `airbyte_cdk.models` dependency to replace Pydantic v2 models with Python `dataclasses`. It also
+updates the `airbyte-protocol-models` dependency to a version that uses dataclasses models.
+
+The changes to Airbyte CDK itself are backwards-compatible, but some changes are required if the connector:
+- uses the `airbyte_protocol` models directly, or `airbyte_cdk.models`, which points to `airbyte_protocol` models
+- uses third-party libraries, such as `pandas`, to read data from sources, which output non-native Python objects that cannot be serialized by the [orjson](https://github.com/ijl/orjson) library.
+
+> [!NOTE]
+> All Serializers have omit_none=True parameter that is applied recursively. Thus, all None values are excluded from output. 
+> This is expected behaviour and does not break anything in protocol.
+
+### Updating direct usage of Pydantic based Airbyte Protocol Models
+
+If the connector uses Pydantic based Airbyte Protocol Models, the code will need to be updated to reflect the changes `pydantic`.
+It is recommended to import protocol classes not directly by `import airbyte_protocol` statement, but from `airbyte_cdk.models` package.
+It is also recommended to use *-`Serializer` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON, e.g.
+```python3
+# Before (pydantic model message serialization) 
+AirbyteMessage().model_dump_json()
+
+# After (dataclass model serialization)
+orjson.dumps(AirbyteMessageSerializer.dump(AirbyteMessage())).decode()
+
+```
+
+### Updating third-party libraries
+
+For example, if `pandas` outputs data from the source, which has date-time `pandas.Timestamp` object in
+it, [Orjson supported Types](https://github.com/ijl/orjson?tab=readme-ov-file#types), these fields should be transformed to native JSON
+objects.
+
+```python3
+# Before
+yield from df.to_dict(orient="records")
+
+# After - Option 1
+yield orjson.loads(df.to_json(orient="records", date_format="iso", date_unit="us"))
+
+```
+
+
+## Upgrading to 4.5.0
+
+In this release, we are no longer supporting the legacy state format in favor of the current per-stream state
+format which has been running in production for over 2 years. The impacts to connectors should be minimal, but for
+the small number of connectors that instantiate their own `ConnectorStateManager`, the fix to upgrade to the latest
+version of the CDK is to stop passing the `stream_instance_map` parameter to the `ConnectorStateManager` constructor.
+
+## Upgrading to 4.1.0
+We are unifying the `BackoffStrategy` interface as it currently differs from the Python CDK package to the declarative one. The different is that the interface will require the attempt_count to be passed.
+
+Main impact: This change is mostly internal but we spotted a couple of tests that expect `backoff_time` to not have the `attempt_count` parameter so these tests would fail ([example](https://github.com/airbytehq/airbyte/blob/c9f45a0b85735f58102fcd78385f6f673e731aa6/airbyte-integrations/connectors/source-github/unit_tests/test_stream.py#L99)).
+
+This change should not impact the following classes even though they have a different interface as they accept `kwargs` and  `attempt_count` is currently passed as a keyword argument within the CDK. However, once there is a CDK change where `backoff_time` is called not as a keyword argument, they will fail: 
+* Zendesk Support: ZendeskSupportBackoffStrategy (this one will be updated shortly after as it is used for CI to validate CDK changes)
+* Klaviyo: KlaviyoBackoffStrategy (the logic has been generified so we will remove this custom component shortly after this update)
+* GitHub: GithubStreamABCBackoffStrategy and ContributorActivityBackoffStrategy
+* Airtable: AirtableBackoffStrategy
+* Slack: SlackBackoffStrategy
+
+This change should not impact `WaitUntilMidnightBackoffStrategy` from source-gnews as well but it is interesting to note that its interface is also wrong as it considers the first parameter as a `requests.Response` instead of a `Optional[Union[requests.Response, requests.RequestException]]`. 
+
+## Upgrading to 4.0.0
+
+Updated the codebase to utilize new Python syntax features. As a result, support for Python 3.9 has been dropped. The minimum required Python version is now 3.10.
+
 ## Upgrading to 3.0.0
 Version 3.0.0 of the CDK updates the `HTTPStream` class by reusing the `HTTPClient` under the hood.
 

@@ -115,7 +115,7 @@ class S3DestinationAssumeRoleTest {
         val now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
         val policyName = POLICY_NAME_PREFIX + now.toString().replace(':', '_')
 
-        val policyDocument = REVOKE_OLD_TOKENS_POLICY.formatted(now)
+        val policyDocument = REVOKE_OLD_TOKENS_POLICY.format(now)
         val createPolicyRequest =
             CreatePolicyRequest().withPolicyName(policyName).withPolicyDocument(policyDocument)
         val arn = iam.createPolicy(createPolicyRequest).policy.arn

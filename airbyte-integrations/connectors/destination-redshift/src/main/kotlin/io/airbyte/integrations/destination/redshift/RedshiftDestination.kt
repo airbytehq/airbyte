@@ -51,6 +51,7 @@ import io.airbyte.integrations.base.destination.operation.DefaultFlush
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -72,7 +73,6 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.SQLException
 import java.time.Duration
 import java.util.Objects
@@ -145,7 +145,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             val streamConfig =
                 StreamConfig(
                     id = streamId,
-                    destinationSyncMode = DestinationSyncMode.APPEND,
+                    postImportAction = ImportType.APPEND,
                     primaryKey = listOf(),
                     cursor = Optional.empty(),
                     columns = linkedMapOf(),
@@ -164,6 +164,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     getS3StorageOperations(s3Config),
                     sqlGenerator,
                     destinationHandler,
+                    RedshiftSqlGenerator.isDropCascade(config),
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -184,6 +185,12 @@ class RedshiftDestination : BaseConnector(), Destination {
                                 hasUnprocessedRecords = true,
                                 maxProcessedTimestamp = Optional.empty(),
                             ),
+                        initialTempRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
                         isSchemaMismatch = true,
                         isFinalTableEmpty = true,
                         destinationState =
@@ -192,6 +199,8 @@ class RedshiftDestination : BaseConnector(), Destination {
                                 isAirbyteMetaPresentInRaw = true,
                                 isGenerationIdPresent = true,
                             ),
+                        finalTableGenerationId = 1,
+                        finalTempTableGenerationId = 1,
                     ),
                     FileUploadFormat.CSV,
                     destinationColumns,
@@ -284,7 +293,8 @@ class RedshiftDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    @VisibleForTesting
+    fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -401,6 +411,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 s3StorageOperations,
                 sqlGenerator,
                 redshiftDestinationHandler,
+                RedshiftSqlGenerator.isDropCascade(config),
             )
         val syncOperation =
             DefaultSyncOperation(

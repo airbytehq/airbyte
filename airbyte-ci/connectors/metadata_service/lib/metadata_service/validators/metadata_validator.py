@@ -8,7 +8,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
-from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 from pydash.objects import get
@@ -18,6 +18,7 @@ from pydash.objects import get
 class ValidatorOptions:
     docs_path: str
     prerelease_tag: Optional[str] = None
+    disable_dockerhub_checks: bool = False
 
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
@@ -29,15 +30,18 @@ _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID = "64a2f99c-542f-4af8-9a6f-355f1217b4
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if validator_opts.disable_dockerhub_checks:
+        return True, None
+
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
     base_docker_version = get(metadata_definition_dict, "data.dockerImageTag")
 
-    oss_docker_image = get(metadata_definition_dict, "data.registries.oss.dockerRepository", base_docker_image)
-    oss_docker_version = get(metadata_definition_dict, "data.registries.oss.dockerImageTag", base_docker_version)
+    oss_docker_image = get(metadata_definition_dict, "data.registryOverrides.oss.dockerRepository", base_docker_image)
+    oss_docker_version = get(metadata_definition_dict, "data.registryOverrides.oss.dockerImageTag", base_docker_version)
 
-    cloud_docker_image = get(metadata_definition_dict, "data.registries.cloud.dockerRepository", base_docker_image)
-    cloud_docker_version = get(metadata_definition_dict, "data.registries.cloud.dockerImageTag", base_docker_version)
+    cloud_docker_image = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerRepository", base_docker_image)
+    cloud_docker_version = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerImageTag", base_docker_version)
 
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
@@ -175,6 +179,61 @@ def validate_pypi_only_for_python(
     return True, None
 
 
+def validate_docker_image_tag_is_not_decremented(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
+    docker_image_name = get(metadata_definition, "data.dockerRepository")
+    if not docker_image_name:
+        return False, "The dockerRepository field is not set"
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if not docker_image_tag:
+        return False, "The dockerImageTag field is not set."
+    latest_released_version = get_latest_version_on_dockerhub(docker_image_name)
+    # This is happening when the connector has never been released to DockerHub
+    if not latest_released_version:
+        return True, None
+    if docker_image_tag == latest_released_version:
+        return True, None
+    current_semver_version = semver.Version.parse(docker_image_tag)
+    latest_released_semver_version = semver.Version.parse(latest_released_version)
+    if current_semver_version < latest_released_semver_version:
+        return (
+            False,
+            f"The dockerImageTag value ({current_semver_version}) can't be decremented: it should be equal to or above {latest_released_version}.",
+        )
+    return True, None
+
+
+def validate_release_candidate_has_rc_suffix_in_version(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    # Bypass validation for pre-releases
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
+
+    is_release_candidate = get(metadata_definition, "data.releases.isReleaseCandidate")
+    if not is_release_candidate:
+        return True, None
+
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if docker_image_tag is None:
+        return False, "The dockerImageTag field is not set."
+    try:
+        parsed_version = semver.VersionInfo.parse(docker_image_tag)
+        has_rc_suffix = parsed_version.prerelease and "rc" in parsed_version.prerelease
+        if not has_rc_suffix:
+            return (
+                False,
+                "The dockerImageTag field should have an -rc.<RC #> suffix as the connector is marked as a release candidate (releases.isReleaseCandidate). Example: 2.1.0-rc.1",
+            )
+    except ValueError:
+        return False, f"The dockerImageTag field is not a valid semver version: {docker_image_tag}."
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
@@ -182,6 +241,8 @@ PRE_UPLOAD_VALIDATORS = [
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
+    validate_docker_image_tag_is_not_decremented,
+    validate_release_candidate_has_rc_suffix_in_version,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

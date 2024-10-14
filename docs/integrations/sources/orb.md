@@ -65,6 +65,17 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.13 | 2024-10-05 | [46395](https://github.com/airbytehq/airbyte/pull/46395) | Update dependencies |
+| 2.0.12 | 2024-09-28 | [45785](https://github.com/airbytehq/airbyte/pull/45785) | Update dependencies |
+| 2.0.11 | 2024-09-14 | [45472](https://github.com/airbytehq/airbyte/pull/45472) | Update dependencies |
+| 2.0.10 | 2024-09-07 | [45212](https://github.com/airbytehq/airbyte/pull/45212) | Update dependencies |
+| 2.0.9 | 2024-08-24 | [44626](https://github.com/airbytehq/airbyte/pull/44626) | Update dependencies |
+| 2.0.8 | 2024-08-10 | [43601](https://github.com/airbytehq/airbyte/pull/43601) | Update dependencies |
+| 2.0.7 | 2024-08-03 | [43163](https://github.com/airbytehq/airbyte/pull/43163) | Update dependencies |
+| 2.0.6 | 2024-07-20 | [42198](https://github.com/airbytehq/airbyte/pull/42198) | Update dependencies |
+| 2.0.5 | 2024-07-13 | [41720](https://github.com/airbytehq/airbyte/pull/41720) | Update dependencies |
+| 2.0.4 | 2024-07-10 | [41386](https://github.com/airbytehq/airbyte/pull/41386) | Update dependencies |
+| 2.0.3 | 2024-07-09 | [41090](https://github.com/airbytehq/airbyte/pull/41090) | Update dependencies |
 | 2.0.2 | 2024-07-06 | [40826](https://github.com/airbytehq/airbyte/pull/40826) | Update dependencies |
 | 2.0.1 | 2024-06-29 | [40541](https://github.com/airbytehq/airbyte/pull/40541) | Update dependencies |
 | 2.0.0 | 2024-06-24 | [40227](https://github.com/airbytehq/airbyte/pull/40227) | Migrate connector to Low Code. Update data type of credit_block_per_unit_cost_basis field in credits_ledger_entries stream to match return type from the upstream API |

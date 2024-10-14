@@ -27,6 +27,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
@@ -36,12 +37,13 @@ from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, Ste
 # live_test can't resolve the passed connector container otherwise.
 from slugify import slugify  # type: ignore
 
+GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
+
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
     context: ConnectorContext
-    GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
 
     @property
@@ -50,7 +52,7 @@ class VersionCheck(Step, ABC):
 
     @property
     def github_master_metadata_url(self) -> str:
-        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
+        return f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
     def master_metadata(self) -> Optional[dict]:
@@ -112,6 +114,7 @@ class VersionIncrementCheck(VersionCheck):
         "src/test-integration",
         "src/test-performance",
         "build.gradle",
+        "erd",
     ]
 
     @property
@@ -393,9 +396,7 @@ class IncrementalAcceptanceTests(Step):
         Returns:
             Artifact: The report log of the acceptance tests run on the released image.
         """
-        raw_master_metadata = requests.get(
-            f"https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/{self.context.connector.technical_name}/metadata.yaml"
-        )
+        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
         master_metadata = yaml.safe_load(raw_master_metadata.text)
         master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
         released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
@@ -446,7 +447,7 @@ class IncrementalAcceptanceTests(Step):
 
 
 class LiveTestSuite(Enum):
-    ALL = "all"
+    ALL = "live"
     REGRESSION = "regression"
     VALIDATION = "validation"
 
@@ -511,11 +512,12 @@ class LiveTests(Step):
         if self.run_id:
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
-            command_options += ["--should-read-with-state", self.should_read_with_state]
+            command_options += ["--should-read-with-state=1"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
             command_options += ["--stream", self.selected_streams]
+        command_options += ["--connection-subset", self.connection_subset]
         return command_options
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
@@ -557,20 +559,71 @@ class LiveTests(Step):
         self.connector_image = context.docker_image.split(":")[0]
         options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
-        self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
-        self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
+        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.REGRESSION.value)
+        self.connection_id = self._get_connection_id(options)
+        self.pr_url = self._get_pr_url(options)
 
-        if not self.connection_id and self.pr_url:
-            raise ValueError("`connection-id` and `pr-url` are required to run live tests.")
-
-        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
-        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
-        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
+        self.should_read_with_state = "should-read-with-state" in options
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
+        self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
+
+    def _get_connection_id(self, options: Dict[str, List[Any]]) -> Optional[str]:
+        if self.context.is_pr:
+            connection_id = self._get_connection_from_test_connections()
+            self.logger.info(
+                f"Context is {self.context.ci_context}; got connection_id={connection_id} from metadata.yaml liveTests testConnections."
+            )
+        else:
+            connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
+            self.logger.info(f"Context is {self.context.ci_context}; got connection_id={connection_id} from input options.")
+        return connection_id
+
+    def _get_pr_url(self, options: Dict[str, List[Any]]) -> Optional[str]:
+        if self.context.is_pr:
+            pull_request = self.context.pull_request.url if self.context.pull_request else None
+            self.logger.info(f"Context is {self.context.ci_context}; got pull_request={pull_request} from context.")
+        else:
+            pull_request = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
+            self.logger.info(f"Context is {self.context.ci_context}; got pull_request={pull_request} from input options.")
+        return pull_request
+
+    def _validate_job_can_run(self) -> None:
+        connector_type = self.context.connector.metadata.get("connectorType")
+        connector_subtype = self.context.connector.metadata.get("connectorSubtype")
+        assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
+        if connector_subtype == "database":
+            assert (
+                self.connection_subset == "sandboxes"
+            ), f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
+
+        assert self.connection_id, "`connection-id` is required to run live tests."
+        assert self.pr_url, "`pr_url` is required to run live tests."
+
+        if self.context.is_pr:
+            connection_id_is_valid = False
+            for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
+                if test_suite["suite"] == "liveTests":
+                    assert self.connection_id in [
+                        option["id"] for option in test_suite.get("testConnections", [])
+                    ], f"Connection ID {self.connection_id} was not in the list of valid test connections."
+                    connection_id_is_valid = True
+                    break
+            assert connection_id_is_valid, f"Connection ID {self.connection_id} is not a valid sandbox connection ID."
+
+    def _get_connection_from_test_connections(self) -> Optional[str]:
+        for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
+            if test_suite["suite"] == "liveTests":
+                for option in test_suite.get("testConnections", []):
+                    connection_id = option["id"]
+                    connection_name = option["name"]
+                    self.logger.info(f"Using connection name={connection_name}; id={connection_id}")
+                    return connection_id
+        return None
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
@@ -581,22 +634,44 @@ class LiveTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
+        try:
+            self._validate_job_can_run()
+        except AssertionError as exc:
+            self.logger.info(f"Skipping live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                exc_info=exc,
+            )
+
         container = await self._build_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
+        command = self._run_command_with_proxy(" ".join(self._test_command()))
+        main_logger.info(f"Running command {command}")
+        container = container.with_(hacks.never_fail_exec(command))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        if "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries():
-            main_logger.exception(
-                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
-            )
+        try:
+            if (
+                f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries()
+                or "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
+            ):
+                main_logger.exception(
+                    "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
+                )
+                regression_test_report = None
+            else:
+                await container.file(path_to_report).export(path_to_report)
+                with open(path_to_report, "r") as fp:
+                    regression_test_report = fp.read()
+        except dagger.QueryError as exc:
             regression_test_report = None
-        else:
-            await container.file(path_to_report).export(path_to_report)
-            with open(path_to_report, "r") as fp:
-                regression_test_report = fp.read()
+            main_logger.exception(
+                "The test artifacts directory was not generated, an unhandled error likely happened during setup, please check the step stderr and stdout for more details",
+                exc_info=exc,
+            )
 
         return StepResult(
             step=self,
@@ -605,6 +680,7 @@ class LiveTests(Step):
             stdout=stdout,
             output=container,
             report=regression_test_report,
+            consider_in_overall_status=False if self.context.is_pr else True,
         )
 
     async def _build_test_container(self, target_container_id: str) -> Container:
@@ -624,6 +700,10 @@ class LiveTests(Step):
             # Enable dagger-in-dagger
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_file(
+                "/tmp/record_obfuscator.py",
+                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file("record_obfuscator.py"),
+            )
             # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to

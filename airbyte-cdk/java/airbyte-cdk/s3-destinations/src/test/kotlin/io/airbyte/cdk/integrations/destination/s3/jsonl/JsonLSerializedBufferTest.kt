@@ -79,7 +79,7 @@ class JsonLSerializedBufferTest {
         expectedData: String
     ) {
         val outputFile = buffer.file
-        (JsonLSerializedBuffer.createBufferFunction(null) { buffer }
+        (JsonLSerializedBuffer.createBufferFunction(null, { buffer })
                 .apply(
                     streamPair,
                     catalog,

@@ -5,7 +5,7 @@ test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_open_exchange_rates/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -19,10 +19,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        # expect_records:
-        #   path: "integration_tests/expected_records.jsonl"
-        #   exact_order: no
+        empty_streams:
+          []
+          # expect_records:
+          #   path: "integration_tests/expected_records.jsonl"
+          #   exact_order: no
   incremental:
     # bypass_reason: "This connector does not implement incremental sync"
     tests:

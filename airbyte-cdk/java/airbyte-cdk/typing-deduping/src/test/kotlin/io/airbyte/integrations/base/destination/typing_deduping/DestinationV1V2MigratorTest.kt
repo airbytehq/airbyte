@@ -4,7 +4,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
@@ -29,42 +28,56 @@ class DestinationV1V2MigratorTest {
 
             return Stream.of( // Doesn't Migrate because of sync mode
                 Arguments.of(
-                    DestinationSyncMode.OVERWRITE,
+                    ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, true),
+                    42L,
+                    42L,
                     false
                 ), // Doesn't migrate because v2 table already exists
                 Arguments.of(
-                    DestinationSyncMode.APPEND,
+                    ImportType.APPEND,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
+                    42L,
+                    0L,
                     false
                 ),
                 Arguments.of(
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
+                    42L,
+                    0L,
                     false
                 ), // Doesn't migrate because no valid v1 raw table exists
                 Arguments.of(
-                    DestinationSyncMode.APPEND,
+                    ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
+                    42L,
+                    0L,
                     false
                 ),
                 Arguments.of(
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
+                    42L,
+                    0L,
                     false
                 ),
                 Arguments.of(
-                    DestinationSyncMode.APPEND,
+                    ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
+                    42L,
+                    0L,
                     false
                 ),
                 Arguments.of(
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
+                    42L,
+                    0L,
                     false
                 ), // Migrates
-                Arguments.of(DestinationSyncMode.APPEND, noIssuesMigrator(), true),
-                Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true)
+                Arguments.of(ImportType.APPEND, noIssuesMigrator(), 42L, 0L, true),
+                Arguments.of(ImportType.DEDUPE, noIssuesMigrator(), 42L, 0L, true)
             )
         }
     }
@@ -73,11 +86,23 @@ class DestinationV1V2MigratorTest {
     @ArgumentsSource(ShouldMigrateTestArgumentProvider::class)
     @Throws(Exception::class)
     fun testShouldMigrate(
-        destinationSyncMode: DestinationSyncMode,
+        postImportAction: ImportType,
         migrator: BaseDestinationV1V2Migrator<*>,
+        generationId: Long,
+        minimumGenerationId: Long,
         expected: Boolean
     ) {
-        val config = StreamConfig(STREAM_ID, destinationSyncMode, mock(), mock(), mock(), 0, 0, 0)
+        val config =
+            StreamConfig(
+                STREAM_ID,
+                postImportAction,
+                mock(),
+                mock(),
+                mock(),
+                generationId,
+                minimumGenerationId,
+                0
+            )
         val actual = migrator.shouldMigrate(config)
         Assertions.assertEquals(expected, actual)
     }
@@ -88,7 +113,7 @@ class DestinationV1V2MigratorTest {
         val config =
             StreamConfig(
                 STREAM_ID,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 mock(),
                 mock(),
                 mock(),
@@ -114,7 +139,7 @@ class DestinationV1V2MigratorTest {
         val stream =
             StreamConfig(
                 STREAM_ID,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 mock(),
                 mock(),
                 mock(),

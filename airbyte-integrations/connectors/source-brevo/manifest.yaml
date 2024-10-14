@@ -1,0 +1,2773 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.brevo.com/
+  Auth page: https://app.brevo.com/settings/keys/api
+  API Docs: https://developers.brevo.com/reference/getting-started-1
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: createdSince
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    contacts_attributes:
+      type: DeclarativeStream
+      name: contacts_attributes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/attributes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attributes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_attributes"
+    contacts_folders_lists:
+      type: DeclarativeStream
+      name: contacts_folders_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/folders/{{ stream_partition.folderId }}/lists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folderId
+              stream:
+                $ref: "#/definitions/streams/contacts_folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_folders_lists"
+    contacts_folders:
+      type: DeclarativeStream
+      name: contacts_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/folders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - folders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_folders"
+    contacts_segments:
+      type: DeclarativeStream
+      name: contacts_segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/segments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_segments"
+    contacts_lists_contacts:
+      type: DeclarativeStream
+      name: contacts_lists_contacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/lists/{{ stream_partition.listId }}/contacts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: listId
+              stream:
+                $ref: "#/definitions/streams/contacts_lists"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_lists_contacts"
+    contacts_lists:
+      type: DeclarativeStream
+      name: contacts_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/lists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_lists"
+    senders:
+      type: DeclarativeStream
+      name: senders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: senders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - senders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/senders"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    companies_attributes:
+      type: DeclarativeStream
+      name: companies_attributes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/attributes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies_attributes"
+    crm_pipeline_stages:
+      type: DeclarativeStream
+      name: crm_pipeline_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/pipeline/details
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_pipeline_stages"
+    crm_pipeline_details_all:
+      type: DeclarativeStream
+      name: crm_pipeline_details_all
+      primary_key:
+        - pipeline
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/pipeline/details/all
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_pipeline_details_all"
+    crm_attributes_deals:
+      type: DeclarativeStream
+      name: crm_attributes_deals
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/attributes/deals
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_attributes_deals"
+    crm_deals:
+      type: DeclarativeStream
+      name: crm_deals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/deals
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_deals"
+    crm_tasktypes:
+      type: DeclarativeStream
+      name: crm_tasktypes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/tasktypes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_tasktypes"
+    crm_tasks:
+      type: DeclarativeStream
+      name: crm_tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/tasks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: dateFrom
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: dateTo
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_tasks"
+    crm_notes:
+      type: DeclarativeStream
+      name: crm_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/notes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: dateFrom
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: dateTo
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_notes"
+    domains:
+      type: DeclarativeStream
+      name: domains
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: senders/domains
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - domains
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domains"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: webhooks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: createdSince
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    account:
+      type: DeclarativeStream
+      name: account
+      primary_key:
+        - organization_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: account
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    organization_invited_users:
+      type: DeclarativeStream
+      name: organization_invited_users
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/invited/users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_invited_users"
+    emailCampaigns:
+      type: DeclarativeStream
+      name: emailCampaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: emailCampaigns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: createdSince
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emailCampaigns"
+    smsCampaigns:
+      type: DeclarativeStream
+      name: smsCampaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: smsCampaigns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/smsCampaigns"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.brevo.com/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/contacts_attributes"
+  - $ref: "#/definitions/streams/contacts_folders_lists"
+  - $ref: "#/definitions/streams/contacts_folders"
+  - $ref: "#/definitions/streams/contacts_segments"
+  - $ref: "#/definitions/streams/contacts_lists_contacts"
+  - $ref: "#/definitions/streams/contacts_lists"
+  - $ref: "#/definitions/streams/senders"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/companies_attributes"
+  - $ref: "#/definitions/streams/crm_pipeline_stages"
+  - $ref: "#/definitions/streams/crm_pipeline_details_all"
+  - $ref: "#/definitions/streams/crm_attributes_deals"
+  - $ref: "#/definitions/streams/crm_deals"
+  - $ref: "#/definitions/streams/crm_tasktypes"
+  - $ref: "#/definitions/streams/crm_tasks"
+  - $ref: "#/definitions/streams/crm_notes"
+  - $ref: "#/definitions/streams/domains"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/organization_invited_users"
+  - $ref: "#/definitions/streams/emailCampaigns"
+  - $ref: "#/definitions/streams/smsCampaigns"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    contacts_attributes: true
+    contacts_folders_lists: true
+    contacts_folders: true
+    contacts_segments: true
+    contacts_lists_contacts: true
+    contacts_lists: true
+    senders: true
+    companies: true
+    companies_attributes: true
+    crm_pipeline_stages: true
+    crm_pipeline_details_all: true
+    crm_attributes_deals: true
+    crm_deals: true
+    crm_tasktypes: true
+    crm_tasks: true
+    crm_notes: true
+    domains: true
+    webhooks: true
+    account: true
+    organization_invited_users: true
+    emailCampaigns: true
+    smsCampaigns: true
+  testedStreams:
+    contacts:
+      streamHash: 504ced3fe63546217f5e46fafeddac87c61259c1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts_attributes:
+      hasRecords: true
+      streamHash: 3e330f702e08c4eb2f597a9197aa03e80406ee1e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_folders_lists:
+      hasRecords: true
+      streamHash: 50cdb4104bfd4d253f0a080c1c1626fe95693fc0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_folders:
+      hasRecords: true
+      streamHash: 254c00df36df7f077487138ef3baf09e06b0779e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_segments:
+      hasRecords: true
+      streamHash: d072e3317a4372c075d70c09af7911d3ec73d48d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_lists_contacts:
+      hasRecords: true
+      streamHash: fe87eb042956223be46a71933dfcd88b822208e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_lists:
+      hasRecords: true
+      streamHash: 611a977487b73b98c97ae5ac636cf56b8a338f6f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    senders:
+      hasRecords: true
+      streamHash: 51a09fddb13d163eeb553b6af04bfac588e09fb5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      streamHash: 5a1e63b01fbfcbfa642f28f0a7313628faf24897
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies_attributes:
+      hasRecords: true
+      streamHash: e17d19705a8b79272bee4ef2d6f7a1db823a126c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_pipeline_stages:
+      streamHash: 7f18aed04bc73088f17e8a6ce49d6f632b444560
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_pipeline_details_all:
+      streamHash: 3aae491275ecddc851bd583f80405092ccff50a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_attributes_deals:
+      streamHash: b726fe9704a23e1120e795433aab443916d5565e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_deals:
+      streamHash: f727f44af5a01c1753c73f6350f3383bc7f15b84
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_tasktypes:
+      streamHash: de63fc6053e0b8542dc035df182f7902652979f0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_tasks:
+      streamHash: 63757570a1325ace13156c8fc853e8c92cb235ac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_notes:
+      streamHash: 02149a664bc635089b46980ffdcd4de186a550af
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    domains:
+      streamHash: 7df6459836e8fdba9dc4106e246dcc009c232491
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: ab8689016a3be5de01fa3cf152c14ff6f6575dc5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account:
+      streamHash: 6ee6401d56b2ac59cee6a5073e2d660fe9e8aaf5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_invited_users:
+      streamHash: c877681dff4899b88b08f208fd33defaedbbeb4b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    emailCampaigns:
+      streamHash: 887547e3bea5965ddd8f24654d39ac275928c016
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    smsCampaigns:
+      streamHash: 1f829825913a7d5efb95c01fd65efccc4b22943a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          CONTACT_TIMEZONE:
+            type:
+              - string
+              - "null"
+          EXT_ID:
+            type:
+              - string
+              - "null"
+          FIRSTNAME:
+            type:
+              - string
+              - "null"
+          LASTNAME:
+            type:
+              - string
+              - "null"
+          SMS:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emailBlacklisted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      listIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      modifiedAt:
+        type: string
+      smsBlacklisted:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - modifiedAt
+  contacts_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      calculatedValue:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      enumeration:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      field_key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  contacts_folders_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  contacts_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  contacts_segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      categoryName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      segmentName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  contacts_lists_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          CONTACT_TIMEZONE:
+            type:
+              - string
+              - "null"
+          EXT_ID:
+            type:
+              - string
+              - "null"
+          FIRSTNAME:
+            type:
+              - string
+              - "null"
+          LASTNAME:
+            type:
+              - string
+              - "null"
+          SMS:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emailBlacklisted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      listIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      modifiedAt:
+        type: string
+      smsBlacklisted:
+        type:
+          - boolean
+          - "null"
+    required:
+      - modifiedAt
+  contacts_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      folderId:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  senders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      ips:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          last_updated_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number_of_contacts:
+            type:
+              - number
+              - "null"
+          owner:
+            type:
+              - string
+              - "null"
+          owner_assign_date:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      linkedContactsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      linkedDealsIds:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  companies_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributeOptions:
+        type:
+          - array
+          - "null"
+      attributeTypeName:
+        type:
+          - string
+          - "null"
+      internalName:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+  crm_pipeline_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  crm_pipeline_details_all:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      pipeline:
+        type: string
+      pipeline_name:
+        type:
+          - string
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - pipeline
+  crm_attributes_deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributeOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      attributeTypeName:
+        type:
+          - string
+          - "null"
+      internalName:
+        type:
+          - string
+          - "null"
+      isRequired:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+  crm_deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          deal_name:
+            type:
+              - string
+              - "null"
+          deal_owner:
+            type:
+              - string
+              - "null"
+          deal_stage:
+            type:
+              - string
+              - "null"
+          number_of_contacts:
+            type:
+              - number
+              - "null"
+          pipeline:
+            type:
+              - string
+              - "null"
+          stage_updated_at:
+            type:
+              - string
+              - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      linkedCompaniesIds:
+        type:
+          - array
+          - "null"
+      linkedContactsIds:
+        type:
+          - array
+          - "null"
+      refs:
+        type:
+          - object
+          - "null"
+    required:
+      - id
+  crm_tasktypes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  crm_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      companiesIds:
+        type:
+          - array
+          - "null"
+      contactsIds:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type: string
+      date:
+        type:
+          - string
+          - "null"
+      done:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - boolean
+          - "null"
+      taskTypeId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - createdAt
+  crm_notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                organization:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    mongoId:
+                      type:
+                        - string
+                        - "null"
+                    mySqlId:
+                      type:
+                        - number
+                        - "null"
+                rank:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              fullName:
+                type:
+                  - string
+                  - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      authorId:
+        type:
+          - string
+          - "null"
+      companyIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contactIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      dealIds:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      text:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  domains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      authenticated:
+        type:
+          - boolean
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          creationDate:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      domain_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      provider:
+        type:
+          - string
+          - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: number
+      modifiedAt:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedAt
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          zipCode:
+            type:
+              - string
+              - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      enterprise:
+        type:
+          - boolean
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      marketingAutomation:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+      organization_id:
+        type: string
+      plan:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            credits:
+              type:
+                - number
+                - "null"
+            creditsType:
+              type:
+                - string
+                - "null"
+      planVerticals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            credits:
+              type:
+                - string
+                - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            planCategory:
+              type:
+                - string
+                - "null"
+            planType:
+              type:
+                - string
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            users:
+              type:
+                - object
+                - "null"
+              properties:
+                purchasedSeats:
+                  type:
+                    - string
+                    - "null"
+                usedSeats:
+                  type:
+                    - string
+                    - "null"
+      relay:
+        type:
+          - object
+          - "null"
+        properties:
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              port:
+                type:
+                  - number
+                  - "null"
+              relay:
+                type:
+                  - string
+                  - "null"
+              userName:
+                type:
+                  - string
+                  - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+    required:
+      - organization_id
+  organization_invited_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+      feature_access:
+        type:
+          - object
+          - "null"
+        properties:
+          conversations:
+            type:
+              - string
+              - "null"
+          crm:
+            type:
+              - string
+              - "null"
+          marketing:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          transactional:
+            type:
+              - string
+              - "null"
+      is_owner:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - email
+  emailCampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      abTesting:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      footer:
+        type:
+          - string
+          - "null"
+      header:
+        type:
+          - string
+          - "null"
+      htmlContent:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      inlineImageActivation:
+        type:
+          - boolean
+          - "null"
+      mirrorActive:
+        type:
+          - boolean
+          - "null"
+      modifiedAt:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      previewText:
+        type:
+          - string
+          - "null"
+      recipients:
+        type:
+          - object
+          - "null"
+        properties:
+          exclusionLists:
+            type:
+              - array
+              - "null"
+          lists:
+            type:
+              - array
+              - "null"
+      replyTo:
+        type:
+          - string
+          - "null"
+      scheduledAt:
+        type:
+          - string
+          - "null"
+      sendAtBestTime:
+        type:
+          - boolean
+          - "null"
+      sender:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      shareLink:
+        type:
+          - string
+          - "null"
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          campaignStats:
+            type:
+              - array
+              - "null"
+          globalStats:
+            type:
+              - object
+              - "null"
+            properties:
+              clickers:
+                type:
+                  - number
+                  - "null"
+              complaints:
+                type:
+                  - number
+                  - "null"
+              delivered:
+                type:
+                  - number
+                  - "null"
+              estimatedViews:
+                type:
+                  - number
+                  - "null"
+              hardBounces:
+                type:
+                  - number
+                  - "null"
+              sent:
+                type:
+                  - number
+                  - "null"
+              softBounces:
+                type:
+                  - number
+                  - "null"
+              trackableViews:
+                type:
+                  - number
+                  - "null"
+              trackableViewsRate:
+                type:
+                  - number
+                  - "null"
+              uniqueClicks:
+                type:
+                  - number
+                  - "null"
+              uniqueViews:
+                type:
+                  - number
+                  - "null"
+              unsubscriptions:
+                type:
+                  - number
+                  - "null"
+              viewed:
+                type:
+                  - number
+                  - "null"
+          linksStats:
+            type:
+              - object
+              - "null"
+          mirrorClick:
+            type:
+              - number
+              - "null"
+          remaining:
+            type:
+              - number
+              - "null"
+          statsByDomain:
+            type:
+              - object
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tag:
+        type:
+          - string
+          - "null"
+      testSent:
+        type:
+          - boolean
+          - "null"
+      toField:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedAt
+  smsCampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      content:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifiedAt:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organisationPrefix:
+        type:
+          - string
+          - "null"
+      recipients:
+        type:
+          - object
+          - "null"
+        properties:
+          exclusionLists:
+            type:
+              - array
+              - "null"
+          lists:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      scheduledAt:
+        type:
+          - string
+          - "null"
+      sender:
+        type:
+          - string
+          - "null"
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          answered:
+            type:
+              - number
+              - "null"
+          delivered:
+            type:
+              - number
+              - "null"
+          hardBounces:
+            type:
+              - number
+              - "null"
+          processing:
+            type:
+              - number
+              - "null"
+          sent:
+            type:
+              - number
+              - "null"
+          softBounces:
+            type:
+              - number
+              - "null"
+          unsubscriptions:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unsubscribeInstruction:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedAt

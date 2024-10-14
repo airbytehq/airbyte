@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
 /**
@@ -38,16 +39,18 @@ class AirbyteDebeziumHandler<T>(
 ) {
     internal inner class CapacityReportingBlockingQueue<E>(capacity: Int) :
         LinkedBlockingQueue<E>(capacity) {
-        private var lastReport: Instant? = null
+        private var lastReport: Instant = Instant.MIN
+        private var puts = AtomicLong()
+        private var polls = AtomicLong()
 
-        private fun reportQueueUtilization() {
-            if (
-                lastReport == null ||
-                    Duration.between(lastReport, Instant.now())
-                        .compareTo(Companion.REPORT_DURATION) > 0
-            ) {
+        private fun reportQueueUtilization(put: Long = 0L, poll: Long = 0L) {
+            if (Duration.between(lastReport, Instant.now()) > REPORT_DURATION) {
                 LOGGER.info {
-                    "CDC events queue size: ${this.size}. remaining ${this.remainingCapacity()}"
+                    "CDC events queue stats: " +
+                        "size=${this.size}, " +
+                        "cap=${this.remainingCapacity()}, " +
+                        "puts=${puts.addAndGet(put)}, " +
+                        "polls=${polls.addAndGet(poll)}"
                 }
                 synchronized(this) { lastReport = Instant.now() }
             }
@@ -55,12 +58,12 @@ class AirbyteDebeziumHandler<T>(
 
         @Throws(InterruptedException::class)
         override fun put(e: E) {
-            reportQueueUtilization()
+            reportQueueUtilization(put = 1L)
             super.put(e)
         }
 
         override fun poll(): E {
-            reportQueueUtilization()
+            reportQueueUtilization(poll = 1L)
             return super.poll()
         }
     }

@@ -12,7 +12,7 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
-from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
+from pipelines.airbyte_ci.connectors.test.steps import java_connectors, manifest_only_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
 
@@ -24,6 +24,7 @@ LANGUAGE_MAPPING = {
     "get_test_steps": {
         ConnectorLanguage.PYTHON: python_connectors.get_test_steps,
         ConnectorLanguage.LOW_CODE: python_connectors.get_test_steps,
+        ConnectorLanguage.MANIFEST_ONLY: manifest_only_connectors.get_test_steps,
         ConnectorLanguage.JAVA: java_connectors.get_test_steps,
     },
 }

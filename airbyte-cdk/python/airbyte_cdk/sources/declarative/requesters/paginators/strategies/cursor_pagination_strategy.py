@@ -6,8 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
@@ -32,7 +31,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     parameters: InitVar[Mapping[str, Any]]
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    decoder: Decoder = field(default_factory=lambda: PaginationDecoderDecorator(decoder=JsonDecoder(parameters={})))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._initial_cursor = None
@@ -50,7 +49,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         return self._initial_cursor
 
     def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
-        decoded_response = self.decoder.decode(response)
+        decoded_response = next(self.decoder.decode(response))
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links

@@ -58,7 +58,7 @@ async def test_read(
 
         for record in records:
             has_records = True
-            if not conforms_to_schema(record.record.data, stream.schema()):
+            if not conforms_to_schema(read_target_execution_result.get_obfuscated_types(record.record.data), stream.schema()):
                 errors.append(f"A record was encountered that does not conform to the schema. stream={stream.stream.name} record={record}")
             if primary_key:
                 if _extract_primary_key_value(record.dict(), primary_key) is None:

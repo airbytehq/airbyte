@@ -46,6 +46,17 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.3.0 | 2024-08-26 | [44775](https://github.com/airbytehq/airbyte/pull/44775) | Refactor connector to manifest-only format |
+| 0.2.18 | 2024-08-24 | [44675](https://github.com/airbytehq/airbyte/pull/44675) | Update dependencies |
+| 0.2.17 | 2024-08-17 | [44255](https://github.com/airbytehq/airbyte/pull/44255) | Update dependencies |
+| 0.2.16 | 2024-08-12 | [43926](https://github.com/airbytehq/airbyte/pull/43926) | Update dependencies |
+| 0.2.15 | 2024-08-10 | [43669](https://github.com/airbytehq/airbyte/pull/43669) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43209](https://github.com/airbytehq/airbyte/pull/43209) | Update dependencies |
+| 0.2.13 | 2024-07-27 | [42760](https://github.com/airbytehq/airbyte/pull/42760) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42201](https://github.com/airbytehq/airbyte/pull/42201) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41915](https://github.com/airbytehq/airbyte/pull/41915) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41367](https://github.com/airbytehq/airbyte/pull/41367) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41121](https://github.com/airbytehq/airbyte/pull/41121) | Update dependencies |
 | 0.2.8 | 2024-07-06 | [40939](https://github.com/airbytehq/airbyte/pull/40939) | Update dependencies |
 | 0.2.7 | 2024-06-25 | [40351](https://github.com/airbytehq/airbyte/pull/40351) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40028](https://github.com/airbytehq/airbyte/pull/40028) | Update dependencies |

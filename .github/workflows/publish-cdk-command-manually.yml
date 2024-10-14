@@ -239,7 +239,7 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # There is no pull request number as we do this manually, so will just reference when we started doing it manually for now
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump-version ${{ github.event.inputs.release-type }} 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}' --pr-number=36501"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump-version version:${{needs.bump-version.outputs.new_cdk_version}} 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}' --pr-number=36501"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -292,7 +292,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Checkout Airbyte Platform Internal
         uses: actions/checkout@v3
         with:

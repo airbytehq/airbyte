@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from live_tests.commons.evaluation_modes import TestEvaluationMode
-from live_tests.commons.models import ConnectionObjects
+from live_tests.commons.models import ConnectionObjects, ConnectionSubset
 from live_tests.report import Report
 
 AIRBYTE_API_KEY = pytest.StashKey[str]()
@@ -15,6 +15,7 @@ CONNECTION_OBJECTS = pytest.StashKey[ConnectionObjects]()
 CONNECTION_URL = pytest.StashKey[str | None]()
 CONNECTOR_IMAGE = pytest.StashKey[str]()
 CONTROL_VERSION = pytest.StashKey[str]()
+CONNECTION_SUBSET = pytest.StashKey[ConnectionSubset]()
 DAGGER_LOG_PATH = pytest.StashKey[Path]()
 DUCKDB_PATH = pytest.StashKey[Path]()
 HTTP_DUMP_CACHE_VOLUMES = pytest.StashKey[list]()

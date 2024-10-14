@@ -12,7 +12,7 @@ data:
     normalizationIntegrationType: tidb
     normalizationRepository: airbyte/normalization-tidb
     normalizationTag: 0.4.3
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

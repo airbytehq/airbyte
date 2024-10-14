@@ -95,6 +95,30 @@
       "title": "Shares",
       "description": "The number of shares of your reel.",
       "id": "84386203808767123/insights/shares/lifetime"
+    },
+    {
+      "name": "ig_reels_aggregated_all_plays_count",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 383
+        }
+      ],
+      "title": "IG reels aggregated all plays count title",
+      "description": "IG reels aggregated all plays count description.",
+      "id": "84386203808767123/insights/ig_reels_aggregated_all_plays_count/lifetime"
+    },
+    {
+      "name": "clips_replays_count",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 102
+        }
+      ],
+      "title": "Clip Replays Count title",
+      "description": "Clip Replays Count description.",
+      "id": "84386203808767123/insights/clips_replays_count/lifetime"
     }
   ]
 }

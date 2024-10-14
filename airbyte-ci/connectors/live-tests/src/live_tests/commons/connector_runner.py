@@ -6,6 +6,8 @@ from __future__ import annotations
 import datetime
 import json
 import logging
+import os
+import subprocess
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -23,11 +25,13 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIGURED_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
     IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    IN_CONTAINER_OBFUSCATOR_PATH = "/user/local/bin/record_obfuscator.py"
 
     def __init__(
         self,
         dagger_client: dagger.Client,
         execution_inputs: ExecutionInputs,
+        is_airbyte_ci: bool,
         http_proxy: Optional[Proxy] = None,
     ):
         self.connector_under_test = execution_inputs.connector_under_test
@@ -45,6 +49,11 @@ class ConnectorRunner:
         self.http_proxy = http_proxy
         self.logger = logging.getLogger(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
         self.dagger_client = dagger_client.pipeline(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
+        if is_airbyte_ci:
+            self.host_obfuscator_path = "/tmp/record_obfuscator.py"
+        else:
+            repo_root = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).strip().decode())
+            self.host_obfuscator_path = f"{repo_root}/tools/bin/record_obfuscator.py"
 
     @property
     def _connector_under_test_container(self) -> dagger.Container:
@@ -109,6 +118,12 @@ class ConnectorRunner:
         container = self._connector_under_test_container
         # Do not cache downstream dagger layers
         container = container.with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+        expanded_host_executable_path = os.path.expanduser(self.host_obfuscator_path)
+
+        container = container.with_file(
+            self.IN_CONTAINER_OBFUSCATOR_PATH,
+            self.dagger_client.host().file(expanded_host_executable_path),
+        )
         for env_var_name, env_var_value in self.environment_variables.items():
             container = container.with_env_variable(env_var_name, env_var_value)
         if self.config:
@@ -134,7 +149,8 @@ class ConnectorRunner:
                 [
                     "sh",
                     "-c",
-                    " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
+                    " ".join(airbyte_command)
+                    + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
                 ],
                 skip_entrypoint=True,
             )

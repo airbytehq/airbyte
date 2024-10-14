@@ -224,12 +224,12 @@ def test_read_429_error(mocker, invalid_config, catalog, caplog):
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
     sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
     catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
-    records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
-    assert [] == records
-    assert (
-        "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account"
-        in caplog.text
+    with pytest.raises(AirbyteTracedException) as e:
+        next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    expected_message = (
+        "Rate limit has been reached. Please try later or request a higher quota for your account."
     )
+    assert e.value.args[0] == expected_message
 
 
 def test_read_403_error(mocker, invalid_config, catalog, caplog):
@@ -250,6 +250,29 @@ def test_read_403_error(mocker, invalid_config, catalog, caplog):
         str(e.value)
         == "The authenticated Google Sheets user does not have permissions to view the spreadsheet with id invalid_spreadsheet_id. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support"
     )
+
+
+def test_read_500_error(mocker, invalid_config, catalog, caplog):
+    source = SourceGoogleSheets()
+    mocker.patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes=SCOPES: None)
+    mocker.patch.object(GoogleSheetsClient, "get", return_value=mocker.Mock)
+    mocker.patch.object(
+        Helpers,
+        "get_sheets_in_spreadsheet",
+        side_effect=errors.HttpError(resp=set_resp_http_error(500, "Internal error encountered."), content=b""),
+    )
+
+    sheet1 = "soccer_team"
+    sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
+    sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
+    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
+    with pytest.raises(AirbyteTracedException) as e:
+        next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    expected_message = (
+        "There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side."
+        " Please try again. If this issue persists, contact support"
+    )
+    assert e.value.args[0] == expected_message
 
 
 def test_read_expected_data_on_1_sheet(invalid_config, mocker, catalog, caplog):

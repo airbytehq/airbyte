@@ -21,5 +21,5 @@ data class InitialRawTableStatus(
      * Destinations MAY use this value to only run T+D on records with `_airbyte_extracted_at > ?`
      * (note the strictly-greater comparison).
      */
-    val maxProcessedTimestamp: Optional<Instant>
+    val maxProcessedTimestamp: Optional<Instant>,
 )

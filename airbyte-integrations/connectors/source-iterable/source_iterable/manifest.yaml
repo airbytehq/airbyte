@@ -67,6 +67,8 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      decoder:
+        type: IterableDecoder
       paginator:
         type: NoPagination
       requester:
@@ -87,9 +89,8 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_iterable.components.ListUsersRecordExtractor
-          field_path:
-            - getUsers
+          type: DpathExtractor
+          field_path: []
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -139,6 +140,12 @@ streams:
           - path:
               - listId
             value: "{{ stream_slice.list_id }}"
+          - path:
+              - email
+            value: "{{ record.record }}"
+      - type: RemoveFields
+        field_pointers:
+          - - record
   - name: campaigns
     type: DeclarativeStream
     retriever:
@@ -262,6 +269,8 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
       paginator:
         type: NoPagination
       requester:
@@ -284,9 +293,8 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_iterable.components.XJsonRecordExtractor
-          field_path:
-            - users
+          type: DpathExtractor
+          field_path: []
       partition_router: []
     primary_key: []
     incremental_sync:
@@ -318,6 +326,8 @@ streams:
     primary_key: []
     retriever:
       type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
       requester:
         type: HttpRequester
         url_base: https://api.iterable.com/api/
@@ -338,15 +348,14 @@ streams:
         type: RecordSelector
         extractor:
           class_name: source_iterable.components.EventsRecordExtractor
-          field_path:
-            - events
+          field_path: []
       paginator:
         type: NoPagination
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: email
+              parent_key: record
               request_option:
                 inject_into: request_parameter
                 type: RequestOption
@@ -357,6 +366,8 @@ streams:
                 type: DeclarativeStream
                 retriever:
                   type: SimpleRetriever
+                  decoder:
+                    type: IterableDecoder
                   paginator:
                     type: NoPagination
                   requester:
@@ -377,9 +388,8 @@ streams:
                   record_selector:
                     type: RecordSelector
                     extractor:
-                      class_name: source_iterable.components.ListUsersRecordExtractor
-                      field_path:
-                        - getUsers
+                      type: DpathExtractor
+                      field_path: []
                   partition_router:
                     - type: SubstreamPartitionRouter
                       parent_stream_configs:

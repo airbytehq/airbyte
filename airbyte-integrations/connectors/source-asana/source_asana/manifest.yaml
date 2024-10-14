@@ -1445,6 +1445,48 @@ definitions:
         type:
           - "null"
           - string
+      task:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+      target:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
 
   stories_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1551,6 +1593,27 @@ definitions:
         type:
           - "null"
           - integer
+      task:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
 
   workspaces_schema:
     $schema: http://json-schema.org/draft-07/schema#

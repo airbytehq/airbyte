@@ -8,7 +8,7 @@ data:
   icon: meilisearch.svg
   license: MIT
   name: MeiliSearch
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

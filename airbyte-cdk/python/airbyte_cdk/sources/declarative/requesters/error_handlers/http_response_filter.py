@@ -21,9 +21,11 @@ class HttpResponseFilter:
     Filter to select a response based on its HTTP status code, error message or a predicate.
     If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.
     For http_codes declared in the filter, the failure_type will default to `system_error`.
+    To override default failure_type use configured failure_type with ResponseAction.FAIL.
 
     Attributes:
         action (Union[ResponseAction, str]): action to execute if a request matches
+        failure_type (Union[ResponseAction, str]): failure type of traced exception if a response matches the filter
         http_codes (Set[int]): http code of matching requests
         error_message_contains (str): error substring of matching requests
         predicate (str): predicate to apply to determine if a request is matching
@@ -33,6 +35,7 @@ class HttpResponseFilter:
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     action: Optional[Union[ResponseAction, str]] = None
+    failure_type: Optional[Union[FailureType, str]] = None
     http_codes: Optional[Set[int]] = None
     error_message_contains: Optional[str] = None
     predicate: Union[InterpolatedBoolean, str] = ""
@@ -50,6 +53,8 @@ class HttpResponseFilter:
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
         self._error_message_parser = JsonErrorMessageParser()
+        if self.failure_type and isinstance(self.failure_type, str):
+            self.failure_type = FailureType[self.failure_type]
 
     def matches(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
         filter_action = self._matches_filter(response_or_exception)
@@ -68,7 +73,13 @@ class HttpResponseFilter:
             if isinstance(response_or_exception, requests.Response):
                 error_message = self._create_error_message(response_or_exception)
             error_message = error_message or default_error_message
-            failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
+
+            if self.failure_type and filter_action == ResponseAction.FAIL:
+                failure_type = self.failure_type
+            elif default_mapped_error_resolution:
+                failure_type = default_mapped_error_resolution.failure_type
+            else:
+                failure_type = FailureType.system_error
 
             return ErrorResolution(
                 response_action=filter_action,
@@ -118,7 +129,7 @@ class HttpResponseFilter:
         return self.error_message.eval(self.config, response=self._safe_response_json(response), headers=response.headers)  # type: ignore # error_message is always cast to an interpolated string
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
-        return bool(self.predicate and self.predicate.eval(None, response=self._safe_response_json(response), headers=response.headers))  # type: ignore # predicate is always cast to an interpolated string
+        return bool(self.predicate.condition and self.predicate.eval(None, response=self._safe_response_json(response), headers=response.headers)) if self.predicate else False  # type: ignore # predicate is always cast to an interpolated string
 
     def _response_contains_error_message(self, response: requests.Response) -> bool:
         if not self.error_message_contains:

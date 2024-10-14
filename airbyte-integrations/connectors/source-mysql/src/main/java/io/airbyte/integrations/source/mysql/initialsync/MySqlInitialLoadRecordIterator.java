@@ -4,12 +4,16 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
+
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
@@ -18,7 +22,10 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -53,8 +60,13 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
   private final boolean isCompositeKeyLoad;
+
+  private final Instant startInstant;
   private int numSubqueries = 0;
   private AutoCloseableIterator<AirbyteRecordData> currentIterator;
+
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -64,7 +76,9 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
                                  final List<String> columnNames,
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
-                                 final boolean isCompositeKeyLoad) {
+                                 final boolean isCompositeKeyLoad,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -74,11 +88,23 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.chunkSize = chunkSize;
     this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(initialLoadStateManager);
   }
 
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s hours, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get().toHours());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextSubquery()) {
       try {
         // We will only issue one query for a composite key load. If we have already processed all the data
@@ -184,6 +210,21 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.of(pair);
+  }
+
+  private boolean isCdcSync(MySqlInitialLoadStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof MySqlInitialLoadGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

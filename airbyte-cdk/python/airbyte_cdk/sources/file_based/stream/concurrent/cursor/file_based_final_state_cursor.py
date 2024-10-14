@@ -32,7 +32,7 @@ class FileBasedFinalStateCursor(AbstractConcurrentFileBasedCursor):
         # Normally the connector state manager operates at the source-level. However, we only need it to write the sentinel
         # state message rather than manage overall source state. This is also only temporary as we move to the resumable
         # full refresh world where every stream uses a FileBasedConcurrentCursor with incremental state.
-        self._connector_state_manager = ConnectorStateManager(stream_instance_map={})
+        self._connector_state_manager = ConnectorStateManager()
 
     @property
     def state(self) -> MutableMapping[str, Any]:

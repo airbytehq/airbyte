@@ -1,0 +1,36 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.leadfeeder.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-leadfeeder
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.2@sha256:efe8a454f740dc6a07252c4a457777e7c81d95f0d2ea8e9d68114d3610e9a602
+  connectorSubtype: api
+  connectorType: source
+  definitionId: daa0fe89-6e72-479e-a314-5e65cfc7103c
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-leadfeeder
+  githubIssueLabel: source-leadfeeder
+  icon: icon.svg
+  license: MIT
+  name: Leadfeeder
+  releaseDate: 2024-08-21
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/leadfeeder
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -64,7 +64,17 @@ class GlobalStateManager(
         // Populate global state
         val globalState = AirbyteGlobalState()
         globalState.sharedState = Jsons.jsonNode(cdcStateManager.cdcState)
-        globalState.streamStates = StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap)
+        // If stream state exists in the global manager, it should be used to reflect the partial
+        // states of initial loads.
+        if (
+            cdcStateManager.rawStateMessage?.global?.streamStates != null &&
+                cdcStateManager.rawStateMessage.global?.streamStates?.size != 0
+        ) {
+            globalState.streamStates = cdcStateManager.rawStateMessage.global.streamStates
+        } else {
+            globalState.streamStates =
+                StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap)
+        }
 
         // Generate the legacy state for backwards compatibility
         val dbState =

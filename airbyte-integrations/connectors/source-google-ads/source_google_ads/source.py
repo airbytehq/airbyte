@@ -49,8 +49,8 @@ from .utils import GAQL, logger, traced_exception
 
 
 class SourceGoogleAds(AbstractSource):
-    # Skip exceptions on missing streams
-    raise_exception_on_missing_stream = False
+    # Raise exceptions on missing streams
+    raise_exception_on_missing_stream = True
 
     @staticmethod
     def _validate_and_transform(config: Mapping[str, Any]):
@@ -62,7 +62,7 @@ class SourceGoogleAds(AbstractSource):
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v15/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v17/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
@@ -225,6 +225,8 @@ class SourceGoogleAds(AbstractSource):
                         customer_id=customer.id,
                         login_customer_id=customer.login_customer_id,
                     )
+                except AirbyteTracedException as e:
+                    raise e from e
                 except Exception as exc:
                     traced_exception(exc, customer.id, False, table_name)
                 # iterate over the response otherwise exceptions will not be raised!

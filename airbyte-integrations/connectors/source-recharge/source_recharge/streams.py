@@ -9,8 +9,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_recharge.components.recharge_error_handler import RechargeErrorHandler
 
 
 class ApiVersion(Enum):
@@ -113,12 +115,8 @@ class Orders(HttpStream, ABC):
         else:
             return [response_data]
 
-    def should_retry(self, response: requests.Response) -> bool:
-        content_length = int(response.headers.get("Content-Length", 0))
-        incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
-        if incomplete_data_response:
-            return True
-        return super().should_retry(response)
+    def get_error_handler(self) -> ErrorHandler:
+        return RechargeErrorHandler(logger=self.logger)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date_value = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date

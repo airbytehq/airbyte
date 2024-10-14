@@ -8,7 +8,7 @@ data:
   icon: cloudflare-r2.svg
   license: MIT
   name: Cloudflare R2
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

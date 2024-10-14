@@ -39,22 +39,22 @@ high quality bar. It is production ready.
 
 ## Marketplace
 
-A **Marketplace** connector is maintained by the community members until it becomes an official Integration. Airbyte
+A **Marketplace** connector is maintained by the community members until it becomes an official Airbyte Connector. Airbyte
 has over 800 code contributors and 15,000 people in the Slack community to help. The Airbyte team is
-continually reviewing Marketplace connectors as usage grows to determine when a Marketplace connector should become an Airbyte Integration. Marketplace connectors are not maintained
+continually reviewing Marketplace connectors as usage grows to determine when a Marketplace connector should become an Airbyte Connector. Marketplace connectors are not maintained
 by Airbyte and  we do not offer support SLAs around them. We encourage caution when using them in
 production.
 
 ### What you should know about Marketplace connectors:
 
 - Marketplace connectors are available to all users.
-- Marketplace connectors may be upgraded to an official Integration at any time, and we will notify users of these
+- Marketplace connectors may be upgraded to an official Airbyte Connector at any time, and we will notify users of these
   upgrades via our Slack Community and in our Connector Catalog.
 - Marketplace connectors might not be feature-complete (features planned for release are under
   development or not prioritized) and may include backward-incompatible/breaking API changes with no
   or short notice.
 - Marketplace connectors have no Support SLAs.
-- You're very welcome to contribute new features and streams to an existing Marketplace integration. Airbyte Contributor Experience team is happy to review PRs when we have capacity.
+- You're very welcome to contribute new features and streams to an existing Marketplace connector. Airbyte Contributor Experience team is happy to review PRs when we have capacity.
 
 ## Archived
 

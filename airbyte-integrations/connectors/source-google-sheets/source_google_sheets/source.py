@@ -252,9 +252,18 @@ class SourceGoogleSheets(Source):
                     failure_type=FailureType.config_error,
                 ) from e
             if e.status_code == status_codes.TOO_MANY_REQUESTS:
-                logger.info(f"Stopped syncing process due to rate limits. {error_description}")
+                raise AirbyteTracedException(
+                    message=f"Stopped syncing process due to rate limits. {error_description}",
+                    internal_message=error_description,
+                    failure_type=FailureType.transient_error,
+                ) from e
             else:
                 logger.info(f"{e.status_code}: {e.reason}. {error_description}")
+                raise AirbyteTracedException(
+                    message=f"Stopped syncing process. {error_description}",
+                    internal_message=error_description,
+                    failure_type=FailureType.transient_error,
+                ) from e
         finally:
             logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
 

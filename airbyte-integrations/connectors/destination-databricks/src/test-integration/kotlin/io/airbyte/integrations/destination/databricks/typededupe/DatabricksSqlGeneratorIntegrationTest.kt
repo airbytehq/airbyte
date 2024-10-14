@@ -17,22 +17,21 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.databricks.DatabricksConnectorClientsFactory
+import io.airbyte.integrations.destination.databricks.DatabricksIntegrationTestUtils
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import java.nio.file.Files
-import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.TimeUnit
 import kotlin.streams.asSequence
 import org.junit.jupiter.api.BeforeAll
@@ -50,8 +49,7 @@ class DatabricksSqlGeneratorIntegrationTest :
         @BeforeAll
         @Timeout(value = 10, unit = TimeUnit.MINUTES)
         fun setupDatabase() {
-            val rawConfig = Files.readString(Path.of("secrets/oauth_config.json"))
-            connectorConfig = DatabricksConnectorConfig.deserialize(Jsons.deserialize(rawConfig))
+            connectorConfig = DatabricksIntegrationTestUtils.oauthConfig
             jdbcDatabase =
                 DefaultJdbcDatabase(
                     DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
@@ -61,14 +59,16 @@ class DatabricksSqlGeneratorIntegrationTest :
         }
     }
 
+    override val sqlGenerator: SqlGenerator
+        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
+    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
     override val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
         get() =
             DatabricksDestinationHandler(
+                databricksSqlGenerator,
                 connectorConfig.database,
                 jdbcDatabase,
             )
-    override val sqlGenerator: SqlGenerator
-        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
     override val supportsSafeCast: Boolean
         get() = true
 
@@ -76,14 +76,18 @@ class DatabricksSqlGeneratorIntegrationTest :
         destinationHandler.execute(sqlGenerator.createSchema(namespace))
     }
 
-    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
-
     override fun createRawTable(streamId: StreamId) {
-        destinationHandler.execute(databricksSqlGenerator.createRawTable(streamId))
+        destinationHandler.execute(
+            databricksSqlGenerator.createRawTable(
+                streamId,
+                suffix = "",
+                replace = false,
+            ),
+        )
     }
 
     override fun createV1RawTable(v1RawTable: StreamId) {
-        TODO("Not yet implemented")
+        throw NotImplementedError("Databricks does not support a V1->V2 migration")
     }
 
     override fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>) {
@@ -92,7 +96,8 @@ class DatabricksSqlGeneratorIntegrationTest :
                 JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                 JavaBaseConstants.COLUMN_NAME_DATA,
-                JavaBaseConstants.COLUMN_NAME_AB_META
+                JavaBaseConstants.COLUMN_NAME_AB_META,
+                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
             )
         val tableIdentifier = streamId.rawTableId(DatabricksSqlGenerator.QUOTE)
         insertRecords(columnNames, tableIdentifier, records)
@@ -129,20 +134,27 @@ class DatabricksSqlGeneratorIntegrationTest :
     }
 
     override fun insertV1RawTableRecords(streamId: StreamId, records: List<JsonNode>) {
-        TODO("Not yet implemented")
+        throw NotImplementedError("Databricks does not support a V1->V2 migration")
     }
 
     override fun insertFinalTableRecords(
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long,
     ) {
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
         val tableIdentifier =
             streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix?.lowercase() ?: "")
-        insertRecords(columnNames, tableIdentifier, records)
+        insertRecords(
+            columnNames,
+            tableIdentifier,
+            records.map {
+                (it as ObjectNode).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, generationId)
+            },
+        )
     }
 
     private fun insertRecords(
@@ -344,7 +356,7 @@ class DatabricksSqlGeneratorIntegrationTest :
         val tmpStream =
             StreamConfig(
                 buildStreamId("sql_generator_test_svcnfgcqaz", "users_final", "users_raw"),
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 listOf(),
                 Optional.empty(),
                 columns,

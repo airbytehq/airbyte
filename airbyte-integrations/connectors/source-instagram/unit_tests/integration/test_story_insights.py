@@ -48,7 +48,7 @@ STORIES_ID_ERROR_CODE_10 = "3874523487644"
 HAPPY_PATH = 'story_insights_happy_path'
 ERROR_10 = 'story_insights_error_code_10'
 
-_METRICS = ["impressions", "reach", "replies"]
+_METRICS = ["impressions", "reach", "replies", "follows", "profile_visits", "shares", "total_interactions"]
 
 
 

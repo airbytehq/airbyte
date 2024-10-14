@@ -29,6 +29,8 @@ class ShopifyBulkRecord:
         self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
         self.record_process_components: Optional[Callable[[MutableMapping], MutableMapping]] = self.query.record_process_components
         self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
+        # how many records composed
+        self.record_composed: int = 0
 
     @property
     def tools(self) -> BulkTools:
@@ -127,8 +129,12 @@ class ShopifyBulkRecord:
         """
 
         with open(filename, "r") as jsonl_file:
+            # reset the counter
+            self.record_composed = 0
+
             for record in self.process_line(jsonl_file):
                 yield self.tools.fields_names_to_snake_case(record)
+                self.record_composed += 1
 
     def read_file(self, filename: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
         try:

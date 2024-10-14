@@ -3,6 +3,7 @@
 #
 
 import ast
+from functools import cache
 from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
@@ -10,6 +11,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpol
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.types import Config
 from jinja2 import meta
+from jinja2.environment import Template
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
 
@@ -114,13 +116,27 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
-            ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
-            undeclared = meta.find_undeclared_variables(ast)
+            undeclared = self._find_undeclared_variables(s)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
                 raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context)  # type: ignore # from_string is able to handle None
+            return self._compile(s).render(context)  # type: ignore # from_string is able to handle None
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
             return s
+
+    @cache
+    def _find_undeclared_variables(self, s: Optional[str]) -> Template:
+        """
+        Find undeclared variables and cache them
+        """
+        ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
+        return meta.find_undeclared_variables(ast)
+
+    @cache
+    def _compile(self, s: Optional[str]) -> Template:
+        """
+        We must cache the Jinja Template ourselves because we're using `from_string` instead of a template loader
+        """
+        return self._environment.from_string(s)

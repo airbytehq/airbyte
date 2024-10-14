@@ -2,9 +2,6 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-woocommerce:dev
 acceptance_tests:
-  spec:
-    tests:
-      - spec_path: "source_woocommerce/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

@@ -28,7 +28,11 @@ data:
   icon: fauna.svg
   license: MIT
   name: Fauna
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fauna
+  registryOverrides:
     cloud:
       enabled: true
     oss:

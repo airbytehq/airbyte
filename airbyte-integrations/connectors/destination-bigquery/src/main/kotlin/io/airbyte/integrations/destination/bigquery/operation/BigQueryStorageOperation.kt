@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.integrations.base.destination.operation.StorageOperation
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -90,7 +91,12 @@ abstract class BigQueryStorageOperation<Data>(
         if (result.totalRows == 0L) {
             return null
         }
-        return result.iterateAll().first()["_airbyte_generation_id"].longValue
+        val value = result.iterateAll().first().get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        return if (value == null || value.isNull) {
+            0
+        } else {
+            value.longValue
+        }
     }
 
     private fun createStagingTable(streamId: StreamId, suffix: String) {
