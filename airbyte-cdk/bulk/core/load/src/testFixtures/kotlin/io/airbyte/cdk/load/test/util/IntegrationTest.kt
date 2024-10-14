@@ -28,6 +28,7 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -35,7 +36,13 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import uk.org.webcompere.systemstubs.jupiter.SystemStub
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 
-@MicronautTest
+@MicronautTest(
+    // Manually add metadata.yaml as a property source so that we can use its
+    // values as injectable properties.
+    // This is _infinitely_ easier than trying to wire up
+    // MetadataYamlPropertySource to be available at test time.
+    propertySources = ["classpath:metadata.yaml"]
+)
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
@@ -71,6 +78,23 @@ abstract class IntegrationTest(
             .format(DateTimeFormatter.ofPattern("YYYYMMDD"))
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
+
+    // junit is a bit wonky with injecting TestInfo.
+    // You can declare it as a constructor param, but you get a TestInfo instance
+    // that doesn't know what test method it's running in.
+    // You can also declare it as a param on the test function, but that's just
+    // less convenient.
+    // This is the only way to avoid copying the TestInfo stuff everywhere :/
+    // (I don't think micronaut can inject this object, unfortunately)
+    protected lateinit var testInfo: TestInfo
+    protected lateinit var testPrettyName: String
+
+    @BeforeEach
+    fun getTestInfo(testInfo: TestInfo) {
+        this.testInfo = testInfo
+        testPrettyName = "${testInfo.testClass.get().simpleName}.${testInfo.displayName}"
+        destinationProcessFactory.testName = testPrettyName
+    }
 
     @AfterEach
     fun teardown() {
@@ -142,11 +166,11 @@ abstract class IntegrationTest(
                                             .withStreamDescriptor(
                                                 StreamDescriptor()
                                                     .withName(it.descriptor.name)
-                                                    .withNamespace(it.descriptor.namespace)
+                                                    .withNamespace(it.descriptor.namespace),
                                             )
-                                            .withStatus(streamStatus)
-                                    )
-                            )
+                                            .withStatus(streamStatus),
+                                    ),
+                            ),
                     )
                 }
             }
