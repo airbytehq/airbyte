@@ -15,7 +15,7 @@ First, make sure you have Docker installed. We'll be using the `docker-compose` 
 
 ### **Start Airbyte**
 
-If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
+If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](../../using-airbyte/getting-started/oss-quickstart.md). This tutorial will use the Connection set up in the basic tutorial.
 
 For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Prefect will be responsible for manually triggering the Airbyte job.
 
@@ -34,8 +34,6 @@ prefect create project "airbyte"
 ### Retrieving the Airbyte Connection ID
 
 We'll need the Airbyte Connection ID so our Prefect Flow knows which Airbyte Connection to trigger.
-
-![](../.gitbook/assets/airbyte_prefect_connection.png)
 
 This ID can be seen in the URL on the connection page in the Airbyte UI. The Airbyte UI can be accessed at `localhost:8000`.
 
