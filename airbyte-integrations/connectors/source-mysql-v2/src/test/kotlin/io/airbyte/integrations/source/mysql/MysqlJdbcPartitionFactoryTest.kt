@@ -88,12 +88,21 @@ class MysqlJdbcPartitionFactoryTest {
     fun testColdStartWithPkCdc() {
         val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(stream, null)
 
-        assertTrue(jdbcPartition is MysqlJdbcSnapshotPartition)
+        assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
     }
 
     @Test
     fun testColdStartWithoutPk() {
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(stream, null)
+        val streamWithoutPk =
+            Stream(
+                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("id")),
+                fields = listOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(),
+                configuredCursor = fieldId,
+            )
+        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamWithoutPk, null)
+
         assertTrue(jdbcPartition is MysqlJdbcNonResumableSnapshotWithCursorPartition)
     }
 
