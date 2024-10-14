@@ -1,6 +1,4 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-from __future__ import annotations
-
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from mitmproxy import http

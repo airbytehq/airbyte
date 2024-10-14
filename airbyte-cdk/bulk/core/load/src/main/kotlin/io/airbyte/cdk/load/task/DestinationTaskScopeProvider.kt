@@ -17,34 +17,41 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The scope in which a task should run
- * - InternalTask:
+ * - [InternalScope]:
  * ```
  *       - internal to the task launcher
  *       - should not be blockable by implementor errors
  *       - killable w/o side effects
  * ```
- * - ImplementorTask: implemented by the destination
+ * - [ImplementorScope]: implemented by the destination
  * ```
  *       - calls implementor interface
  *       - should not block internal tasks (esp reading from stdin)
  *       - should complete if possible even when failing the sync
  * ```
+ * - [ShutdownScope]: special case of [ImplementorScope]
+ * ```
+ *       - tasks that should run during shutdown
+ *       - handles canceling/joining other tasks
+ *       - (and so should not cancel themselves)
+ * ```
  */
 sealed interface ScopedTask : Task
 
-interface InternalTask : ScopedTask
+interface InternalScope : ScopedTask
 
-interface ImplementorTask : ScopedTask
+interface ImplementorScope : ScopedTask
+
+interface ShutdownScope : ScopedTask
 
 @Singleton
 @Secondary
 class DestinationTaskScopeProvider(config: DestinationConfiguration) :
-    TaskScopeProvider<ScopedTask> {
+    TaskScopeProvider<WrappedTask<ScopedTask>> {
     private val log = KotlinLogging.logger {}
 
     private val timeoutMs = config.gracefulCancellationTimeoutMs
@@ -64,35 +71,48 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
                 .asCoroutineDispatcher()
         )
 
-    override suspend fun launch(task: ScopedTask) {
-        when (task) {
-            is InternalTask -> internalScope.scope.launch { execute(task) }
-            is ImplementorTask -> implementorScope.scope.launch { execute(task) }
+    override suspend fun launch(task: WrappedTask<ScopedTask>) {
+        when (task.innerTask) {
+            is InternalScope -> internalScope.scope.launch { execute(task, "internal") }
+            is ImplementorScope -> implementorScope.scope.launch { execute(task, "implementor") }
+            is ShutdownScope -> implementorScope.scope.launch { execute(task, "shutdown") }
         }
     }
 
-    private suspend fun execute(task: ScopedTask) {
-        log.info { "Launching task $task" }
+    private suspend fun execute(task: WrappedTask<ScopedTask>, scope: String) {
+        log.info { "Launching task $task in scope $scope" }
         val elapsed = measureTimeMillis { task.execute() }
         log.info { "Task $task completed in $elapsed ms" }
     }
 
-    override suspend fun close() = supervisorScope {
+    override suspend fun close() {
         log.info { "Closing task scopes" }
-        internalScope.job.cancel()
         // Under normal operation, all tasks should be complete
         // (except things like force flush, which loop). So
         // - it's safe to force cancel the internal tasks
-        // - implementor scope should join immediately unless we're
-        //   failing, in which case we want to give them a chance to
-        //   fail gracefully
+        // - implementor scope should join immediately
+        implementorScope.job.join()
+        log.info { "Implementor tasks completed, cancelling internal tasks." }
+        internalScope.job.cancel()
+    }
+
+    override suspend fun kill() {
+        log.info { "Killing task scopes" }
+
+        // Give the implementor tasks a chance to fail gracefully
         withTimeoutOrNull(timeoutMs) {
-            log.info { "Waiting ${timeoutMs}ms for implementor tasks to complete" }
+            log.info {
+                "Cancelled internal tasks, waiting ${timeoutMs}ms for implementor tasks to complete"
+            }
             implementorScope.job.join()
+            log.info { "Implementor tasks completed" }
         }
             ?: run {
                 log.error { "Implementor tasks did not complete within ${timeoutMs}ms, cancelling" }
                 implementorScope.job.cancel()
             }
+
+        log.info { "Cancelling internal tasks" }
+        internalScope.job.cancel()
     }
 }
