@@ -1,0 +1,1583 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  The Zoho Campaigns connector enables seamless integration of mailing lists,
+  campaign data, and subscriber management into your data workflows. Easily
+  extract subscriber information, campaign reports, and list details to sync
+  with your data warehouse or BI tools, automating marketing insights and
+  analytics
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - campaign_key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /recentcampaigns
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recent_campaigns
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    subscribers:
+      type: DeclarativeStream
+      name: subscribers
+      primary_key:
+        - contact_email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getlistsubscribers
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+            listkey: "{{ stream_partition.list }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list_of_details
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: listkey
+              partition_field: list
+              stream:
+                $ref: "#/definitions/streams/lists"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscribers"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - listkey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getmailinglists
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list_of_details
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    campaignrecipients:
+      type: DeclarativeStream
+      name: campaignrecipients
+      primary_key:
+        - contactid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getcampaignrecipientsdata
+          http_method: POST
+          request_parameters:
+            resfmt: JSON
+            campaignkey: "{{ stream_partition.campaign }}"
+            action: "{{ config['campaign_recipients_data_action'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list_of_details
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: campaign_key
+              partition_field: campaign
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaignrecipients"
+    campaignreports:
+      type: DeclarativeStream
+      name: campaignreports
+      primary_key:
+        - campaign_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaignreports
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+            campaignkey: "{{ stream_partition.campaign }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaign-reports
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: campaign_key
+              partition_field: campaign
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaignreports"
+    recentcampaigns:
+      type: DeclarativeStream
+      name: recentcampaigns
+      primary_key:
+        - campaign_key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /recentcampaigns
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recent_campaigns
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recentcampaigns"
+    recentsentcampaigns:
+      type: DeclarativeStream
+      name: recentsentcampaigns
+      primary_key:
+        - campaign_key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /recentsentcampaigns
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recent_sent_campaigns
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recentsentcampaigns"
+    mailinglists:
+      type: DeclarativeStream
+      name: mailinglists
+      primary_key:
+        - listunino
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getmailinglists
+          http_method: POST
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 51800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list_of_details
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mailinglists"
+    totalcontacts:
+      type: DeclarativeStream
+      name: totalcontacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /listsubscriberscount
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+            listkey: "{{ stream_partition.list }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: listkey
+              partition_field: list
+              stream:
+                $ref: "#/definitions/streams/lists"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/totalcontacts"
+    topics:
+      type: DeclarativeStream
+      name: topics
+      primary_key:
+        - topicId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /topics
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - topicDetails
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/topics"
+    campaigndetails:
+      type: DeclarativeStream
+      name: campaigndetails
+      primary_key:
+        - campaign_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getcampaigndetails
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+            campaigntype: abtesting
+            campaignkey: "{{ stream_partition.recentcampaign }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaign-details
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: campaign_key
+              partition_field: recentcampaign
+              stream:
+                $ref: "#/definitions/streams/recentcampaigns"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigndetails"
+    alltags:
+      type: DeclarativeStream
+      name: alltags
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tag/getalltags
+          http_method: GET
+          request_parameters:
+            resfmt: JSON
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 1800
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alltags"
+  base_requester:
+    type: HttpRequester
+    url_base: https://campaigns.zoho.{{ config['domain'] }}/api/v1.1
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id_2\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret_2\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.zoho.{{ config["domain"] }}/oauth/v2/token
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/subscribers"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/campaignrecipients"
+  - $ref: "#/definitions/streams/campaignreports"
+  - $ref: "#/definitions/streams/recentcampaigns"
+  - $ref: "#/definitions/streams/recentsentcampaigns"
+  - $ref: "#/definitions/streams/mailinglists"
+  - $ref: "#/definitions/streams/totalcontacts"
+  - $ref: "#/definitions/streams/topics"
+  - $ref: "#/definitions/streams/campaigndetails"
+  - $ref: "#/definitions/streams/alltags"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id_2
+      - client_secret_2
+      - client_refresh_token
+      - domain
+      - campaign_recipients_data_action
+    properties:
+      client_id_2:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret_2:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      domain:
+        type: string
+        order: 3
+        title: Domain
+      campaign_recipients_data_action:
+        type: string
+        title: Campaign Recipients Data Action
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: true
+    subscribers: true
+    lists: true
+    campaignrecipients: true
+    campaignreports: true
+    recentcampaigns: true
+    recentsentcampaigns: true
+    mailinglists: true
+    totalcontacts: true
+    topics: true
+    campaigndetails: true
+    alltags: true
+  testedStreams:
+    campaigns:
+      streamHash: b4ed14e1d2a2ed40b45e7d5a2566800a9c7bc671
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    subscribers:
+      streamHash: 6c4fb8322c3aa3f66fede67d831d0ec48ead7726
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: e4aa74c9abac8025b49f17f9f03e910e297e8686
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaignrecipients:
+      streamHash: a8110cbb3f1ea0e503553ae860bfb734d0bfe122
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaignreports:
+      streamHash: d7e5e4a40bb02cec601bdc4106b393e6a608a4e2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    recentcampaigns:
+      streamHash: 9e15153b2e94c005759536f184945b5da976ee8b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    recentsentcampaigns:
+      streamHash: bed7b97364f276b19a9a785dcbc634ada38976c2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    mailinglists:
+      streamHash: 1e77a0451b20cc7a438e7da89ffb70b11dc8db94
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    totalcontacts:
+      streamHash: 495adb0e84af949e6c80e119ff639efb3130610c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    topics:
+      streamHash: dea4532b2f4555d74a0715d6aab4afd4c8cc8097
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigndetails:
+      streamHash: 1d5df0263ffd01187188b361d8c55b23aa2eb9ba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    alltags:
+      streamHash: c4a8267f0ba92ad3173d59b939e0cbd70398862b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.zoho.com/campaigns/help/developers/access-token.html
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaign_key:
+        type: string
+      campaign_name:
+        type:
+          - string
+          - "null"
+      campaign_preview:
+        type:
+          - string
+          - "null"
+      campaign_status:
+        type:
+          - string
+          - "null"
+      campaigntype:
+        type:
+          - string
+          - "null"
+      created_date_string:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      folder_id:
+        type:
+          - string
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      is_hybrid:
+        type:
+          - string
+          - "null"
+      reply_to:
+        type:
+          - string
+          - "null"
+      sent_date_string:
+        type:
+          - string
+          - "null"
+      sent_time:
+        type:
+          - string
+          - "null"
+      sent_time_gmt:
+        type:
+          - string
+          - "null"
+      sent_time_zone:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_date_string:
+        type:
+          - string
+          - "null"
+      updated_time:
+        type:
+          - string
+          - "null"
+      updated_time_gmt:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - campaign_key
+  subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      added_time:
+        type:
+          - string
+          - "null"
+      companyname:
+        type:
+          - string
+          - "null"
+      contact_email:
+        type: string
+      firstname:
+        type:
+          - string
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - contact_email
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      deletable:
+        type:
+          - string
+          - "null"
+      editable:
+        type:
+          - string
+          - "null"
+      is_public:
+        type:
+          - string
+          - "null"
+      issmart:
+        type:
+          - string
+          - "null"
+      list_campaigns_count:
+        type:
+          - string
+          - "null"
+      list_created_date:
+        type:
+          - string
+          - "null"
+      list_created_time:
+        type:
+          - string
+          - "null"
+      listdesc:
+        type:
+          - string
+          - "null"
+      listdgs:
+        type:
+          - string
+          - "null"
+      listkey:
+        type: string
+      listname:
+        type:
+          - string
+          - "null"
+      listnotifications:
+        type:
+          - string
+          - "null"
+      listtype:
+        type:
+          - string
+          - "null"
+      listunino:
+        type:
+          - string
+          - "null"
+      lockstatus:
+        type:
+          - string
+          - "null"
+      noofbouncecnt:
+        type:
+          - string
+          - "null"
+      noofcontacts:
+        type:
+          - string
+          - "null"
+      noofunsubcnt:
+        type:
+          - string
+          - "null"
+      otherslist:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      segments:
+        type:
+          - object
+          - "null"
+      sentcnt:
+        type:
+          - string
+          - "null"
+      servicetype:
+        type:
+          - string
+          - "null"
+      sno:
+        type:
+          - string
+          - "null"
+      updated_time_gmt:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+      zx:
+        type:
+          - string
+          - "null"
+    required:
+      - listkey
+  campaignrecipients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      companyname:
+        type:
+          - string
+          - "null"
+      contactemailaddress:
+        type:
+          - string
+          - "null"
+      contactfn:
+        type:
+          - string
+          - "null"
+      contactid:
+        type: string
+      contactln:
+        type:
+          - string
+          - "null"
+      contactstatus:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      facebook_handle:
+        type:
+          - string
+          - "null"
+      jobtitle:
+        type:
+          - string
+          - "null"
+      linkedin_handle:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      secondary_email:
+        type:
+          - string
+          - "null"
+      sent_time:
+        type:
+          - string
+          - "null"
+      sentdate:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      twitter_handle:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"
+    required:
+      - contactid
+  campaignreports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      autoreply_count:
+        type:
+          - string
+          - "null"
+      bounce_percent:
+        type:
+          - string
+          - "null"
+      bounces_count:
+        type:
+          - string
+          - "null"
+      campaign_name:
+        type: string
+      clicksperopenrate:
+        type:
+          - string
+          - "null"
+      complaints_count:
+        type:
+          - string
+          - "null"
+      complaints_percent:
+        type:
+          - string
+          - "null"
+      delivered_count:
+        type:
+          - string
+          - "null"
+      delivered_percent:
+        type:
+          - string
+          - "null"
+      emails_sent_count:
+        type:
+          - string
+          - "null"
+      forward_percent:
+        type:
+          - string
+          - "null"
+      forwards_count:
+        type:
+          - string
+          - "null"
+      hardbounce_count:
+        type:
+          - string
+          - "null"
+      open_percent:
+        type:
+          - string
+          - "null"
+      opens_count:
+        type:
+          - string
+          - "null"
+      softbounce_count:
+        type:
+          - string
+          - "null"
+      spam_percent:
+        type:
+          - string
+          - "null"
+      spams_count:
+        type:
+          - string
+          - "null"
+      unique_clicked_percent:
+        type:
+          - string
+          - "null"
+      unique_clicks_count:
+        type:
+          - string
+          - "null"
+      unopened:
+        type:
+          - string
+          - "null"
+      unopened_percent:
+        type:
+          - string
+          - "null"
+      unsent_count:
+        type:
+          - string
+          - "null"
+      unsent_percent:
+        type:
+          - string
+          - "null"
+      unsub_count:
+        type:
+          - string
+          - "null"
+      unsubscribe_percent:
+        type:
+          - string
+          - "null"
+    required:
+      - campaign_name
+  recentcampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaign_key:
+        type: string
+      campaign_name:
+        type:
+          - string
+          - "null"
+      campaign_preview:
+        type:
+          - string
+          - "null"
+      campaign_status:
+        type:
+          - string
+          - "null"
+      campaigntype:
+        type:
+          - string
+          - "null"
+      created_date_string:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      folder_id:
+        type:
+          - string
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      is_hybrid:
+        type:
+          - string
+          - "null"
+      reply_to:
+        type:
+          - string
+          - "null"
+      sent_date_string:
+        type:
+          - string
+          - "null"
+      sent_time:
+        type:
+          - string
+          - "null"
+      sent_time_gmt:
+        type:
+          - string
+          - "null"
+      sent_time_zone:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_date_string:
+        type:
+          - string
+          - "null"
+      updated_time:
+        type:
+          - string
+          - "null"
+      updated_time_gmt:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - campaign_key
+  recentsentcampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaign_key:
+        type: string
+      campaign_name:
+        type:
+          - string
+          - "null"
+      campaign_status:
+        type:
+          - string
+          - "null"
+      campaignid:
+        type:
+          - string
+          - "null"
+      campaigntype:
+        type:
+          - string
+          - "null"
+      created_date_string:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      folder_id:
+        type:
+          - string
+          - "null"
+      from_name:
+        type:
+          - string
+          - "null"
+      is_hybrid:
+        type:
+          - string
+          - "null"
+      previewtype:
+        type:
+          - string
+          - "null"
+      sent_date_string:
+        type:
+          - string
+          - "null"
+      sent_time:
+        type:
+          - string
+          - "null"
+      sent_time_gmt:
+        type:
+          - string
+          - "null"
+      sent_time_zone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - campaign_key
+  mailinglists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      deletable:
+        type:
+          - string
+          - "null"
+      editable:
+        type:
+          - string
+          - "null"
+      is_public:
+        type:
+          - string
+          - "null"
+      issmart:
+        type:
+          - string
+          - "null"
+      list_campaigns_count:
+        type:
+          - string
+          - "null"
+      list_created_date:
+        type:
+          - string
+          - "null"
+      list_created_time:
+        type:
+          - string
+          - "null"
+      listdesc:
+        type:
+          - string
+          - "null"
+      listdgs:
+        type:
+          - string
+          - "null"
+      listkey:
+        type:
+          - string
+          - "null"
+      listname:
+        type:
+          - string
+          - "null"
+      listnotifications:
+        type:
+          - string
+          - "null"
+      listtype:
+        type:
+          - string
+          - "null"
+      listunino:
+        type: string
+      lockstatus:
+        type:
+          - string
+          - "null"
+      noofbouncecnt:
+        type:
+          - string
+          - "null"
+      noofcontacts:
+        type:
+          - string
+          - "null"
+      noofunsubcnt:
+        type:
+          - string
+          - "null"
+      otherslist:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      segments:
+        type:
+          - object
+          - "null"
+      sentcnt:
+        type:
+          - string
+          - "null"
+      servicetype:
+        type:
+          - string
+          - "null"
+      sno:
+        type:
+          - string
+          - "null"
+      updated_time_gmt:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+      zx:
+        type:
+          - string
+          - "null"
+    required:
+      - listunino
+  totalcontacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      no_of_contacts:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+  topics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      primaryList:
+        type:
+          - number
+          - "null"
+      topicDesc:
+        type:
+          - string
+          - "null"
+      topicId:
+        type: string
+      topicName:
+        type:
+          - string
+          - "null"
+    required:
+      - topicId
+  campaigndetails:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      advanceTypeString:
+        type:
+          - string
+          - "null"
+      campaign_key:
+        type:
+          - string
+          - "null"
+      campaign_name:
+        type: string
+      campaign_preview:
+        type:
+          - string
+          - "null"
+      campaigntype:
+        type:
+          - string
+          - "null"
+      created_date_string:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_gmt:
+        type:
+          - string
+          - "null"
+      email_from:
+        type:
+          - string
+          - "null"
+      email_options:
+        type:
+          - string
+          - "null"
+      email_subject:
+        type:
+          - string
+          - "null"
+      email_type:
+        type:
+          - string
+          - "null"
+      encodeName:
+        type:
+          - string
+          - "null"
+      folder_id:
+        type:
+          - string
+          - "null"
+      isGAConfig:
+        type:
+          - string
+          - "null"
+      isReplyTrackingEnabled:
+        type:
+          - string
+          - "null"
+      isToNameConfig:
+        type:
+          - string
+          - "null"
+      isWistia:
+        type:
+          - string
+          - "null"
+      is_advance:
+        type:
+          - string
+          - "null"
+      is_hybrid:
+        type:
+          - string
+          - "null"
+      modified_time:
+        type:
+          - string
+          - "null"
+      modified_time_gmt:
+        type:
+          - string
+          - "null"
+      modifieddate:
+        type:
+          - string
+          - "null"
+      preheader:
+        type:
+          - string
+          - "null"
+      reply_to:
+        type:
+          - string
+          - "null"
+      schedule_type:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      sent_date_string:
+        type:
+          - string
+          - "null"
+      sent_time:
+        type:
+          - string
+          - "null"
+      sent_time_gmt:
+        type:
+          - string
+          - "null"
+      sent_time_zone:
+        type:
+          - string
+          - "null"
+      sent_time_zone_short:
+        type:
+          - string
+          - "null"
+      topic_id:
+        type:
+          - string
+          - "null"
+      topic_name:
+        type:
+          - string
+          - "null"
+      updated_date_string:
+        type:
+          - string
+          - "null"
+      updated_time:
+        type:
+          - string
+          - "null"
+      updated_time_gmt:
+        type:
+          - string
+          - "null"
+      webAutoStatus:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - campaign_name
+  alltags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "169443000000020045":
+        type:
+          - object
+          - "null"
+        properties:
+          is_crm_tag:
+            type:
+              - string
+              - "null"
+          tag_color:
+            type:
+              - string
+              - "null"
+          tag_created_time:
+            type:
+              - string
+              - "null"
+          tag_desc:
+            type:
+              - string
+              - "null"
+          tag_modified_time:
+            type:
+              - string
+              - "null"
+          tag_name:
+            type:
+              - string
+              - "null"
+          tagged_contact_count:
+            type:
+              - string
+              - "null"
+          tagowner:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
