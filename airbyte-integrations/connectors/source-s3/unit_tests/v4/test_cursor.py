@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timezone
-from typing import Any, Literal, MutableMapping, Optional
+from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
@@ -14,7 +14,6 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from source_s3.v4.cursor import Cursor, CursorField
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 
 def _create_datetime(dt: str) -> datetime:
     return datetime.strptime(dt, DefaultFileBasedCursor.DATE_TIME_FORMAT)
@@ -506,13 +505,6 @@ def _init_cursor_with_state(
         message_repository=InMemoryMessageRepository(),
         connector_state_manager=ConnectorStateManager(
             state=[],
-            #     [AirbyteStateMessage(
-            #         type=AirbyteStateType.STREAM,
-            #         stream=AirbyteStreamState(
-            #             stream_descriptor=StreamDescriptor(name="test"),
-            #             stream_state=input_state,
-            #         ),
-            #     )],
         ),
         cursor_field=CursorField(cursor_field_key="_ab_source_file_last_modified"),
     )

@@ -87,7 +87,6 @@ class JsonlParser(FileTypeParser):
         logger: logging.Logger,
         read_limit: bool = False,
     ) -> Iterable[Dict[str, Any]]:
-        """Parse records and emit as iterable of dictionaries."""
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             read_bytes = 0
 
