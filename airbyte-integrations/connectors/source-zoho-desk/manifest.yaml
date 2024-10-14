@@ -1206,19 +1206,19 @@ metadata:
     dashboard: false
   testedStreams:
     organization:
-      streamHash: acea5e734e47b6c70fe9daf026db8308baaf85bc
+      streamHash: 08447a80eaa5a66bf85ec4543089defe035238cc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     organizations:
-      hasRecords: true
-      streamHash: f08371a4851fa6643aecbf594721c3cbfab22d3f
+      streamHash: a262f5744ee73ce72d8767afee97d23942fae1b9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     accessible_organizations:
       hasRecords: true
       streamHash: d939e1ab5e1ffba2025584ed89d2e8683d41a38d
@@ -1227,12 +1227,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     agent:
-      hasRecords: true
       streamHash: 0aba0bd9a7e12c5464a9819de5bd583d3dd97425
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     agents:
       hasRecords: true
       streamHash: ad4a02705fa0fbb30ed9aa63abdbce4c6c775f8b
@@ -1430,7 +1430,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     dashboard:
-      streamHash: f5f8be1c531c122a2e719be8cbc8f6514c80f5c4
+      streamHash: 13adc1be8318368839153aa61bb2b48f021dea68
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1547,9 +1547,109 @@ schemas:
       - id
   organizations:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencyLocale:
+        type:
+          - string
+          - "null"
+      currencySymbol:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      employeeCount:
+        type:
+          - number
+          - "null"
+      faviconURL:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isAdminInOrg:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isPayloadEncryptionEnabled:
+        type:
+          - boolean
+          - "null"
+      isSandboxPortal:
+        type:
+          - boolean
+          - "null"
+      logoURL:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      portalName:
+        type:
+          - string
+          - "null"
+      portalURL:
+        type:
+          - string
+          - "null"
+      primaryContact:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   accessible_organizations:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1702,6 +1802,39 @@ schemas:
     properties: {}
   dashboard:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      avg:
+        type:
+          - string
+          - "null"
+      groupedBy:
+        type:
+          - string
+          - "null"
+      ticketCount:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - string
+                - "null"
+            referenceValue:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      totalTicketCount:
+        type:
+          - string
+          - "null"
     additionalProperties: true
-    properties: {}
