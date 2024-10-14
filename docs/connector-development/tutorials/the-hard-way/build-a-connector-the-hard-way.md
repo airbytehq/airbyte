@@ -84,9 +84,7 @@ $ cd airbyte-integrations/connector-templates/generator
 $ ./generate.sh
 ```
 
-Select the `Generic Source` template and call the connector `stock-ticker-api`:
-
-![](../../../.gitbook/assets/newsourcetutorial_plop.gif)
+Select the `Generic Source` template and call the connector `stock-ticker-api`.
 
 :::info
 

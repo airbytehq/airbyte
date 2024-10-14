@@ -68,18 +68,11 @@ The Airbyte Prefect Task accepts the following parameters:
 
 After running the file, `python3 airbyte_prefect_flow.py` this will register the Flow in Prefect Server.
 
-![](../.gitbook/assets/airbyte_prefect_register_flow.png)
-
 Access the link from the output from the previous command to see the Flow in Prefect Server, or you can navigate in Prefect UI to find the new Flow -> Access the link from the output from the previous command to see the Flow in the Prefect Server. Alternatively, you can go to the Prefect UI to find the new Flow.
 
-![](../.gitbook/assets/airbyte_prefect_flow.png)
-
 Click on the button `Run` and configure your first run.
-![](../.gitbook/assets/airbyte_prefect_flow_configure_run.png)
 
 After a few moments you should see the finished run.
-
-![](../.gitbook/assets/airbyte_prefect_flow_run.png)
 
 After that you have the option to configure a more complex Schedule to your Flow. See the [Prefect Schedule docs.](https://docs.prefect.io/core/concepts/schedules.html)
 
