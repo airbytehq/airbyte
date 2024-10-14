@@ -26,7 +26,8 @@ class CustomerModel:
             tz = Timezone(time_zone_name) if time_zone_name else local_timezone()
             customer_id = str(account["customer_client.id"])
 
-            if customer_id in seen_ids:  # skipping duplicates
+            # filter duplicates as one customer can be accessible from multiple connected accounts
+            if customer_id in seen_ids:
                 continue
 
             yield cls(
