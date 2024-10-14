@@ -104,19 +104,34 @@ class MysqlJdbcPartitionFactory(
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: MysqlJdbcStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
 
         val isCursorBasedIncremental: Boolean =
             stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&
                 !sharedState.configuration.global
 
         if (!isCursorBasedIncremental) {
-            // TODO: This should consider v1 state format for CDC initial read and return
-            // a MysqlJdbcSnapshotPartition, or a different partition if we can't reuse
-            // MysqlJdbcStreamStateValue.
-            return null
+            val sv: MysqlCdcInitialSnapshotStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
+
+            if (sv.pkName == null) {
+                // in CDC phase; nothing to do here.
+                return null
+            } else {
+                // need to get back to initial snapshot phase
+                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+                val pkLowerBound: JsonNode = Jsons.valueToTree(sv.pkVal)
+
+                return MysqlJdbcCdcSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = listOf(pkLowerBound),
+                )
+            }
         } else {
+            val sv: MysqlJdbcStreamStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.

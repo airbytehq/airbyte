@@ -203,6 +203,24 @@ class MysqlJdbcSnapshotPartition(
         )
 }
 
+/** Implementation of a [JdbcPartition] for a snapshot partition. */
+class MysqlJdbcCdcSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val upperBound: List<JsonNode>? = null
+    override val completeState: OpaqueStateValue
+        get() = MysqlCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
 /**
  * Default implementation of a [JdbcPartition] for a splittable partition involving cursor columns.
  */
