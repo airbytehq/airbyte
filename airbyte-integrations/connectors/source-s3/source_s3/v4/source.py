@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 import orjson
+
 from airbyte_cdk import (
     AirbyteEntrypoint,
     ConnectorSpecification,
@@ -33,6 +34,7 @@ from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
+
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
@@ -66,7 +68,7 @@ class SourceS3(FileBasedSource):
         s4_spec = self.spec_class.schema()
 
         if s3_spec["properties"].keys() & s4_spec["properties"].keys():
-            raise ValueError("Overlapping properties between V3 and V4")
+            raise ValueError("Overlapping properties between V3 and V4")  # pragma: no cover
 
         for v3_property_key, v3_property_value in s3_spec["properties"].items():
             s4_spec["properties"][v3_property_key] = v3_property_value
@@ -134,9 +136,10 @@ class SourceS3(FileBasedSource):
             SourceS3._clean_required_fields(neste_field)
 
     @staticmethod
-    def _create_description_with_deprecation_prefix(new_fields: Optional[str]) -> str:
+    def _create_description_with_deprecation_prefix(new_fields: Optional[str]) -> str:  # pragma: no cover
         if new_fields:
             return f"Deprecated and will be removed soon. Please do not use this field anymore and use {new_fields} instead. "
+
         return "Deprecated and will be removed soon. Please do not use this field anymore. "
 
     @classmethod
