@@ -6,8 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-
-from .source import SourceQuickbooks
+from source_quickbooks import SourceQuickbooks
 
 
 def run():
