@@ -11,19 +11,6 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
-//
-// "pk_val": "29999",
-// "pk_name": "id",
-// "version": 2,
-// "state_type": "primary_key",
-// "incremental_state": {}
-//
-// "streamState": {
-//    "stream_name": "purchases",
-//    "cursor_field": [],
-//    "stream_namespace": "1gb"
-// }
-
 data class MysqlCdcInitialSnapshotStateValue(
     @JsonProperty("pk_val") val pkVal: String? = null,
     @JsonProperty("pk_name") val pkName: String? = null,
@@ -45,7 +32,7 @@ data class MysqlCdcInitialSnapshotStateValue(
                 )
             )
 
-        /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
+        /** Value representing the progress of an ongoing snapshot. */
         fun snapshotCheckpoint(
             primaryKey: List<Field>,
             primaryKeyCheckpoint: List<JsonNode>,

@@ -187,14 +187,10 @@ class MysqlJdbcSnapshotPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            when (upperBound) {
-                null -> MysqlJdbcStreamStateValue.snapshotCompleted
-                else ->
-                    MysqlJdbcStreamStateValue.snapshotCheckpoint(
-                        primaryKey = checkpointColumns,
-                        primaryKeyCheckpoint = upperBound,
-                    )
-            }
+            MysqlJdbcStreamStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint = listOf(streamState.cursorUpperBound!!),
+            )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlJdbcStreamStateValue.snapshotCheckpoint(
@@ -203,7 +199,7 @@ class MysqlJdbcSnapshotPartition(
         )
 }
 
-/** Implementation of a [JdbcPartition] for a snapshot partition. */
+/** Implementation of a [JdbcPartition] for a CDC snapshot partition. */
 class MysqlJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
