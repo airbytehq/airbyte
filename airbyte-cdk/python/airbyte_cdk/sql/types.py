@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 import sqlalchemy
 from rich import print  # noqa: A004  # Allow shadowing the built-in
@@ -35,7 +35,7 @@ class SQLTypeConversionError(Exception):
 
 
 def _get_airbyte_type(  # noqa: PLR0911  # Too many return statements
-    json_schema_property_def: dict[str, str | dict | list],
+    json_schema_property_def: dict[str, str | dict[str, Any] | list[Any]],
 ) -> tuple[str, str | None]:
     """Get the airbyte type and subtype from a JSON schema property definition.
 
@@ -101,7 +101,7 @@ class SQLTypeConverter:
 
     def __init__(
         self,
-        conversion_map: dict | None = None,
+        conversion_map: dict[str, Any] | None = None,
     ) -> None:
         """Initialize the type converter."""
         self.conversion_map = conversion_map or CONVERSION_MAP
@@ -123,7 +123,7 @@ class SQLTypeConverter:
 
     def to_sql_type(  # noqa: PLR0911  # Too many return statements
         self,
-        json_schema_property_def: dict[str, str | dict | list],
+        json_schema_property_def: dict[str, str | dict[str, Any] | list[Any]],
     ) -> sqlalchemy.types.TypeEngine:
         """Convert a value to a SQL type."""
         try:

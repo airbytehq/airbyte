@@ -416,7 +416,7 @@ class AirbyteError(PyAirbyteError):
     """The workspace where the error occurred."""
 
     @property
-    def workspace_url(self) -> str | None:
+    def workspace_url(self) -> Any | None:
         """The URL to the workspace where the error occurred."""
         if self.workspace:
             return self.workspace.workspace_url
