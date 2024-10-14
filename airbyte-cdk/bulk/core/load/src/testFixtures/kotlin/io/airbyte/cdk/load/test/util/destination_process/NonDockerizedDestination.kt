@@ -10,6 +10,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
@@ -51,7 +52,7 @@ class NonDockerizedDestination(
             )
     }
 
-    override fun run() {
+    override suspend fun run() {
         destination.run()
     }
 
@@ -61,7 +62,7 @@ class NonDockerizedDestination(
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
 
-    override fun shutdown() {
+    override suspend fun shutdown() {
         destinationStdinPipe.close()
     }
 }
@@ -69,15 +70,16 @@ class NonDockerizedDestination(
 // Notably, not actually a Micronaut factory. We want to inject the actual
 // factory into our tests, not a pre-instantiated destination, because we want
 // to run multiple destination processes per test.
-// TODO only inject this when not running in CI, a la @Requires(notEnv = "CI_master_merge")
 @Singleton
-class NonDockerizedDestinationFactory : DestinationProcessFactory {
+@Requires(notEnv = [DOCKERIZED_TEST_ENV])
+class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
+        // TODO pass test name into the destination process
         return NonDockerizedDestination(command, config, catalog, deploymentMode)
     }
 }
