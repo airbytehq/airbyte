@@ -638,7 +638,7 @@ definitions:
           $ref: "#/schemas/payment_sources"
   base_requester:
     type: HttpRequester
-    url_base: https://api.sandbox.invoiced.com
+    url_base: https://api.invoiced.com
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"password\"] }}"
