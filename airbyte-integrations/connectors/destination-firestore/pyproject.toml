@@ -16,10 +16,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_firestore"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-google-auth = "==2.3.3"
-google-cloud-firestore = "==2.3.4"
-airbyte-cdk = "==0.1.36"
+python = "^3.10,<3.12"
+google-auth = "^2.35.0"
+google-cloud-firestore = "^2.19.0"
+airbyte-cdk = "^5.13.0"
 
 [tool.poetry.scripts]
 destination-firestore = "destination_firestore.run:run"
