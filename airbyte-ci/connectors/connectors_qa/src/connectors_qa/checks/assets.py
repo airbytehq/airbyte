@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from connector_ops.utils import Connector  # type: ignore
-
 from connectors_qa.models import Check, CheckCategory, CheckResult
 
 DEFAULT_AIRBYTE_ICON = """<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" fill="none">
