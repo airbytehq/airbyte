@@ -1,5 +1,4 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-from __future__ import annotations
 
 import logging
 import os
@@ -316,7 +315,7 @@ def prompt_for_read_with_or_without_state() -> bool:
     📖 Do you want to run the read command with or without state?
     1. Run the read command with state
     2. Run the read command without state
-                              
+
     We recommend reading with state to properly test incremental sync.
     But if the target version introduces a breaking change in the state, you might want to run without state.
     """

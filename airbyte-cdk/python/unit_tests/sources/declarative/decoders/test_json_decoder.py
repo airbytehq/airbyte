@@ -52,6 +52,7 @@ def large_event_response_fixture():
     os.remove(file_path)
 
 
+@pytest.mark.slow
 @pytest.mark.limit_memory("20 MB")
 def test_jsonl_decoder_memory_usage(requests_mock, large_events_response):
     lines_in_response, file_path = large_events_response

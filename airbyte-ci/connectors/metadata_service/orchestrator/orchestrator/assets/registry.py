@@ -6,17 +6,17 @@ import copy
 import json
 from typing import List, Union
 
+import semver
 import sentry_sdk
-from dagster import AutoMaterializePolicy, MetadataValue, OpExecutionContext, Output, asset
+from dagster import MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from metadata_service.models.transform import to_json_sanitized_dict
-from orchestrator.assets.registry_entry import ConnectorTypePrimaryKey, ConnectorTypes, read_registry_entry_blob
+from orchestrator.assets.registry_entry import ConnectorTypePrimaryKey, ConnectorTypes
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
-from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.utils.object_helpers import default_none_to_dict
 from pydash.objects import set_with
 
@@ -89,12 +89,18 @@ def apply_release_candidates(
     latest_registry_entry: dict,
     release_candidate_registry_entry: PolymorphicRegistryEntry,
 ) -> dict:
-    updated_registry_entry = copy.deepcopy(latest_registry_entry)
-    updated_registry_entry.setdefault("releases", {})
-    updated_registry_entry["releases"]["releaseCandidates"] = {
-        release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
-    }
-    return updated_registry_entry
+    # Ensure that the release candidate is newer than the latest registry entry
+    if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) > semver.Version.parse(
+        latest_registry_entry["dockerImageTag"]
+    ):
+        updated_registry_entry = copy.deepcopy(latest_registry_entry)
+        updated_registry_entry.setdefault("releases", {})
+        updated_registry_entry["releases"]["releaseCandidates"] = {
+            release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
+        }
+        return updated_registry_entry
+    else:
+        return latest_registry_entry
 
 
 def apply_release_candidate_entries(registry_entry_dict: dict, docker_repository_to_rc_registry_entry: dict) -> dict:
