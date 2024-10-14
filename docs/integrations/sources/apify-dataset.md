@@ -72,6 +72,8 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.1.26 | 2024-10-12 | [46837](https://github.com/airbytehq/airbyte/pull/46837) | Update dependencies |
+| 2.1.25 | 2024-10-01 | [46373](https://github.com/airbytehq/airbyte/pull/46373) | add user-agent header to be able to track Airbyte integration on Apify |
 | 2.1.24 | 2024-10-05 | [46430](https://github.com/airbytehq/airbyte/pull/46430) | Update dependencies |
 | 2.1.23 | 2024-09-28 | [46146](https://github.com/airbytehq/airbyte/pull/46146) | Update dependencies |
 | 2.1.22 | 2024-09-21 | [45820](https://github.com/airbytehq/airbyte/pull/45820) | Update dependencies |
