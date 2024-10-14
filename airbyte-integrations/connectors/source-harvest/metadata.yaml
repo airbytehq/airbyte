@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 1.1.0-rc1
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
@@ -28,7 +28,7 @@ data:
     oss:
       enabled: true
   releases:
-    isReleaseCandidate: true
+    isReleaseCandidate: false
     breakingChanges:
       1.0.0:
         message:
