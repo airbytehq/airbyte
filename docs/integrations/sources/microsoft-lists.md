@@ -15,11 +15,11 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| lists | id | No pagination | ✅ |  ❌  |
-| listcontenttypes | id | No pagination | ✅ |  ❌  |
-| listitems |  | No pagination | ✅ |  ❌  |
-| items |  | No pagination | ✅ |  ❌  |
-| columnvalues | id | No pagination | ✅ |  ❌  |
+| lists | id | DefaultPaginator | ✅ |  ❌  |
+| listcontenttypes | id | DefaultPaginator | ✅ |  ❌  |
+| listitems |  | DefaultPaginator | ✅ |  ❌  |
+| items |  | DefaultPaginator | ✅ |  ❌  |
+| columnvalues | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -28,6 +28,6 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-12 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-14 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

@@ -32,6 +32,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -55,6 +63,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -83,6 +99,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -119,6 +143,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -151,6 +183,14 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -243,40 +283,40 @@ metadata:
     columnvalues: true
   testedStreams:
     lists:
-      hasRecords: true
-      streamHash: 03a741143d2439512ff1b4c177f615e08ba146a1
+      streamHash: 73441741ea61a50379c10801223e70786eeefaf4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     listcontenttypes:
-      hasRecords: true
-      streamHash: 653cdcda3f493803028ae1adf80762ad66029454
+      streamHash: 5f0efe89d23f896d3dff939aef34db0733bba06c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     listitems:
-      hasRecords: true
-      streamHash: 59d346a1c814162f2a8f2e6bd93696cf256453ea
+      streamHash: ddddb49f0973f98a00e86467064b1fea61a06b2e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     items:
-      hasRecords: true
-      streamHash: 337913b8b927c6e70c125fc66585298388bad919
+      streamHash: c3ba68a7013039fc762e6e97b9e3903e78c1c7ea
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     columnvalues:
-      streamHash: eaea9c98fabfabebf7dad72792eb8e91b1548aa7
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 474bdf735d13e2a2a52e4c05b89fca66c2080555
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: >-
       https://learn.microsoft.com/en-us/graph/api/resources/list?view=graph-rest-1.0
