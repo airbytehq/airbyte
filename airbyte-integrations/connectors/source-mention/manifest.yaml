@@ -28,7 +28,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             https://api.mention.net/api/accounts/{{ stream_partition.account_id
-            }}/alerts/
+            }}/alerts
           http_method: GET
         record_selector:
           type: RecordSelector
