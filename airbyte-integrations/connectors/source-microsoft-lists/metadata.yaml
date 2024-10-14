@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: ba421448-83ae-4201-877b-8065abad9a4c
+  definitionId: 0777e22f-14ea-4a0b-aab4-a269fd0b796b
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-microsoft-lists
   githubIssueLabel: source-microsoft-lists

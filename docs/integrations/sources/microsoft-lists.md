@@ -5,12 +5,12 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id_2` | `string` | Client ID.  |  |
-| `client_secret_2` | `string` | Client secret.  |  |
-| `application_id_uri` | `string` | Application Id URI.  |  |
-| `site_id` | `string` | Site Id.  |  |
-| `tenant_id` | `string` | Tenant Id.  |  |
 | `domain` | `string` | Domain.  |  |
+| `site_id` | `string` | Site Id.  |  |
+| `client_id` | `string` | Client ID.  |  |
+| `tenant_id` | `string` | Tenant Id.  |  |
+| `client_secret` | `string` | Client secret.  |  |
+| `application_id_uri` | `string` | Application Id URI.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
