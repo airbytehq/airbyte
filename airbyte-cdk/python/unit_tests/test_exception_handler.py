@@ -76,9 +76,9 @@ def test_uncaught_exception_handler():
     assert not err.value.stderr, "nothing on the stderr"
 
     stdout_lines = err.value.output.decode("utf-8").strip().split("\n")
-    assert len(stdout_lines) == 2
+    assert len(stdout_lines) == 4
 
-    log_output, trace_output = stdout_lines
+    entry_log, log_output, trace_output, exit_log = stdout_lines
 
     out_log_message = AirbyteMessageSerializer.load(json.loads(log_output))
     assert out_log_message == expected_log_message, "Log message should be emitted in expected form"
