@@ -34,14 +34,14 @@ definitions:
               parent_key: id
               partition_field: organization_id
               stream:
-                $ref: "#/definitions/streams/organizations"
+                $ref: "#/definitions/streams/all_organizations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organization"
-    organizations:
+    all_organizations:
       type: DeclarativeStream
-      name: organizations
+      name: all_organizations
       primary_key:
         - id
       retriever:
@@ -59,7 +59,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/organizations"
+          $ref: "#/schemas/all_organizations"
     accessible_organizations:
       type: DeclarativeStream
       name: accessible_organizations
@@ -112,14 +112,14 @@ definitions:
               parent_key: id
               partition_field: agent_id
               stream:
-                $ref: "#/definitions/streams/agents"
+                $ref: "#/definitions/streams/all_agents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/agent"
-    agents:
+    all_agents:
       type: DeclarativeStream
-      name: agents
+      name: all_agents
       primary_key:
         - id
       retriever:
@@ -147,7 +147,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/agents"
+          $ref: "#/schemas/all_agents"
     agent_details_by_id:
       type: DeclarativeStream
       name: agent_details_by_id
@@ -182,7 +182,7 @@ definitions:
               parent_key: id
               partition_field: agent_id
               stream:
-                $ref: "#/definitions/streams/agents"
+                $ref: "#/definitions/streams/all_agents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -957,9 +957,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/task_attachments"
-    calls:
+    all_calls:
       type: DeclarativeStream
-      name: calls
+      name: all_calls
       primary_key:
         - id
       retriever:
@@ -987,7 +987,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/calls"
+          $ref: "#/schemas/all_calls"
     call:
       type: DeclarativeStream
       name: call
@@ -1021,7 +1021,7 @@ definitions:
               parent_key: id
               partition_field: call_id
               stream:
-                $ref: "#/definitions/streams/calls"
+                $ref: "#/definitions/streams/all_calls"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1060,7 +1060,7 @@ definitions:
               parent_key: id
               partition_field: call_id
               stream:
-                $ref: "#/definitions/streams/calls"
+                $ref: "#/definitions/streams/all_calls"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1121,10 +1121,10 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/organization"
-  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/all_organizations"
   - $ref: "#/definitions/streams/accessible_organizations"
   - $ref: "#/definitions/streams/agent"
-  - $ref: "#/definitions/streams/agents"
+  - $ref: "#/definitions/streams/all_agents"
   - $ref: "#/definitions/streams/agent_details_by_id"
   - $ref: "#/definitions/streams/profiles"
   - $ref: "#/definitions/streams/roles"
@@ -1149,7 +1149,7 @@ streams:
   - $ref: "#/definitions/streams/product_attachments"
   - $ref: "#/definitions/streams/product"
   - $ref: "#/definitions/streams/task_attachments"
-  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/all_calls"
   - $ref: "#/definitions/streams/call"
   - $ref: "#/definitions/streams/call_comments"
   - $ref: "#/definitions/streams/dashboard"
@@ -1172,10 +1172,10 @@ spec:
 metadata:
   autoImportSchema:
     organization: true
-    organizations: false
+    all_organizations: false
     accessible_organizations: false
     agent: false
-    agents: false
+    all_agents: false
     agent_details_by_id: false
     profiles: false
     roles: false
@@ -1200,235 +1200,235 @@ metadata:
     product_attachments: false
     product: false
     task_attachments: false
-    calls: false
+    all_calls: false
     call: false
     call_comments: false
     dashboard: false
   testedStreams:
     organization:
-      streamHash: 08447a80eaa5a66bf85ec4543089defe035238cc
+      streamHash: 0000bf499161d1781994d9cf5ef603d9a01d43ee
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    organizations:
-      streamHash: a262f5744ee73ce72d8767afee97d23942fae1b9
+    all_organizations:
+      streamHash: 12413f60ce4d3413c90efb163d9950afa71527eb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     accessible_organizations:
-      hasRecords: true
-      streamHash: d939e1ab5e1ffba2025584ed89d2e8683d41a38d
+      streamHash: 97f1daeeee5aa124cf3a2853dfdbd96304f2148b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     agent:
-      streamHash: 0aba0bd9a7e12c5464a9819de5bd583d3dd97425
+      streamHash: 3efcb1d5760d27fd7c995b7a096ffd8243687afd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    agents:
-      hasRecords: true
-      streamHash: ad4a02705fa0fbb30ed9aa63abdbce4c6c775f8b
+    all_agents:
+      streamHash: 3786f8dca18dd111e0b6003c32d7e52910262413
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     agent_details_by_id:
-      hasRecords: true
-      streamHash: c50e2729278a9825f71a584d3332e0a46480908d
+      streamHash: 6a9cdd38f4d831f6420eafe512bb2cccc4f47e1b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     profiles:
-      hasRecords: true
-      streamHash: 716ea0f7fc0af469d5d8038d53699e62c0b58b5d
+      streamHash: d51ea79e5c85cc2ed0f249631d2f21f1c0cd46d9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     roles:
-      hasRecords: true
-      streamHash: 63c74cb90ae9d9e8e92f41a23102203da52d7e96
+      streamHash: 4488746dd8fc7927c139a99361e6ca8ebee363ee
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      hasRecords: true
-      streamHash: ebf7928916e8e7fcf0b4af89b3e3dd3d4e531d1a
+      streamHash: 47a4831918ecf3776a3b7c8c60372165b18d5473
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     team_members:
-      hasRecords: true
-      streamHash: d74035a4382dc1fe9523c236410f9c5d6f2ecacd
+      streamHash: dcac64c376fc6caa469660c19a0714d084449f60
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     departments:
-      hasRecords: true
-      streamHash: e7b14bf6a53abccf187baf504a59c1be2af4d53c
+      streamHash: 8c7be153bb5e61a14fc28ee8761ceca4b3bb4f21
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     channels:
-      hasRecords: true
-      streamHash: 4d737781ba8a7ad229f0f1d3c3d2cfcbc595b832
+      streamHash: 8a094cb55b5b9b22c78ad4431258897d7b257931
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tickets:
-      hasRecords: true
-      streamHash: ff102f1577595dbd2be76cca80c42df33b66ac8a
+      streamHash: 8a5574629e303285b4b3ad11c325ef1a6b64da39
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     all_threads:
-      hasRecords: true
-      streamHash: d56e37bbc9d3dccee3a55e8f872a1ed94a90a4be
+      streamHash: dbb3a954b1356aaedfe9885463cbabee69789695
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     get_latest_thread:
-      hasRecords: true
-      streamHash: 193363507e43f82e2cc11839f221ae3d7280e014
+      streamHash: 9367f223800a35b6ca8965f2d059a0a1d4c9b31b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     list_contacts:
-      hasRecords: true
-      streamHash: 91c9d80ce6600c58bf05b313dad5587e909c8c06
+      streamHash: d086ebd805b00f243b2fb256011565510939262d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     webhooks:
-      hasRecords: true
-      streamHash: 8db973b7c64f698fc0292049c100429ef7756376
+      streamHash: f5355a41cf8e0aedaae28453f883f51797d9448d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     accounts:
-      hasRecords: true
-      streamHash: f2e476d872614030c81da97767c34ae125441116
+      streamHash: 37ef3271bb9d9f5ecf7f708438bfda38d60c8e1b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contracts:
-      hasRecords: true
-      streamHash: e1a1e68f4b7b626345ccb629ae4007c5fdd41fed
+      streamHash: c154c1d5247a95806c04302cd2ac94402f43ebda
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tasks:
-      hasRecords: true
-      streamHash: 18513f5affdd44eecabd953e7cfdb2bd165250b4
+      streamHash: bd00814dc568095ee29f3e695e68ea5bc5bbffc7
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     products:
-      hasRecords: true
-      streamHash: 1d92c131dcd6afdd4f18038c1a3e2a79629c55b8
+      streamHash: dfba46a18331a20e55c4ecadb19c5279297f03c3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     articles:
-      hasRecords: true
-      streamHash: 7d56b794b8c9f300439dd9a3806ffded653b1389
+      streamHash: 0a77ebab85df881cf50c137ed03c12490a3ccd79
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     events:
-      hasRecords: true
-      streamHash: f74cab4416f7ac5d5e1a37041162c5380949e5d1
+      streamHash: fc1527057d33d92325fe4618631549ea9e4bcfd8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     modules:
-      hasRecords: true
-      streamHash: f159c8e73b927c9c08a3fda810e735c8390569e3
+      streamHash: c41fc442d754f524449723cb3223f91f89881453
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
-      streamHash: fa2a3a79e0f279a83a434c7207f318757b59d6b7
+      streamHash: 1aa0db6a228aea5be6ac0939ecd83193608eda35
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     ticket_activities:
-      hasRecords: true
-      streamHash: e22c7434d5693c308de99943f1c76d35949f33e1
+      streamHash: 56b94ce0b11851ca80808373e5349b0007c780d2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     product_attachments:
-      hasRecords: true
-      streamHash: 586f3f8078d4207f52115cd05228c5572648c1c0
+      streamHash: f0a8357e53bb0ffbd9e243f01657c5d59a324954
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     product:
-      hasRecords: true
-      streamHash: 2d2d153c79b97b391f47a388f95c7f4186656ce7
+      streamHash: 5466a10c011b8c7cd4f53690fe5c99ea464d5b74
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     task_attachments:
-      hasRecords: true
-      streamHash: c3c8fd76adfd118c6e5e2b66343116dc37bf7b50
+      streamHash: 26d20d98e8b585210502e7cc1f74641fa8a67316
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    calls:
       hasRecords: true
-      streamHash: 91e5c2908936141dcd9e11d9000d6b3f4364da17
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    all_calls:
+      streamHash: c2431a9d4b58749878616ea7fe961debe9a2c595
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     call:
-      hasRecords: true
-      streamHash: 5a810f8d7016266c4a64ac80094de19e4600b473
+      streamHash: 3a3bc46c57095684683ed937bea82b5328d3086e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     call_comments:
-      hasRecords: true
-      streamHash: 6f5b231dc79c858da74bc9ae16febadf7dd29ddb
+      streamHash: 5b8b9b89a1f3e0fafeea6e1a81405d74e4cd20d4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     dashboard:
       streamHash: 13adc1be8318368839153aa61bb2b48f021dea68
       hasResponse: true
@@ -1545,7 +1545,7 @@ schemas:
           - "null"
     required:
       - id
-  organizations:
+  all_organizations:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
@@ -1652,154 +1652,3327 @@ schemas:
     additionalProperties: true
   accessible_organizations:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencyLocale:
+        type:
+          - string
+          - "null"
+      currencySymbol:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      employeeCount:
+        type:
+          - number
+          - "null"
+      faviconURL:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      isAdminInOrg:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isPayloadEncryptionEnabled:
+        type:
+          - boolean
+          - "null"
+      isSandboxPortal:
+        type:
+          - boolean
+          - "null"
+      logoURL:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      portalName:
+        type:
+          - string
+          - "null"
+      portalURL:
+        type:
+          - string
+          - "null"
+      primaryContact:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
     additionalProperties: true
-    properties: {}
   agent:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedChatDepartmentIds:
+        type:
+          - array
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      langCode:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
     additionalProperties: true
-    properties: {}
-  agents:
+  all_agents:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedChatDepartmentIds:
+        type:
+          - array
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      langCode:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   agent_details_by_id:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   profiles:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isVisible:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          CommunityComment:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          CommunityTopic:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          accounts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          agents:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              overview:
+                type:
+                  - boolean
+                  - "null"
+              viewAllFields:
+                type:
+                  - boolean
+                  - "null"
+          calls:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          chat:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          comments:
+            type:
+              - object
+              - "null"
+            properties:
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+          community:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              moderate:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          contacts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          contracts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          crmInteg:
+            type:
+              - object
+              - "null"
+            properties:
+              crmAccountsActivityCalls:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsActivityEvents:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsActivityTasks:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsInfo:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsNotes:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsPotentials:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityCalls:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityEvents:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityTasks:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsInfo:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsNotes:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsPotentials:
+                type:
+                  - boolean
+                  - "null"
+          events:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          financeInteg:
+            type:
+              - object
+              - "null"
+            properties:
+              createContact:
+                type:
+                  - boolean
+                  - "null"
+              createEstimate:
+                type:
+                  - boolean
+                  - "null"
+              createInvoice:
+                type:
+                  - boolean
+                  - "null"
+              createSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              sendEstimate:
+                type:
+                  - boolean
+                  - "null"
+              sendInvoice:
+                type:
+                  - boolean
+                  - "null"
+              sendSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              viewEstimate:
+                type:
+                  - boolean
+                  - "null"
+              viewInvoice:
+                type:
+                  - boolean
+                  - "null"
+              viewSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              viewSubscription:
+                type:
+                  - boolean
+                  - "null"
+          gc:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          im:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          kbCategory:
+            type:
+              - object
+              - "null"
+            properties:
+              admin:
+                type:
+                  - boolean
+                  - "null"
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              editAllArticles:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              manageKB:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          mobileapp:
+            type:
+              - object
+              - "null"
+            properties:
+              deskapp:
+                type:
+                  - boolean
+                  - "null"
+              radar:
+                type:
+                  - boolean
+                  - "null"
+          products:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          setup:
+            type:
+              - object
+              - "null"
+            properties:
+              automation:
+                type:
+                  - boolean
+                  - "null"
+              buttons:
+                type:
+                  - boolean
+                  - "null"
+              chat:
+                type:
+                  - boolean
+                  - "null"
+              community:
+                type:
+                  - boolean
+                  - "null"
+              customerHappiness:
+                type:
+                  - boolean
+                  - "null"
+              department:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+              exportPortalUsers:
+                type:
+                  - boolean
+                  - "null"
+              exportUsers:
+                type:
+                  - boolean
+                  - "null"
+              featureConfig:
+                type:
+                  - boolean
+                  - "null"
+              gamification:
+                type:
+                  - boolean
+                  - "null"
+              googleAnalytics:
+                type:
+                  - boolean
+                  - "null"
+              im:
+                type:
+                  - boolean
+                  - "null"
+              importHistory:
+                type:
+                  - boolean
+                  - "null"
+              layouts:
+                type:
+                  - boolean
+                  - "null"
+              localization:
+                type:
+                  - boolean
+                  - "null"
+              manageAgents:
+                type:
+                  - boolean
+                  - "null"
+              manageMarketplace:
+                type:
+                  - boolean
+                  - "null"
+              managerDashboard:
+                type:
+                  - boolean
+                  - "null"
+              massReply:
+                type:
+                  - boolean
+                  - "null"
+              permission:
+                type:
+                  - boolean
+                  - "null"
+              pinnedConversations:
+                type:
+                  - boolean
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              portalUsers:
+                type:
+                  - boolean
+                  - "null"
+              privacySettings:
+                type:
+                  - boolean
+                  - "null"
+              rebranding:
+                type:
+                  - boolean
+                  - "null"
+              recycleBin:
+                type:
+                  - boolean
+                  - "null"
+              sandbox:
+                type:
+                  - boolean
+                  - "null"
+              shareSnippet:
+                type:
+                  - boolean
+                  - "null"
+              signUpApproval:
+                type:
+                  - boolean
+                  - "null"
+              social:
+                type:
+                  - boolean
+                  - "null"
+              tabsAndFields:
+                type:
+                  - boolean
+                  - "null"
+              teams:
+                type:
+                  - boolean
+                  - "null"
+              telephony:
+                type:
+                  - boolean
+                  - "null"
+              templates:
+                type:
+                  - boolean
+                  - "null"
+              timeTracking:
+                type:
+                  - boolean
+                  - "null"
+              webForm:
+                type:
+                  - boolean
+                  - "null"
+              webhooks:
+                type:
+                  - boolean
+                  - "null"
+          social:
+            type:
+              - object
+              - "null"
+            properties:
+              twitterConversationReply:
+                type:
+                  - boolean
+                  - "null"
+              twitterPostCreate:
+                type:
+                  - boolean
+                  - "null"
+              twitterPostDelete:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          tasks:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          tickets:
+            type:
+              - object
+              - "null"
+            properties:
+              addFollowers:
+                type:
+                  - boolean
+                  - "null"
+              changeOwner:
+                type:
+                  - boolean
+                  - "null"
+              closeTicket:
+                type:
+                  - boolean
+                  - "null"
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              deleteTags:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              editTags:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              handleUnassigned:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              mailReview:
+                type:
+                  - boolean
+                  - "null"
+              mailSend:
+                type:
+                  - boolean
+                  - "null"
+              mergeTickets:
+                type:
+                  - boolean
+                  - "null"
+              revokeBlueprint:
+                type:
+                  - boolean
+                  - "null"
+              unassignedChangeOwner:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          timeEntry:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          zia:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   roles:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      immediateSubRoles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isVisible:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      reportsTo:
+        type:
+          - string
+          - "null"
+      shareDataWithPeers:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   teams:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      agents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      derivedAgents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      roles:
+        type:
+          - array
+          - "null"
+      rolesWithSubordinates:
+        type:
+          - array
+          - "null"
+      subTeams:
+        type:
+          - array
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   team_members:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      emailId:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastName:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   departments:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            chatStatus:
+              type:
+                - string
+                - "null"
+            createdTime:
+              type:
+                - string
+                - "null"
+            creatorId:
+              type:
+                - string
+                - "null"
+            hasLogo:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isAssignToTeamEnabled:
+              type:
+                - boolean
+                - "null"
+            isDefault:
+              type:
+                - boolean
+                - "null"
+            isEnabled:
+              type:
+                - boolean
+                - "null"
+            isVisibleInCustomerPortal:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            nameInCustomerPortal:
+              type:
+                - string
+                - "null"
+            sanitizedName:
+              type:
+                - string
+                - "null"
     additionalProperties: true
-    properties: {}
   channels:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      acceptsReplies:
+        type:
+          - boolean
+          - "null"
+      code:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      replyConfig:
+        type:
+          - object
+          - "null"
+        properties:
+          acceptsAttachments:
+            type:
+              - boolean
+              - "null"
+          contentTypes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          includeQuotedMessage:
+            type:
+              - boolean
+              - "null"
+          updateRecords:
+            type:
+              - boolean
+              - "null"
+    required:
+      - code
     additionalProperties: true
-    properties: {}
   tickets:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      assigneeId:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      commentCount:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerResponseTime:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      lastThread:
+        type:
+          - object
+          - "null"
+        properties:
+          channel:
+            type:
+              - string
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          isDraft:
+            type:
+              - boolean
+              - "null"
+          isForward:
+            type:
+              - boolean
+              - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      productId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      threadCount:
+        type:
+          - string
+          - "null"
+      ticketNumber:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   all_threads:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      actions:
+        type:
+          - array
+          - "null"
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      bcc:
+        type:
+          - string
+          - "null"
+      canReply:
+        type:
+          - boolean
+          - "null"
+      cc:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      fromEmailAddress:
+        type:
+          - string
+          - "null"
+      hasAttach:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isDescriptionThread:
+        type:
+          - boolean
+          - "null"
+      isForward:
+        type:
+          - boolean
+          - "null"
+      respondedIn:
+        type:
+          - string
+          - "null"
+      responderId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   get_latest_thread:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      actions:
+        type:
+          - array
+          - "null"
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      bcc:
+        type:
+          - string
+          - "null"
+      canReply:
+        type:
+          - boolean
+          - "null"
+      cc:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      fromEmailAddress:
+        type:
+          - string
+          - "null"
+      hasAttach:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isContentTruncated:
+        type:
+          - boolean
+          - "null"
+      isDescriptionThread:
+        type:
+          - boolean
+          - "null"
+      isForward:
+        type:
+          - boolean
+          - "null"
+      replyTo:
+        type:
+          - string
+          - "null"
+      responderId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   list_contacts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      accountCount:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerHappiness:
+        type:
+          - object
+          - "null"
+        properties:
+          badPercentage:
+            type:
+              - string
+              - "null"
+          goodPercentage:
+            type:
+              - string
+              - "null"
+          okPercentage:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAnonymous:
+        type:
+          - boolean
+          - "null"
+      isEndUser:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   webhooks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      ignoreSourceId:
+        type:
+          - string
+          - "null"
+      isEnabled:
+        type:
+          - boolean
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - object
+          - "null"
+        properties: {}
+      url:
+        type:
+          - string
+          - "null"
     additionalProperties: true
-    properties: {}
   accounts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      accountName:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerHappiness:
+        type:
+          - object
+          - "null"
+        properties:
+          badPercentage:
+            type:
+              - string
+              - "null"
+          goodPercentage:
+            type:
+              - string
+              - "null"
+          okPercentage:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      phone:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   contracts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      accountId:
+        type:
+          - string
+          - "null"
+      associatedSLAId:
+        type:
+          - string
+          - "null"
+      contractName:
+        type:
+          - string
+          - "null"
+      contractStatus:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      slaName:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      supportPlan:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          supportType:
+            type:
+              - string
+              - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   tasks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   products:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type: string
+      productCode:
+        type:
+          - string
+          - "null"
+      productName:
+        type:
+          - string
+          - "null"
+      unitPrice:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   articles:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      authorId:
+        type:
+          - string
+          - "null"
+      availableLocaleTranslations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            authorId:
+              type:
+                - string
+                - "null"
+            href:
+              type:
+                - string
+                - "null"
+            isLocked:
+              type:
+                - boolean
+                - "null"
+            isTrashed:
+              type:
+                - boolean
+                - "null"
+            latestPublishedVersion:
+              type:
+                - string
+                - "null"
+            latestVersion:
+              type:
+                - string
+                - "null"
+            latestVersionStatus:
+              type:
+                - string
+                - "null"
+            locale:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            translationId:
+              type:
+                - string
+                - "null"
+            translationState:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      categoryId:
+        type:
+          - string
+          - "null"
+      commentCount:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dislikeCount:
+        type:
+          - string
+          - "null"
+      feedbackCount:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      latestPublishedVersion:
+        type:
+          - string
+          - "null"
+      latestVersion:
+        type:
+          - string
+          - "null"
+      latestVersionModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      latestVersionModifierId:
+        type:
+          - string
+          - "null"
+      latestVersionStatus:
+        type:
+          - string
+          - "null"
+      likeCount:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      modifierId:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      permission:
+        type:
+          - string
+          - "null"
+      portalUrl:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      rootCategoryId:
+        type:
+          - string
+          - "null"
+      sourceLocale:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      translationId:
+        type:
+          - string
+          - "null"
+      translationState:
+        type:
+          - string
+          - "null"
+      usageCount:
+        type:
+          - string
+          - "null"
+      viewCount:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   events:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   modules:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      apiName:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      displayLabel:
+        type:
+          - string
+          - "null"
+      hasRecycleBin:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isCustomModule:
+        type:
+          - boolean
+          - "null"
+      isDeptSpecific:
+        type:
+          - boolean
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      nameField:
+        type:
+          - string
+          - "null"
+      pluralLabel:
+        type:
+          - string
+          - "null"
+      singularLabel:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   users:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      emailAddress:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastAccessedTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      userType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   ticket_activities:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      activityType:
+        type:
+          - string
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   product_attachments:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            createdTime:
+              type:
+                - string
+                - "null"
+            creatorId:
+              type:
+                - string
+                - "null"
+            href:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - string
+                - "null"
     additionalProperties: true
-    properties: {}
   product:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      cf:
+        type:
+          - object
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      departmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      layoutDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          layoutName:
+            type:
+              - string
+              - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - string
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      productCategory:
+        type:
+          - string
+          - "null"
+      productCode:
+        type:
+          - string
+          - "null"
+      productName:
+        type:
+          - string
+          - "null"
+      unitPrice:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   task_attachments:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
-  calls:
+  all_calls:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   call:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      activityTime:
+        type:
+          - string
+          - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   call_comments:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      commentedTime:
+        type:
+          - string
+          - "null"
+      commenter:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          roleName:
+            type:
+              - string
+              - "null"
+      commenterId:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      encodedContent:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   dashboard:
     type: object
     $schema: http://json-schema.org/schema#

@@ -11,10 +11,10 @@ This directory contains the manifest-only connector for source-zoho-desk
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | organization | id | No pagination | ✅ |  ❌  |
-| organizations | id | No pagination | ✅ |  ❌  |
+| all_organizations | id | No pagination | ✅ |  ❌  |
 | accessible_organizations |  | DefaultPaginator | ✅ |  ❌  |
 | agent |  | DefaultPaginator | ✅ |  ❌  |
-| agents | id | DefaultPaginator | ✅ |  ❌  |
+| all_agents | id | DefaultPaginator | ✅ |  ❌  |
 | agent_details_by_id | id | DefaultPaginator | ✅ |  ❌  |
 | profiles | id | DefaultPaginator | ✅ |  ❌  |
 | roles | id | DefaultPaginator | ✅ |  ❌  |
@@ -39,7 +39,7 @@ This directory contains the manifest-only connector for source-zoho-desk
 | product_attachments |  | DefaultPaginator | ✅ |  ❌  |
 | product | id | DefaultPaginator | ✅ |  ❌  |
 | task_attachments | id | DefaultPaginator | ✅ |  ❌  |
-| calls | id | DefaultPaginator | ✅ |  ❌  |
+| all_calls | id | DefaultPaginator | ✅ |  ❌  |
 | call | id | DefaultPaginator | ✅ |  ❌  |
 | call_comments | id | DefaultPaginator | ✅ |  ❌  |
 | dashboard |  | DefaultPaginator | ✅ |  ❌  |
