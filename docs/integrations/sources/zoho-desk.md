@@ -1,5 +1,11 @@
 # Zoho Desk
-This directory contains the manifest-only connector for source-zoho-desk
+This directory contains the manifest-only connector for `source-zoho-desk`(https://www.zoho.com/desk).
+
+## Documentation reference:
+- Visit `https://desk.zoho.com/DeskAPIDocument#Introduction` for API documentation
+
+## Authentication setup
+`Zoho Desk's` APIs use the industry-standard OAuth 2.0 protocol for authentication and authorization, Visit `https://desk.zoho.com/DeskAPIDocument#OauthTokens` for getting your api keys.
 
 ## Configuration
 
@@ -51,6 +57,6 @@ This directory contains the manifest-only connector for source-zoho-desk
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-14 | | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
+| 0.0.1 | 2024-10-14 | [46863](https://github.com/airbytehq/airbyte/pull/46863) | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
 
 </details>
