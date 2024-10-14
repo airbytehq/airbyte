@@ -29,7 +29,7 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    is_release_candidate: true
+    isReleaseCandidate: true
     breakingChanges:
       4.0.0:
         message: UX improvement, multi-stream support and deprecation of some parsing features
