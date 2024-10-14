@@ -23,7 +23,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Shortcut
-  releaseDate: 2024-10-11
+  releaseDate: 2024-10-14
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/shortcut
