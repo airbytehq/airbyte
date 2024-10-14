@@ -195,7 +195,6 @@ class RootReaderIntegrationTest {
         Assertions.assertFalse(globalStateMessages.isEmpty())
     }
 
-
     @Test
     fun testAllStreamsGlobalConfigError() {
         val stateManager =
@@ -212,7 +211,10 @@ class RootReaderIntegrationTest {
                 excessiveTimeout,
                 testOutputConsumer,
                 listOf(
-                    ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                    ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(
+                        Semaphore(CONSTRAINED),
+                        *testCases.toTypedArray()
+                    )
                 ),
             )
         Assertions.assertThrows(ConfigErrorException::class.java) {
@@ -663,9 +665,10 @@ open class TestPartitionsCreatorFactory(
     }
 }
 
-class ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(resource: Semaphore,
-                                                             vararg testCases: TestCase,
-): TestPartitionsCreatorFactory(resource, *testCases) {
+class ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(
+    resource: Semaphore,
+    vararg testCases: TestCase,
+) : TestPartitionsCreatorFactory(resource, *testCases) {
     override fun makeGlobalPartitionsCreator(): PartitionsCreator {
         return object : PartitionsCreator {
             override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {

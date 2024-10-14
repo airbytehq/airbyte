@@ -79,7 +79,7 @@ class RootReader(
             // An error on the global feed causes
             // a full stop in stream reads
             if (globalExceptions.values.filterIsInstance<ConfigErrorException>().isNotEmpty()) {
-                    this@supervisorScope.cancel()
+                this@supervisorScope.cancel()
             }
 
             // Join on all stream feeds and collect caught exceptions.
