@@ -1,0 +1,171 @@
+version: 3.9.6
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Custom reports
+
+definitions:
+  streams:
+    Custom reports:
+      type: DeclarativeStream
+      name: Custom reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{stream_partition.report}}"
+          http_method: GET
+          request_parameters:
+            format: json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Report_Entry
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{config.reports}}"
+          cursor_field: report
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Custom reports"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Custom reports"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - host
+      - tenant_id
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      host:
+        type: string
+        order: 2
+        title: Host
+      tenant_id:
+        type: string
+        order: 3
+        title: Tenant ID
+      reports:
+        type: array
+        order: 4
+        title: Reports
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Custom reports: true
+  testedStreams:
+    Custom reports:
+      streamHash: 375faa072cf11e83f7c37c06bb06c549b2e48d1b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+schemas:
+  Custom reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Business_Title:
+        type:
+          - string
+          - "null"
+      Department:
+        type:
+          - string
+          - "null"
+      Department_ID:
+        type:
+          - string
+          - "null"
+      Division:
+        type:
+          - string
+          - "null"
+      Division_ID:
+        type:
+          - string
+          - "null"
+      Employee_ID:
+        type:
+          - string
+          - "null"
+      First_Name:
+        type:
+          - string
+          - "null"
+      Hire_Date:
+        type:
+          - string
+          - "null"
+      Last_Name:
+        type:
+          - string
+          - "null"
+      Manager_Email:
+        type:
+          - string
+          - "null"
+      Manager_Flag:
+        type:
+          - string
+          - "null"
+      Preferred_First_Name:
+        type:
+          - string
+          - "null"
+      Preferred_Last_Name:
+        type:
+          - string
+          - "null"
+      Primary_Work_Location:
+        type:
+          - string
+          - "null"
+      Remote_Flag:
+        type:
+          - string
+          - "null"
+      Work_Email:
+        type:
+          - string
+          - "null"
+      Worker_Sub_Type:
+        type:
+          - string
+          - "null"
+      Worker_Type:
+        type:
+          - string
+          - "null"
