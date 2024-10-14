@@ -159,7 +159,7 @@ def airbyte_message1(test_table_name: str):
 @pytest.fixture
 def airbyte_message2(test_table_name: str):
     fake = Faker()
-    Faker.seed(0)
+    Faker.seed(1)
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
@@ -233,10 +233,10 @@ def test_write(
         result = cursor.fetchall()
 
     assert len(result) == 2
-    assert result[0][0] == "value1"
-    assert result[1][0] == "value2"
-    assert result[0][1] == 3
-    assert result[1][1] == 2
+    assert result[0][0] == "Dennis"
+    assert result[1][0] == "Megan"
+    assert result[0][1] == "868-98-1034"
+    assert result[1][1] == "777-54-0664"
 
 
 def _airbyte_messages(
@@ -286,7 +286,7 @@ def _airbyte_messages_with_inconsistent_json_fields(
                         "key1": fake.first_name(),
                         "key2": str(fake.ssn())
                         if random.random() < 0.5
-                        else random.randrange(1000, 9999999999999),
+                        else str(random.randrange(1000, 9999999999999)),
                         "nested1": {}
                         if random.random() < 0.1
                         else {
