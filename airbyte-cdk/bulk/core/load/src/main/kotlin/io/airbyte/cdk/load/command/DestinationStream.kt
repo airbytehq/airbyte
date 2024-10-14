@@ -36,6 +36,8 @@ data class DestinationStream(
                     it.namespace = namespace
                 }
             }
+
+        fun toPrettyString() = "$namespace.$name"
     }
 
     /**
