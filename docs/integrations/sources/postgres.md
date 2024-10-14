@@ -135,7 +135,7 @@ az postgres server restart --resource-group group --name server
 ```
 
 #### Step 4: Create a replication slot on your Postgres database
-<FieldAnchor path="replication_method.replication_slot">
+<FieldAnchor field="replication_method.replication_slot">
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
@@ -148,7 +148,7 @@ The output of this command will include the name of the replication slot to fill
 </FieldAnchor>
 
 #### Step 5: Create publication and replication identities for each Postgres table
-<FieldAnchor path="replication_method.publication">
+<FieldAnchor field="replication_method.publication">
 For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
