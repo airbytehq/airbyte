@@ -16,14 +16,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: 112c90ec-593c-4af0-bd4f-98eb0b4cb7d6
+  definitionId: 6e74a5e3-76f0-4a10-be55-1889d3707f90
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-zoho-desk
   githubIssueLabel: source-zoho-desk
   icon: icon.svg
   license: MIT
   name: Zoho Desk
-  releaseDate: 2024-10-12
+  releaseDate: 2024-10-14
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-desk
