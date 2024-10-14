@@ -18,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
 import kotlin.test.assertEquals
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -45,7 +46,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     config = config,
                     deploymentMode = deploymentMode,
                 )
-            process.run()
+            runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 
@@ -74,7 +75,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     config = config,
                     deploymentMode = deploymentMode,
                 )
-            process.run()
+            runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 
