@@ -1,5 +1,9 @@
 # Deploy Airbyte on Azure (Cloud Shell)
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
 This page guides you through deploying Airbyte Open Source on a [Microsoft Azure VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
 
 :::info

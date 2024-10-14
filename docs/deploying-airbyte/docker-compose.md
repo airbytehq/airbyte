@@ -1,8 +1,12 @@
 # Docker Compose
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
+
 :::info
 These instructions have been tested on MacOS, Windows 10 and Ubuntu 22.04.
-
 :::
 
 ## Setup & launch Airbyte

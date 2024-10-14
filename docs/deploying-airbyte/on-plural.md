@@ -1,5 +1,9 @@
 # Deploy Airbyte on Plural
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
 :::tip
 If you'd prefer to follow along with a video, check out the Plural Airbyte deployment guide video [here](https://youtu.be/suvTJyJ6PzI)
 :::

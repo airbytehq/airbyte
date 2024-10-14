@@ -1,9 +1,11 @@
 # On AWS ECS (Coming Soon)
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
 :::info
-
 We do not currently support deployment on ECS.
-
 :::
 
 The current iteration is not compatible with ECS.

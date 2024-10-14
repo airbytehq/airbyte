@@ -1,5 +1,10 @@
 # Deploy Airbyte on AWS (Amazon EC2)
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
+
 This page guides you through deploying Airbyte Open Source on an [Amazon EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the Amazon EC2 instance.
 
 :::info
