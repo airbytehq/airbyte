@@ -2,7 +2,10 @@ version: 5.12.0
 
 type: DeclarativeSource
 
-description: This directory contains the manifest-only connector for source-zoho-desk
+description: |-
+  Website: https://www.zoho.com/desk
+  API Docs: https://desk.zoho.com/DeskAPIDocument#Introduction
+  Auth Docs: https://desk.zoho.com/DeskAPIDocument#OauthTokens
 
 check:
   type: CheckStream
