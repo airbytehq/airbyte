@@ -183,7 +183,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
         params = { "read_deleted_entities": True }
 
         if next_page_token is not None:
-            params["next_page_token"] = next_page_token
+            params = params | next_page_token
         return params
 
     @property
@@ -264,7 +264,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
         # TODO: override ad account here
         # if self.name == 'ads':
-        #     stream_slices = [{ 'id': '8eb7496a-5961-4424-ad07-41ec648fdf6d' }]
+        #     stream_slices = [{ 'id': '8eb7496a-5961-4424-ad07-41ec648fdf6d' }] # MOC
 
         if stream_slices:
             self.last_slice = stream_slices[-1]
