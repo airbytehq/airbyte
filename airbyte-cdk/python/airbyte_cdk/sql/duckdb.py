@@ -6,7 +6,7 @@ from __future__ import annotations
 import warnings
 from pathlib import Path
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Dict, Literal
 
 from duckdb import DuckDBPyConnection
 from duckdb_engine import DuckDBEngineWarning
@@ -235,3 +235,17 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     def _write_from_pa_table(self, table_name: str, pa_table: pa.Table):
         sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
         self._execute_sql(sql)
+
+    def _safe_write(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str):
+        table_name = f"_airbyte_raw_{stream_name}"
+        try:
+            pa_table = pa.Table.from_pydict(buffer[stream_name])
+        except:
+            logger.exception(
+                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+            )
+            self._write_with_executemany(buffer, stream_name, table_name)
+        else:
+            # DuckDB will automatically find and SELECT from the `pa_table`
+            # local variable defined above.
+            self._write_from_pa_table(table_name, pa_table)
