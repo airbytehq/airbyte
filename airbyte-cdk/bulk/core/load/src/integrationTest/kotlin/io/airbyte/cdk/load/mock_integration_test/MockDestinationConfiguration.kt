@@ -10,7 +10,10 @@ import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
-class MockDestinationConfiguration : DestinationConfiguration()
+class MockDestinationConfiguration : DestinationConfiguration() {
+    // override to 10KB instead of 200MB
+    override val recordBatchSizeBytes = 10 * 1024L
+}
 
 @Singleton class MockDestinationSpecification : ConfigurationSpecification()
 

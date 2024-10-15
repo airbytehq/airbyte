@@ -21,4 +21,9 @@ class DevNullBasicFunctionalityIntegrationTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
+    }
 }
