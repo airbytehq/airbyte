@@ -1,0 +1,44 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 8fa13fb7-2cf7-4c5e-9a91-bae6f71f1fb7
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-couchbase
+  documentationUrl: https://docs.airbyte.com/integrations/sources/couchbase
+  githubIssueLabel: source-couchbase
+  icon: couchbase.svg
+  license: MIT
+  name: Couchbase
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-couchbase
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-COUCHBASE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-COUCHBASE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
