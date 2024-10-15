@@ -31,6 +31,7 @@ def test_get_matching_files_with_no_prefix(logger, mocked_reader):
 
 def test_open_file_with_compression(logger):
     reader = SourceGCSStreamReader()
+    reader._gcs_client = Mock()
     reader._config = Mock()
 
     file = RemoteFile(uri="http://some.uri/file.gz?query=param", last_modified=datetime.datetime.now())
@@ -42,6 +43,7 @@ def test_open_file_with_compression(logger):
 
 def test_open_file_without_compression(remote_file, logger):
     reader = SourceGCSStreamReader()
+    reader._gcs_client = Mock()
     reader._config = Mock()
 
     with pytest.raises(OSError):
