@@ -47,7 +47,7 @@ class StateProviderBase(abc.ABC):
         cast to `AirbyteStreamState` objects.
         """
         if self._state_message_artifacts is None:
-            raise exc.PyAirbyteInternalError(message="No state artifacts were declared.")
+            raise exc.AirbyteInternalError(message="No state artifacts were declared.")
 
         return [
             state_msg.stream
@@ -65,7 +65,7 @@ class StateProviderBase(abc.ABC):
         """
         result = self._state_message_artifacts
         if result is None:
-            raise exc.PyAirbyteInternalError(message="No state artifacts were declared.")
+            raise exc.AirbyteInternalError(message="No state artifacts were declared.")
 
         return result
 

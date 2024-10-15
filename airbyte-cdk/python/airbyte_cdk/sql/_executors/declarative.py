@@ -106,14 +106,14 @@ class DeclarativeExecutor(Executor):
         yield from source_entrypoint.run(parsed_args)
 
     def ensure_installation(self, *, auto_fix: bool = True) -> None:
-        """No-op. The declarative source is included with PyAirbyte."""
+        """No-op. The declarative source is included with Airbyte."""
         _ = auto_fix
         pass
 
     def install(self) -> None:
-        """No-op. The declarative source is included with PyAirbyte."""
+        """No-op. The declarative source is included with Airbyte."""
         pass
 
     def uninstall(self) -> None:
-        """No-op. The declarative source is included with PyAirbyte."""
+        """No-op. The declarative source is included with Airbyte."""
         pass

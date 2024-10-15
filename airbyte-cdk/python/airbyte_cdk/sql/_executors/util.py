@@ -41,12 +41,12 @@ def _try_get_source_manifest(
     If the URL is not provided, we'll try the default URL in the Airbyte registry.
 
     Raises:
-        - `PyAirbyteInputError`: If `source_name` is `None`.
+        - `AirbyteInputError`: If `source_name` is `None`.
         - `HTTPError`: If fetching the URL was unsuccessful.
         - `YAMLError`: If parsing the YAML failed.
     """
     if source_name is None:
-        raise exc.PyAirbyteInputError(
+        raise exc.AirbyteInputError(
             message="Param 'source_name' is required.",
         )
 
@@ -60,7 +60,7 @@ def _try_get_source_manifest(
 
     response = requests.get(
         url=manifest_url,
-        headers={"User-Agent": f"PyAirbyte/{get_version()}"},
+        headers={"User-Agent": f"Airbyte/{get_version()}"},
     )
     response.raise_for_status()  # Raise HTTPError exception if the download failed
     try:
@@ -82,7 +82,7 @@ def _get_local_executor(
 ) -> Executor:
     """Get a local executor for a connector."""
     if version:
-        raise exc.PyAirbyteInputError(
+        raise exc.AirbyteInputError(
             message="Param 'version' is not supported when 'local_executable' is set."
         )
 
@@ -140,7 +140,7 @@ def get_connector_executor(  # noqa: PLR0912, PLR0913 # Too complex
         ]
     )
     if install_method_count > 1:
-        raise exc.PyAirbyteInputError(
+        raise exc.AirbyteInputError(
             message=(
                 "You can only specify one of the settings: 'local_executable', 'docker_image', "
                 "'source_manifest', or 'pip_url'."
@@ -190,7 +190,7 @@ def get_connector_executor(  # noqa: PLR0912, PLR0913 # Too complex
             docker_image = f"airbyte/{name}"
 
         if version is not None and ":" in docker_image:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="The 'version' parameter is not supported when a tag is already set in the "
                 "'docker_image' parameter.",
                 context={

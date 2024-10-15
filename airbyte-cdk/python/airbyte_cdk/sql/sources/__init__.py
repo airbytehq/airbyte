@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Sources connectors module for PyAirbyte."""
+"""Sources connectors module for Airbyte."""
 
 from __future__ import annotations
 

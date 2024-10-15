@@ -42,13 +42,13 @@ class DockerExecutor(Executor):
 
     def install(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
-            message="Connector cannot be installed because it is not managed by PyAirbyte.",
+            message="Connector cannot be installed because it is not managed by Airbyte.",
             connector_name=self.name,
         )
 
     def uninstall(self) -> NoReturn:
         raise exc.AirbyteConnectorInstallationError(
-            message="Connector cannot be uninstalled because it is not managed by PyAirbyte.",
+            message="Connector cannot be uninstalled because it is not managed by Airbyte.",
             connector_name=self.name,
         )
 

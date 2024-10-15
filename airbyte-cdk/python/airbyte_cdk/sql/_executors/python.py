@@ -162,7 +162,7 @@ class VenvExecutor(Executor):
         if not self.interpreter_path.exists():
             # No point in trying to detect the version if the interpreter does not exist
             if raise_on_error:
-                raise exc.PyAirbyteInternalError(
+                raise exc.AirbyteInternalError(
                     message="Connector's virtual environment interpreter could not be found.",
                     context={
                         "interpreter_path": self.interpreter_path,

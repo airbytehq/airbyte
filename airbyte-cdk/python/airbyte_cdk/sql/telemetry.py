@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""Telemetry implementation for PyAirbyte.
+"""Telemetry implementation for Airbyte.
 
-We track some basic telemetry to help us understand how PyAirbyte is used. You can opt-out of
+We track some basic telemetry to help us understand how Airbyte is used. You can opt-out of
 telemetry at any time by setting the environment variable DO_NOT_TRACK to any value.
 
 If you are able to provide telemetry, it is greatly appreciated. Telemetry helps us understand how
@@ -12,11 +12,11 @@ and (2) report the most sync failures as a percentage of total attempted syncs.
 Your privacy and security are our priority. We do not track any PII (personally identifiable
 information), nor do we track anything that _could_ contain PII without first hashing the data
 using a one-way hash algorithm. We only track the minimum information necessary to understand how
-PyAirbyte is used, and to dedupe users to determine how many users or use cases there are.
+Airbyte is used, and to dedupe users to determine how many users or use cases there are.
 
 
 Here is what is tracked:
-- The version of PyAirbyte.
+- The version of Airbyte.
 - The Python version.
 - The OS.
 - The source type (venv or local install).
@@ -25,7 +25,7 @@ Here is what is tracked:
 - The cache type (Snowflake, Postgres, etc.).
 - The number of records processed.
 - The application hash, which is a hash of either the notebook name or Python script name.
-- Flags to help us understand if PyAirbyte is running on CI, Google Colab, or another environment.
+- Flags to help us understand if Airbyte is running on CI, Google Colab, or another environment.
 
 """
 
@@ -57,14 +57,14 @@ DEBUG = True
 """Enable debug mode for telemetry code."""
 
 
-PYAIRBYTE_APP_TRACKING_KEY = (
+Airbyte_APP_TRACKING_KEY = (
     os.environ.get("AIRBYTE_TRACKING_KEY", "") or "cukeSffc0G6gFQehKDhhzSurDzVSZ2OP"
 )
-"""This key corresponds globally to the "PyAirbyte" application."""
+"""This key corresponds globally to the "Airbyte" application."""
 
 
-PYAIRBYTE_SESSION_ID = str(ulid.ULID())
-"""Unique identifier for the current invocation of PyAirbyte.
+Airbyte_SESSION_ID = str(ulid.ULID())
+"""Unique identifier for the current invocation of Airbyte.
 
 This is used to determine the order of operations within a specific session.
 It is not a unique identifier for the user.
@@ -101,7 +101,7 @@ def _setup_analytics() -> str | bool:
     if not _ANALYTICS_FILE.exists():
         # This is a one-time message to inform the user that we are tracking anonymous usage stats.
         print(
-            "Thank you for using PyAirbyte!\n"
+            "Thank you for using Airbyte!\n"
             "Anonymous usage reporting is currently enabled. For more information, please"
             " see https://docs.airbyte.com/telemetry"
         )
@@ -211,7 +211,7 @@ def send_telemetry(
         return
 
     payload_props: dict[str, str | int | dict] = {
-        "session_id": PYAIRBYTE_SESSION_ID,
+        "session_id": Airbyte_SESSION_ID,
         "state": state,
         "version": get_version(),
         "python_version": meta.get_python_version(),
@@ -243,7 +243,7 @@ def send_telemetry(
         # Do not handle the response, we don't want to block the execution
         _ = requests.post(
             "https://api.segment.io/v1/track",
-            auth=(PYAIRBYTE_APP_TRACKING_KEY, ""),
+            auth=(Airbyte_APP_TRACKING_KEY, ""),
             json={
                 "anonymousId": _get_analytics_id(),
                 "event": event_type,

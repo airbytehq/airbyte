@@ -159,7 +159,7 @@ class Executor(ABC):
         The 'name' param is required if 'metadata' is None.
         """
         if not name and not metadata:
-            raise exc.PyAirbyteInternalError(message="Either name or metadata must be provided.")
+            raise exc.AirbyteInternalError(message="Either name or metadata must be provided.")
 
         self.name: str = name or cast(ConnectorMetadata, metadata).name  # metadata is not None here
         self.metadata: ConnectorMetadata | None = metadata

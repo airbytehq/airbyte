@@ -174,7 +174,7 @@ class SqlProcessorBase(abc.ABC):
     ) -> None:
         """Create a new SQL processor."""
         if not temp_dir and not file_writer:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="Either `temp_dir` or `file_writer` must be provided.",
             )
 
@@ -212,10 +212,10 @@ class SqlProcessorBase(abc.ABC):
         is not explicitly passed to the constructor.
 
         Raises:
-            PyAirbyteInternalError: If the catalog manager is not set.
+            AirbyteInternalError: If the catalog manager is not set.
         """
         if not self._catalog_provider:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="Catalog manager should exist but does not.",
             )
 
@@ -231,10 +231,10 @@ class SqlProcessorBase(abc.ABC):
         is not explicitly passed to the constructor.
 
         Raises:
-            PyAirbyteInternalError: If the state manager is not set.
+            AirbyteInternalError: If the state manager is not set.
         """
         if not self._state_writer:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="State manager should exist but does not.",
             )
 
@@ -472,7 +472,7 @@ class SqlProcessorBase(abc.ABC):
         query. To ignore the cache and force a refresh, set 'force_refresh' to True.
         """
         if force_refresh and shallow_okay:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="Cannot force refresh and use shallow query at the same time."
             )
 
@@ -636,7 +636,7 @@ class SqlProcessorBase(abc.ABC):
         input stream.
         """
         # TODO: Expand this to check for column types and sizes.
-        # https://github.com/airbytehq/pyairbyte/issues/321
+        # https://github.com/airbytehq/Airbyte/issues/321
         self._add_missing_columns_to_table(
             stream_name=stream_name,
             table_name=table_name,
@@ -700,7 +700,7 @@ class SqlProcessorBase(abc.ABC):
               although this is a fairly rare edge case we can ignore in V1.
         """
         if write_method and write_strategy and write_strategy != WriteStrategy.AUTO:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message=(
                     "Both `write_method` and `write_strategy` were provided. "
                     "Only one should be set."
@@ -845,7 +845,7 @@ class SqlProcessorBase(abc.ABC):
 
             # Pandas will auto-create the table if it doesn't exist, which we don't want.
             if not self._table_exists(temp_table_name):
-                raise exc.PyAirbyteInternalError(
+                raise exc.AirbyteInternalError(
                     message="Table does not exist after creation.",
                     context={
                         "temp_table_name": temp_table_name,
@@ -967,7 +967,7 @@ class SqlProcessorBase(abc.ABC):
             )
             return
 
-        raise exc.PyAirbyteInternalError(
+        raise exc.AirbyteInternalError(
             message="Write method is not supported.",
             context={
                 "write_method": write_method,
@@ -1005,9 +1005,9 @@ class SqlProcessorBase(abc.ABC):
         Databases that do not support this syntax can override this method.
         """
         if final_table_name is None:
-            raise exc.PyAirbyteInternalError(message="Arg 'final_table_name' cannot be None.")
+            raise exc.AirbyteInternalError(message="Arg 'final_table_name' cannot be None.")
         if temp_table_name is None:
-            raise exc.PyAirbyteInternalError(message="Arg 'temp_table_name' cannot be None.")
+            raise exc.AirbyteInternalError(message="Arg 'temp_table_name' cannot be None.")
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
@@ -1073,7 +1073,7 @@ class SqlProcessorBase(abc.ABC):
             # Try to get the column in a case-insensitive manner
             return next(col for col in table.c if col.name.lower() == column_name.lower())
         except StopIteration:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="Could not find matching column.",
                 context={
                     "table": table,

@@ -70,7 +70,7 @@ my_destination = ab.get_destination(
 reason are only available as Docker-based connectors. If you need to load to a SQL database and your
 runtime does not support docker, you may want to use the `airbyte.caches` module to load data to
 a SQL cache. Caches are mostly identical to destinations in behavior, and are implemented internally
-to PyAirbyte so they can run anywhere that PyAirbyte can run.
+to Airbyte so they can run anywhere that Airbyte can run.
 """
 
 from __future__ import annotations

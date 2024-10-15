@@ -211,7 +211,7 @@ def _registry_entry_to_connector_metadata(entry: dict) -> ConnectorMetadata:
             InstallType.JAVA if language == Language.JAVA else None,
             InstallType.YAML if language == Language.MANIFEST_ONLY else None,
             # TODO: Remove 'cdk:low-code' check once all connectors are migrated to manifest-only.
-            # https://github.com/airbytehq/PyAirbyte/issues/348
+            # https://github.com/airbytehq/Airbyte/issues/348
             InstallType.YAML if _LOWCODE_CDK_TAG in tags else None,
         ]
         if x
@@ -236,7 +236,7 @@ def _get_registry_cache(*, force_refresh: bool = False) -> dict[str, ConnectorMe
     if registry_url.startswith("http"):
         response = requests.get(
             registry_url,
-            headers={"User-Agent": f"PyAirbyte/{get_version()}"},
+            headers={"User-Agent": f"Airbyte/{get_version()}"},
         )
         response.raise_for_status()
         data = response.json()
@@ -256,7 +256,7 @@ def _get_registry_cache(*, force_refresh: bool = False) -> dict[str, ConnectorMe
         new_cache[connector_metadata.name] = connector_metadata
 
     if len(new_cache) == 0:
-        raise exc.PyAirbyteInternalError(
+        raise exc.AirbyteInternalError(
             message="Connector registry is empty.",
             context={
                 "registry_url": _get_registry_url(),
@@ -274,7 +274,7 @@ def get_connector_metadata(name: str) -> ConnectorMetadata:
     """
     cache = copy(_get_registry_cache())
     if not cache:
-        raise exc.PyAirbyteInternalError(
+        raise exc.AirbyteInternalError(
             message="Connector registry could not be loaded.",
             context={
                 "registry_url": _get_registry_url(),
@@ -343,7 +343,7 @@ def get_available_connectors(install_type: InstallType | str | None = None) -> l
         )
 
     # pragma: no cover  # Should never be reached.
-    raise exc.PyAirbyteInputError(
+    raise exc.AirbyteInputError(
         message="Invalid install type.",
         context={
             "install_type": install_type,

@@ -241,7 +241,7 @@ class ConnectorBase(abc.ABC):
                 Otherwise, it will be printed to the console.
         """
         if format not in {"yaml", "json"}:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Invalid format. Expected 'yaml' or 'json'",
                 input_value=format,
             )
@@ -347,7 +347,7 @@ class ConnectorBase(abc.ABC):
         """Uninstall the connector if it is installed.
 
         This only works if the use_local_install flag wasn't used and installation is managed by
-        PyAirbyte.
+        Airbyte.
         """
         self.executor.uninstall()
 

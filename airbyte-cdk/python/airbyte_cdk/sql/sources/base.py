@@ -274,7 +274,7 @@ class Source(ConnectorBase):
                 Otherwise, it will be printed to the console.
         """
         if format not in {"yaml", "json"}:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Invalid format. Expected 'yaml' or 'json'",
                 input_value=format,
             )
@@ -364,7 +364,7 @@ class Source(ConnectorBase):
         elif isinstance(streams, list):
             selected_streams = streams
         else:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Invalid streams argument.",
                 input_value=streams,
             )
@@ -390,13 +390,13 @@ class Source(ConnectorBase):
         ]
 
         if len(found) == 0:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Stream name does not exist in catalog.",
                 input_value=stream_name,
             )
 
         if len(found) > 1:
-            raise exc.PyAirbyteInternalError(
+            raise exc.AirbyteInternalError(
                 message="Duplicate streams found with the same name.",
                 context={
                     "found_streams": found,
@@ -417,10 +417,10 @@ class Source(ConnectorBase):
         Args:
             stream: The name of the stream to read.
             normalize_field_names: When `True`, field names will be normalized to lower case, with
-                special characters removed. This matches the behavior of PyAirbyte caches and most
+                special characters removed. This matches the behavior of Airbyte caches and most
                 Airbyte destinations.
             prune_undeclared_fields: When `True`, undeclared fields will be pruned from the records,
-                which generally matches the behavior of PyAirbyte caches and most Airbyte
+                which generally matches the behavior of Airbyte caches and most Airbyte
                 destinations, specifically when you expect the catalog may be stale. You can disable
                 this to keep all fields in the records.
 
@@ -445,7 +445,7 @@ class Source(ConnectorBase):
             ],
         )
         if len(configured_catalog.streams) == 0:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Requested stream does not exist.",
                 context={
                     "stream": stream,
@@ -625,7 +625,7 @@ class Source(ConnectorBase):
             force_full_refresh: If True, the source will operate in full refresh mode. Otherwise,
                 streams will be read in incremental mode if supported by the connector. This option
                 must be True when using the "replace" strategy.
-            skip_validation: If True, PyAirbyte will not pre-validate the input configuration before
+            skip_validation: If True, Airbyte will not pre-validate the input configuration before
                 running the connector. This can be helpful in debugging, when you want to send
                 configurations to the connector that otherwise might be rejected by JSON Schema
                 validation rules.
@@ -651,7 +651,7 @@ class Source(ConnectorBase):
             self.select_streams(streams)
 
         if not self._selected_stream_names:
-            raise exc.PyAirbyteNoStreamsSelectedError(
+            raise exc.AirbyteNoStreamsSelectedError(
                 connector_name=self.name,
                 available_streams=self.get_available_streams(),
             )
@@ -668,7 +668,7 @@ class Source(ConnectorBase):
                 skip_validation=skip_validation,
                 progress_tracker=progress_tracker,
             )
-        except exc.PyAirbyteInternalError as ex:
+        except exc.AirbyteInternalError as ex:
             progress_tracker.log_failure(exception=ex)
             raise exc.AirbyteConnectorFailedError(
                 connector_name=self.name,
@@ -702,16 +702,16 @@ class Source(ConnectorBase):
                     "could result in data loss. "
                     "To silence this warning, use the following: "
                     'warnings.filterwarnings("ignore", '
-                    'category="airbyte.warnings.PyAirbyteDataLossWarning")`'
+                    'category="airbyte.warnings.AirbyteDataLossWarning")`'
                 ),
-                category=exc.PyAirbyteDataLossWarning,
+                category=exc.AirbyteDataLossWarning,
                 stacklevel=1,
             )
         if isinstance(write_strategy, str):
             try:
                 write_strategy = WriteStrategy(write_strategy)
             except ValueError:
-                raise exc.PyAirbyteInputError(
+                raise exc.AirbyteInputError(
                     message="Invalid strategy",
                     context={
                         "write_strategy": write_strategy,

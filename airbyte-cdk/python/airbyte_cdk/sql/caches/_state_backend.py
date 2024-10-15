@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sql.caches._state_backend_base import (
     StateBackendBase,
 )
-from airbyte_cdk.sql.exceptions import PyAirbyteInputError, PyAirbyteInternalError
+from airbyte_cdk.sql.exceptions import AirbyteInputError, AirbyteInternalError
 from airbyte_cdk.sql.state_providers import StaticInputState
 from airbyte_cdk.sql.state_writers import StateWriterBase
 
@@ -111,7 +111,7 @@ class SqlStateWriter(StateWriterBase):
             source_name: The name of the source.
             backend: The state backend.
             destination_name: The name of the destination, if writing to a destination. Otherwise,
-                this should be `None` to write state for the PyAirbyte cache itself.
+                this should be `None` to write state for the Airbyte cache itself.
         """
         self._state_backend: SqlStateBackend = backend
         self.source_name: str = source_name
@@ -129,7 +129,7 @@ class SqlStateWriter(StateWriterBase):
         elif state_message.type == AirbyteStateType.STREAM and state_message.stream:
             stream_name = state_message.stream.stream_descriptor.name
         else:
-            raise PyAirbyteInternalError(
+            raise AirbyteInternalError(
                 message="Invalid state message type.",
                 context={"state_message": state_message},
             )
@@ -211,7 +211,7 @@ class SqlStateBackend(StateBackendBase):
     ) -> StateProviderBase:
         """Return the state provider."""
         if destination_name and table_prefix:
-            raise PyAirbyteInputError(
+            raise AirbyteInputError(
                 message="Both 'destination_name' and 'table_prefix' cannot be set at the same time."
             )
 
@@ -267,7 +267,7 @@ class SqlStateBackend(StateBackendBase):
         Args:
             source_name: The name of the source.
             destination_name: The name of the destination, if writing to a destination. Otherwise,
-                this should be `None` to write state for the PyAirbyte cache itself.
+                this should be `None` to write state for the Airbyte cache itself.
         """
         return SqlStateWriter(
             source_name=source_name,

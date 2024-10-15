@@ -68,7 +68,7 @@ class StateWriterBase(StateProviderBase, abc.ABC):
 class StdOutStateWriter(StateWriterBase):
     """A state writer that writes state artifacts to stdout.
 
-    This is useful when we want PyAirbyte to behave like a "Destination" in the Airbyte protocol.
+    This is useful when we want Airbyte to behave like a "Destination" in the Airbyte protocol.
     """
 
     def _write_state(

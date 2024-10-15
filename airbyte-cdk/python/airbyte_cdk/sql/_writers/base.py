@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Write interfaces for PyAirbyte."""
+"""Write interfaces for Airbyte."""
 
 from __future__ import annotations
 

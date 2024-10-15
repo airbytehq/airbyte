@@ -27,7 +27,7 @@ METADATA_PROPERTIES = "metadata_properties"
 
 
 class Document(BaseModel):
-    """A PyAirbyte document is a specific projection on top of a record.
+    """A Airbyte document is a specific projection on top of a record.
 
     Documents have the following structure:
     - id (str): A unique string identifier for the document.

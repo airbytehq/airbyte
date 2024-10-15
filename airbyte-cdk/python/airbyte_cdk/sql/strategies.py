@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-"""Read and write strategies for PyAirbyte."""
+"""Read and write strategies for Airbyte."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ _AUTO = "auto"
 
 
 class WriteStrategy(str, Enum):
-    """Read strategies for PyAirbyte.
+    """Read strategies for Airbyte.
 
     Read strategies set a preferred method for writing data to a destination. The actual method used
     may differ based on the capabilities of the destination.
@@ -52,7 +52,7 @@ class WriteStrategy(str, Enum):
 
 
 class WriteMethod(str, Enum):
-    """Write methods for PyAirbyte.
+    """Write methods for Airbyte.
 
     Unlike write strategies, write methods are expected to be fully resolved and do not require any
     additional logic to determine the best method to use.

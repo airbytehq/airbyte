@@ -1,11 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""PyAirbyte Logging features and related configuration.
+"""Airbyte Logging features and related configuration.
 
-By default, PyAirbyte main logs are written to a file in the `AIRBYTE_LOGGING_ROOT` directory, which
-defaults to a system-created temporary directory. PyAirbyte also maintains connector-specific log
+By default, Airbyte main logs are written to a file in the `AIRBYTE_LOGGING_ROOT` directory, which
+defaults to a system-created temporary directory. Airbyte also maintains connector-specific log
 files within the same directory, under a subfolder with the name of the connector.
 
-PyAirbyte supports structured JSON logging, which is disabled by default. To enable structured
+Airbyte supports structured JSON logging, which is disabled by default. To enable structured
 logging in JSON, set `AIRBYTE_STRUCTURED_LOGGING` to `True`.
 """
 
@@ -97,7 +97,7 @@ def _get_logging_root() -> Path | None:
         # Handle the error by returning None
         warn_once(
             (
-                f"Failed to create PyAirbyte logging directory at `{log_root}`. "
+                f"Failed to create Airbyte logging directory at `{log_root}`. "
                 "You can override the default path by setting the `AIRBYTE_LOGGING_ROOT` "
                 "environment variable."
             ),
@@ -113,15 +113,15 @@ AIRBYTE_LOGGING_ROOT: Path | None = _get_logging_root()
 
 This value can be overridden by setting the `AIRBYTE_LOGGING_ROOT` environment variable.
 
-If not provided, PyAirbyte will use `/tmp/airbyte/logs/` where `/tmp/` is the OS's default
-temporary directory. If the directory cannot be created, PyAirbyte will log a warning and
+If not provided, Airbyte will use `/tmp/airbyte/logs/` where `/tmp/` is the OS's default
+temporary directory. If the directory cannot be created, Airbyte will log a warning and
 set this value to `None`.
 """
 
 
 @lru_cache
 def get_global_file_logger() -> logging.Logger | None:
-    """Return the global logger for PyAirbyte.
+    """Return the global logger for Airbyte.
 
     This logger is configured to write logs to the console and to a file in the log directory.
     """
@@ -151,7 +151,7 @@ def get_global_file_logger() -> logging.Logger | None:
         return None
 
     logfile_path = folder / f"airbyte-log-{str(ulid.ULID())[2:11]}.log"
-    print(f"Writing PyAirbyte logs to file: {logfile_path!s}")
+    print(f"Writing Airbyte logs to file: {logfile_path!s}")
 
     file_handler = logging.FileHandler(
         filename=logfile_path,
@@ -240,7 +240,7 @@ def get_global_stats_logger() -> structlog.BoundLogger:
         # No temp directory available, so return no-op logger without handlers
         return structlog.get_logger("airbyte.stats")
 
-    print(f"Writing PyAirbyte performance stats to file: {logfile_path!s}")
+    print(f"Writing Airbyte performance stats to file: {logfile_path!s}")
 
     # Remove any existing handlers
     for handler in logger.handlers:

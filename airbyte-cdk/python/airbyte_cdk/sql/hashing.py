@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""Hashing utils for PyAirbyte."""
+"""Hashing utils for Airbyte."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import hashlib
 from collections.abc import Mapping
 
 
-HASH_SEED = "PyAirbyte:"
+HASH_SEED = "Airbyte:"
 """Additional seed for randomizing one-way hashed strings."""
 
 

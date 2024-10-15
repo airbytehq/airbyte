@@ -43,7 +43,7 @@ class DocumentRenderer(BaseModel):
     render_metadata: bool = False
 
     # TODO: Add primary key and cursor key support:
-    # https://github.com/airbytehq/pyairbyte/issues/319
+    # https://github.com/airbytehq/Airbyte/issues/319
     # primary_key_properties: list[str]
     # cursor_property: str | None
 

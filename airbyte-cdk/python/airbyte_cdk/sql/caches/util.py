@@ -54,13 +54,13 @@ def new_local_cache(
     """
     if cache_name:
         if " " in cache_name:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Cache name cannot contain spaces.",
                 input_value=cache_name,
             )
 
         if not cache_name.replace("_", "").isalnum():
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Cache name can only contain alphanumeric characters and underscores.",
                 input_value=cache_name,
             )
@@ -153,7 +153,7 @@ def get_colab_cache(
     cache_dir.mkdir(parents=True, exist_ok=True)
     db_file_path = cache_dir / f"{cache_name}.duckdb"
 
-    print(f"Using persistent PyAirbyte cache in Google Drive: `{db_file_path}`.")
+    print(f"Using persistent Airbyte cache in Google Drive: `{db_file_path}`.")
     return DuckDBCache(
         db_path=db_file_path,
         cache_dir=cache_dir,

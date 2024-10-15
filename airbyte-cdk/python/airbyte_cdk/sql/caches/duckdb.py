@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""A DuckDB implementation of the PyAirbyte cache.
+"""A DuckDB implementation of the Airbyte cache.
 
 ## Usage Example
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Base classes and methods for working with secrets in PyAirbyte."""
+"""Base classes and methods for working with secrets in Airbyte."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class SecretSourceEnum(str, Enum):
-    """Enumeration of secret sources supported by PyAirbyte."""
+    """Enumeration of secret sources supported by Airbyte."""
 
     ENV = "env"
     DOTENV = "dotenv"
@@ -86,7 +86,7 @@ class SecretString(str):
         try:
             return json.loads(self)
         except json.JSONDecodeError as ex:
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="Failed to parse secret as JSON.",
                 context={
                     "Message": ex.msg,
@@ -106,7 +106,7 @@ class SecretString(str):
         """Validate the input value is valid as a secret string."""
         _ = info  # Unused
         if not isinstance(v, str):
-            raise exc.PyAirbyteInputError(
+            raise exc.AirbyteInputError(
                 message="A valid `str` or `SecretString` object is required.",
             )
         return cls(v)
@@ -144,7 +144,7 @@ class SecretManager(ABC):
 
     Secret managers are used to retrieve secrets from a secret store.
 
-    By registering a secret manager, PyAirbyte can automatically locate and
+    By registering a secret manager, Airbyte can automatically locate and
     retrieve secrets from the secret store when needed. This allows you to
     securely store and access sensitive information such as API keys, passwords,
     and other credentials without hardcoding them in your code.
@@ -233,7 +233,7 @@ class SecretHandle:
 
         This method is a convenience method to parse the secret as JSON without
         needing to call `get_value()` first. If the secret is not a valid JSON
-        string, a `PyAirbyteInputError` will be raised.
+        string, a `AirbyteInputError` will be raised.
         """
         return self.get_value().parse_json()
 

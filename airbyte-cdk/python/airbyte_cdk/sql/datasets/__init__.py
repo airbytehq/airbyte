@@ -1,5 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""PyAirbyte dataset classes."""
+"""Airbyte dataset classes."""
 
 from __future__ import annotations
 

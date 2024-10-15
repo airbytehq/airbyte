@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-"""Connector info classes for PyAirbyte.
+"""Connector info classes for Airbyte.
 
 Used for telemetry and logging.
 """

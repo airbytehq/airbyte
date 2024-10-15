@@ -3,7 +3,7 @@
 """A simple progress bar for the command line and IPython notebooks.
 
 Note: Some runtimes (e.g. Dagger) may not support Rich Live views, and sometimes because they _also_
-use Rich, and Rich only supports one live view at a time. PyAirbyte will try to use smart defaults
+use Rich, and Rich only supports one live view at a time. Airbyte will try to use smart defaults
 based on your execution environment.
 
 If you experience issues, you can force plain text status reporting by setting the environment
@@ -58,6 +58,8 @@ if TYPE_CHECKING:
 
     from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
     from airbyte_cdk.sql.caches.base import CacheBase
+    from airbyte_cdk.sql.destinations.base import Destination
+    from airbyte_cdk.sql.sources.base import Source
 
 IS_REPL = hasattr(sys, "ps1")  # True if we're in a Python REPL, in which case we can use Rich.
 HORIZONTAL_LINE = "------------------------------------------------\n"
@@ -158,9 +160,9 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         self,
         style: ProgressStyle = ProgressStyle.AUTO,
         *,
-        source: "Source" | None,
+        source: Source | None,
         cache: CacheBase | None,
-        destination: "Destination" | None,
+        destination: Destination | None,
         expected_streams: list[str] | None = None,
     ) -> None:
         """Initialize the progress tracker."""

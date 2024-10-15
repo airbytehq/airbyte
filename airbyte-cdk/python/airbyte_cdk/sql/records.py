@@ -1,16 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""PyAirbyte Records module.
+"""Airbyte Records module.
 
-## Understanding record handling in PyAirbyte
+## Understanding record handling in Airbyte
 
-PyAirbyte models record handling after Airbyte's "Destination V2" ("Dv2") record handling. This
+Airbyte models record handling after Airbyte's "Destination V2" ("Dv2") record handling. This
 includes the below implementation details.
 
 ### Field Name Normalization
 
-1. PyAirbyte normalizes top-level record keys to lowercase, replacing spaces and hyphens with
+1. Airbyte normalizes top-level record keys to lowercase, replacing spaces and hyphens with
    underscores.
-2. PyAirbyte does not normalize nested keys on sub-properties.
+2. Airbyte does not normalize nested keys on sub-properties.
 
 For example, the following record:
 
@@ -37,12 +37,12 @@ Would be normalized to:
 
 ### Table Name Normalization
 
-Similar to column handling, PyAirbyte normalizes table names to the lowercase version of the stream
+Similar to column handling, Airbyte normalizes table names to the lowercase version of the stream
 name and may remove or normalize special characters.
 
 ### Airbyte-Managed Metadata Columns
 
-PyAirbyte adds the following columns to every record:
+Airbyte adds the following columns to every record:
 
 - `ab_raw_id`: A unique identifier for the record.
 - `ab_extracted_at`: The time the record was extracted.
@@ -53,7 +53,7 @@ reference.
 
 ## Schema Evolution
 
-PyAirbyte supports a very basic form of schema evolution:
+Airbyte supports a very basic form of schema evolution:
 
 1. Columns are always auto-added to cache tables whenever newly arriving properties are detected
    as not present in the cache table.
