@@ -22,6 +22,8 @@ from airbyte_cdk.sql.types import SQLTypeConverter
 from airbyte_cdk.sql.constants import AB_RAW_ID_COLUMN, AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN
 from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.duckdb import DuckDBSqlProcessor, DuckDBConfig
+from airbyte_cdk.sql.motherduck import MotherDuckSqlProcessor
+from airbyte_cdk.sql.caches.motherduck import MotherDuckConfig
 from airbyte_cdk.sql.state_writers import StdOutStateWriter
 from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT
 from airbyte_cdk.sql.catalog_providers import CatalogProvider
@@ -47,7 +49,10 @@ def validated_sql_name(sql_name: Any) -> str:
 class DestinationDuckdb(Destination):
     type_converter_class = SQLTypeConverter
     normalizer = LowerCaseNormalizer
-    sql_processor_class = DuckDBSqlProcessor
+
+    @staticmethod
+    def _is_motherduck(path: str):
+        return "md:" in str(path)
 
     def _get_sql_processor(
             self,
@@ -55,21 +60,39 @@ class DestinationDuckdb(Destination):
             schema_name: str,
             table_prefix: str | None = "",
             db_path: str | None = ":memory:",
+            motherduck_token: str | None = None,
         ):
         """
         Get sql processor for processing queries
         """
-        config = DuckDBConfig(
-            schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
-        )
         catalog_provider = CatalogProvider(configured_catalog)
-        processor = self.sql_processor_class(
-            sql_config=config,
-            catalog_provider=catalog_provider,
-            state_writer=StdOutStateWriter(),
-            temp_dir=Path(DEFAULT_CACHE_ROOT),
-            temp_file_cleanup=True,
-        )
+        if self._is_motherduck(db_path):
+            config = MotherDuckConfig(
+                schema_name=schema_name,
+                table_prefix=table_prefix,
+                db_path=db_path,
+                api_key=motherduck_token,
+            )
+            processor = MotherDuckSqlProcessor(
+                sql_config=config,
+                catalog_provider=catalog_provider,
+                state_writer=StdOutStateWriter(),
+                temp_dir=Path(DEFAULT_CACHE_ROOT),
+                temp_file_cleanup=True,
+            )
+        else:
+            config = DuckDBConfig(
+                schema_name=schema_name,
+                table_prefix=table_prefix,
+                db_path=db_path
+            )
+            processor = DuckDBSqlProcessor(
+                sql_config=config,
+                catalog_provider=catalog_provider,
+                state_writer=StdOutStateWriter(),
+                temp_dir=Path(DEFAULT_CACHE_ROOT),
+                temp_file_cleanup=True,
+            )
         return processor
 
     @staticmethod
@@ -169,6 +192,8 @@ class DestinationDuckdb(Destination):
             )
 
             # create the table if needed
+            # TODO: these are private methods on processor
+            # move this to write_stream_data method
             processor = self._get_sql_processor(
                 configured_catalog=configured_catalog,
                 schema_name=schema_name,
