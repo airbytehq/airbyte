@@ -134,26 +134,21 @@ class SubstreamPartitionRouter(PartitionRouter):
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                 incremental_dependency = parent_stream_config.incremental_dependency
 
-                stream_slices_for_parent = []
-                previous_associated_slice = None
-
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
                 for parent_record in parent_stream.read_only_records():
                     parent_partition = None
-                    parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)
                     if isinstance(parent_record, AirbyteMessage):
                         self.logger.warning(
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data
+                            parent_record = parent_record.record.data  # type: ignore[union-attr]  # record is always a Record
                         else:
                             continue
                     elif isinstance(parent_record, Record):
                         parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
-                        parent_associated_slice = parent_record.associated_slice
                         parent_record = parent_record.data
                     elif not isinstance(parent_record, Mapping):
                         # The parent_record should only take the form of a Record, AirbyteMessage, or Mapping. Anything else is invalid
@@ -161,16 +156,18 @@ class SubstreamPartitionRouter(PartitionRouter):
                     try:
                         partition_value = dpath.get(parent_record, parent_field)
                     except KeyError:
-                        pass
-                    else:
-                        print(f"Yielding slice {partition_value} for {parent_stream.name} with parent field {parent_field}")
-                        yield StreamSlice(
-                                partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
-                            )
+                        continue
 
-                        print(f"Setting parent state {incremental_dependency} - {parent_stream.name} to {parent_stream.state}")
-                        if incremental_dependency:
-                            self._parent_state[parent_stream.name] = parent_stream.state
+                    yield StreamSlice(
+                        partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
+                    )
+
+                    if incremental_dependency:
+                        self._parent_state[parent_stream.name] = parent_stream.state
+
+                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
+                if incremental_dependency:
+                    self._parent_state[parent_stream.name] = parent_stream.state
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -202,6 +199,7 @@ class SubstreamPartitionRouter(PartitionRouter):
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
+                self._parent_state[parent_config.stream.name] = parent_config.stream.state
 
     def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """

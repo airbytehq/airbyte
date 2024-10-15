@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
 
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental import PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
@@ -15,7 +17,16 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import Config, StreamSlice
-
+from airbyte_cdk.sources.streams.checkpoint import (
+    CheckpointMode,
+    CheckpointReader,
+    Cursor,
+    CursorBasedCheckpointReader,
+    FullRefreshCheckpointReader,
+    IncrementalCheckpointReader,
+    LegacyCursorBasedCheckpointReader,
+    ResumableFullRefreshCheckpointReader,
+)
 
 @dataclass
 class DeclarativeStream(Stream):
@@ -172,3 +183,32 @@ class DeclarativeStream(Stream):
         if self.retriever and isinstance(self.retriever, SimpleRetriever):
             return self.retriever.cursor
         return None
+
+    def _get_checkpoint_reader(
+        self,
+        logger: logging.Logger,
+        cursor_field: Optional[List[str]],
+        sync_mode: SyncMode,
+        stream_state: MutableMapping[str, Any],
+    ) -> CheckpointReader:
+        """
+        This method is overridden to skip classification for incremental streams
+        """
+        mappings_or_slices = self.stream_slices(
+            cursor_field=cursor_field,
+            sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+            stream_state=stream_state,
+        )
+
+        cursor = self.get_cursor()
+        checkpoint_mode = self._checkpoint_mode
+
+        if isinstance(cursor, PerPartitionCursor):
+            self.has_multiple_slices = True
+            return CursorBasedCheckpointReader(
+                stream_slices=mappings_or_slices,
+                cursor=cursor,
+                read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH,
+            )
+
+        return super()._get_checkpoint_reader(logger, cursor_field, sync_mode, stream_state)
