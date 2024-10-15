@@ -211,7 +211,7 @@ class RootReaderIntegrationTest {
                 excessiveTimeout,
                 testOutputConsumer,
                 listOf(
-                    ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(
+                    ConfigErrorThrowingGlobalPartitionsCreatorFactory(
                         Semaphore(CONSTRAINED),
                         *testCases.toTypedArray()
                     )
@@ -665,7 +665,7 @@ open class TestPartitionsCreatorFactory(
     }
 }
 
-class ConfigErrorThrowingGlobalPartitionsCreatorFacrtory(
+class ConfigErrorThrowingGlobalPartitionsCreatorFactory(
     resource: Semaphore,
     vararg testCases: TestCase,
 ) : TestPartitionsCreatorFactory(resource, *testCases) {
