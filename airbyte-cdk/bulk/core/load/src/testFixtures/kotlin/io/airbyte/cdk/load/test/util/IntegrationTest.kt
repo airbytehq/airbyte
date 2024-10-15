@@ -9,18 +9,17 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationStreamComplete
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -110,7 +109,11 @@ abstract class IntegrationTest(
                 cursor?.let { nameMapper.mapFieldName(it) },
             )
             .diffRecords(expectedRecords, actualRecords)
-            ?.let(::fail)
+            ?.let {
+                fail(
+                    "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
+                )
+            }
     }
 
     /** Convenience wrapper for [runSync] using a single stream. */
@@ -140,28 +143,14 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
             )
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        AirbyteMessage()
-                            .withType(AirbyteMessage.Type.TRACE)
-                            .withTrace(
-                                AirbyteTraceMessage()
-                                    .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                    .withEmittedAt(System.currentTimeMillis().toDouble())
-                                    .withStreamStatus(
-                                        AirbyteStreamStatusTraceMessage()
-                                            .withStreamDescriptor(
-                                                StreamDescriptor()
-                                                    .withName(it.descriptor.name)
-                                                    .withNamespace(it.descriptor.namespace),
-                                            )
-                                            .withStatus(streamStatus),
-                                    ),
-                            ),
+                        DestinationStreamComplete(it.descriptor, System.currentTimeMillis())
+                            .asProtocolMessage()
                     )
                 }
             }
