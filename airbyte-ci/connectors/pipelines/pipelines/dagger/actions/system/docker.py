@@ -147,7 +147,7 @@ def with_global_dockerd_service(
             dockerd_container, docker_hub_username.as_dagger_secret(dagger_client), docker_hub_password.as_dagger_secret(dagger_client)
         )
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True, use_entrypoint=True
     ).as_service()
 
 
