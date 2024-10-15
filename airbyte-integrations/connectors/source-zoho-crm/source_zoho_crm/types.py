@@ -107,13 +107,13 @@ FieldType = Dict[Any, Any]
 @dataclasses.dataclass
 class FieldMeta(FromDictMixin):
     json_type: str
-    length: Optional[int]
     api_name: str
     data_type: str
-    decimal_place: Optional[int]
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]]
+    length: Optional[int] = None
+    decimal_place: Optional[int] = None
+    pick_list_values: Optional[List[ZohoPickListItem]] = None
     auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
 
     def _default_type_kwargs(self) -> Dict[str, str]:
@@ -155,7 +155,6 @@ class FieldMeta(FromDictMixin):
         elif self.data_type == ZohoDataType.bigint:
             typedef["airbyte_type"] = "big_integer"
         elif self.data_type == ZohoDataType.autonumber:
-            print(self.auto_number)
             if self.auto_number.get("prefix") or self.auto_number.get("suffix"):
                 typedef["format"] = "string"
             else:

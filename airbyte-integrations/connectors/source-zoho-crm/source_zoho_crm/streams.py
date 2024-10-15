@@ -11,6 +11,7 @@ from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .api import ZohoAPI
@@ -109,14 +110,28 @@ class ZohoStreamFactory:
         self._config = config
 
     def _init_modules_meta(self) -> List[ModuleMeta]:
-        modules_meta_json = self.api.modules_settings()
+        contacts_modules_meta_json = self.api.module_settings("Contacts")
+        leads_modules_meta_json = self.api.module_settings("Leads")
+
+        modules_meta_json = contacts_modules_meta_json + leads_modules_meta_json
         modules = [ModuleMeta.from_dict(module) for module in modules_meta_json]
-        return list(filter(lambda module: module.api_supported, modules))
+        return list(filter(lambda module: module.api_name == "Contacts" or module.api_name == "Leads", modules))
 
     def _populate_fields_meta(self, module: ModuleMeta):
         fields_meta_json = self.api.fields_settings(module.api_name)
         fields_meta = []
         for field in fields_meta_json:
+            '''
+            Skipping this field for now, as it is a bug in Zoho's V2 API.
+            The alternative is to update the API version to v5, but then the number of fields that can be fetched per record is limited to 50.
+            If the API version is updated to v5, we will need to do one of the following:
+              - make multiple API requests to fetch the complete record data (req 1: get first 50 fields, req 2: get next 50 fields), then aggregate the records.
+              - fetch field data using v5, fetch records using v2 (mixing API versions is a bad idea)
+              - pass in the fields as connection params that the user wants to fetch and limit it to 50 fields
+            '''
+            if 'json_type' not in field:
+                logger.warn(f"Unsupported Zoho field {field['api_name']} found")
+                continue
             pick_list_values = field.get("pick_list_values", [])
             if pick_list_values:
                 field["pick_list_values"] = [ZohoPickListItem.from_dict(pick_list_item) for pick_list_item in field["pick_list_values"]]
