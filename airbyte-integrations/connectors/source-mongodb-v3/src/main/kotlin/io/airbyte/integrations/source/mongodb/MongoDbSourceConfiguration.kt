@@ -17,6 +17,7 @@ import java.time.Duration
 data class MongoDbSourceConfiguration(
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration,
+    val database: String,
     val connectionString: String,
     val queueSize: Int,
     val discoverSampleSize: Int,
@@ -73,11 +74,12 @@ class MongoDbSourceConfigurationFactory :
         var connectionString: String
         var mongoCredential: MongoCredential?
         var schemaEnforced: Boolean
+        var database: String
 
         when (clusterType) {
             is AtlasReplicaSet -> {
                 connectionString = buildConnectionString(clusterType.connectionString)
-
+                database = clusterType.database
                 mongoCredential =
                     MongoCredential.createCredential(
                         clusterType.username,
@@ -88,6 +90,7 @@ class MongoDbSourceConfigurationFactory :
             }
             is SelfManagedReplicaSet -> {
                 connectionString = buildConnectionString(clusterType.connectionString)
+                database = clusterType.database
                 if (
                     clusterType.username.isNullOrBlank() ||
                         clusterType.password.isNullOrBlank() ||
@@ -115,6 +118,7 @@ class MongoDbSourceConfigurationFactory :
 
         return MongoDbSourceConfiguration(
             connectionString = connectionString,
+            database = database,
             maxConcurrency = 1, // todo: Add this configuration to the spec.
             queueSize = pojo.queueSize ?: 10000,
             discoverSampleSize = pojo.discoverSampleSize ?: 10000,
