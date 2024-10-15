@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.command.s3
 
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.ListObjectsRequest
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.file.ObjectStorageClient
 import io.airbyte.cdk.load.message.RemoteObject
@@ -17,6 +18,7 @@ class S3Object(
     override val key: String,
 ) : RemoteObject()
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class S3Client(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     private val bucketConfig: S3BucketConfiguration
