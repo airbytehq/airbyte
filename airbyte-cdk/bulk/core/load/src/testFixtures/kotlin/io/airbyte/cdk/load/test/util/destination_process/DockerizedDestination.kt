@@ -8,10 +8,8 @@ import com.google.common.collect.Lists
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
@@ -207,31 +205,11 @@ class DockerizedDestination(
             stderrDrained.join()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                // Hey look, it's possible to extract the error from a failed destination process!
-                // because "destination exit code 1" is the least-helpful error message.
-                val filteredTraces =
-                    destinationOutput
-                        .traces()
-                        .filter { it.type == AirbyteTraceMessage.Type.ERROR }
-                        .map { it.error }
-                throw DestinationUncleanExitException(exitCode, filteredTraces)
+                throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())
             }
         }
     }
 }
-
-class DestinationUncleanExitException(
-    exitCode: Int,
-    traceMessages: List<AirbyteErrorTraceMessage>
-) :
-    Exception(
-        """
-        Destination process exited uncleanly: $exitCode
-        Trace messages:
-        """.trimIndent()
-        // explicit concat because otherwise trimIndent behaves badly
-        + traceMessages
-    )
 
 @Singleton
 @Requires(env = [DOCKERIZED_TEST_ENV])

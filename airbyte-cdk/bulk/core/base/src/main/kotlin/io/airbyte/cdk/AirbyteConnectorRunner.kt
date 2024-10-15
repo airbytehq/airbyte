@@ -105,6 +105,9 @@ sealed class AirbyteConnectorRunner(
         if (!isTest) {
             // Required by the platform, otherwise syncs may hang.
             exitProcess(exitCode)
+        } else if (exitCode != 0) {
+            // Otherwise, propagate failure to test callers.
+            throw ConnectorUncleanExitException(exitCode)
         }
     }
 }
