@@ -26,8 +26,8 @@ Permissions are scoped to the specific Workspace in which the user has this role
 | Permissions           | Reader    | Runner | Editor    | Admin    |
 | ---------------------- | :--------: | :--------:| :--------:| :--------: |
 | **Read Workspace**<br /><ul><li>List the connections in a workspace</li><li>Read individual connections</li><li>Read workspace settings (data residency, users, connector versions, notification settings) </li></ul> | X | X | X | X |
+| **Sync Connection**<br /><ul><li>Start/cancel syncs and refreshes</li></ul> | | X | X | X |
 | **Modify Connector Settings**<br /><ul><li>Create, modify, delete  sources and destinations in a workspace</li></ul> | | | X | X |
-| **Sync Connection**<br /><ul><li>Start/cancel syncs and refreshes</li></ul> | | | X | X |
 | **Update Connection**<br /><ul><li>Modify a connection, including name, replication settings, normalization, DBT</li><li>Clear connection data</li><li>Create/Delete a connection</li><li> Create/Update/Delete connector builder connectors</li></ul> |  | | X | X |
 | **Update Workspace**<br /><ul><li> Update workspace settings (data residency, users, connector versions, notification settings)</li><li> Modify workspace connector versions</li></ul> | | |  | X |
 
