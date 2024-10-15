@@ -91,7 +91,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
+                        uri = f"gs://{blob.bucket.name}/{blob.name}"
 
                         file_extension = ".".join(blob.name.split(".")[1:])
                         remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
@@ -126,7 +126,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             compression = "disable"
 
         try:
-            result = smart_open.open(file.uri, mode=mode.value, compression=compression, encoding=encoding)
+            result = smart_open.open(
+                file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
+            )
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)
