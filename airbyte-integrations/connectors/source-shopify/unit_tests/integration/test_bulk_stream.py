@@ -153,7 +153,7 @@ class GraphQlBulkStreamTest(TestCase):
             HttpRequest(_JOB_RESULT_URL),
             MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
         )
-        
+
         output = self._read(_get_config(_JOB_START_DATE))
 
         assert output.errors == []

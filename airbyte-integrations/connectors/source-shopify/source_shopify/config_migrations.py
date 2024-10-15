@@ -92,5 +92,4 @@ class MigrateConfig:
             if cls.should_migrate(config):
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
-                
                 )
