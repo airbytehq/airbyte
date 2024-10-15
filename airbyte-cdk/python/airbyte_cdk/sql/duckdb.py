@@ -8,6 +8,7 @@ from pathlib import Path
 from textwrap import dedent, indent
 from typing import TYPE_CHECKING, Literal
 
+from duckdb import DuckDBPyConnection
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
@@ -17,6 +18,7 @@ from airbyte_cdk.sql._writers.jsonl import JsonlWriter
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.sql_processor import SqlProcessorBase
 from airbyte_cdk.sql.sql_processor import SqlConfig
+import pyarrow as pa
 
 
 if TYPE_CHECKING:
@@ -199,3 +201,37 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
         with self.get_sql_connection() as new_conn:
             new_conn.execute(text("CHECKPOINT"))
+
+    def _executemany(self, sql: str | TextClause | Executable, params: object):
+        """Execute the given SQL statement."""
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            conn: DuckDBPyConnection
+            try:
+                conn.executemany(sql, params)
+            except (
+                sqlalchemy.exc.ProgrammingError,
+                sqlalchemy.exc.SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+    def _write_with_executemany(self, buffer, stream_name, table_name):
+        column_names_list = buffer[stream_name].keys()
+        column_names = ", ".join(column_names_list.keys())
+        params = ", ".join(["?"] * len(column_names_list))
+        query = f"""
+        INSERT INTO {self._fully_qualified(table_name)}
+            ({column_names})
+        VALUES ({params})
+        """
+        entries_to_write = buffer[stream_name]
+        self._executemany(
+            query, zip(entries_to_write[column_name] for column_name in column_names_list)
+        )
+
+    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table):
+        sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
+        self._execute_sql(sql)

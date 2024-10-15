@@ -171,7 +171,7 @@ class DestinationDuckdb(Destination):
             duckdb_config["motherduck_token"] = motherduck_api_key
             duckdb_config["custom_user_agent"] = "airbyte"
 
-        con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
+        # con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
         # con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
@@ -220,7 +220,12 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
+                    processor = self._get_sql_processor(
+                        configured_catalog=configured_catalog,
+                        schema_name=schema_name,
+                        db_path=path
+                    )
+                    DestinationDuckdb._safe_write(processor=processor, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
                 buffer = defaultdict(lambda: defaultdict(list))
 
@@ -247,10 +252,10 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
+            DestinationDuckdb._safe_write(processor=processor, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
     @staticmethod
-    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
+    def _safe_write(*, processor: DuckDBSqlProcessor, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
@@ -258,22 +263,11 @@ class DestinationDuckdb(Destination):
             logger.exception(
                 f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
             )
-            column_names_list = buffer[stream_name].keys()
-            column_names = ", ".join(column_names_list.keys())
-            params = ", ".join(["?"] * len(column_names_list))
-            query = f"""
-            INSERT INTO {schema_name}.{table_name}
-                ({column_names})
-            VALUES ({params})
-            """
-            entries_to_write = buffer[stream_name]
-            con.executemany(
-                query, zip(entries_to_write[column_name] for column_name in column_names_list)
-            )
+            processor._write_with_executemany(buffer, stream_name, table_name)
         else:
             # DuckDB will automatically find and SELECT from the `pa_table`
             # local variable defined above.
-            con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
+            processor._write_from_pa_table(table_name, pa_table)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
