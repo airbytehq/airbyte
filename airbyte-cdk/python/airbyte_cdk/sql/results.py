@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
-from airbyte_cdk.sql.datasets import CachedDataset
+from airbyte_cdk.sql.datasets._sql import CachedDataset
 
 
 if TYPE_CHECKING:

@@ -11,8 +11,8 @@ from sqlalchemy import and_, func, select, text
 
 from airbyte_cdk.models import ConfiguredAirbyteStream
 
-from airbyte_cdk.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
-from airbyte_cdk.datasets._base import DatasetBase
+from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
+from airbyte_cdk.sql.datasets._base import DatasetBase
 
 
 if TYPE_CHECKING:

@@ -8,16 +8,16 @@ from typing import TYPE_CHECKING, Any, cast
 from pandas import DataFrame
 from pyarrow.dataset import Dataset
 
-from airbyte._util.document_rendering import DocumentRenderer
-from airbyte.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
+from airbyte_cdk.sql.document_rendering import DocumentRenderer
+from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
 
 
 if TYPE_CHECKING:
     from pyarrow.dataset import Dataset
 
-    from airbyte_protocol.models import ConfiguredAirbyteStream
+    from airbyte_cdk.models import ConfiguredAirbyteStream
 
-    from airbyte.documents import Document
+    from airbyte_cdk.sql.documents import Document
 
 
 class DatasetBase(ABC):
