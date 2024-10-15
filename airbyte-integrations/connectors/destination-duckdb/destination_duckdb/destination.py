@@ -153,8 +153,8 @@ class DestinationDuckdb(Destination):
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
         for configured_stream in configured_catalog.streams:
-            name = configured_stream.stream.name
-            table_name = f"_airbyte_raw_{name}"
+            stream_name = configured_stream.stream.name
+            table_name = f"_airbyte_raw_{stream_name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
@@ -175,8 +175,13 @@ class DestinationDuckdb(Destination):
                 db_path=path
             )
 
-            processor._create_table(
+            processor._create_table_if_not_exists(
                 table_name=table_name, column_definition_str=column_definition_str
+            )
+
+            processor._ensure_compatible_table_schema(
+                stream_name=stream_name,
+                table_name=table_name
             )
 
 

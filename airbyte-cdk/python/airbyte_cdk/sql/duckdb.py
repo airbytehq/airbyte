@@ -107,8 +107,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
         Path(self.sql_config.db_path).parent.mkdir(parents=True, exist_ok=True)
 
-    @overrides
-    def _create_table(
+    def _create_table_if_not_exists(
         self,
         table_name: str,
         column_definition_str: str,
