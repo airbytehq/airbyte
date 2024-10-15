@@ -2,8 +2,8 @@ name: Auto merge connector PRs Cron
 
 on:
   schedule:
-    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
-    - cron: "0 0 * * *"
+    # Every 2 hours on the hour.
+    - cron: "0 */2 * * *"
   workflow_dispatch:
 jobs:
   run_auto_merge:
