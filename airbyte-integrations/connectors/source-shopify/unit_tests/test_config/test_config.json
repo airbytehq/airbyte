@@ -1,4 +1,7 @@
 {
+    "db_uri": "mysql://user:password@localhost:3306/testdb",
+    "env": "test",
+    "secret_manager_account": "123613746",
     "shops": [
         {
             "shop": "airbyte-integration-test",
