@@ -3,7 +3,6 @@
 #
 from __future__ import annotations
 
-
 from enum import Enum
 from functools import reduce, total_ordering
 from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
