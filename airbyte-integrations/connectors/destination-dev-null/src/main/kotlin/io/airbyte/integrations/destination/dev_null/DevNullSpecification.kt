@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton

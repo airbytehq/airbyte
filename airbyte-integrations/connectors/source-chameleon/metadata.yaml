@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 64a0240a-81a4-4e40-8002-e063b17cfbbe
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-chameleon
   githubIssueLabel: source-chameleon
   icon: icon.svg
