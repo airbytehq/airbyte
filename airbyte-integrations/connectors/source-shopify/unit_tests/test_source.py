@@ -4,12 +4,15 @@
 
 
 import math
-from unittest.mock import MagicMock, patch
+import pandas as pd
+import io
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import ConnectionCheckTest, SourceShopify
+from source_shopify.source import ConnectionCheckTest, SourceShopify, LTKSourceShopify, AirbyteCatalog, ConfiguredAirbyteCatalog, AirbyteStateMessage
+
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -296,3 +299,89 @@ def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
         else:
             actual_shop_id = check_test.get_shop_id()
             assert actual_shop_id == expected_shop_id
+
+
+@pytest.fixture
+def mock_db_client():
+    class MockDBClient:
+        def _get_shopify_store_info(self):
+            df = pd.read_csv('unit_tests/test_config/advertisers.csv')
+            return df.to_dict('records')
+    return MockDBClient()
+
+@pytest.fixture
+def mock_aws_client():
+    class MockAWSClient:
+        def _get_shopify_token(self, affiliate_id):
+            return f"mock_token_{affiliate_id}"
+    return MockAWSClient()
+
+@pytest.fixture
+def ltk_source_shopify(mock_db_client, mock_aws_client):
+    return LTKSourceShopify(mock_db_client, mock_aws_client)
+
+def test_gather_ltk_shopify_stores(ltk_source_shopify):
+    logger = Mock()
+    shops = ltk_source_shopify.gatherLTKShopifyStores(logger)
+    
+    assert len(shops) == 2
+    assert shops[0]['shop'] == 'liana-clothing'
+    assert shops[0]['shop_id'] == 1234
+    assert shops[0]['credentials']['api_password'] == 'mock_token_1234'
+    assert shops[1]['shop'] == 'adriana-shoes'
+    assert shops[1]['shop_id'] == 12345
+    assert shops[1]['credentials']['api_password'] == 'mock_token_12345'
+
+def test_shops_property(ltk_source_shopify):
+    assert ltk_source_shopify.shops is None
+    
+    test_shops = [{'shop': 'test-shop'}]
+    ltk_source_shopify.shops = test_shops
+    assert ltk_source_shopify.shops == test_shops
+    
+    with pytest.raises(ValueError):
+        ltk_source_shopify.shops = [{'shop': 'another-shop'}]
+
+@patch('source_shopify.source.ConnectionCheckTest')
+@patch('source_shopify.source.ShopifyAuthenticator')
+def test_check_connection(MockShopifyAuthenticator, MockConnectionCheckTest, ltk_source_shopify):
+    logger = Mock()
+    config = {}
+    
+    mock_connection_test = Mock()
+    mock_connection_test.test_connection.return_value = (True, None)
+    MockConnectionCheckTest.return_value = mock_connection_test
+    
+    result = ltk_source_shopify.check_connection(logger, config)
+    
+    assert result == (True, None)
+    assert len(ltk_source_shopify.shops) == 2
+    MockShopifyAuthenticator.assert_called_once()
+    MockConnectionCheckTest.assert_called_once()
+
+@patch('source_shopify.source.SourceShopify.discover')
+def test_discover(mock_super_discover, ltk_source_shopify):
+    logger = Mock()
+    config = {}
+    mock_catalog = Mock(spec=AirbyteCatalog)
+    mock_super_discover.return_value = mock_catalog
+    
+    result = ltk_source_shopify.discover(logger, config)
+    
+    assert result == mock_catalog
+    mock_super_discover.assert_called_once()
+
+@patch('source_shopify.source.SourceShopify.read')
+def test_read(mock_super_read, ltk_source_shopify):
+    logger = Mock()
+    config = {}
+    catalog = Mock(spec=ConfiguredAirbyteCatalog)
+    state = [Mock(spec=AirbyteStateMessage)]
+    
+    mock_super_read.return_value = iter([1, 2, 3])  # Mock some AirbyteMessages
+    
+    result = list(ltk_source_shopify.read(logger, config, catalog, state))
+    
+    assert result == [1, 2, 3]
+    assert mock_super_read.call_count == 2  # Called for each shop
+

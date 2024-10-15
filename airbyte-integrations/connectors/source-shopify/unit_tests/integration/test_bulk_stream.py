@@ -37,10 +37,11 @@ _JOB_RESULT_URL = "https://storage.googleapis.com/shopify-tiers-assets-prod-us-e
 def _get_config(start_date: datetime, bulk_window: int = 1) -> Dict[str, Any]:
     return {
         "start_date": start_date.strftime("%Y-%m-%d"),
-        "shops": [ { "shop" : _SHOP_NAME, "credentials": {
+        "shop": _SHOP_NAME,
+        "credentials": {
             "auth_method": "api_password",
             "api_password": "api_password",
-        }}],
+        },
         "bulk_window_in_days": bulk_window
     }
 
