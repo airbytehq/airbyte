@@ -32,6 +32,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -310,4 +311,80 @@ abstract class BasicFunctionalityIntegrationTest(
             )
             destination.shutdown()
         }
+
+    @Test
+    open fun testNamespaces() {
+        assumeTrue(verifyDataWriting)
+        runSync(
+            config,
+            DestinationCatalog(
+                listOf(
+                    DestinationStream(
+                        DestinationStream.Descriptor(randomizedNamespace + "1", "test_stream"),
+                        Append,
+                        ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+                        generationId = 0,
+                        minimumGenerationId = 0,
+                        syncId = 42,
+                    ),
+                    DestinationStream(
+                        DestinationStream.Descriptor(randomizedNamespace + "2", "test_stream"),
+                        Append,
+                        ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+                        generationId = 0,
+                        minimumGenerationId = 0,
+                        syncId = 42,
+                    ),
+                )
+            ),
+            listOf(
+                DestinationRecord(
+                    namespace = randomizedNamespace + "1",
+                    name = "test_stream",
+                    data = """{"id": 1234}""",
+                    emittedAtMs = 1234,
+                ),
+                DestinationRecord(
+                    namespace = randomizedNamespace + "2",
+                    name = "test_stream",
+                    data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+            )
+        )
+        assertAll(
+            {
+                dumpAndDiffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 1234),
+                            airbyteMeta = OutputRecord.Meta(changes = listOf(), syncId = 42)
+                        )
+                    ),
+                    "test_stream",
+                    randomizedNamespace + "1",
+                    listOf(listOf("id")),
+                    cursor = null
+                )
+            },
+            {
+                dumpAndDiffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 5678),
+                            airbyteMeta = OutputRecord.Meta(changes = listOf(), syncId = 42)
+                        )
+                    ),
+                    "test_stream",
+                    randomizedNamespace + "2",
+                    listOf(listOf("id")),
+                    cursor = null
+                )
+            }
+        )
+    }
 }
