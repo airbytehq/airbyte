@@ -91,7 +91,11 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        uri = f"gs://{blob.bucket.name}/{blob.name}"
+
+                        if self.config.credentials.auth_type == "Client":
+                            uri = f"gs://{blob.bucket.name}/{blob.name}"
+                        else:
+                            uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
                         remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
