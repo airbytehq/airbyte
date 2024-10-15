@@ -107,6 +107,24 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
         Path(self.sql_config.db_path).parent.mkdir(parents=True, exist_ok=True)
 
+    @overrides
+    def _create_table(
+        self,
+        table_name: str,
+        column_definition_str: str,
+        primary_keys: list[str] | None = None,
+    ) -> None:
+        if primary_keys:
+            pk_str = ", ".join(primary_keys)
+            column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
+
+        cmd = f"""
+        CREATE TABLE IF NOT EXISTS {self._fully_qualified(table_name)} (
+            {column_definition_str}
+        )
+        """
+        _ = self._execute_sql(cmd)
+
     def _write_files_to_new_table(
         self,
         files: list[Path],

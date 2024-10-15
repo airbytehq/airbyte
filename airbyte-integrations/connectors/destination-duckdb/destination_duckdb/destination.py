@@ -1,8 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
+from gettext import Catalog
 import json
 import os
+from pathlib import Path
 import re
 import uuid
 from collections import defaultdict
@@ -19,6 +21,10 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from airbyte_cdk.sql.types import SQLTypeConverter
 from airbyte_cdk.sql.constants import AB_RAW_ID_COLUMN, AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN
 from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql.duckdb import DuckDBSqlProcessor, DuckDBConfig
+from airbyte_cdk.sql.state_writers import StdOutStateWriter
+from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT
+from airbyte_cdk.sql.catalog_providers import CatalogProvider
 import sqlalchemy
 
 
@@ -41,6 +47,30 @@ def validated_sql_name(sql_name: Any) -> str:
 class DestinationDuckdb(Destination):
     type_converter_class = SQLTypeConverter
     normalizer = LowerCaseNormalizer
+    sql_processor_class = DuckDBSqlProcessor
+
+    def _get_sql_processor(
+            self,
+            configured_catalog: ConfiguredAirbyteCatalog,
+            schema_name: str,
+            table_prefix: str | None = "",
+            db_path: str | None = ":memory:",
+        ):
+        """
+        Get sql processor for processing queries
+        """
+        config = DuckDBConfig(
+            schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
+        )
+        catalog_provider = CatalogProvider(configured_catalog)
+        processor = self.sql_processor_class(
+            sql_config=config,
+            catalog_provider=catalog_provider,
+            state_writer=StdOutStateWriter(),
+            temp_dir=Path(DEFAULT_CACHE_ROOT),
+            temp_file_cleanup=True,
+        )
+        return processor
 
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
@@ -139,13 +169,15 @@ class DestinationDuckdb(Destination):
             )
 
             # create the table if needed
-            query = f"""
-            CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
-                {column_definition_str}
+            processor = self._get_sql_processor(
+                configured_catalog=configured_catalog,
+                schema_name=schema_name,
+                db_path=path
             )
-            """
 
-            con.execute(query)
+            processor._create_table(
+                table_name=table_name, column_definition_str=column_definition_str
+            )
 
 
         buffer = defaultdict(lambda: defaultdict(list))

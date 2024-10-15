@@ -43,7 +43,7 @@ import requests
 import ulid
 import yaml
 
-from airbyte_cdk import exceptions as exc
+from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql import meta
 from airbyte_cdk.sql.connector_info import (
     ConnectorRuntimeInfo,
