@@ -12,22 +12,11 @@ import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.setOnce
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Named
 
 interface TeardownTask : SyncLevel, ShutdownScope
-
-@Factory
-class TeardownAtomicBooleanProvider {
-    @Singleton
-    @Named("teardown-oneshot-atomic-boolean")
-    fun get(): AtomicBoolean {
-        return AtomicBoolean(false)
-    }
-}
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -76,8 +65,8 @@ class DefaultTeardownTaskFactory(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
-    @Named("teardown-oneshot-atomic-boolean") private val teardownHasRun: AtomicBoolean,
 ) : TeardownTaskFactory {
+    private val teardownHasRun = AtomicBoolean(false)
 
     override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
         return DefaultTeardownTask(
