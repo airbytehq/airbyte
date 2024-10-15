@@ -16,7 +16,7 @@ data:
   name: Visma Economic
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: "2022-11-08"
