@@ -1,0 +1,19 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" version="1.1" viewBox="0 0 61.4 61.4" width="250" height="250">
+  <defs>
+    <style>
+      .cls-1 {
+        fill-rule: evenodd;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #fff;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="cls-1" d="M4,57.2h53.5V4.2H4v53ZM7.6,53.7h46.3V7.7H7.6v45.9Z"></path>
+    <path class="cls-1" d="M14.7,14.8v31.8h32.1L14.7,14.8ZM44.3,37.3l-20.2-20,2.5-2.5,20.2,20-2.5,2.5ZM44.3,27.3l-10.1-10,2.5-2.5,10.1,10-2.5,2.5Z"></path>
+  </g>
+  
+</svg>
