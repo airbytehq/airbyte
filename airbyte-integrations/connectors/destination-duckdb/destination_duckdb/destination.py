@@ -167,7 +167,7 @@ class DestinationDuckdb(Destination):
                     logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
                 # add to buffer
-                logs = {"logs": "test"}
+                record_meta = {}
                 for column_name in sql_columns:
                     if column_name in data:
                         buffer[stream_name][column_name].append(data[column_name])
@@ -175,7 +175,7 @@ class DestinationDuckdb(Destination):
                         buffer[stream_name][column_name].append(None)
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
-                buffer[stream_name][AB_META_COLUMN].append({json.dumps(logs)})
+                buffer[stream_name][AB_META_COLUMN].append({json.dumps(record_meta)})
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")

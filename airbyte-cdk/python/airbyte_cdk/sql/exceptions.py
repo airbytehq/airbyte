@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-"""All exceptions used in the PyAirbyte.
+"""All exceptions used in Airbyte.
 
 This design is modeled after structlog's exceptions, in that we bias towards auto-generated
 property prints rather than sentence-like string concatenation.
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 
 NEW_ISSUE_URL = "https://github.com/airbytehq/airbyte/issues/new/choose"
-DOCS_URL_BASE = "https://airbytehq.github.io/PyAirbyte"
+DOCS_URL_BASE = "https://https://docs.airbyte.com/"
 DOCS_URL = f"{DOCS_URL_BASE}/airbyte.html"
 
 VERTICAL_SEPARATOR = "\n" + "-" * 60
@@ -60,7 +60,7 @@ VERTICAL_SEPARATOR = "\n" + "-" * 60
 
 
 @dataclass
-class PyAirbyteError(Exception):
+class AirbyteError(Exception):
     """Base class for exceptions in Airbyte."""
 
     guidance: str | None = None
@@ -151,26 +151,26 @@ class PyAirbyteError(Exception):
         return result
 
 
-# PyAirbyte Internal Errors (these are probably bugs)
+# Airbyte Internal Errors (these are probably bugs)
 
 
 @dataclass
-class PyAirbyteInternalError(PyAirbyteError):
-    """An internal error occurred in PyAirbyte."""
+class AirbyteInternalError(AirbyteError):
+    """An internal error occurred in Airbyte."""
 
     guidance = "Please consider reporting this error to the Airbyte team."
     help_url = NEW_ISSUE_URL
 
 
-# PyAirbyte Input Errors (replaces ValueError for user input)
+# Airbyte Input Errors (replaces ValueError for user input)
 
 
 @dataclass
-class PyAirbyteInputError(PyAirbyteError, ValueError):
-    """The input provided to PyAirbyte did not match expected validation rules.
+class AirbyteInputError(AirbyteError, ValueError):
+    """The input provided to Airbyte did not match expected validation rules.
 
     This inherits from ValueError so that it can be used as a drop-in replacement for
-    ValueError in the PyAirbyte API.
+    ValueError in the Airbyte API.
     """
 
     guidance = "Please check the provided value and try again."
@@ -179,7 +179,7 @@ class PyAirbyteInputError(PyAirbyteError, ValueError):
 
 
 @dataclass
-class PyAirbyteNoStreamsSelectedError(PyAirbyteInputError):
+class AirbyteNoStreamsSelectedError(AirbyteInputError):
     """No streams were selected for the source."""
 
     guidance = (
@@ -194,7 +194,7 @@ class PyAirbyteNoStreamsSelectedError(PyAirbyteInputError):
 
 
 @dataclass
-class PyAirbyteNameNormalizationError(PyAirbyteError, ValueError):
+class AirbyteNameNormalizationError(AirbyteError, ValueError):
     """Error occurred while normalizing a table or column name."""
 
     guidance = "Please consider renaming the source object if possible, or " "raise an issue in GitHub if not."
@@ -204,22 +204,22 @@ class PyAirbyteNameNormalizationError(PyAirbyteError, ValueError):
     normalization_result: str | None = None
 
 
-# PyAirbyte Cache Errors
+# Airbyte Cache Errors
 
 
-class PyAirbyteCacheError(PyAirbyteError):
+class AirbyteCacheError(AirbyteError):
     """Error occurred while accessing the cache."""
 
 
 @dataclass
-class PyAirbyteCacheTableValidationError(PyAirbyteCacheError):
+class AirbyteCacheTableValidationError(AirbyteCacheError):
     """Cache table validation failed."""
 
     violation: str | None = None
 
 
 @dataclass
-class AirbyteConnectorConfigurationMissingError(PyAirbyteCacheError):
+class AirbyteConnectorConfigurationMissingError(AirbyteCacheError):
     """Connector is missing configuration."""
 
     connector_name: str | None = None
@@ -229,7 +229,7 @@ class AirbyteConnectorConfigurationMissingError(PyAirbyteCacheError):
 
 
 @dataclass
-class AirbyteSubprocessError(PyAirbyteError):
+class AirbyteSubprocessError(AirbyteError):
     """Error when running subprocess."""
 
     run_args: list[str] | None = None
@@ -245,7 +245,7 @@ class AirbyteSubprocessFailedError(AirbyteSubprocessError):
 # Connector Registry Errors
 
 
-class AirbyteConnectorRegistryError(PyAirbyteError):
+class AirbyteConnectorRegistryError(AirbyteError):
     """Error when accessing the connector registry."""
 
 
@@ -267,14 +267,14 @@ class AirbyteConnectorNotPyPiPublishedError(AirbyteConnectorRegistryError):
     """Connector found, but not published to PyPI."""
 
     connector_name: str | None = None
-    guidance = "This likely means that the connector is not ready for use with PyAirbyte."
+    guidance = "This likely means that the connector is not ready for use with Airbyte."
 
 
 # Connector Errors
 
 
 @dataclass
-class AirbyteConnectorError(PyAirbyteError):
+class AirbyteConnectorError(AirbyteError):
     """Error when running the connector."""
 
     connector_name: str | None = None
@@ -372,7 +372,7 @@ class AirbyteStateNotFoundError(AirbyteConnectorError, KeyError):
 
 
 @dataclass
-class PyAirbyteSecretNotFoundError(PyAirbyteError):
+class AirbyteSecretNotFoundError(AirbyteError):
     """Secret not found."""
 
     guidance = "Please ensure that the secret is set."
@@ -386,7 +386,7 @@ class PyAirbyteSecretNotFoundError(PyAirbyteError):
 
 
 @dataclass
-class AirbyteError(PyAirbyteError):
+class AirbyteError(AirbyteError):
     """An error occurred while communicating with the hosted Airbyte instance."""
 
     response: AirbyteApiResponseDuckType | None = None
@@ -478,19 +478,19 @@ class AirbyteMultipleResourcesError(AirbyteError):
 
 
 class AirbyteExperimentalFeatureWarning(FutureWarning):
-    """Warning whenever using experimental features in PyAirbyte."""
+    """Warning whenever using experimental features in Airbyte."""
 
 
-# PyAirbyte Warnings
+# Airbyte Warnings
 
 
-class PyAirbyteWarning(Warning):
-    """General warnings from PyAirbyte."""
+class AirbyteWarning(Warning):
+    """General warnings from Airbyte."""
 
 
-class PyAirbyteDataLossWarning(PyAirbyteWarning):
+class AirbyteDataLossWarning(AirbyteWarning):
     """Warning for potential data loss.
 
     Users can ignore this warning by running:
-    > warnings.filterwarnings("ignore", category="airbyte.exceptions.PyAirbyteDataLossWarning")
+    > warnings.filterwarnings("ignore", category="airbyte.exceptions.AirbyteDataLossWarning")
     """
