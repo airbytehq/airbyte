@@ -16,6 +16,8 @@ duckdb = "0.10.3"
 pyarrow = "15.0.2"
 sqlalchemy = ">=1.4.51,<3.0"
 rich = "^13.7.0"
+python-ulid = "^2.2.0"
+uuid7 = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
