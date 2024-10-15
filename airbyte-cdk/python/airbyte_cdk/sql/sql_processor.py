@@ -68,8 +68,8 @@ if TYPE_CHECKING:
     from airbyte_cdk.sql._batch_handles import BatchHandle
     from airbyte_cdk.sql._writers.jsonl import FileWriterBase
     from airbyte_cdk.sql.progress import ProgressTracker
-    from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-    from airbyte_cdk.sql.shared.state_writers import StateWriterBase
+    from airbyte_cdk.sql.catalog_providers import CatalogProvider
+    from airbyte_cdk.sql.state_writers import StateWriterBase
 
 
 class RecordDedupeMode(enum.Enum):
