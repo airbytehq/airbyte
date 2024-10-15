@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.8"
+version = "0.2.0"
 name = "destination-firestore"
 description = "Destination implementation for Google Firestore."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,10 +16,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_firestore"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-google-auth = "==2.3.3"
-google-cloud-firestore = "==2.3.4"
-airbyte-cdk = "==0.1.36"
+python = "^3.10,<3.12"
+google-auth = "^2.35.0"
+google-cloud-firestore = "^2.19.0"
+airbyte-cdk = "^5.13.0"
 
 [tool.poetry.scripts]
 destination-firestore = "destination_firestore.run:run"
