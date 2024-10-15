@@ -173,16 +173,27 @@ class DestinationDuckdb(Destination):
 
         con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
-        con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
+        # con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
         for configured_stream in configured_catalog.streams:
             stream_name = configured_stream.stream.name
+            # TODO: we're calling private methods on processor, should move this to write_stream_data or similar
+            processor = self._get_sql_processor(
+                configured_catalog=configured_catalog,
+                schema_name=schema_name,
+                db_path=path
+            )
+            processor._ensure_schema_exists()
+
             table_name = f"_airbyte_raw_{stream_name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
-                query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
-                con.execute(query)
+
+                processor._drop_temp_table(table_name, if_exists=True)
+
+                # query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
+                # con.execute(query)
 
             # Get the SQL column definitions
             sql_columns = self._get_sql_column_definitions(configured_stream)
@@ -192,14 +203,6 @@ class DestinationDuckdb(Destination):
             )
 
             # create the table if needed
-            # TODO: these are private methods on processor
-            # move this to write_stream_data method
-            processor = self._get_sql_processor(
-                configured_catalog=configured_catalog,
-                schema_name=schema_name,
-                db_path=path
-            )
-
             processor._create_table_if_not_exists(
                 table_name=table_name, column_definition_str=column_definition_str
             )
