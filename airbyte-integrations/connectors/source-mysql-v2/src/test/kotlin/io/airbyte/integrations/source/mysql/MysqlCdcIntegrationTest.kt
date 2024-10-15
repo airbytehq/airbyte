@@ -126,8 +126,7 @@ class MysqlCdcIntegrationTest {
                 MysqlContainerFactory.exclusive(
                     imageName = "mysql:8.0",
                     MysqlContainerFactory.WithNetwork,
-                    //  MysqlContainerFactory.WithGtidModeOn
-                    )
+                )
             provisionTestContainer(dbContainer, connectionFactory)
         }
 
