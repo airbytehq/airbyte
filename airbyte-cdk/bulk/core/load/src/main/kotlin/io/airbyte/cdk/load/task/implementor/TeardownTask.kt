@@ -12,11 +12,22 @@ import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.setOnce
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Named
 
 interface TeardownTask : SyncLevel, ShutdownScope
+
+@Factory
+class TeardownAtomicBooleanProvider {
+    @Singleton
+    @Named("teardown-oneshot-atomic-boolean")
+    fun get(): AtomicBoolean {
+        return AtomicBoolean(false)
+    }
+}
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -27,13 +38,10 @@ class DefaultTeardownTask(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
+    private val teardownHasRun: AtomicBoolean,
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
-
-    companion object {
-        private val teardownHasRun = AtomicBoolean(false)
-    }
 
     override suspend fun execute() {
         // Run the task exactly once, and only after all streams have closed.
@@ -68,9 +76,16 @@ class DefaultTeardownTaskFactory(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
+    @Named("teardown-oneshot-atomic-boolean") private val teardownHasRun: AtomicBoolean,
 ) : TeardownTaskFactory {
 
     override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
+        return DefaultTeardownTask(
+            checkpointManager,
+            syncManager,
+            destination,
+            taskLauncher,
+            teardownHasRun
+        )
     }
 }
