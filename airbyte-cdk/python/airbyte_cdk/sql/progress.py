@@ -58,8 +58,6 @@ if TYPE_CHECKING:
 
     from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
     from airbyte_cdk.sql.caches.base import CacheBase
-    from airbyte_cdk.sql.destinations.base import Destination
-    from airbyte_cdk.sql.sources.base import Source
 
 IS_REPL = hasattr(sys, "ps1")  # True if we're in a Python REPL, in which case we can use Rich.
 HORIZONTAL_LINE = "------------------------------------------------\n"
@@ -160,9 +158,9 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         self,
         style: ProgressStyle = ProgressStyle.AUTO,
         *,
-        source: Source | None,
+        source: "Source" | None,
         cache: CacheBase | None,
-        destination: Destination | None,
+        destination: "Destination" | None,
         expected_streams: list[str] | None = None,
     ) -> None:
         """Initialize the progress tracker."""
@@ -577,7 +575,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         Usage:
 
         ```python
-        from airbyte.progress import progress, ProgressStyle
+        from airbyte_cdk.sql.progress import progress, ProgressStyle
 
         progress.reset_progress_style(ProgressStyle.PLAIN)
         ```

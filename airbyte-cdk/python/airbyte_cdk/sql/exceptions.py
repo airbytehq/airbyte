@@ -44,11 +44,6 @@ from pathlib import Path
 from textwrap import indent
 from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    from airbyte._util.api_duck_types import AirbyteApiResponseDuckType
-    from airbyte.cloud.workspaces import CloudWorkspace
-
-
 NEW_ISSUE_URL = "https://github.com/airbytehq/airbyte/issues/new/choose"
 DOCS_URL_BASE = "https://https://docs.airbyte.com/"
 DOCS_URL = f"{DOCS_URL_BASE}/airbyte.html"
@@ -389,10 +384,10 @@ class AirbyteSecretNotFoundError(AirbyteError):
 class AirbyteError(AirbyteError):
     """An error occurred while communicating with the hosted Airbyte instance."""
 
-    response: AirbyteApiResponseDuckType | None = None
+    response: "AirbyteApiResponseDuckType" | None = None
     """The API response from the failed request."""
 
-    workspace: CloudWorkspace | None = None
+    workspace: "CloudWorkspace" | None = None
     """The workspace where the error occurred."""
 
     @property
@@ -485,7 +480,7 @@ class AirbyteExperimentalFeatureWarning(FutureWarning):
 
 
 class AirbyteWarning(Warning):
-    """General warnings from Airbyte."""
+    """General warnings from airbyte_cdk.sql."""
 
 
 class AirbyteDataLossWarning(AirbyteWarning):

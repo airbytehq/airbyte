@@ -19,6 +19,8 @@ rich = "^13.7.0"
 python-ulid = "^2.2.0"
 uuid7 = "^0.1.0"
 overrides = "^7.4.0"
+structlog = "^24.4.0"
+duckdb-engine = "^0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
