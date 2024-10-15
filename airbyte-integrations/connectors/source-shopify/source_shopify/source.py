@@ -146,7 +146,7 @@ class SourceShopify(AbstractSource):
     @staticmethod
     def format_stream_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
-    
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -154,7 +154,7 @@ class SourceShopify(AbstractSource):
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
-        
+
     def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
         """
         Allow the Customer to decide which API type to use when it comes to the `Transactions` stream.
