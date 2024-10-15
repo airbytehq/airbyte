@@ -49,7 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version | Date       | Pull Request                                             | Subject                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------|
-| 0.7.5   | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: pick up checkpoint safety check fix                                                        |
+| 0.7.6   | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: pick up checkpoint safety check fix                                                        |
 | 0.7.5   | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: checkpoints in order, all checkpoints processed before shutdown                            |
 | 0.7.4   | 2024-10-08 | [46650](https://github.com/airbytehq/airbyte/pull/46650) | Internal code changes                                                                              |
 | 0.7.3   | 2024-10-01 | [46559](https://github.com/airbytehq/airbyte/pull/46559) | From load CDK: async improvements, stream incomplete, additionalProperties on state messages       |
