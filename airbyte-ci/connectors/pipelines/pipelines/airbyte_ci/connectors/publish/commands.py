@@ -191,6 +191,7 @@ async def publish(
                 python_registry_url=python_registry_url,
                 python_registry_check_url=python_registry_check_url,
                 rollout_mode=rollout_mode,
+                ci_github_access_token=ctx.obj.get("ci_github_access_token"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
