@@ -37,6 +37,7 @@ data class MysqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
+    override val maxSnapshotReadDuration: Duration?
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
 
@@ -137,6 +138,12 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
 
+        val cursorConfig = pojo.getCursorMethodConfigurationValue()
+        val maxSnapshotReadTime: Duration? =
+            when (cursorConfig is CdcCursor) {
+                true -> cursorConfig.initialLoadTimeoutHours?.let { Duration.ofHours(it.toLong()) }
+                else -> null
+            }
         // Build JDBC URL
         val address = "%s:%d"
         val jdbcUrlFmt = "jdbc:mysql://${address}"
@@ -182,6 +189,7 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            maxSnapshotReadDuration = maxSnapshotReadTime
         )
     }
 }

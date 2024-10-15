@@ -38,6 +38,7 @@
   --color-red-400: hsl(0, 73%, 50%);
 
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
+  --icon-background: transparent;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -65,6 +66,7 @@ html[data-theme="dark"] {
   --color-red-400: hsl(0, 81%, 71%);
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
+  --icon-background: hsl(0, 0%, 100%);
 }
 
 .docusaurus-highlight-code-line {

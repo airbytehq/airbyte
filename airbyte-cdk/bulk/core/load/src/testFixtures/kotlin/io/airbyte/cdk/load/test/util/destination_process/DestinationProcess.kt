@@ -4,10 +4,14 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+
+const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -23,7 +27,7 @@ interface DestinationProcess {
      * Run the destination process. Callers who want to interact with the destination should
      * `launch` this method.
      */
-    fun run()
+    suspend fun run()
 
     fun sendMessage(message: AirbyteMessage)
 
@@ -34,11 +38,19 @@ interface DestinationProcess {
      * Wait for the destination to terminate, then return all messages it emitted since the last
      * call to [readMessages].
      */
-    fun shutdown()
+    suspend fun shutdown()
 }
 
-interface DestinationProcessFactory {
-    fun createDestinationProcess(
+@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
+abstract class DestinationProcessFactory {
+    /**
+     * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
+     * TestInfo, and how Micronaut injects everything else. Instead, we'll rely on [IntegrationTest]
+     * to set this in a BeforeEach function.
+     */
+    lateinit var testName: String
+
+    abstract fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,

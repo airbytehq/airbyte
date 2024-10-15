@@ -21,6 +21,7 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -61,7 +62,7 @@ abstract class SpecTest :
         val expectedSpec = Files.readString(expectedSpecPath)
         val process =
             destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags)
-        process.run()
+        runBlocking { process.run() }
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }
 
