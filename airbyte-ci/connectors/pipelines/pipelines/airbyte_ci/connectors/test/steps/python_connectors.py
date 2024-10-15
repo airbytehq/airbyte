@@ -235,9 +235,7 @@ class PyAirbyteValidation(Step):
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
         )
-        return container_with_test_deps.with_exec(["pip",
-"install",
-f"airbyte=={PYAIRBYTE_VERSION}"], use_entrypoint=True)
+        return container_with_test_deps.with_exec(["pip", "install", f"airbyte=={PYAIRBYTE_VERSION}"], use_entrypoint=True)
 
 
 class IntegrationTests(PytestStep):

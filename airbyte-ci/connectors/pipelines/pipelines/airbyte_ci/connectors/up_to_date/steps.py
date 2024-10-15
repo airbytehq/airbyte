@@ -70,7 +70,9 @@ class PoetryUpdate(StepModifyingFiles):
                     connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}"], use_entrypoint=True)
                 else:
                     self.logger.info(f"Add {package} {version} to dev dependencies")
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}", "--group=dev"], use_entrypoint=True)
+                    connector_container = await connector_container.with_exec(
+                        ["poetry", "add", f"{package}{version}", "--group=dev"], use_entrypoint=True
+                    )
 
             connector_container = await connector_container.with_exec(["poetry", "update"], use_entrypoint=True)
             self.logger.info(await connector_container.stdout())
@@ -135,7 +137,8 @@ class GetDependencyUpdates(Step):
         await container.export(str(oci_tarball_path))
         syft_container = self.get_syft_container()
         container_sbom = await (
-            syft_container.with_mounted_file("/tmp/oci.tar", self.dagger_client.host().file(str(oci_tarball_path))).with_exec(["/tmp/oci.tar", "-o", "syft-json"], use_entrypoint=True)
+            syft_container.with_mounted_file("/tmp/oci.tar", self.dagger_client.host().file(str(oci_tarball_path)))
+            .with_exec(["/tmp/oci.tar", "-o", "syft-json"], use_entrypoint=True)
             .stdout()
         )
         oci_tarball_path.unlink()

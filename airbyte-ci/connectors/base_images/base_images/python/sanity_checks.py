@@ -97,7 +97,9 @@ async def check_nltk_data(python_image_container: dagger.Container):
     """
     with_nltk = await python_image_container.with_exec(["pip", "install", "nltk==3.8.1"])
     try:
-        await with_nltk.with_exec(["python", "-c", 'import nltk;nltk.data.find("taggers/averaged_perceptron_tagger");nltk.data.find("tokenizers/punkt")'])
+        await with_nltk.with_exec(
+            ["python", "-c", 'import nltk;nltk.data.find("taggers/averaged_perceptron_tagger");nltk.data.find("tokenizers/punkt")']
+        )
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
 

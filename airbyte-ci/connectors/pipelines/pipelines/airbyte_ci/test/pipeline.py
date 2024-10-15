@@ -205,22 +205,40 @@ def prepare_container_for_poe_tasks(
     # This is currently required for getting the connection-retriever package, for regression tests.
     if is_ci:
         container = (
-            container.with_exec(["sed",
-"-i",
-"-E",
-r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
-"pyproject.toml"], use_entrypoint=True).with_exec(["poetry",
-"source",
-"add",
-"--priority=supplemental",
-"airbyte-platform-internal-source",
-"https://github.com/airbytehq/airbyte-platform-internal.git"], use_entrypoint=True)
+            container.with_exec(
+                [
+                    "sed",
+                    "-i",
+                    "-E",
+                    r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                    "pyproject.toml",
+                ],
+                use_entrypoint=True,
+            )
+            .with_exec(
+                [
+                    "poetry",
+                    "source",
+                    "add",
+                    "--priority=supplemental",
+                    "airbyte-platform-internal-source",
+                    "https://github.com/airbytehq/airbyte-platform-internal.git",
+                ],
+                use_entrypoint=True,
+            )
             .with_secret_variable(
                 "CI_GITHUB_ACCESS_TOKEN",
                 dagger_client.set_secret("CI_GITHUB_ACCESS_TOKEN", pipeline_context_params["ci_github_access_token"].value),
-            ).with_exec(["/bin/sh",
-"-c",
-"poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN"], use_entrypoint=True).with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
+            )
+            .with_exec(
+                [
+                    "/bin/sh",
+                    "-c",
+                    "poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN",
+                ],
+                use_entrypoint=True,
+            )
+            .with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
         )
 
     # Install the poetry package

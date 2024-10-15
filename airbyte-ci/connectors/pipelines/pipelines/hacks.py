@@ -45,7 +45,8 @@ async def cache_latest_cdk(context: ConnectorContext) -> None:
         context.dagger_client.container()
         .from_("python:3.9-slim")
         .with_mounted_cache(consts.PIP_CACHE_PATH, context.dagger_client.cache_volume(consts.PIP_CACHE_VOLUME_NAME))
-        .with_env_variable("CACHEBUSTER", cachebuster_value).with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"], use_entrypoint=True)
+        .with_env_variable("CACHEBUSTER", cachebuster_value)
+        .with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"], use_entrypoint=True)
         .sync()
     )
 

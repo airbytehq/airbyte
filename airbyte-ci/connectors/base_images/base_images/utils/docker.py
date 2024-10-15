@@ -51,7 +51,8 @@ class CraneClient:
     def login(self) -> dagger.Container:
         return (
             self.bare_container.with_secret_variable("DOCKER_HUB_USERNAME", self.docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", self.docker_hub_username_password).with_exec(["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"])
+            .with_secret_variable("DOCKER_HUB_PASSWORD", self.docker_hub_username_password)
+            .with_exec(["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"])
         )
 
     async def digest(self, repository_and_tag: str) -> str:

@@ -147,7 +147,6 @@ class ConnectorRunner:
             entrypoint = await container.entrypoint()
             assert entrypoint, "The connector container has no entrypoint"
             airbyte_command = entrypoint + self.full_command
-<<<<<<< HEAD
             # We are piping the output to a file to avoid QueryError: file size exceeds limit 134217728
             container = container.with_exec(
                 [
@@ -156,15 +155,8 @@ class ConnectorRunner:
                     " ".join(airbyte_command)
                     + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
                 ],
-                skip_entrypoint=True,
+                use_entrypoint=False,
             )
-=======
-            # We are piping the output to a file to avoidQueryError: file size exceeds limit 134217728
-            container = container.with_exec(["sh",
-"-c",
-" ".join(airbyte_command)
-            + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"])
->>>>>>> 9390fc87a5 (upgrade for v0.13)
             executed_container = await container.sync()
             # We exporting to disk as we can't read .stdout() or await file.contents() as it might blow up the memory
             stdout_exported = await executed_container.file(self.IN_CONTAINER_OUTPUT_PATH).export(str(self.stdout_file_path))

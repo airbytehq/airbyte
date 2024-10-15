@@ -30,7 +30,9 @@ class TestAcceptanceTests:
         secret_file_paths = secret_file_paths or []
         container = (
             dagger_client.container()
-            .from_("bash:latest").with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_TEST_INPUT_DIRECTORY], use_entrypoint=True).with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY], use_entrypoint=True)
+            .from_("bash:latest")
+            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_TEST_INPUT_DIRECTORY], use_entrypoint=True)
+            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY], use_entrypoint=True)
         )
 
         for secret_file_path in secret_file_paths:
@@ -190,12 +192,19 @@ class TestAcceptanceTests:
 
         acceptance_test_step = self.get_patched_acceptance_test_step(mocker, test_context_ci, test_input_dir)
         cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_container, test_input_dir)
-        assert (await cat_container.with_exec(["pwd"], use_entrypoint=True).stdout()).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
+        assert (
+            await cat_container.with_exec(["pwd"], use_entrypoint=True).stdout()
+        ).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
         test_input_ls_result = await cat_container.with_exec(["ls"], use_entrypoint=True).stdout()
         assert all(
             file_or_directory in test_input_ls_result.splitlines() for file_or_directory in ["secrets", "acceptance-test-config.yml"]
         )
-        assert await cat_container.with_exec(["cat", f"{acceptance_test_step.CONTAINER_SECRETS_DIRECTORY}/config.json"], use_entrypoint=True).stdout() == "***"
+        assert (
+            await cat_container.with_exec(
+                ["cat", f"{acceptance_test_step.CONTAINER_SECRETS_DIRECTORY}/config.json"], use_entrypoint=True
+            ).stdout()
+            == "***"
+        )
         env_vars = {await env_var.name(): await env_var.value() for env_var in await cat_container.env_variables()}
         assert "CACHEBUSTER" in env_vars
 

@@ -57,7 +57,8 @@ class Proxy:
         container_addons_path = "/addons.py"
         proxy_container = (
             self.dagger_client.container()
-            .from_(self.MITMPROXY_IMAGE).with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"])
+            .from_(self.MITMPROXY_IMAGE)
+            .with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"])
             # This is caching the mitmproxy stream files, which can contain sensitive information
             # We want to nuke this cache after test suite execution.
             .with_mounted_cache("/dumps", self.dump_cache_volume)
@@ -120,9 +121,12 @@ class Proxy:
         try:
             return await (
                 container.with_service_binding(self.hostname, await self.get_service())
-                .with_mounted_cache("/mitmproxy_dir", self.mitmproxy_dir_cache).with_exec(["cp", cert_path_in_volume, requests_cert_path]).with_exec(["cp", cert_path_in_volume, ca_certificate_path])
+                .with_mounted_cache("/mitmproxy_dir", self.mitmproxy_dir_cache)
+                .with_exec(["cp", cert_path_in_volume, requests_cert_path])
+                .with_exec(["cp", cert_path_in_volume, ca_certificate_path])
                 # The following command make the container use the proxy for all outgoing HTTP requests
-                .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path).with_exec(["update-ca-certificates"])
+                .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path)
+                .with_exec(["update-ca-certificates"])
                 .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
             )
@@ -151,10 +155,8 @@ class Proxy:
         if self.MITM_STREAM_FILE not in dump_files:
             return None
         return await (
-            container.with_exec(["mkdir", "/to_export"], use_entrypoint=True).with_exec(["cp",
-"-r",
-f"/dumps/{self.MITM_STREAM_FILE}",
-f"/to_export/{self.MITM_STREAM_FILE}"], use_entrypoint=True)
+            container.with_exec(["mkdir", "/to_export"], use_entrypoint=True)
+            .with_exec(["cp", "-r", f"/dumps/{self.MITM_STREAM_FILE}", f"/to_export/{self.MITM_STREAM_FILE}"], use_entrypoint=True)
             .file(f"/to_export/{self.MITM_STREAM_FILE}")
         )
 
@@ -163,7 +165,8 @@ f"/to_export/{self.MITM_STREAM_FILE}"], use_entrypoint=True)
         await (
             self.dagger_client.container()
             .from_("alpine:latest")
-            .with_mounted_cache("/to_clear", self.dump_cache_volume).with_exec(["rm", "-rf", "/to_clear/*"], use_entrypoint=True)
+            .with_mounted_cache("/to_clear", self.dump_cache_volume)
+            .with_exec(["rm", "-rf", "/to_clear/*"], use_entrypoint=True)
             .sync()
         )
         logging.info(f"Cache volume {self.dump_cache_volume} cleared")

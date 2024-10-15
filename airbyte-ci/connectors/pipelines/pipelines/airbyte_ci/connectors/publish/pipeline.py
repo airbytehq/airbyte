@@ -47,7 +47,8 @@ class CheckConnectorImageDoesNotExist(Step):
             docker.with_crane(
                 self.context,
             )
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(["ls", docker_repository], use_entrypoint=True)
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_exec(["ls", docker_repository], use_entrypoint=True)
         )
         try:
             crane_ls_stdout = await crane_ls.stdout()
@@ -224,7 +225,9 @@ class PullConnectorImageFromRegistry(Step):
         """
         has_only_gzip_layers = True
         for platform in consts.BUILD_PLATFORMS:
-            inspect = docker.with_crane(self.context).with_exec(["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"], use_entrypoint=True)
+            inspect = docker.with_crane(self.context).with_exec(
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"], use_entrypoint=True
+            )
             try:
                 inspect_stdout = await inspect.stdout()
             except ExecError as e:
@@ -241,7 +244,9 @@ class PullConnectorImageFromRegistry(Step):
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"], use_entrypoint=True)
+                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(
+                    ["spec"], use_entrypoint=True
+                )
             except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
@@ -305,7 +310,9 @@ class UploadSpecToCache(Step):
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
-        spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
+        spec_output = (
+            await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
+        )
         return self._parse_spec_output(spec_output)
 
     async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
@@ -362,7 +369,9 @@ class UploadSbom(Step):
     async def _run(self) -> StepResult:
         try:
             syft_container = self.get_syft_container()
-            sbom_file = await syft_container.with_exec([self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"], use_entrypoint=True).file(self.IN_CONTAINER_SBOM_PATH)
+            sbom_file = await syft_container.with_exec(
+                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"], use_entrypoint=True
+            ).file(self.IN_CONTAINER_SBOM_PATH)
         except ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
 

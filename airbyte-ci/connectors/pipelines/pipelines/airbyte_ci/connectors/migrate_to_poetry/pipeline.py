@@ -160,7 +160,9 @@ class PoetryInit(Step):
         package = "." if not groups else f'.[{",".join(groups)}]'
         connector_container = await connector_container.with_exec(["pip", "install", package], use_entrypoint=True)
 
-        pip_install_dry_run_output = await connector_container.with_exec(["pip", "install", package, "--dry-run"], use_entrypoint=True).stdout()
+        pip_install_dry_run_output = await connector_container.with_exec(
+            ["pip", "install", package, "--dry-run"], use_entrypoint=True
+        ).stdout()
 
         non_transitive_deps = []
         for line in pip_install_dry_run_output.splitlines():
@@ -186,7 +188,8 @@ class PoetryInit(Step):
         dev_dependencies = await self.get_dependencies(connector_container, groups=["dev", "tests"]) - dependencies
         latest_pip_freeze = (
             await self.context.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
-            .from_(f"{self.context.connector.metadata['dockerRepository']}:latest").with_exec(["pip", "freeze"])
+            .from_(f"{self.context.connector.metadata['dockerRepository']}:latest")
+            .with_exec(["pip", "freeze"])
             .stdout()
         )
         latest_dependencies = {
@@ -212,7 +215,9 @@ class PoetryInit(Step):
         }
         toml_string = toml.dumps(pyproject)
         try:
-            with_poetry_lock = await connector_container.with_new_file("pyproject.toml", contents=toml_string).with_exec(["poetry", "install"], use_entrypoint=True)
+            with_poetry_lock = await connector_container.with_new_file("pyproject.toml", contents=toml_string).with_exec(
+                ["poetry", "install"], use_entrypoint=True
+            )
         except dagger.ExecError as e:
             return StepResult(
                 step=self,
@@ -332,7 +337,8 @@ class RegressionTest(Step):
     ) -> None:
         previous_pip_freeze = (
             await self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
-            .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest').with_exec(["pip", "freeze"])
+            .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest')
+            .with_exec(["pip", "freeze"])
             .stdout()
         ).splitlines()
         current_pip_freeze = (await new_connector_container.with_exec(["pip", "freeze"]).stdout()).splitlines()

@@ -298,7 +298,8 @@ class AcceptanceTests(Step):
 
         connector_container_id = await connector_under_test_container.id()
         cat_container = (
-            cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1").with_exec(["mkdir", "/dagger_share"])
+            cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_exec(["mkdir", "/dagger_share"])
             .with_env_variable("CACHEBUSTER", self.get_cache_buster())
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
@@ -691,7 +692,8 @@ class LiveTests(Step):
             container_requirements += ["openssh-client"]
         container = (
             container.with_exec(["apt-get", "update"], use_entrypoint=True)
-            .with_exec(container_requirements).with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"], use_entrypoint=True)
+            .with_exec(container_requirements)
+            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"], use_entrypoint=True)
             .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
             .with_mounted_directory("/app", self.context.live_tests_dir)
             .with_workdir("/app")
@@ -713,32 +715,54 @@ class LiveTests(Step):
 
         if self.context.is_ci:
             container = (
-                container.with_exec(["sed",
-"-i",
-"-E",
-rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
-"pyproject.toml"], use_entrypoint=True).with_exec(["poetry",
-"source",
-"add",
-"--priority=supplemental",
-"airbyte-platform-internal-source",
-"https://github.com/airbytehq/airbyte-platform-internal.git"], use_entrypoint=True)
+                container.with_exec(
+                    [
+                        "sed",
+                        "-i",
+                        "-E",
+                        rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
+                        "pyproject.toml",
+                    ],
+                    use_entrypoint=True,
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "source",
+                        "add",
+                        "--priority=supplemental",
+                        "airbyte-platform-internal-source",
+                        "https://github.com/airbytehq/airbyte-platform-internal.git",
+                    ],
+                    use_entrypoint=True,
+                )
                 .with_secret_variable(
                     "CI_GITHUB_ACCESS_TOKEN",
                     self.context.dagger_client.set_secret(
                         "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
                     ),
-                ).with_exec(["/bin/sh",
-"-c",
-f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN"], use_entrypoint=True)
+                )
+                .with_exec(
+                    [
+                        "/bin/sh",
+                        "-c",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
+                    ],
+                    use_entrypoint=True,
+                )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
-                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json").with_exec(["curl",
-"-o",
-"cloud-sql-proxy",
-"https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64"], use_entrypoint=True).with_exec(["chmod",
-"+x",
-"cloud-sql-proxy"], use_entrypoint=True)
+                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
+                .with_exec(
+                    [
+                        "curl",
+                        "-o",
+                        "cloud-sql-proxy",
+                        "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
+                    ],
+                    use_entrypoint=True,
+                )
+                .with_exec(["chmod", "+x", "cloud-sql-proxy"], use_entrypoint=True)
                 .with_env_variable("CI", "1")
             )
 
@@ -752,5 +776,7 @@ f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $
                 )
             )
 
-        container = container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
+        container = container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
+            ["poetry", "install"], use_entrypoint=True
+        )
         return container

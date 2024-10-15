@@ -249,7 +249,9 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 
         # Install the airbyte-cdk package from the local directory
         # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
-        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(["pip", "install", "--force-reinstall", f"/{path_to_cdk}"])
+        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
+            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"]
+        )
 
     return connector_container
 

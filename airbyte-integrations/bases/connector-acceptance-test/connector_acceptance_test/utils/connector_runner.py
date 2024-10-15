@@ -271,7 +271,9 @@ class ConnectorRunner:
         local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
         entrypoint = await container.entrypoint()
         airbyte_command = entrypoint + airbyte_command
-        container = container.with_exec(["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"])
+        container = container.with_exec(
+            ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"]
+        )
         await container.file(self.IN_CONTAINER_OUTPUT_PATH).export(local_output_file_path)
         output = await AnyioPath(local_output_file_path).read_text()
         await AnyioPath(local_output_file_path).unlink()
