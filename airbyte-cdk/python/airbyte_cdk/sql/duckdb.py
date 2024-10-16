@@ -219,7 +219,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-    def _write_with_executemany(self, buffer, stream_name, table_name):
+    def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str, sync_mode: DestinationSyncMode):
         column_names_list = buffer[stream_name].keys()
         column_names = ", ".join(column_names_list.keys())
         params = ", ".join(["?"] * len(column_names_list))
@@ -233,11 +233,11 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             query, zip(entries_to_write[column_name] for column_name in column_names_list)
         )
 
-    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table):
+    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table, sync_mode: DestinationSyncMode):
         sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
         self._execute_sql(sql)
-
-    def _safe_write(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str):
+    
+    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
@@ -245,11 +245,8 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             logger.exception(
                 f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
             )
-            self._write_with_executemany(buffer, stream_name, table_name)
+            self._write_with_executemany(buffer, stream_name, table_name, sync_mode)
         else:
             # DuckDB will automatically find and SELECT from the `pa_table`
             # local variable defined above.
-            self._write_from_pa_table(table_name, pa_table)
-    
-    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
-        self._safe_write(buffer, stream_name)
+            self._write_from_pa_table(table_name, pa_table, sync_mode)
