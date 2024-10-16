@@ -25,6 +25,7 @@ botocore = "^1.18"
 mysql-connector-python = "8.0.32"
 moto = ">=4.0.0,<5.0.0"
 pytest-cov = "^5.0.0"
+pandas = "^2.2.3"
 
 [tool.poetry.scripts]
 source-shopify = "source_shopify.run:run"

@@ -268,7 +268,7 @@ class LTKSourceShopify(SourceShopify):
             shop_config["credentials"] =  {"auth_method": "api_password", 
                                            "api_password": api_password}
             if not api_password: 
-                print(f"shopify: failed to get access token for active shop: {shop_name}. It will be excluded from the sync.")
+                logger.warning("shopify: failed to get access token for active shop: %s:%s. It will be excluded from the sync.", shop_name, shop_config['shop_id'])
                 continue
             shops.append(shop_config)
         logger.info("Fetched %d well-formed (M&H +  SecretManager) stores from Milk and Honey for extraction", len(shops))

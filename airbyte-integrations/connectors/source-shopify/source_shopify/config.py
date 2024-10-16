@@ -5,13 +5,14 @@ from mysql.connector import Error
 import logging
 
 
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Optional
 from urllib.parse import urlparse, parse_qs
 
 from .constants import ADVERTISERS_QUERY, SHOPIFY_ACCESS_TOKEN_PATH
 
 class AWSClient:
     def __init__(self, config: Mapping[str, Any]): 
+        self.logger = logging.getLogger("airbyte")
         region_name: str = "us-east-1"
         env = config.get("env", "local")
         self.sid = SHOPIFY_ACCESS_TOKEN_PATH.format(account_id=config.get("secret_manager_account"))
@@ -30,13 +31,13 @@ class AWSClient:
         
         self.secrets_manager_client = self.session.client('secretsmanager')
 
-    def _get_shopify_token(self, shopify_id: str) -> str:
+    def _get_shopify_token(self, shopify_id: str) -> Optional[str]:
         try:
             sid = self.sid.replace("{shop_id}",shopify_id)
             resp = self.secrets_manager_client.get_secret_value(SecretId=sid)
             return resp["SecretString"]
         except botocore.exceptions.ClientError as exc:
-            print(
+            self.logger.error(
                 f"shopify: failed to get access token for active shop_id: {shopify_id} ({exc}). Shop will be excluded from the sync."
             )
             return None
@@ -63,7 +64,7 @@ class DatabaseClient:
     def create_connection(self, config: Mapping[str, Any]):
         db_uri = config.get("db_uri", "")
         if not db_uri:
-            raise Exception("Please pass in a DB_URI for Milk and Honey")
+            raise Exception("Please pass in a DB_URI for Milk and Honey DB")
         
         db_info = self.extract_db_info(db_uri)
         try:
@@ -75,7 +76,7 @@ class DatabaseClient:
                 )
             return connection
         except Error as e:
-            print(f"Error while attempting to connecting to M&H db: {e}")
+            self.logger.error(f"Error while attempting to connecting to Milk and Honey DB: {e}")
             return None
         
     def _get_shopify_store_info(self):
@@ -84,12 +85,13 @@ class DatabaseClient:
                 cursor = self.connection.cursor(dictionary=True)
                 cursor.execute(ADVERTISERS_QUERY)
                 results = cursor.fetchall()
-                self.logger.info("Fetched %d stores from Milk and Honey", len(results))
-
+                self.logger.info("Fetched %d stores from Milk and Honey DB", len(results))
                 return results
+            else:
+                raise Exception("Could not connect to Milk and Honey DB.")
 
         except Error as e:
-            print(f"Error executing query: {e}")
+            self.logger.error(f"Error executing query: {e}")
 
         finally:
             if self.connection and self.connection.is_connected():
