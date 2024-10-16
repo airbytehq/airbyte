@@ -1,4 +1,4 @@
-version: 5.11.1
+version: 5.12.0
 
 type: DeclarativeSource
 
@@ -317,11 +317,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversions"
-  events:
+    events:
       type: DeclarativeStream
       name: events
-      primary_key:
-        - account_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -358,9 +356,6 @@ definitions:
             - path:
                 - account_id
               value: "{{ stream_slice.account_id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - meta
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -456,7 +451,7 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"password\"] }}"
-      username: "{{ config['api_key'] }}"
+      username: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -507,7 +502,7 @@ metadata:
   testedStreams:
     accounts:
       hasRecords: true
-      streamHash: 62b795603b9ebf0bf12f7b15068dde12f63227a2
+      streamHash: 31e323386d49b7311d0445018802b3bbaff1d75b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -562,19 +557,19 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     events:
+      hasRecords: true
       streamHash: 049a819d615c2db64d7b84beb801fd2d97f3e1fb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
+      hasRecords: true
       streamHash: 9718bc8ca4cd905bbb039d96bb61a51dc6201cd0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhooks:
       hasRecords: true
       streamHash: 1e105f32d6df6e01820f26d33ca696fea02a2ce8
@@ -877,6 +872,7 @@ schemas:
   tags:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       account_id:
         type:
@@ -890,7 +886,6 @@ schemas:
             - "null"
     required:
       - tags
-    additionalProperties: true
   webhooks:
     type: object
     $schema: http://json-schema.org/schema#
