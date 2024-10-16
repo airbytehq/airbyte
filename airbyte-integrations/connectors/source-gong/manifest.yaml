@@ -1,5 +1,4 @@
 version: 4.6.2
-
 type: DeclarativeSource
 
 check:
@@ -8,235 +7,227 @@ check:
     - users
 
 definitions:
+  # Authenticator
+  authenticator:
+    type: BasicHttpAuthenticator
+    username: '{{ config["access_key"] }}'
+    password: '{{ config["access_key_secret"] }}'
+
+  # Requesters
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.gong.io/v2/
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    request_parameters:
+      fromDateTime: "{{ config['start_date'] }}"
+
+  # POST Requester
+  post_requester:
+    type: HttpRequester
+    url_base: https://api.gong.io/v2/
+    authenticator: "#/definitions/authenticator"
+    http_method: POST
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters['field_path'] }}"]
+
+  # Paginator
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.records.cursor }}"
+      stop_condition: "{{ 'records' not in response }}"
+
+  page_size_paginator:
+    $ref: "#/definitions/base_paginator"
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+
+  post_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: body_json
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.records.cursor }}"
+      stop_condition: "{{ 'records' not in response }}"
+
+  # Retrievers
+  base_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/base_requester"
+    paginator: "#/definitions/base_paginator"
+  
+  post_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/post_requester"
+    paginator: "#/definitions/post_paginator"
+
+  # Base Streams
+  base_full_refresh_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+    retriever: "#/definitions/base_retriever"
+
+  base_full_refresh_post_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+    retriever: "#/definitions/post_retriever"
+
   streams:
     users:
-      type: DeclarativeStream
       name: users
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /users
-          http_method: GET
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - users
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
+      $ref: "#/definitions/base_full_refresh_stream"
+      paginator: "#/definitions/page_size_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+      $parameters:
+        name: users
+        path: /users
+        field_path: "users"
+
     calls:
-      type: DeclarativeStream
       name: calls
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /calls
-          http_method: GET
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - calls
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
+      $ref: "#/definitions/base_full_refresh_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/calls"
-    extensiveCalls:
-      type: DeclarativeStream
-      name: extensiveCalls
+      $parameters:
+        name: calls
+        path: /calls
+        field_path: "calls"
+
+    scorecards:
+      name: scorecards
+      $ref: "#/definitions/base_full_refresh_stream"
+      paginator: "#/definitions/page_size_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecards"
       primary_key:
-        - id
+        - scorecardId
+      $parameters:
+        name: scorecards
+        path: /settings/scorecards
+        field_path: "scorecards"
+
+    answeredScorecards:
+      name: answeredScorecards
+      $ref: "#/definitions/base_full_refresh_post_stream"
       retriever:
-        type: SimpleRetriever
+        $ref: "#/definitions/post_retriever"
         requester:
-          $ref: "#/definitions/base_requester"
-          path: calls/extensive
-          http_method: POST
+          $ref: "#/definitions/post_requester"
           request_body_json:
-            filter:
-              fromDateTime: "{{ config['start_date'] }}"
+            filter: '{"callFromDate": "{{ config["start_date"] }}"}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/answeredScorecards"
+      primary_key:
+        - answeredScorecardId
+      $parameters:
+        name: answeredScorecards
+        path: /stats/activity/scorecards
+        field_path: "answeredScorecards"
+
+    extensiveCalls:
+      name: extensiveCalls
+      $ref: "#/definitions/base_full_refresh_post_stream"
+      retriever:
+        $ref: "#/definitions/post_retriever"
+        requester:
+          $ref: "#/definitions/post_requester"
+          request_body_json:
+            filter: '{"fromDateTime": "{{ config["start_date"] }}"}'
             contentSelector:
-              exposedFields:
-                media: true
-                content:
-                  brief: true
-                  topics: true
-                  outline: true
-                  trackers: true
-                  keyPoints: true
-                  structure: true
-                  highlights: true
-                  callOutcome: true
-                  pointsOfInterest: true
-                  trackerOccurrences: true
-                parties: true
-                interaction:
-                  video: true
-                  speakers: true
-                  questions: true
-                  personInteractionStats: true
-                collaboration:
-                  publicComments: true
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - calls
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: body_json
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
+             exposedFields:
+              media: true
+              content:
+                brief: true
+                topics: true
+                outline: true
+                trackers: true
+                keyPoints: true
+                structure: true
+                highlights: true
+                callOutcome: true
+                pointsOfInterest: true
+                trackerOccurrences: true
+              parties: true
+              interaction:
+                video: true
+                speakers: true
+                questions: true
+                personInteractionStats: true
+              collaboration:
+                publicComments: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/extensiveCalls"
       transformations:
         - type: AddFields
           fields:
             - path:
                 - id
               value: "{{ record['metaData']['id'] }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/extensiveCalls"
-    scorecards:
-      type: DeclarativeStream
-      name: scorecards
-      primary_key:
-        - scorecardId
+      $parameters:
+        name: extensiveCalls
+        path: calls/extensive
+        field_path: "calls"
+
+    callTranscripts:
+      name: callTranscripts
+      $ref: "#/definitions/base_full_refresh_post_stream"
       retriever:
-        type: SimpleRetriever
+        $ref: "#/definitions/post_retriever"
         requester:
-          $ref: "#/definitions/base_requester"
-          path: /settings/scorecards
-          http_method: GET
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - scorecards
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/scorecards"
-    answeredScorecards:
-      type: DeclarativeStream
-      name: answeredScorecards
-      primary_key:
-        - answeredScorecardId
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /stats/activity/scorecards
-          http_method: POST
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
+          $ref: "#/definitions/post_requester"
           request_body_json:
-            filter: '{"callFromDate": "{{ config["start_date"] }}"}'
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - answeredScorecards
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: body_json
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.records.cursor }}"
-            stop_condition: "{{ 'records' not in response }}"
+            filter: '{"fromDateTime": "{{ config["start_date"] }}"}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/answeredScorecards"
-  base_requester:
-    type: HttpRequester
-    url_base: https://api.gong.io/v2/
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: '{{ config["access_key"] }}'
-      password: '{{ config["access_key_secret"] }}'
+          $ref: "#/schemas/callTranscripts"
+      primary_key:
+        - callId
+      $parameters:
+        name: callTranscripts
+        path: calls/transcript
+        field_path: "callTranscripts"
 
 streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/calls"
   - $ref: "#/definitions/streams/extensiveCalls"
+  - $ref: "#/definitions/streams/callTranscripts"
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
 
@@ -1268,3 +1259,58 @@ schemas:
           - string
         description: Type indicating the visibility permissions for the answered
           scorecard.
+  callTranscripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      callId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the call associated with the transcript.
+      transcript:
+        type:
+          - "null"
+          - array
+        description: Contains the transcript of the call
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            speakerId:
+              type:
+                - "null"
+                - string
+              description: Unique identifier for the speaker.
+            topic:
+              type:
+                - "null"
+                - string
+              description: Assigned topic for the segment.
+            sentences:
+              type:
+                - "null"
+                - array
+              description: Text of the transcript.
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  start:
+                    type:
+                      - "null"
+                      - number
+                    description: Start time of the sentence.
+                  end:
+                    type:
+                      - "null"
+                      - number
+                    description: End time of the sentence.
+                  text:
+                    type:
+                      - "null"
+                      - string
+                    description: Text of the sentence.
