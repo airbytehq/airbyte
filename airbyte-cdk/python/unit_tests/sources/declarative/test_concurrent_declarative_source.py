@@ -367,9 +367,9 @@ class DeclarativeStreamDecorator(Stream):
         return self._declarative_stream.get_json_schema()
 
 
-def test_separate_streams():
+def test_group_streams():
     """
-    Tests the separating of low-code streams into ones that can be processed concurrently vs ones that must be processed concurrently
+    Tests the grouping of low-code streams into ones that can be processed concurrently vs ones that must be processed concurrently
     """
 
     catalog = ConfiguredAirbyteCatalog(
@@ -805,7 +805,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     try:
         list(source.read(logger=source.logger, config=config, catalog=catalog, state=[]))
     except AirbyteTracedException:
-        locations_stream = [stream for stream in source.all_streams(config=config) if stream.name == "locations"][0]
+        locations_stream = [stream for stream in source.streams(config=config, include_concurrent_streams=True) if stream.name == "locations"][0]
         final_stream_state = locations_stream.cursor.state
         assert final_stream_state == expected_stream_state
 
@@ -905,6 +905,31 @@ def test_default_to_single_threaded_when_no_concurrency_level():
 
     source = ConcurrentDeclarativeSource(source_config=manifest, config=_CONFIG, catalog=catalog, state=[])
     assert source._concurrent_source._initial_number_partitions_to_generate == 1
+
+
+def test_streams_with_stream_state_interpolation_should_be_synchronous():
+    manifest_with_stream_state_interpolation = copy.deepcopy(_MANIFEST)
+
+    # Add stream_state interpolation to the location stream's HttpRequester
+    manifest_with_stream_state_interpolation["definitions"]["locations_stream"]["retriever"]["requester"]["request_parameters"] = {
+        "after": "{{ stream_state['updated_at'] }}",
+    }
+
+    # Add a RecordFilter component that uses stream_state interpolation to the party member stream
+    manifest_with_stream_state_interpolation["definitions"]["party_members_stream"]["retriever"]["record_selector"]["record_filter"] = {
+        "type": "RecordFilter",
+        "condition": "{{ record.updated_at > stream_state['updated_at'] }}"
+    }
+
+    source = ConcurrentDeclarativeSource(
+        source_config=manifest_with_stream_state_interpolation,
+        config=_CONFIG,
+        catalog=_CATALOG,
+        state=None
+    )
+
+    assert len(source._concurrent_streams) == 0
+    assert len(source._synchronous_streams) == 4
 
 
 def create_wrapped_stream(stream: DeclarativeStream) -> Stream:

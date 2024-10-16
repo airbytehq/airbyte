@@ -88,7 +88,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         else:
             raise ValueError(f"Expected to generate a ConnectionChecker component, but received {check_stream.__class__}")
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], include_concurrent_streams=False) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
         stream_configs = self._stream_configs(self._source_config)
 

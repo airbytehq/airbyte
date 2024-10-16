@@ -390,8 +390,7 @@ class CursorPartitionGenerator(PartitionGenerator):
         start_boundary = self._slice_boundary_fields[self._START_BOUNDARY] if self._slice_boundary_fields else "start"
         end_boundary = self._slice_boundary_fields[self._END_BOUNDARY] if self._slice_boundary_fields else "end"
 
-        wam = list(self._cursor.generate_slices())
-        for slice_start, slice_end in wam:
+        for slice_start, slice_end in self._cursor.generate_slices():
             stream_slice = StreamSlice(
                 partition={},
                 cursor_slice={

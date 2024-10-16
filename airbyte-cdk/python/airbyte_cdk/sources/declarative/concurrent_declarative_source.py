@@ -13,10 +13,13 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSo
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.source import TState
@@ -46,6 +49,10 @@ class DeclarativeCursorAttributes:
 
 
 class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
+
+    # By default, we defer to a value of 1 which represents running a connector using the Concurrent CDK engine on only one thread.
+    SINGLE_THREADED_CONCURRENCY_LEVEL = 1
+
     def __init__(
         self,
         catalog: Optional[ConfiguredAirbyteCatalog],
@@ -69,7 +76,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         self._concurrent_streams: List[AbstractStream]
         self._synchronous_streams: List[Stream]
 
-        self._concurrent_streams, self._synchronous_streams = self._separate_streams(config=config or {})
+        self._concurrent_streams, self._synchronous_streams = self._group_streams(config=config or {})
 
         concurrency_level_from_manifest = self._source_config.get("concurrency_level")
         if concurrency_level_from_manifest:
@@ -82,8 +89,8 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
             concurrency_level = concurrency_level_component.get_concurrency_level()
             initial_number_of_partitions_to_generate = concurrency_level // 2
         else:
-            concurrency_level = 1
-            initial_number_of_partitions_to_generate = 1
+            concurrency_level = self.SINGLE_THREADED_CONCURRENCY_LEVEL
+            initial_number_of_partitions_to_generate = self.SINGLE_THREADED_CONCURRENCY_LEVEL
 
         self._concurrent_source = ConcurrentSource.create(
             num_workers=concurrency_level,
@@ -121,27 +128,26 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         return super().check(logger=logger, config=config)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in self.all_streams(config=config)])
+        return AirbyteCatalog(
+            streams=[stream.as_airbyte_stream() for stream in self.streams(config=config, include_concurrent_streams=True)]
+        )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], include_concurrent_streams=False) -> List[Stream]:
         """
         Returns the list of streams that can be run synchronously in the Python CDK.
 
         NOTE: For ConcurrentDeclarativeSource, this method only returns synchronous streams because it usage is invoked within the
         existing Python CDK. Streams that support concurrency are started from read().
         """
+        if include_concurrent_streams:
+            return self._synchronous_streams + self._concurrent_streams  # type: ignore  # Although AbstractStream doesn't inherit stream, they were designed to fit the same interface when called from streams()
         return self._synchronous_streams
 
-    def all_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return self._synchronous_streams + self._concurrent_streams  # type: ignore  # Although AbstractStream doesn't inherit stream, they were designed to fit the same interface when called from streams()
-
-    def _separate_streams(self, config: Mapping[str, Any]) -> Tuple[List[AbstractStream], List[Stream]]:
+    def _group_streams(self, config: Mapping[str, Any]) -> Tuple[List[AbstractStream], List[Stream]]:
         concurrent_streams: List[AbstractStream] = []
         synchronous_streams: List[Stream] = []
 
         state_manager = ConnectorStateManager(state=self._state)  # type: ignore  # state is always in the form of List[AirbyteStateMessage]. The ConnectorStateManager should use generics, but this can be done later
-
-        self.logger.info(f"what is config: {config}")
 
         for declarative_stream in super().streams(config=config):
             # Some low-code sources use a combination of DeclarativeStream and regular Python streams. We can't inspect
@@ -175,6 +181,10 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                         slice_range=declarative_cursor_attributes.slice_range,
                         cursor_granularity=declarative_cursor_attributes.cursor_granularity,
                     )
+
+                    # This is an optimization so that we don't invoke any cursor or state management flows within the
+                    # low-code framework because state management is handled through the ConcurrentCursor
+                    declarative_stream.cursor = None
 
                     partition_generator = CursorPartitionGenerator(
                         stream=declarative_stream,
@@ -211,7 +221,11 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
     ) -> Optional[DeclarativeCursorAttributes]:
         declarative_cursor = self._get_cursor(stream=declarative_stream)
 
-        if isinstance(declarative_cursor, DatetimeBasedCursor) and type(declarative_cursor) is DatetimeBasedCursor:
+        if (
+            isinstance(declarative_cursor, DatetimeBasedCursor)
+            and type(declarative_cursor) is DatetimeBasedCursor
+            and self._stream_supports_concurrent_partition_processing(declarative_stream=declarative_stream, cursor=declarative_cursor)
+        ):
             # Only incremental non-substreams are supported. Custom DatetimeBasedCursors are also not supported yet
             # because their behavior can deviate from ConcurrentBehavior
 
@@ -220,8 +234,8 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 declarative_cursor.get_partition_field_end().eval(config=config),
             )
 
-            interpolated_state_date = declarative_cursor.get_start_datetime()
-            start_date = interpolated_state_date.get_datetime(config=config)
+            interpolated_start_date = declarative_cursor.get_start_datetime()
+            start_date = interpolated_start_date.get_datetime(config=config)
 
             interpolated_end_date = declarative_cursor.get_end_datetime()
             end_date_provider = partial(interpolated_end_date.get_datetime, config) if interpolated_end_date else None
@@ -247,6 +261,44 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 cursor_granularity=parse_duration(declarative_cursor.cursor_granularity) if declarative_cursor.cursor_granularity else None,
             )
         return None
+
+    @staticmethod
+    def _stream_supports_concurrent_partition_processing(declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor):
+        """
+        Many connectors make use of stream_state during interpolation on a per-partition basis under the assumption that
+        state is updated sequentially. Because the concurrent CDK engine processes different partitions in parallel,
+        stream_state is no longer a thread-safe interpolation context. It would be a race condition because a cursor's
+        stream_state can be updated in any order depending on which stream partition's finish first.
+
+        We should start to move away from depending on the value of stream_state for low-code components that operate
+        per-partition, but we need to gate this otherwise some connectors will be blocked from publishing. See the
+        cdk-migrations.md for the full list of connectors.
+        """
+
+        # If a stream doesn't partition the sync time window into smaller intervals, then we can sync this concurrently because
+        # there is not a race condition on a single partition.
+        if not cursor.step:
+            return True
+
+        if isinstance(declarative_stream.retriever, SimpleRetriever) and isinstance(declarative_stream.retriever.requester, HttpRequester):
+            http_requester = declarative_stream.retriever.requester
+            if "stream_state" in http_requester._path.string:
+                return False
+
+            request_options_provider = http_requester._request_options_provider
+            if request_options_provider.request_options_contain_stream_state():
+                return False
+
+            record_selector = declarative_stream.retriever.record_selector
+            if isinstance(record_selector, RecordSelector):
+                if record_selector.record_filter and "stream_state" in record_selector.record_filter.condition:
+                    return False
+
+                for add_fields in [transformation for transformation in record_selector.transformations if isinstance(transformation, AddFields)]:
+                    for field in add_fields.fields:
+                        if "stream_state" in field.value:
+                            return False
+        return True
 
     @staticmethod
     def _get_cursor(stream: DeclarativeStream) -> Optional[DeclarativeCursor]:

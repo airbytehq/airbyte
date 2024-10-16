@@ -5,12 +5,15 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from deprecated import deprecated
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import NestedMapping
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
     InterpolatedNestedRequestInputProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
+from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
@@ -109,3 +112,28 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+
+    @deprecated("This class is temporary and used to incrementally deliver low-code to concurrent", category=ExperimentalClassWarning)
+    def request_options_contain_stream_state(self):
+        """
+        Temporary helper method used as we move low-code streams to the concurrent framework. This method determines if
+        the InterpolatedRequestOptionsProvider has is a dependency on a non-thread safe interpolation context such as
+        stream_state.
+        """
+
+        return (
+            self._check_if_interpolation_uses_stream_state(self.request_parameters) or
+            self._check_if_interpolation_uses_stream_state(self.request_headers) or
+            self._check_if_interpolation_uses_stream_state(self.request_body_data) or
+            self._check_if_interpolation_uses_stream_state(self.request_body_json)
+        )
+
+    @staticmethod
+    def _check_if_interpolation_uses_stream_state(request_input: RequestInput):
+        if isinstance(request_input, str):
+            return "stream_state" in request_input
+        else:
+            for key, val in request_input.items():
+                if "stream_state" in key or "stream_state" in val:
+                    return True
+        return False
