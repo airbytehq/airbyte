@@ -16,7 +16,7 @@ data:
   name: Freshservice
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: "2021-10-29"

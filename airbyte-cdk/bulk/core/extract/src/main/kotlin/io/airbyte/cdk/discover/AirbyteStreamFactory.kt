@@ -20,7 +20,7 @@ interface AirbyteStreamFactory {
                 discoveredStream.id.name,
                 discoveredStream.id.namespace,
                 discoveredStream.columns.map {
-                    AirbyteField.of(it.id, it.type.airbyteType.asJsonSchemaType())
+                    AirbyteField.of(it.id, it.type.airbyteSchemaType.asJsonSchemaType())
                 },
             )
     }
