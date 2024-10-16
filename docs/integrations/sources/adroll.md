@@ -17,20 +17,20 @@ Docs : https://developers.adroll.com/apis
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Segments | segment_id | DefaultPaginator | ✅ |  ❌  |
+| Segments | segment_id | No pagination | ✅ |  ❌  |
 | Campaign | campaign_eid | DefaultPaginator | ✅ |  ❌  |
 | Strategy |  | No pagination | ✅ |  ❌  |
-| Strategies | eid | No pagination | ✅ |  ❌  |
+| Strategies | eid | DefaultPaginator | ✅ |  ❌  |
 | Advertisable |  | No pagination | ✅ |  ❌  |
 | Active Pixels for an Advertisable | eid | No pagination | ✅ |  ❌  |
 | Consent Banner Config for an Advertisable |  | No pagination | ✅ |  ❌  |
 | Pixel | eid | No pagination | ✅ |  ❌  |
 | Segments for a Pixel | eid | No pagination | ✅ |  ❌  |
-| Campaigns | eid | DefaultPaginator | ✅ |  ❌  |
-| AdGroups by Advertisables | eid | DefaultPaginator | ✅ |  ❌  |
-| Ads | eid | DefaultPaginator | ✅ |  ❌  |
-| All Ads by AdGroup |  | DefaultPaginator | ✅ |  ❌  |
-| AdGroups by Campaigns |  | DefaultPaginator | ✅ |  ❌  |
+| Campaigns | eid | No pagination | ✅ |  ❌  |
+| AdGroups by Advertisables | eid | No pagination | ✅ |  ❌  |
+| Ads | eid | No pagination | ✅ |  ❌  |
+| All Ads by AdGroup |  | No pagination | ✅ |  ❌  |
+| AdGroups by Campaigns |  | No pagination | ✅ |  ❌  |
 | Advertisables | eid | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
@@ -40,6 +40,6 @@ Docs : https://developers.adroll.com/apis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-11 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-16 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

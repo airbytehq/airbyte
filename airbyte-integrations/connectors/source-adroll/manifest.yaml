@@ -37,21 +37,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - segments
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -160,12 +145,23 @@ definitions:
           http_method: GET
           request_parameters:
             advertisable_eid: "{{ stream_partition.parent_id }}"
+            paginate: "true"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_date\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_date\", {}) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -354,21 +350,6 @@ definitions:
               - advertisable
               - byEID
               - campaigns
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -408,21 +389,6 @@ definitions:
               - advertisable
               - byEID
               - adgroups
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -462,21 +428,6 @@ definitions:
               - advertisable
               - byEID
               - ads
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -513,21 +464,6 @@ definitions:
               - data
               - ad
               - byAdgroup
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -564,21 +500,6 @@ definitions:
               - data
               - adgroup
               - byCampaign
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -734,33 +655,33 @@ metadata:
     Advertisables: true
   testedStreams:
     Segments:
-      hasRecords: true
-      streamHash: 7cabb500917107071bfb66133f9fc6e1ddbb8bf4
+      streamHash: 45dd8c6603633b4ec5a411c43c62292eaa5524da
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Campaign:
       hasRecords: true
-      streamHash: d7e8fbd572724f879df45b98bf6c71ea65014a14
+      streamHash: 534cc1b7627f50c88f3c4d53676f9057fcb2c3ff
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     Strategy:
-      hasRecords: true
-      streamHash: 564c0c4d6680f541a2624b08fc7253770d7ea34e
+      streamHash: 8982e40d9cfff0cfc4f3f23435d7b0853619185e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Strategies:
-      hasRecords: true
-      streamHash: 95fce3aa66a9f8f5958bac404315a2bca1a14404
+      streamHash: 1cf3d971e170d40694a3663c5415d4928bb28cbd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Advertisable:
       hasRecords: true
       streamHash: 8497a820610d0c9cac913f2d4adb15453b74f1a0
@@ -798,39 +719,39 @@ metadata:
       responsesAreSuccessful: true
     Campaigns:
       hasRecords: true
-      streamHash: d726e5503256eeb325026cfb802a1254ddd553f4
+      streamHash: 7899e61b94ff1d71b77225a17c1fc790657d50df
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     AdGroups by Advertisables:
-      hasRecords: true
-      streamHash: f5370bd6d30e3732dc552bb569266bf7b534dd94
+      streamHash: 9e44fa7de2f6489835d8ceece3ff7a116e9b3d27
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Ads:
-      hasRecords: true
-      streamHash: 667c1df55b0f3e2c33b562c5fca35b78a928e10a
+      streamHash: 7a0a76dcbf931cd053c6925a8cd41c2428826173
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     All Ads by AdGroup:
-      hasRecords: true
-      streamHash: d4b3d9c65e7e2cb91c88a8ceafd19bdf414ae5aa
+      streamHash: 85c04de21eaeffb1fdd314f896f77e182da49027
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     AdGroups by Campaigns:
-      hasRecords: true
-      streamHash: 04aa1be8cdd1245d7789c8a78d66120a4b80a17f
+      streamHash: 118962ec3e7200f4583077a2d07d189d6235616b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Advertisables:
       hasRecords: true
       streamHash: d452e708d32a4b3458c640649761807bf165df41
