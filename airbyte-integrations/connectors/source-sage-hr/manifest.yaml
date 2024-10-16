@@ -228,27 +228,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/termination-reasons"
-    policies:
-      type: DeclarativeStream
-      name: policies
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /leave-management/policies
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/policies"
     individual-allowances:
       type: DeclarativeStream
       name: individual-allowances
@@ -454,7 +433,6 @@ metadata:
     teams: false
     terminated-employees: false
     termination-reasons: true
-    policies: false
     individual-allowances: false
     document-categories: false
     offboarding-categories: false
@@ -505,13 +483,6 @@ metadata:
       primaryKeysAreUnique: true
     termination-reasons:
       streamHash: 7cc49c6aab5d11d0b76be2f0aaadccc662a2aa8f
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    policies:
-      streamHash: 6f74ecbc3aeb371fa82f6e98df9359fda61748ed
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -783,43 +754,6 @@ schemas:
       id:
         type: number
       name:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  policies:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      accrue_type:
-        type:
-          - string
-          - "null"
-      color:
-        type:
-          - string
-          - "null"
-      default_allowance:
-        type:
-          - string
-          - "null"
-      do_not_accrue:
-        type:
-          - boolean
-          - "null"
-      id:
-        type: number
-      max_carryover:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      unit:
         type:
           - string
           - "null"
