@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import warnings
 from pathlib import Path
 from textwrap import dedent, indent
@@ -14,16 +15,21 @@ from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import text
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 from airbyte_cdk.sql._writers.jsonl import JsonlWriter
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.sql_processor import SqlProcessorBase
 from airbyte_cdk.sql.sql_processor import SqlConfig
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
 import pyarrow as pa
 
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
+
+logger = logging.getLogger(__name__)
 
 
 # @dataclass
@@ -213,43 +219,133 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             try:
                 conn.executemany(sql, params)
             except (
-                sqlalchemy.exc.ProgrammingError,
-                sqlalchemy.exc.SQLAlchemyError,
+                ProgrammingError,
+                SQLAlchemyError,
             ) as ex:
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-    def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str, sync_mode: DestinationSyncMode):
+    def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str):
         column_names_list = buffer[stream_name].keys()
         column_names = ", ".join(column_names_list.keys())
         params = ", ".join(["?"] * len(column_names_list))
-        query = f"""
+        sql = f"""
+        -- Write with executemany
         INSERT INTO {self._fully_qualified(table_name)}
             ({column_names})
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]
         self._executemany(
-            query, zip(entries_to_write[column_name] for column_name in column_names_list)
+            sql, zip(entries_to_write[column_name] for column_name in column_names_list)
         )
 
-    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table, sync_mode: DestinationSyncMode):
-        if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
-            sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
-        elif sync_mode == DestinationSyncMode.append_dedup:
-            sql = f"INSERT OR REPLACE INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
+    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table):
+        full_table_name = self._fully_qualified(table_name)
+        sql = f"""
+        -- Write from PyArrow table
+        INSERT INTO {full_table_name} SELECT * FROM pa_table
+        """
         self._execute_sql(sql)
+
+    def _write_temp_table_to_target_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+        sync_mode: DestinationSyncMode,
+    ) -> None:
+        """Write the temp table into the final table using the provided write strategy."""
+        if sync_mode == DestinationSyncMode.overwrite:
+            # Note: No need to check for schema compatibility
+            # here, because we are fully replacing the table.
+            self._swap_temp_table_with_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        if sync_mode == DestinationSyncMode.append:
+            self._ensure_compatible_table_schema(
+                stream_name=stream_name,
+                table_name=final_table_name,
+            )
+            self._append_temp_table_to_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        if sync_mode == DestinationSyncMode.append_dedup:
+            self._ensure_compatible_table_schema(
+                stream_name=stream_name,
+                table_name=final_table_name,
+            )
+            if not self.supports_merge_insert:
+                # Fallback to emulated merge if the database does not support merge natively.
+                self._emulated_merge_temp_table_to_final_table(
+                    stream_name=stream_name,
+                    temp_table_name=temp_table_name,
+                    final_table_name=final_table_name,
+                )
+                return
+
+            self._merge_temp_table_to_final_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name,
+                final_table_name=final_table_name,
+            )
+            return
+
+        raise exc.AirbyteInternalError(
+            message="Write method is not supported.",
+            context={
+                "write_method": write_method,
+            },
+        )
     
+    def _drop_duplicates(self, table_name: str, stream_name: str):
+        primary_keys = self.catalog_provider.get_primary_keys(stream_name)
+        new_table_name = f"{table_name}_deduped"
+        if primary_keys:
+            pks = ", ".join(primary_keys)
+            sql = f"""
+            -- Drop duplicates from temp table
+            CREATE TABLE {self._fully_qualified(new_table_name)} AS (
+                SELECT * FROM {self._fully_qualified(table_name)}
+                QUALIFY row_number() OVER (PARTITION BY ({pks}) ORDER BY {AB_EXTRACTED_AT_COLUMN} DESC) = 1
+            )
+            """
+            self._execute_sql(sql)
+            return new_table_name
+        return table_name
+
     def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
         table_name = f"_airbyte_raw_{stream_name}"
+        temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except:
             logger.exception(
-                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+                f"Writing with PyArrow table failed, falling back to writing with executemany. Expect some performance degradation."
             )
-            self._write_with_executemany(buffer, stream_name, table_name, sync_mode)
+            self._write_with_executemany(buffer, stream_name, temp_table_name)
         else:
             # DuckDB will automatically find and SELECT from the `pa_table`
             # local variable defined above.
-            self._write_from_pa_table(table_name, pa_table, sync_mode)
+            self._write_from_pa_table(temp_table_name, pa_table)
+
+        temp_table_name_dedup = self._drop_duplicates(temp_table_name, stream_name)
+
+        try:
+            self._write_temp_table_to_target_table(
+                stream_name=stream_name,
+                temp_table_name=temp_table_name_dedup,
+                final_table_name=table_name,
+                sync_mode=sync_mode,
+            )
+        finally:
+            self._drop_temp_table(temp_table_name_dedup, if_exists=True)
+            self._drop_temp_table(temp_table_name, if_exists=True)

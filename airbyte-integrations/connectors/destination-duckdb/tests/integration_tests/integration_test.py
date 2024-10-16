@@ -61,7 +61,7 @@ def test_schema_name() -> str:
 
 
 @pytest.fixture
-def config(request, test_schema_name: str) -> Dict[str, str]:
+def config(request, test_schema_name: str) -> Generator[Any, Any, Any]:
     if request.param == "local_file_config":
         tmp_dir = tempfile.TemporaryDirectory()
         test = os.path.join(str(tmp_dir.name), "test.duckdb")
@@ -283,7 +283,7 @@ def test_write(
     assert result[1][1] == "777-54-0664"
 
 
-def test_write_upsert(
+def test_write_dupe(
     config: Dict[str, str],
     request,
     configured_catalogue_append_dedup: ConfiguredAirbyteCatalog,
@@ -298,15 +298,7 @@ def test_write_upsert(
     generator = destination.write(
         config,
         configured_catalogue_append_dedup,
-        [airbyte_message1, airbyte_message2, airbyte_message3],
-    )
-
-    result = list(generator)
-
-    generator = destination.write(
-        config,
-        configured_catalogue_append_dedup,
-        [airbyte_message2_update, airbyte_message3],
+        [airbyte_message1, airbyte_message2, airbyte_message2_update, airbyte_message3],
     )
 
     result = list(generator)
