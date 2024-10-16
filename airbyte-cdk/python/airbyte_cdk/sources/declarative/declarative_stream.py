@@ -134,7 +134,7 @@ class DeclarativeStream(Stream):
             stream_slice = StreamSlice(partition={}, cursor_slice={})
         if not isinstance(stream_slice, StreamSlice):
             raise ValueError(f"DeclarativeStream does not support stream_slices that are not StreamSlice. Got {stream_slice}")
-        yield from self.retriever.read_records(self.get_json_schema(), stream_slice) # type: ignore # records are of the correct type
+        yield from self.retriever.read_records(self.get_json_schema(), stream_slice)  # type: ignore # records are of the correct type
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
