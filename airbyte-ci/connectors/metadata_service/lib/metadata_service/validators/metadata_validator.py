@@ -206,27 +206,42 @@ def validate_docker_image_tag_is_not_decremented(
     return True, None
 
 
-def validate_release_candidate_has_rc_suffix_in_version(
+def check_is_dev_version(version: str) -> bool:
+    """Check whether the version is a pre-release version."""
+    parsed_version = semver.VersionInfo.parse(version)
+    return parsed_version.prerelease is not None and not "rc" in parsed_version.prerelease
+
+
+def check_is_release_candidate_version(version: str) -> bool:
+    """Check whether the version is a release candidate version."""
+    parsed_version = semver.VersionInfo.parse(version)
+    return parsed_version.prerelease is not None and "rc" in parsed_version.prerelease
+
+
+def validate_rc_suffix_and_rollout_configuration(
     metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
     # Bypass validation for pre-releases
     if _validator_opts and _validator_opts.prerelease_tag:
         return True, None
 
-    is_release_candidate = get(metadata_definition, "data.releases.isReleaseCandidate")
-    if not is_release_candidate:
-        return True, None
-
     docker_image_tag = get(metadata_definition, "data.dockerImageTag")
     if docker_image_tag is None:
         return False, "The dockerImageTag field is not set."
     try:
-        parsed_version = semver.VersionInfo.parse(docker_image_tag)
-        has_rc_suffix = parsed_version.prerelease and "rc" in parsed_version.prerelease
-        if not has_rc_suffix:
+        is_dev_version = check_is_dev_version(docker_image_tag)
+        is_rc_version = check_is_release_candidate_version(docker_image_tag)
+        is_prerelease = is_dev_version or is_rc_version
+        enabled_progressive_rollout = get(metadata_definition, "data.releases.rolloutConfiguration.enableProgressiveRollout", None)
+        if is_rc_version and enabled_progressive_rollout is None:
             return (
                 False,
-                "The dockerImageTag field should have an -rc.<RC #> suffix as the connector is marked as a release candidate (releases.isReleaseCandidate). Example: 2.1.0-rc.1",
+                "The dockerImageTag field has an -rc suffix but the connector is not set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout).",
+            )
+        if enabled_progressive_rollout is True and not is_prerelease:
+            return (
+                False,
+                "The dockerImageTag field should have an -rc.<RC #> suffix as the connector is set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout). Example: 2.1.0-rc.1",
             )
     except ValueError:
         return False, f"The dockerImageTag field is not a valid semver version: {docker_image_tag}."
@@ -242,7 +257,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
     validate_docker_image_tag_is_not_decremented,
-    validate_release_candidate_has_rc_suffix_in_version,
+    validate_rc_suffix_and_rollout_configuration,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
