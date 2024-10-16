@@ -202,6 +202,9 @@ class StateManagerFactory(
             if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
                 return CommonMetaField.CDC_LSN
             }
+            if (cursorColumnID == CommonMetaField.CDC_CURSOR.id) {
+                return CommonMetaField.CDC_CURSOR
+            }
             return dataColumnOrNull(cursorColumnID)
         }
         val configuredPrimaryKey: List<Field>? =

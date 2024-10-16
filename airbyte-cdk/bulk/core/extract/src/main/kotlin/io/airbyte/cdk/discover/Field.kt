@@ -66,6 +66,7 @@ enum class CommonMetaField(
     CDC_LSN(CdcStringMetaFieldType),
     CDC_UPDATED_AT(CdcOffsetDateTimeMetaFieldType),
     CDC_DELETED_AT(CdcOffsetDateTimeMetaFieldType),
+    CDC_CURSOR(CdcIntegerMetaFieldType),
     ;
 
     override val id: String
