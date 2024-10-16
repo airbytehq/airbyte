@@ -396,7 +396,6 @@ streams:
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/terminated-employees"
   - $ref: "#/definitions/streams/termination-reasons"
-  - $ref: "#/definitions/streams/policies"
   - $ref: "#/definitions/streams/individual-allowances"
   - $ref: "#/definitions/streams/document-categories"
   - $ref: "#/definitions/streams/offboarding-categories"
