@@ -317,9 +317,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversions"
-    events:
+  events:
       type: DeclarativeStream
       name: events
+      primary_key:
+        - account_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -356,6 +358,9 @@ definitions:
             - path:
                 - account_id
               value: "{{ stream_slice.account_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - meta
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -855,6 +860,7 @@ schemas:
   events:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       account_id:
         type:
@@ -868,7 +874,6 @@ schemas:
           type:
             - string
             - "null"
-    additionalProperties: true
   tags:
     type: object
     $schema: http://json-schema.org/schema#
