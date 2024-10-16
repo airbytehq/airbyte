@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "https://*.sage.hr/api/"
   registryOverrides:
     oss:
       enabled: true
