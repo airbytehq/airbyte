@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -8,8 +9,10 @@ import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.toKotlinDuration
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -66,22 +69,32 @@ class RootReader(
                 }
             // Call listener hook.
             listener(feedJobs)
-            // Join on all stream feeds and collect caught exceptions.
-            val streamExceptions: Map<Stream, Throwable?> =
-                feeds.filterIsInstance<Stream>().associateWith {
-                    feedJobs[it]?.join()
-                    exceptions[it]
-                }
             // Join on all global feeds and collect caught exceptions.
             val globalExceptions: Map<Global, Throwable?> =
                 feeds.filterIsInstance<Global>().associateWith {
                     feedJobs[it]?.join()
                     exceptions[it]
                 }
+
+            // Certain errors on the global feed cause a full stop to all stream reads
+            if (globalExceptions.values.filterIsInstance<ConfigErrorException>().isNotEmpty()) {
+                this@supervisorScope.cancel()
+            }
+
+            // Join on all stream feeds and collect caught exceptions.
+            val streamExceptions: Map<Stream, Throwable?> =
+                feeds.filterIsInstance<Stream>().associateWith {
+                    try {
+                        feedJobs[it]?.join()
+                        exceptions[it]
+                    } catch (_: CancellationException) {
+                        null
+                    }
+                }
             // Reduce and throw any caught exceptions.
             val caughtExceptions: List<Throwable> =
-                streamExceptions.values.mapNotNull { it } +
-                    globalExceptions.values.mapNotNull { it }
+                globalExceptions.values.mapNotNull { it } +
+                    streamExceptions.values.mapNotNull { it }
             if (caughtExceptions.isNotEmpty()) {
                 val cause: Throwable =
                     caughtExceptions.reduce { acc: Throwable, exception: Throwable ->

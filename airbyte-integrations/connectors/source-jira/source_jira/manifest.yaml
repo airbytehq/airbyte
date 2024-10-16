@@ -569,13 +569,15 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_use_cache"
       partition_router:
-        type: CustomPartitionRouter
-        class_name: "source_jira.components.partition_routers.SubstreamPartitionRouterWithContext"
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/__custom_issue_fields_substream"
             parent_key: "id"
             partition_field: "field_id"
+            extra_fields:
+              - ["schema", "type"]
+              - ["schema", "items"]
       requester:
         $ref: "#/definitions/retriever_use_cache/requester"
         error_handler:
@@ -591,7 +593,7 @@ definitions:
             value: "{{ stream_slice.field_id }}"
           - path: ["fieldType"]
             value_type: string
-            value: "{{ stream_slice.parent_record.schema.type }}"
+            value: "{{ stream_slice.extra_fields['schema.type'] }}"
     $parameters:
       path: "field/{{ stream_slice.field_id }}/context"
       extract_field: "values"
@@ -604,7 +606,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ stream_slice.parent_record.schema.type == 'option' or stream_slice.parent_record.schema.get('items', '') == 'option'}}"
+          condition: "{{ stream_slice.extra_fields['schema.type'] == 'option' or stream_slice.extra_fields['schema.items'] == 'option'}}"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
   issue_custom_field_options_stream:
