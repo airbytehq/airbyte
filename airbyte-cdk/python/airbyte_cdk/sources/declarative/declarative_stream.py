@@ -3,6 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
+from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -135,6 +136,7 @@ class DeclarativeStream(Stream):
             raise ValueError(f"DeclarativeStream does not support stream_slices that are not StreamSlice. Got {stream_slice}")
         yield from self.retriever.read_records(self.get_json_schema(), stream_slice)
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
         :return: A dict of the JSON schema representing this stream.
