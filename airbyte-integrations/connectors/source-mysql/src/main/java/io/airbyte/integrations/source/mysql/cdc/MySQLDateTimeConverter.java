@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql.cdc;
 
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
@@ -26,8 +27,8 @@ import org.slf4j.LoggerFactory;
  * https://debezium.io/documentation/reference/2.1/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
- * {@link MysqlDebeziumOperations#commonProperties} (If you don't rename, a test would still fail
- * but it might be tricky to figure out where to change the property name)
+ * {@link MySqlCdcProperties#commonProperties(JdbcDatabase)} (If you don't rename, a test would
+ * still fail but it might be tricky to figure out where to change the property name)
  */
 public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
