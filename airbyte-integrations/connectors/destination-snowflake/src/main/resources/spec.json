@@ -188,6 +188,14 @@
         "description": "Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE",
         "title": "Use MERGE for De-duplication of final tables",
         "order": 14
+      },
+      "enable_change_tracking": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether to enable change tracking for the destination",
+        "title": "Enable Change Tracking",
+        "order": 15
+
       }
     }
   },
