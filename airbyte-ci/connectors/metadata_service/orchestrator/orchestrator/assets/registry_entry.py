@@ -287,12 +287,30 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     return overridden_metadata_data
 
 
+def apply_entry_schema_migrations(registry_entry: dict) -> dict:
+    """Apply schema migrations to the registry entry.
+
+    Args:
+        registry_entry (dict): The registry entry.
+
+    Returns:
+        dict: The registry entry with the schema migrations applied.
+    """
+    # apply schema migrations here
+    if registry_entry.get("releases").get("isReleaseCandidate"):
+        registry_entry["releases"].pop("isReleaseCandidate")
+    if registry_entry.get("releases") == dict():
+        registry_entry.pop("releases")
+    return registry_entry
+
+
 @sentry_sdk.trace
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     json_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = json.loads(json_string)
 
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
+    registry_entry_dict = apply_entry_schema_migrations(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
 
     return connector_type, registry_entry
