@@ -116,7 +116,7 @@ class FormatCommand(click.Command):
             Any: The result of running the command
         """
 
-        dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Format {self.formatter.value}")
+        dagger_client = await click_pipeline_context.get_dagger_client()
         dir_to_format = self.get_dir_to_format(dagger_client)
 
         container = self.get_format_container_fn(dagger_client, dir_to_format)
