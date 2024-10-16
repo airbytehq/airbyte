@@ -751,7 +751,7 @@ class LiveTests(Step):
                     use_entrypoint=True,
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
-                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS", ""))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
                 .with_exec(
                     [
