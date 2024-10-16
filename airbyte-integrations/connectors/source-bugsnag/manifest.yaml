@@ -49,7 +49,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -93,7 +93,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -113,7 +113,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -234,7 +234,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -254,7 +254,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -298,7 +298,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -318,7 +318,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       transformations:
@@ -485,7 +485,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -587,7 +587,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 10
-            cursor_value: "{{ headers.get(\"Link\", {}).split(\";\")[0][1:-1] }}"
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
             stop_condition: >-
               {{ not headers.get("Link", {}) or 'rel="next"' not in
               headers.get("Link", {}) }}
@@ -607,7 +607,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       transformations:
