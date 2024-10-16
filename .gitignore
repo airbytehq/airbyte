@@ -14,9 +14,6 @@ out
 **/gmon.out
 static_checker_reports/
 
-# Lock files
-*.lock
-
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/
