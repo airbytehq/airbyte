@@ -4,9 +4,11 @@
 
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterator, List, Mapping, Tuple
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -229,3 +231,91 @@ class SourceShopify(AbstractSource):
         return [
             stream_instance for stream_instance in stream_instances if self.format_stream_name(stream_instance.name) in permitted_streams
         ]
+
+class LTKSourceShopify(SourceShopify):
+
+    def __init__(self, db_client, aws_client) -> None:
+        super().__init__()
+        self._shops = None
+        self._db_client = db_client
+        self._aws_client = aws_client
+    
+    @property
+    def shops(self):
+        return self._shops
+    
+    @shops.setter
+    def shops(self, shops):
+        if self._shops is None:
+            self._shops = shops
+        else:
+            raise ValueError("Shops have already been gathered.")
+
+    
+    def gatherLTKShopifyStores(self, logger: logging.Logger):
+        shops = []
+        shopify_stores = self._db_client._get_shopify_store_info()
+        if not shopify_stores:
+            raise Exception("No Shopify Store data available in Milk And Honey.")
+
+        for row in shopify_stores:
+            shop_config = {}
+            shop_name = row['advertiser_homepage'].replace("https://", "")
+            shop_name = shop_name.replace('.myshopify.com', "")
+            shop_config['shop'] = shop_name
+            shop_config['shop_id'] = row['affiliateId']
+            api_password = self._aws_client._get_shopify_token(row['affiliateId'])
+            shop_config["credentials"] =  {"auth_method": "api_password", 
+                                           "api_password": api_password}
+            if not api_password: 
+                logger.warning("shopify: failed to get access token for active shop: %s:%s. It will be excluded from the sync.", shop_name, shop_config['shop_id'])
+                continue
+            shops.append(shop_config)
+        logger.info("Fetched %d well-formed (M&H +  SecretManager) stores from Milk and Honey for extraction", len(shops))
+        return shops
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        """
+        Testing connection availability for the connector.
+        """
+        if not self.shops:
+            self.shops = self.gatherLTKShopifyStores(logger)
+        
+        if not self.shops:
+            logger.info("No shops to test connection on")
+            return True, None
+        for shop_config in self.shops:
+            shop_config["authenticator"] = ShopifyAuthenticator(shop_config)
+            #only test the first shop
+            logger.info("Checking connection for %s", self.get_shop_name(shop_config))
+            return ConnectionCheckTest(shop_config).test_connection()
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        if not self.shops:
+            self.shops = self.gatherLTKShopifyStores(logger)
+        for shop_config in self.shops:
+            catalog = super().discover(logger, shop_config)
+            logger.info("Discover succeeded for %s. Stopping now", self.get_shop_name(shop_config))
+            return catalog
+        
+    def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage] = None) -> Iterator[AirbyteMessage]:
+        result = []
+        errored_stores = []
+        if not self.shops:
+            self.shops = self.gatherLTKShopifyStores(logger)
+        if not self.shops:
+            logger.info("No shops to read data from")
+            return []
+        for shop_config in self.shops:
+            try:
+                logger.info(f"Starting syncing store: {self.get_shop_name(shop_config)}")
+                yield from super().read(logger, shop_config, catalog, state)
+                logger.info("Read succeeded for %s", self.get_shop_name(shop_config))
+            
+            except Exception as e:
+                errored_stores.append(self.get_shop_name(shop_config))
+                logging.error(f"Error processing {self.get_shop_name(shop_config)}: {e}")
+        if errored_stores:
+            logging.error("Following stores had errors while reading:%s", errored_stores)
+        logger.info("Read completed.")
+        return result

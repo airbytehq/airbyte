@@ -38,6 +38,9 @@ def _get_config(start_date: datetime, bulk_window: int = 1) -> Dict[str, Any]:
     return {
         "start_date": start_date.strftime("%Y-%m-%d"),
         "shop": _SHOP_NAME,
+        "db_uri": "mysql://user:password@localhost:3306/testdb",
+        "env": "test",
+        "secret_manager_account": "123613746",
         "credentials": {
             "auth_method": "api_password",
             "api_password": "api_password",

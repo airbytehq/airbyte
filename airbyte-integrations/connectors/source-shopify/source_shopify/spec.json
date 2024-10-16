@@ -4,87 +4,126 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": ["shop"],
+    "required": ["db_uri", "env", "secret_manager_account"],
     "additionalProperties": true,
     "properties": {
-      "shop": {
-        "type": "string",
-        "title": "Shopify Store",
-        "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
-        "pattern": "^(?!https://)(?!https://).*",
-        "examples": ["my-store", "my-store.myshopify.com"],
-        "order": 1
-      },
-      "credentials": {
-        "title": "Shopify Authorization Method",
-        "description": "The authorization method to use to retrieve data from Shopify",
-        "type": "object",
-        "order": 2,
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "OAuth2.0",
-            "description": "OAuth2.0",
-            "required": ["auth_method"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "oauth2.0",
-                "order": 0
-              },
-              "client_id": {
-                "type": "string",
-                "title": "Client ID",
-                "description": "The Client ID of the Shopify developer application.",
-                "airbyte_secret": true,
-                "order": 1
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of the Shopify developer application.",
-                "airbyte_secret": true,
-                "order": 2
-              },
-              "access_token": {
-                "type": "string",
-                "title": "Access Token",
-                "description": "The Access Token for making authenticated requests.",
-                "airbyte_secret": true,
-                "order": 3
+      "shops": {
+        "shop": {
+          "type": "string",
+          "title": "Shopify Store",
+          "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
+          "pattern": "^(?!https://)(?!https://).*",
+          "examples": ["my-store", "my-store.myshopify.com"],
+          "order": 1
+        },
+        "credentials": {
+          "title": "Shopify Authorization Method",
+          "description": "The authorization method to use to retrieve data from Shopify",
+          "type": "object",
+          "order": 2,
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "OAuth2.0",
+              "description": "OAuth2.0",
+              "required": ["auth_method"],
+              "properties": {
+                "auth_method": {
+                  "type": "string",
+                  "const": "oauth2.0",
+                  "order": 0
+                },
+                "client_id": {
+                  "type": "string",
+                  "title": "Client ID",
+                  "description": "The Client ID of the Shopify developer application.",
+                  "airbyte_secret": true,
+                  "order": 1
+                },
+                "client_secret": {
+                  "type": "string",
+                  "title": "Client Secret",
+                  "description": "The Client Secret of the Shopify developer application.",
+                  "airbyte_secret": true,
+                  "order": 2
+                },
+                "access_token": {
+                  "type": "string",
+                  "title": "Access Token",
+                  "description": "The Access Token for making authenticated requests.",
+                  "airbyte_secret": true,
+                  "order": 3
+                }
+              }
+            },
+            {
+              "title": "API Password",
+              "description": "API Password Auth",
+              "type": "object",
+              "required": ["auth_method", "api_password"],
+              "properties": {
+                "auth_method": {
+                  "type": "string",
+                  "const": "api_password",
+                  "order": 0
+                },
+                "api_password": {
+                  "type": "string",
+                  "title": "API Password",
+                  "description": "The API Password for your private application in the `Shopify` store.",
+                  "airbyte_secret": true,
+                  "order": 1
+                }
               }
             }
-          },
-          {
-            "title": "API Password",
-            "description": "API Password Auth",
-            "type": "object",
-            "required": ["auth_method", "api_password"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "api_password",
-                "order": 0
-              },
-              "api_password": {
-                "type": "string",
-                "title": "API Password",
-                "description": "The API Password for your private application in the `Shopify` store.",
-                "airbyte_secret": true,
-                "order": 1
-              }
-            }
-          }
-        ]
-      },
+          ]
+        }
+     },
       "start_date": {
         "type": "string",
         "title": "Replication Start Date",
         "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
-        "default": "2020-01-01",
+        "default": "2024-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "format": "date",
         "order": 3
+      },
+      "db_uri": {
+        "type": "string",
+        "title": "Milk and Honey DB URI",
+        "description": "DB Details of Milk and Honey Database to pull Shopify Stores info from.",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "env": {
+        "type": "string",
+        "title": "Environment",
+        "description": "Set to local if running on local. Else no need to set.",
+        "default": "dev",
+        "order": 2
+      },
+      "secret_manager_account": {
+        "type": "string",
+        "title": "AWS Account ID where Secret Manager Secrets are stored",
+        "description": "In order to access secret manager.",
+        "order": 4
+      },
+      "aws_access_key_id": {
+                      "type": "string",
+                      "title": "AWS Access Key ID",
+                      "description": "In order to access secret manager."
+      },
+      "aws_secret_access_key": {
+                      "type": "string",
+                      "title": "AWS Secret Access Key",
+                      "description": "In order to access secret manager.",
+                      "airbyte_secret": true
+      },
+      "aws_session_token": {
+                      "type": "string",
+                      "title": "AWS Session Token",
+                      "description": "In order to access secret manager.",
+                      "airbyte_secret": true
       },
       "bulk_window_in_days": {
         "type": "integer",
