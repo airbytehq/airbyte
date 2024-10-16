@@ -128,11 +128,17 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         )
 
     @staticmethod
-    def _check_if_interpolation_uses_stream_state(request_input: RequestInput):
-        if isinstance(request_input, str):
+    def _check_if_interpolation_uses_stream_state(request_input: Optional[Union[RequestInput, NestedMapping]]) -> bool:
+        if not request_input:
+            return False
+        elif isinstance(request_input, str):
             return "stream_state" in request_input
         else:
             for key, val in request_input.items():
-                if "stream_state" in key or "stream_state" in val:
+                # Covers the case of RequestInput in the form of a string or Mapping[str, str]. It also covers the case
+                # of a NestedMapping where the value is a string.
+                # Note: Doesn't account for nested mappings for request_body_json, but I don't see stream_state used in that way
+                # in our code
+                if "stream_state" in key or (isinstance(val, str) and "stream_state" in val):
                     return True
         return False

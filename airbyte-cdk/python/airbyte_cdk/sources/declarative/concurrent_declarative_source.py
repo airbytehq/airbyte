@@ -6,7 +6,7 @@ import datetime
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Generic, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Generic, Iterator, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -106,7 +106,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[Union[List[AirbyteStateMessage]]] = None,
     ) -> Iterator[AirbyteMessage]:
 
         # ConcurrentReadProcessor pops streams that are finished being read so before syncing, the names of the concurrent
