@@ -3,7 +3,7 @@ This is the setup for the Sigma Computing source that ingests data from the sigm
 
 Sigma is next-generation analytics and business intelligence that scales billions of records using spreadsheets, SQL, Python, or AI—without compromising speed and security https://www.sigmacomputing.com/
 
-In order to use this source, you must first create an account on Sigma Computing. Go to Account &gt; General Settings and review the Site section for the Cloud provider, this will be used to find the base url of your API. Compare it at https://help.sigmacomputing.com/reference/get-started-sigma-api
+In order to use this source, you must first create an account on Sigma Computing. Go to Account General Settings and review the Site section for the Cloud provider, this will be used to find the base url of your API. Compare it at https://help.sigmacomputing.com/reference/get-started-sigma-api
 
 Next, head over to Developer Access and click on create. This will generate your Client ID and Client Secret required by the API. You can learn more about the API here https://help.sigmacomputing.com/reference
 
@@ -28,7 +28,7 @@ Next, head over to Developer Access and click on create. This will generate your
 | members | memberId | DefaultPaginator | ✅ |  ❌  |
 | teams | teamId | DefaultPaginator | ✅ |  ❌  |
 | templates | templateId | DefaultPaginator | ✅ |  ❌  |
-| workspaces |  | DefaultPaginator | ✅ |  ❌  |
+| workspaces | workspaceId | DefaultPaginator | ✅ |  ❌  |
 | workbooks | workbookId | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
