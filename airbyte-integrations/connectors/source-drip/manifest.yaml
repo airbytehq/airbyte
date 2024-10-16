@@ -320,6 +320,8 @@ definitions:
     events:
       type: DeclarativeStream
       name: events
+      primary_key:
+        - account_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -356,6 +358,9 @@ definitions:
             - path:
                 - account_id
               value: "{{ stream_slice.account_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - meta
       schema_loader:
         type: InlineSchemaLoader
         schema:
