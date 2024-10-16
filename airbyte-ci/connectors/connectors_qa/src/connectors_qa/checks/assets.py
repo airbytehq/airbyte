@@ -55,6 +55,7 @@ class CheckConnectorIconIsAvailable(AssetsCheck):
             )
         is_valid_svg, error_message = self._check_is_valid_svg(connector.icon_path)
         if not is_valid_svg:
+            assert error_message is not None
             return self.create_check_result(
                 connector=connector,
                 passed=False,
