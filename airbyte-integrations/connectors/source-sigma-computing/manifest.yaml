@@ -242,6 +242,8 @@ definitions:
     workspaces:
       type: DeclarativeStream
       name: workspaces
+      primary_key:
+        - workspaceId
       retriever:
         type: SimpleRetriever
         requester:
