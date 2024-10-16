@@ -196,8 +196,10 @@ class DestinationDuckdb(Destination):
             )
 
             # create the table if needed
+            catalog_provider = CatalogProvider(configured_catalog)
+            primary_keys = catalog_provider.get_primary_keys(stream_name)
             processor._create_table_if_not_exists(
-                table_name=table_name, column_definition_str=column_definition_str
+                table_name=table_name, column_definition_str=column_definition_str, primary_keys=primary_keys
             )
 
             processor._ensure_compatible_table_schema(
