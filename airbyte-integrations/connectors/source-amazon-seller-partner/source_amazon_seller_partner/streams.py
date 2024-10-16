@@ -34,6 +34,7 @@ ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 FINANCES_API_VERSION = "v0"
 VENDOR_ORDERS_API_VERSION = "v1"
+FINACES_TRANSACTION_API_VERSION = "2024-06-19"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 DATE_FORMAT = "%Y-%m-%d"
@@ -1518,6 +1519,47 @@ class ListFinancialEvents(FinanceStream):
         events[self.replication_end_date_field] = params.get(self.replication_end_date_field)
         yield from [events]
 
+
+class ListTransactions(FinanceStream):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference
+    """
+
+    name = "ListTransactions"
+    primary_key = "transactionId"
+    replication_start_date_field = "postedAfter"
+    replication_end_date_field = "postedBefore"
+    cursor_field = "postedDate"
+
+    def path(self, **kwargs) -> str:
+        return f"finances/{FINACES_TRANSACTION_API_VERSION}/transactions"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, next_page_token, **kwargs)
+        
+        # Add marketplaceId if it's set in the config
+        if self.marketplace_id:
+            params["marketplaceId"] = self.marketplace_id
+
+        return params
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs: Any,
+    ) -> Iterable[Mapping]:
+        json_response = response.json()
+        yield from json_response.get("transactions", [])
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json()
+        next_token = json_response.get("nextToken")
+        if next_token:
+            return {"nextToken": next_token}
 
 class FbaCustomerReturnsReports(IncrementalReportsAmazonSPStream):
     report_name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"

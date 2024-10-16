@@ -1,0 +1,273 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ListTransactions",
+    "description": "List of Transactions",
+    "type": "object",
+    "properties": {
+      "transactions": {
+        "description": "A list of transactions within the specified time period.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Transaction"
+        }
+      }
+    },
+    "definitions": {
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "sellingPartnerMetadata": {
+            "$ref": "#/definitions/SellingPartnerMetadata"
+          },
+          "relatedIdentifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/RelatedIdentifier"
+            }
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The type of transaction.",
+            "enum": ["Shipment"]
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "The unique identifier of the transaction."
+          },
+          "transactionStatus": {
+            "type": "string",
+            "description": "The status of the transaction.",
+            "enum": ["Deferred", "Released"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Describes the reasons for the transaction."
+          },
+          "postedDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time when the transaction was posted."
+          },
+          "totalAmount": {
+            "$ref": "#/definitions/Currency"
+          },
+          "marketplaceDetails": {
+            "$ref": "#/definitions/MarketplaceDetails"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Item"
+            }
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Context"
+            }
+          },
+          "breakdowns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Breakdown"
+            }
+          }
+        }
+      },
+      "SellingPartnerMetadata": {
+        "type": "object",
+        "properties": {
+          "sellingPartnerId": {
+            "type": "string",
+            "description": "A unique seller identifier."
+          },
+          "accountType": {
+            "type": "string",
+            "description": "The type of account in the transaction."
+          },
+          "marketplaceId": {
+            "type": "string",
+            "description": "The identifier of the marketplace where the transaction occurred."
+          }
+        }
+      },
+      "RelatedIdentifier": {
+        "type": "object",
+        "properties": {
+          "relatedIdentifierName": {
+            "type": "string",
+            "enum": ["ORDER_ID", "SHIPMENT_ID", "EVENT_GROUP_ID", "REFUND_ID", "INVOICE_ID", "DISBURSEMENT_ID", "TRANSFER_ID", "DEFERRED_TRANSACTION_ID"],
+            "description": "An enumerated set of related business identifier names."
+          },
+          "relatedIdentifierValue": {
+            "type": "string",
+            "description": "Corresponding value of RelatedIdentifierName."
+          }
+        }
+      },
+      "Currency": {
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "description": "The three-digit currency code in ISO 4217 format."
+          },
+          "currencyAmount": {
+            "type": "number",
+            "description": "The monetary value."
+          }
+        }
+      },
+      "MarketplaceDetails": {
+        "type": "object",
+        "properties": {
+          "marketplaceId": {
+            "type": "string",
+            "description": "The identifier of the marketplace where the transaction occurred."
+          },
+          "marketplaceName": {
+            "type": "string",
+            "description": "The name of the marketplace where the transaction occurred. For example: Amazon.com, Amazon.in"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of the items in a transaction."
+          },
+          "relatedIdentifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ItemRelatedIdentifier"
+            }
+          },
+          "totalAmount": {
+            "$ref": "#/definitions/Currency"
+          },
+          "breakdowns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Breakdown"
+            }
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Context"
+            }
+          }
+        }
+      },
+      "ItemRelatedIdentifier": {
+        "type": "object",
+        "properties": {
+          "itemRelatedIdentifierName": {
+            "type": "string",
+            "enum": ["ORDER_ADJUSTMENT_ITEM_ID", "COUPON_ID", "REMOVAL_SHIPMENT_ITEM_ID", "TRANSACTION_ID"],
+            "description": "Enumerated set of related item identifier names for the item."
+          },
+          "itemRelatedIdentifierValue": {
+            "type": "string",
+            "description": "Corresponding value to ItemRelatedIdentifierName."
+          }
+        }
+      },
+      "Breakdown": {
+        "type": "object",
+        "properties": {
+          "breakdownType": {
+            "type": "string",
+            "description": "The type of charge."
+          },
+          "breakdownAmount": {
+            "$ref": "#/definitions/Currency"
+          },
+          "breakdowns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Breakdown"
+            }
+          }
+        }
+      },
+      "Context": {
+        "type": "object",
+        "properties": {
+          "contextType": {
+            "type": "string"
+          },
+          "storeName": {
+            "type": "string",
+            "description": "The name of the store that is related to the transaction."
+          },
+          "orderType": {
+            "type": "string",
+            "description": "The transaction's order type."
+          },
+          "channel": {
+            "type": "string",
+            "description": "Channel details of related transaction."
+          },
+          "asin": {
+            "type": "string",
+            "description": "The Amazon Standard Identification Number (ASIN) of the item."
+          },
+          "sku": {
+            "type": "string",
+            "description": "The Stock Keeping Unit (SKU) of the item."
+          },
+          "quantityShipped": {
+            "type": "integer",
+            "description": "The quantity of the item shipped."
+          },
+          "fulfillmentNetwork": {
+            "type": "string",
+            "description": "The fulfillment network of the item."
+          },
+          "paymentType": {
+            "type": "string",
+            "description": "The type of payment."
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "The method of payment."
+          },
+          "paymentReference": {
+            "type": "string",
+            "description": "The reference number of the payment."
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date of the payment."
+          },
+          "deferralReason": {
+            "type": "string",
+            "description": "Deferral policy applied on the transaction."
+          },
+          "maturityDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The release date of the transaction."
+          },
+          "deferralStatus": {
+            "type": "string",
+            "description": "The status of the transaction. For example, HOLD, RELEASE."
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The start time of the transaction."
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The end time of the transaction."
+          }
+        }
+      }
+    }
+  }
