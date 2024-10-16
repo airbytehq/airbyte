@@ -5,8 +5,8 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
 | `subdomain` | `string` | subdomain.  |  |
+| `api_key` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -42,7 +42,7 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 | suggested_merges | id | DefaultPaginator | ✅ |  ✅  |
 | suggestion_activity_entries | id | DefaultPaginator | ✅ |  ❌  |
 | supporters | id | DefaultPaginator | ✅ |  ✅  |
-| teams | id | DefaultPaginator | ✅ |  ✅  |
+| teams | id | DefaultPaginator | ✅ |  ❌  |
 | translatable_strings |  | No pagination | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ✅  |
 
@@ -53,6 +53,6 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-13 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-10-16 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
