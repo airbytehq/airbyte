@@ -234,7 +234,10 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         )
 
     def _write_from_pa_table(self, table_name: str, pa_table: pa.Table, sync_mode: DestinationSyncMode):
-        sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
+        if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
+            sql = f"INSERT INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
+        elif sync_mode == DestinationSyncMode.append_dedup:
+            sql = f"INSERT OR REPLACE INTO {self._fully_qualified(table_name)} SELECT * FROM pa_table"
         self._execute_sql(sql)
     
     def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
