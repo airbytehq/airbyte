@@ -113,7 +113,6 @@ def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
 
     if releases is not None and releases.get("rolloutConfiguration"):
         final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
-    final_registry_releases["isReleaseCandidate"] = False if releases is None else metadata["releases"].get("isReleaseCandidate", False)
     return final_registry_releases
 
 

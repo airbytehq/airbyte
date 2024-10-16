@@ -155,9 +155,9 @@ class PushConnectorImageToRegistry(Step):
         Returns:
             bool: True if the latest tag should be pushed, False otherwise.
         """
-        is_release_candidate = self.context.connector.metadata.get("releases", {}).get("isReleaseCandidate", False)
+        is_release_candidate = "-rc" in self.context.connector.version
         is_pre_release = self.context.pre_release
-        return not is_release_candidate and not is_pre_release
+        return not (is_release_candidate or is_pre_release)
 
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
@@ -416,24 +416,26 @@ class SetPromotedVersion(SetConnectorVersion):
         return await super()._run()
 
 
-class ResetReleaseCandidate(StepModifyingFiles):
+class DisableProgressiveRollout(StepModifyingFiles):
     context: PublishConnectorContext
-    title = "Reset release candidate flag"
+    title = "Disable progressive rollout in metadata file"
 
     async def _run(self) -> StepResult:
         raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=METADATA_FILE_NAME), METADATA_FILE_NAME)
         current_metadata = yaml.safe_load(raw_metadata)
-        is_release_candidate = current_metadata.get("data", {}).get("releases", {}).get("isReleaseCandidate", False)
-        if not is_release_candidate:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="The connector is not a release candidate.")
+        enable_progressive_rollout = (
+            current_metadata.get("data", {}).get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
+        )
+        if not enable_progressive_rollout:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Progressive rollout is already disabled.")
         # We do an in-place replacement instead of serializing back to yaml to preserve comments and formatting.
-        new_raw_metadata = raw_metadata.replace("isReleaseCandidate: true", "isReleaseCandidate: false")
+        new_raw_metadata = raw_metadata.replace("enableProgressiveRollout: true", "enableProgressiveRollout: false")
         self.modified_directory = dagger_write_file(self.modified_directory, METADATA_FILE_NAME, new_raw_metadata)
         self.modified_files.append(METADATA_FILE_NAME)
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
-            stdout="Set the isReleaseCandidate flag to false in the metadata file.",
+            stdout="Set enableProgressiveRollout to false in connector metadata.",
             output=self.modified_directory,
         )
 
@@ -608,31 +610,17 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     return results, False
 
 
-async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
-    """Run a rollback pipeline for a single connector.
+async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> None:
 
-    1. Check if the current metadata is a release candidate
-    2. Delete the metadata files for the release candidate and its version from the metadata service bucket.
-
-    Returns:
-        ConnectorReport: The reports holding rollback results.
-    """
-
-    results = []
     async with semaphore:
         async with context:
             assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
-            assert context.connector.metadata.get("releases", {}).get(
-                "isReleaseCandidate", True
-            ), "This pipeline can only run for release candidates."
-            results.append(
-                await MetadataRollbackReleaseCandidate(
-                    context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
-                ).run()
-            )
-            connector_report = create_connector_report(results, context)
+            assert (
+                context.connector.metadata.get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
+            ), "This pipeline can only run for release candidates with enabled progressive rollout."
+            raise NotImplementedError("Rollback pipeline is not implemented yet.")
 
-    return connector_report
+    return None
 
 
 def get_promotion_pr_creation_arguments(
@@ -674,8 +662,8 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
             if set_promoted_version_results.success:
                 all_modified_files.update(await set_promoted_version.export_modified_files(context.connector.code_directory))
 
-            # Set isReleaseCandidate to False
-            reset_release_candidate = ResetReleaseCandidate(context, set_promoted_version_results.output)
+            # Disable progressive rollout in metadata file
+            reset_release_candidate = DisableProgressiveRollout(context, set_promoted_version_results.output)
             reset_release_candidate_results = await reset_release_candidate.run()
             results.append(reset_release_candidate_results)
             if reset_release_candidate_results.success:

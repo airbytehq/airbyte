@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.AirbyteStreamFactory
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
-import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.FieldType
@@ -45,8 +44,8 @@ class MysqlJdbcStreamFactory(val base: JdbcAirbyteStreamFactory) : AirbyteStream
         override val type: FieldType,
     ) : MetaField {
         CDC_CURSOR(CdcIntegerMetaFieldType),
-        CDC_UPDATED_AT(CdcOffsetDateTimeMetaFieldType),
-        CDC_DELETED_AT(CdcOffsetDateTimeMetaFieldType),
+        CDC_UPDATED_AT(CdcStringMetaFieldType),
+        CDC_DELETED_AT(CdcStringMetaFieldType),
         CDC_LOG_POS(CdcIntegerMetaFieldType),
         CDC_LOG_FILE(CdcStringMetaFieldType),
         ;
