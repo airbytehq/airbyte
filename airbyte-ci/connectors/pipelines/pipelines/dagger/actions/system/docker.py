@@ -106,10 +106,7 @@ def docker_login(
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username)
             .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password)
-            .with_exec(
-                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]),
-                use_entrypoint=False,
-            )
+            .with_exec(sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]))
         )
     else:
         return dockerd_container
@@ -233,12 +230,9 @@ def with_crane(
             base_container.with_secret_variable(
                 "DOCKER_HUB_USERNAME", context.docker_hub_username.as_dagger_secret(context.dagger_client)
             ).with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password.as_dagger_secret(context.dagger_client))
-            # We need to use use_entrypoint=False to avoid the entrypoint to be overridden by the crane command
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
-            .with_exec(
-                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), use_entrypoint=False
-            )
+            .with_exec(sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]))
         )
 
     return base_container

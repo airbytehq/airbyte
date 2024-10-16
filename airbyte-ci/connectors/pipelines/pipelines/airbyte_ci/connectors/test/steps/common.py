@@ -115,7 +115,7 @@ class VersionIncrementCheck(VersionCheck):
         "src/test-performance",
         "build.gradle",
         "erd",
-        "build_customization.py"
+        "build_customization.py",
     ]
 
     @property
