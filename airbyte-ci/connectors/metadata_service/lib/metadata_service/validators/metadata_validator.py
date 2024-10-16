@@ -46,7 +46,8 @@ def validate_metadata_images_in_dockerhub(
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
 
-    breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
+    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges", None)
+    breaking_change_versions = breaking_changes.keys() if breaking_changes else []
 
     possible_docker_images = [
         (base_docker_image, base_docker_version),
@@ -115,7 +116,6 @@ def validate_major_version_bump_has_breaking_change_entry(
     if str(metadata_definition.data.definitionId) == _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID:
         return True, None
 
-    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
         return (
@@ -124,7 +124,7 @@ def validate_major_version_bump_has_breaking_change_entry(
         )
 
     breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
-    if image_tag not in breaking_changes.keys():
+    if breaking_changes is None or image_tag not in breaking_changes.keys():
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
     return True, None
