@@ -5,8 +5,6 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
-from deprecated import deprecated
-
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import NestedMapping
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
     InterpolatedNestedRequestInputProvider,
@@ -15,6 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from deprecated import deprecated
 
 RequestInput = Union[str, Mapping[str, str]]
 ValidRequestTypes = (str, list)
@@ -114,7 +113,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
 
     @deprecated("This class is temporary and used to incrementally deliver low-code to concurrent", category=ExperimentalClassWarning)
-    def request_options_contain_stream_state(self):
+    def request_options_contain_stream_state(self) -> bool:
         """
         Temporary helper method used as we move low-code streams to the concurrent framework. This method determines if
         the InterpolatedRequestOptionsProvider has is a dependency on a non-thread safe interpolation context such as
@@ -122,10 +121,10 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         """
 
         return (
-            self._check_if_interpolation_uses_stream_state(self.request_parameters) or
-            self._check_if_interpolation_uses_stream_state(self.request_headers) or
-            self._check_if_interpolation_uses_stream_state(self.request_body_data) or
-            self._check_if_interpolation_uses_stream_state(self.request_body_json)
+            self._check_if_interpolation_uses_stream_state(self.request_parameters)
+            or self._check_if_interpolation_uses_stream_state(self.request_headers)
+            or self._check_if_interpolation_uses_stream_state(self.request_body_data)
+            or self._check_if_interpolation_uses_stream_state(self.request_body_json)
         )
 
     @staticmethod

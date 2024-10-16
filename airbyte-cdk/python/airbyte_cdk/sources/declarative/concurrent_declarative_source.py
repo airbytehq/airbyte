@@ -15,12 +15,13 @@ from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -132,7 +133,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
             streams=[stream.as_airbyte_stream() for stream in self.streams(config=config, include_concurrent_streams=True)]
         )
 
-    def streams(self, config: Mapping[str, Any], include_concurrent_streams=False) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], include_concurrent_streams: bool = False) -> List[Stream]:
         """
         Returns the list of streams that can be run synchronously in the Python CDK.
 
@@ -263,7 +264,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         return None
 
     @staticmethod
-    def _stream_supports_concurrent_partition_processing(declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor):
+    def _stream_supports_concurrent_partition_processing(declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor) -> bool:
         """
         Many connectors make use of stream_state during interpolation on a per-partition basis under the assumption that
         state is updated sequentially. Because the concurrent CDK engine processes different partitions in parallel,
@@ -294,9 +295,13 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 if record_selector.record_filter and "stream_state" in record_selector.record_filter.condition:
                     return False
 
-                for add_fields in [transformation for transformation in record_selector.transformations if isinstance(transformation, AddFields)]:
+                for add_fields in [
+                    transformation for transformation in record_selector.transformations if isinstance(transformation, AddFields)
+                ]:
                     for field in add_fields.fields:
-                        if "stream_state" in field.value:
+                        if isinstance(field.value, str) and "stream_state" in field.value:
+                            return False
+                        if isinstance(field.value, InterpolatedString) and "stream_state" in field.value.string:
                             return False
         return True
 
