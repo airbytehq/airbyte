@@ -610,17 +610,58 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     return results, False
 
 
-async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> None:
+def get_rollback_pr_creation_arguments(
+    modified_files: Iterable[Path],
+    context: PublishConnectorContext,
+    step_results: Iterable[StepResult],
+    release_candidate_version: str,
+) -> Tuple[Tuple, Dict]:
+    return (modified_files,), {
+        "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
+        "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
+        "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout.",
+    }
 
+
+async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+    """Run a rollback pipeline for a single connector.
+
+    1. Disable progressive rollout in metadata file.
+    2. Open a PR with the updated metadata, set the auto-merge label.
+
+    Returns:
+        ConnectorReport: The reports holding promote results.
+    """
+
+    results = []
+    current_version = context.connector.version
+    all_modified_files = set()
     async with semaphore:
         async with context:
             assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
-            assert (
-                context.connector.metadata.get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
-            ), "This pipeline can only run for release candidates with enabled progressive rollout."
-            raise NotImplementedError("Rollback pipeline is not implemented yet.")
+            original_connector_directory = await context.get_connector_dir()
 
-    return None
+            # Disable progressive rollout in metadata file
+            reset_release_candidate = DisableProgressiveRollout(context, original_connector_directory)
+            reset_release_candidate_results = await reset_release_candidate.run()
+            results.append(reset_release_candidate_results)
+            if reset_release_candidate_results.success:
+                all_modified_files.update(await reset_release_candidate.export_modified_files(context.connector.code_directory))
+
+            if not all([result.success for result in results]):
+                context.logger.error("The metadata update failed. Skipping PR creation.")
+                connector_report = create_connector_report(results, context)
+                return connector_report
+
+            # Open PR when all previous steps are successful
+            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+            pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
+            initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
+            results.append(initial_pr_creation_result)
+
+            connector_report = create_connector_report(results, context)
+    return connector_report
 
 
 def get_promotion_pr_creation_arguments(
@@ -641,8 +682,12 @@ def get_promotion_pr_creation_arguments(
 async def run_connector_promote_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a promote pipeline for a single connector.
 
-    1. Publish the release candidate version docker image with the latest tag.
-    2. Copy the release candidate metadata files to the latest release metadata files.
+    1. Update connector metadata to:
+        * Remove the RC suffix from the version.
+        * Disable progressive rollout.
+    2. Open a PR with the updated metadata.
+    3. Add a changelog entry to the documentation.
+    4. Update the PR with the updated changelog, set the auto-merge label.
 
     Returns:
         ConnectorReport: The reports holding promote results.
