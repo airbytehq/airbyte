@@ -18,7 +18,7 @@ Integrate seamlessly with Drip using this Airbyte connector, enabling smooth dat
 | subscribers | id | DefaultPaginator | ✅ |  ❌  |
 | custom_fields | custom_field_identifiers | DefaultPaginator | ✅ |  ❌  |
 | conversions | id | DefaultPaginator | ✅ |  ❌  |
-| events |  | DefaultPaginator | ✅ |  ❌  |
+| events | account_id | DefaultPaginator | ✅ |  ❌  |
 | tags | tags | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | DefaultPaginator | ✅ |  ❌  |
 
