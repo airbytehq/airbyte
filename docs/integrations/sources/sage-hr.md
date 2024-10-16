@@ -18,7 +18,6 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | terminated-employees | id | DefaultPaginator | ✅ |  ❌  |
 | termination-reasons | id | DefaultPaginator | ✅ |  ❌  |
-| policies | id | No pagination | ✅ |  ❌  |
 | individual-allowances | id | DefaultPaginator | ✅ |  ❌  |
 | document-categories | id | No pagination | ✅ |  ❌  |
 | offboarding-categories | id | DefaultPaginator | ✅ |  ❌  |
