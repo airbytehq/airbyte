@@ -116,6 +116,16 @@ class DefaultSyncManager(
     }
 
     override suspend fun markInputConsumed() {
+        val incompleteStreams =
+            streamManagers
+                .filter { (_, manager) -> !manager.endOfStreamRead() }
+                .map { (stream, _) -> stream }
+        if (incompleteStreams.isNotEmpty()) {
+            val prettyStreams = incompleteStreams.map { it.toPrettyString() }
+            throw IllegalStateException(
+                "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
+            )
+        }
         inputConsumed.complete(true)
     }
 
