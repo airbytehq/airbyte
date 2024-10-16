@@ -89,8 +89,13 @@ def apply_release_candidates(
     latest_registry_entry: dict,
     release_candidate_registry_entry: PolymorphicRegistryEntry,
 ) -> dict:
-    if not release_candidate_registry_entry.releases.rolloutConfiguration.enableProgressiveRollout:
+    try:
+        if not release_candidate_registry_entry.releases.rolloutConfiguration.enableProgressiveRollout:
+            return latest_registry_entry
+    # Handle if releases or rolloutConfiguration is not present in the release candidate registry entry
+    except AttributeError:
         return latest_registry_entry
+
     # Ensure that the release candidate is newer than the latest registry entry
     if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) < semver.Version.parse(
         latest_registry_entry["dockerImageTag"]
