@@ -297,7 +297,7 @@ def apply_entry_schema_migrations(registry_entry: dict) -> dict:
         dict: The registry entry with the schema migrations applied.
     """
     # apply schema migrations here
-    if registry_entry.get("releases").get("isReleaseCandidate"):
+    if registry_entry.get("releases").get("isReleaseCandidate") is not None:
         registry_entry["releases"].pop("isReleaseCandidate")
     if registry_entry.get("releases") == dict():
         registry_entry.pop("releases")
