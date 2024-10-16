@@ -26,7 +26,6 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    isReleaseCandidate: false
     breakingChanges:
       1.0.0:
         message: >-
