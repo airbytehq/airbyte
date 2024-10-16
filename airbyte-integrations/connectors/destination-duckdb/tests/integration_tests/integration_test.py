@@ -129,6 +129,7 @@ def configured_catalogue(
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
+        primary_key=[["key1"]],
     )
     append_stream_large = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -138,6 +139,7 @@ def configured_catalogue(
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
+        primary_key=[["key1"]],
     )
     return ConfiguredAirbyteCatalog(streams=[append_stream, append_stream_large])
 
@@ -150,7 +152,7 @@ def airbyte_message1(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.first_name(), "key2": str(fake.ssn())},
+            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -164,7 +166,7 @@ def airbyte_message2(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.first_name(), "key2": str(fake.ssn())},
+            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -226,7 +228,6 @@ def test_write(
     )
     with con:
         cursor = con.execute(
-            # "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY key1"
         )
@@ -256,7 +257,7 @@ def _airbyte_messages(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=table_name,
-                    data={"key1": fake.first_name(), "key2": str(fake.ssn())},
+                    data={"key1": fake.unique.name(), "key2": str(fake.ssn())},
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
@@ -283,7 +284,7 @@ def _airbyte_messages_with_inconsistent_json_fields(
                     stream=table_name,
                     # Throw in empty nested objects and see how pyarrow deals with them.
                     data={
-                        "key1": fake.first_name(),
+                        "key1": fake.unique.name(),
                         "key2": str(fake.ssn())
                         if random.random() < 0.5
                         else str(random.randrange(1000, 9999999999999)),
@@ -303,7 +304,9 @@ def _airbyte_messages_with_inconsistent_json_fields(
                         },
                     }
                     if random.random() < 0.9
-                    else {},
+                    else {
+                        "key1": fake.unique.name(),
+                    },
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
