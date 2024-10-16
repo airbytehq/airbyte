@@ -23,7 +23,8 @@ data:
       enabled: true
   releaseStage: beta
   releases:
-    isReleaseCandidate: true
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: This is a breaking change message

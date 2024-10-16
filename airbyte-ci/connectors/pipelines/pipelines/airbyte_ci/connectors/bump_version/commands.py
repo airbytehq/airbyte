@@ -16,7 +16,7 @@ class BumpType(click.ParamType):
     name = "bump-type"
 
     def __init__(self) -> None:
-        self.choices = ["patch", "minor", "major"]
+        self.choices = ["patch", "minor", "major", "rc"]
 
     def convert(self, value: str, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> str:
         if value in self.choices:

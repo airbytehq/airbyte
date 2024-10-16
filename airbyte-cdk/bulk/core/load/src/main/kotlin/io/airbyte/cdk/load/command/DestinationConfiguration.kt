@@ -11,6 +11,52 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.nio.file.Path
 
+/**
+ * To implement a [DestinationConfiguration]:
+ *
+ * - Create a class `{MyDestination}Specification` extending [ConfigurationSpecification]
+ *
+ * - Add any mixin `...Specification`s from this package (the jackson annotations will be inherited)
+ *
+ * - Add any required custom fields to the spec w/ jackson annotations
+ *
+ * - Create a class `{MyDestination}Configuration` extending [DestinationConfiguration]
+ *
+ * - Add the corresponding mixin `...ConfigurationProvider`s for any added spec mixins
+ *
+ * - (Add overrides for any fields provided by the providers)
+ *
+ * - Add custom config to the configuration as needed
+ *
+ * - Implement `DestinationConfigurationFactory` as a @[Singleton], using the `to...Configuration`
+ * methods from the specs to map to the provided configuration fields
+ *
+ * - (Set your custom fields as needed.)
+ *
+ * - Add a @[Factory] injected with [DestinationConfiguration], returning a @[Singleton] downcast to
+ * your implementation; ie,
+ *
+ * ```
+ *   @Factory
+ *   class MyDestinationConfigurationProvider(
+ *      private val config: DestinationConfiguration
+ *   ){
+ *    @Singleton
+ *    fun destinationConfig(): MyDestinationConfiguration =
+ *      config as MyDestinationConfiguration
+ *  }
+ * ```
+ *
+ * Now your configuration will be automatically parsed and available for injection. ie,
+ *
+ * ```
+ * @Singleton
+ * class MyDestinationWriter(
+ *   private val config: MyDestinationConfiguration // <- automatically injected by micronaut
+ * ): DestinationWriter {
+ * // ...
+ * ```
+ */
 abstract class DestinationConfiguration : Configuration {
     open val recordBatchSizeBytes: Long = 200L * 1024L * 1024L
     open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")

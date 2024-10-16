@@ -115,7 +115,7 @@ class MySqlDebeziumOperations(
         val newGtidSet = availableGtidSet.subtract(savedGtidSet)
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            if (!newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
                 log.info {
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 }
