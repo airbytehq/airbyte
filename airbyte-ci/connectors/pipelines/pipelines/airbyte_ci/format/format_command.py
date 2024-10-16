@@ -97,7 +97,7 @@ class FormatCommand(click.Command):
             .with_exec(["init"], use_entrypoint=True)
             .with_exec(["clean", "-dfqX"], use_entrypoint=True)
             # Delete all .gitignore files
-            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), use_entrypoint=False)
             .with_exec(["rm", "-rf", ".git"])
             .directory(REPO_MOUNT_PATH)
             .with_timestamps(0)
@@ -166,7 +166,7 @@ class FormatCommand(click.Command):
             format_commands (List[str]): The list of commands to run to format the repository
             not_formatted_code (dagger.Directory): The directory with the code to format
         """
-        format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
+        format_container = container.with_exec(sh_dash_c(format_commands), use_entrypoint=False)
         formatted_directory = format_container.directory(REPO_MOUNT_PATH)
         if warmup_dir := warmup_directory(dagger_client, self.formatter):
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)

@@ -42,8 +42,8 @@ async def checked_out_git_container(
         .with_env_variable("CACHEBUSTER", current_git_revision)
         .with_secret_variable("ORIGIN_REPO_URL", origin_repo_url_secret)
         .with_secret_variable("TARGET_REPO_URL", target_repo_url_secret)
-        .with_exec(sh_dash_c(["git remote add origin ${ORIGIN_REPO_URL}"]), skip_entrypoint=True)
-        .with_exec(sh_dash_c(["git remote add target ${TARGET_REPO_URL}"]), skip_entrypoint=True)
+        .with_exec(sh_dash_c(["git remote add origin ${ORIGIN_REPO_URL}"]), use_entrypoint=False)
+        .with_exec(sh_dash_c(["git remote add target ${TARGET_REPO_URL}"]), use_entrypoint=False)
         .with_exec(["fetch", "origin", diffed_branch], use_entrypoint=True)
     )
     if diffed_branch != current_git_branch:
