@@ -218,6 +218,24 @@ def check_is_release_candidate_version(version: str) -> bool:
     return parsed_version.prerelease is not None and "rc" in parsed_version.prerelease
 
 
+def check_is_major_release_candidate_version(version: str) -> bool:
+    """Check whether the version is a major release candidate version.
+    Example: 2.0.0-rc.1
+    """
+
+    if not check_is_release_candidate_version(version):
+        return False
+
+    # The version is a release candidate version
+    parsed_version = semver.VersionInfo.parse(version)
+    # No major version exists.
+    if parsed_version.major == 0:
+        return False
+    # The current release candidate is for a major version
+    if parsed_version.minor == 0 and parsed_version.patch == 0:
+        return True
+
+
 def validate_rc_suffix_and_rollout_configuration(
     metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
@@ -229,15 +247,28 @@ def validate_rc_suffix_and_rollout_configuration(
     if docker_image_tag is None:
         return False, "The dockerImageTag field is not set."
     try:
+
+        is_major_release_candidate_version = check_is_major_release_candidate_version(docker_image_tag)
         is_dev_version = check_is_dev_version(docker_image_tag)
         is_rc_version = check_is_release_candidate_version(docker_image_tag)
         is_prerelease = is_dev_version or is_rc_version
         enabled_progressive_rollout = get(metadata_definition, "data.releases.rolloutConfiguration.enableProgressiveRollout", None)
+
+        # Major release candidate versions are not allowed
+        if is_major_release_candidate_version:
+            return (
+                False,
+                "The dockerImageTag has an -rc.<RC #> suffix for a major version. Release candidates for major version (with breaking changes) are not allowed.",
+            )
+
+        # Release candidates must have progressive rollout set to True or False
         if is_rc_version and enabled_progressive_rollout is None:
             return (
                 False,
-                "The dockerImageTag field has an -rc suffix but the connector is not set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout).",
+                "The dockerImageTag field has an -rc.<RC #> suffix but the connector is not set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout).",
             )
+
+        # Progressive rollout can be enabled only for release candidates
         if enabled_progressive_rollout is True and not is_prerelease:
             return (
                 False,
