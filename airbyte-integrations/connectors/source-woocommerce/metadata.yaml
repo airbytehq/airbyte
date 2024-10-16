@@ -27,7 +27,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    isReleaseCandidate: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: certified
   tags:
     - language:manifest-only

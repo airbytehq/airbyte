@@ -26,13 +26,10 @@ class DefaultFailSyncTask(
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*, *>
+    private val checkpointManager: CheckpointManager<*, *>,
+    private val syncFailedHasRun: AtomicBoolean,
 ) : FailSyncTask {
     private val log = KotlinLogging.logger {}
-
-    companion object {
-        private val syncFailedHasRun = AtomicBoolean(false)
-    }
 
     override suspend fun execute() {
         if (syncFailedHasRun.setOnce()) {
@@ -63,6 +60,7 @@ class DefaultFailSyncTaskFactory(
     private val checkpointManager: CheckpointManager<*, *>,
     private val destinationWriter: DestinationWriter
 ) : FailSyncTaskFactory {
+    private val syncFailedHasRun = AtomicBoolean(false)
 
     override fun make(
         exceptionHandler: DestinationTaskExceptionHandler<*, *>,
@@ -73,7 +71,8 @@ class DefaultFailSyncTaskFactory(
             destinationWriter,
             exception,
             syncManager,
-            checkpointManager
+            checkpointManager,
+            syncFailedHasRun,
         )
     }
 }

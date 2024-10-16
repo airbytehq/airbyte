@@ -429,7 +429,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
     is_pre_release = validator_opts.prerelease_tag is not None
-    is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
+    is_release_candidate = "-rc" in metadata.data.dockerImageTag
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
 
