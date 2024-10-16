@@ -211,15 +211,7 @@ class DestinationDuckdb(Destination):
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
-                for stream_name in buffer.keys():
-                    logger.info(f"flushing buffer for state: {message}")
-                    processor = self._get_sql_processor(
-                        configured_catalog=configured_catalog,
-                        schema_name=schema_name,
-                        db_path=path
-                    )
-                    processor._safe_write(buffer, stream_name)
-
+                self._flush_buffer(buffer, configured_catalog, path, schema_name)
                 buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
@@ -244,13 +236,27 @@ class DestinationDuckdb(Destination):
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
-        for stream_name in buffer.keys():
-            processor = self._get_sql_processor(
-                        configured_catalog=configured_catalog,
-                        schema_name=schema_name,
-                        db_path=path
-                    )
-            processor._safe_write(buffer, stream_name)
+        self._flush_buffer(buffer, configured_catalog, path, schema_name)
+
+    def _flush_buffer(
+            self,
+            buffer: Dict[str, Dict[str, List[Any]]],
+            configured_catalog: ConfiguredAirbyteCatalog,
+            db_path: str,
+            schema_name: str
+        ):
+        """
+        Flush the buffer to the destination
+        """
+        for configured_stream in configured_catalog.streams:
+            stream_name = configured_stream.stream.name
+            if stream_name in buffer:
+                processor = self._get_sql_processor(
+                            configured_catalog=configured_catalog,
+                            schema_name=schema_name,
+                            db_path=db_path
+                        )
+                processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

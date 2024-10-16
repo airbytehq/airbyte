@@ -6,8 +6,9 @@ from __future__ import annotations
 import warnings
 from pathlib import Path
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Dict, Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
+from airbyte_cdk import DestinationSyncMode
 from duckdb import DuckDBPyConnection
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
@@ -249,3 +250,6 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             # DuckDB will automatically find and SELECT from the `pa_table`
             # local variable defined above.
             self._write_from_pa_table(table_name, pa_table)
+    
+    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
+        self._safe_write(buffer, stream_name)
