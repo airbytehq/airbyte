@@ -5,20 +5,16 @@ data:
   connectorType: source
   dockerRepository: airbyte/image-exists-1
   githubIssueLabel: source-alloydb-strict-encrypt
-  dockerImageTag: 2.1.0-rc.1
+  dockerImageTag: 2.0.1-rc.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
   releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: true
-      initialPercentage: 5
-      maxPercentage: 50
-      advanceDelayMinutes: 60
     breakingChanges:
       2.0.0:
         upgradeDeadline: 2023-08-22
         message: "This version changes the connector’s authentication method from `ApiKey` to `oAuth`, per the [API guide](https://amazon-sqs.com/api/someguide)."
+
   tags:
     - language:java
