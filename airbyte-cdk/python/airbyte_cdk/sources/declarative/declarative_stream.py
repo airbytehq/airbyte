@@ -134,7 +134,7 @@ class DeclarativeStream(Stream):
             stream_slice = StreamSlice(partition={}, cursor_slice={})
         if not isinstance(stream_slice, StreamSlice):
             raise ValueError(f"DeclarativeStream does not support stream_slices that are not StreamSlice. Got {stream_slice}")
-        yield from self.retriever.read_records(self.get_json_schema(), stream_slice)
+        yield from self.retriever.read_records(self.get_json_schema(), stream_slice) # type: ignore # records are of the correct type
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
@@ -193,7 +193,7 @@ class DeclarativeStream(Stream):
         cursor = self.get_cursor()
         checkpoint_mode = self._checkpoint_mode
 
-        if isinstance(cursor, PerPartitionCursor):
+        if cursor is not None:
             self.has_multiple_slices = True
             return CursorBasedCheckpointReader(
                 stream_slices=mappings_or_slices,
