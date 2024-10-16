@@ -8,6 +8,8 @@ BugSnag is an error monitoring and reporting software with best-in-class functio
 | `auth_token` | `string` | Auth Token. Personal auth token for accessing the Bugsnag API. Generate it in the My Account section of Bugsnag settings. |  |
 | `start_date` | `string` | Start date.  |  |
 
+You need to generate the `auth_token` to get started. Personal Auth Tokens can be generated in the My Account section of [Bugsnag settings](https://app.bugsnag.com/settings/my-account). For more details, [see here](https://bugsnagapiv2.docs.apiary.io/#introduction/authentication).
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
