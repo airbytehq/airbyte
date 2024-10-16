@@ -24,7 +24,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
-    CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStipeSubStream,
@@ -271,7 +270,6 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         streams = [
             checkout_sessions,
-            CustomerBalanceTransactions(**args),
             Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
@@ -483,6 +481,14 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="top_ups",
                 path="topups",
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
+                **args,
+            ),
+            UpdatedCursorIncrementalStripeSubStream(
+                name="customer_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+                parent=self.customers(**args),
+                legacy_cursor_field="created",
+                event_types=["customer_cash_balance_transaction.created"],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(

@@ -522,41 +522,6 @@ class IncrementalStripeStream(StripeStream):
     ) -> Iterable[StreamData]:
         yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-
-class CustomerBalanceTransactions(StripeStream):
-    """
-    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parent = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=USE_CACHE,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
-            authenticator=kwargs.get("authenticator"),
-            account_id=self.account_id,
-            start_date=self.start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"customers/{stream_slice['id']}/balance_transactions"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
-        for _slice in slices:
-            for customer in self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
-                # we use `get` here because some attributes may not be returned by some API versions
-                if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
-                    # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
-                    # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
-                    continue
-                yield customer
-
-
 class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     """
     Docs: https://stripe.com/docs/api/setup_attempts/list
