@@ -29,6 +29,8 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 | metrics_by_template | template_id | DefaultPaginator | ✅ |  ❌  |
 | snippets | id | No pagination | ✅ |  ❌  |
 
+`Note: There is a limitation in the API. Templates endpoint doesn't support pagination but it returns an array containing up to your first 50,000 templates.`
+
 ## Changelog
 
 <details>
