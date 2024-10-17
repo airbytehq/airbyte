@@ -1,5 +1,9 @@
 # On Restack
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
 ## Getting Started
 
 To deploy Airbyte with Restack:

@@ -1,5 +1,9 @@
 # Deploy Airbyte on Kubernetes using Helm
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
 ## Overview
 
 Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api

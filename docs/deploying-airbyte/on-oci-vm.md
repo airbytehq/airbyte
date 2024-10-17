@@ -1,5 +1,10 @@
 # Deploy Airbyte on Oracle Cloud
 
+:::warning
+This page is deprecated as of October 2023. To deploy Airbyte, refer to our [Deployment Guide](./deploying-airbyte.md).
+:::
+
+
 This page guides you through deploying Airbyte Open Source on an [Oracle Cloud Infrastructure (OCI) Virtual Machine (VM) Instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance).
 
 :::info
