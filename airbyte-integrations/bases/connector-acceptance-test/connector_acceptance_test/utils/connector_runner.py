@@ -37,7 +37,7 @@ async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_
     if not tarball_path.exists():
         pytest.exit(f"Connector image tarball {tarball_path} does not exist")
     container_under_test_tar_file = (
-        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
+        dagger_client.host().directory(str(tarball_path.parent), include=[tarball_path.name]).file(tarball_path.name)
     )
     try:
         return await dagger_client.container().import_(container_under_test_tar_file)
@@ -265,7 +265,7 @@ class ConnectorRunner:
         return self.parse_airbyte_messages_from_command_output(output)
 
     async def _read_output_from_stdout(self, airbyte_command: list, container: dagger.Container) -> str:
-        return await container.with_exec(airbyte_command).stdout()
+        return await container.with_exec(airbyte_command, use_entrypoint=True).stdout()
 
     async def _read_output_from_file(self, airbyte_command: list, container: dagger.Container) -> str:
         local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
