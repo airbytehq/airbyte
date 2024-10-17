@@ -334,6 +334,7 @@ class Data(BaseModel):
     remoteRegistries: Optional[RemoteRegistries] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
+    supportsFileTransfer: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

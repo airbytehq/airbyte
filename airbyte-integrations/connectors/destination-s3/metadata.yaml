@@ -34,6 +34,7 @@ data:
     ql: 300
   supportLevel: certified
   supportsRefreshes: true
+  supportsFileTransfer: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests

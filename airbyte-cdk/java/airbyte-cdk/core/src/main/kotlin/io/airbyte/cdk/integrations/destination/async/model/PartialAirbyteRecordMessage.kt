@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.async.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -33,13 +32,17 @@ class PartialAirbyteRecordMessage {
     @get:JsonProperty("emitted_at")
     @set:JsonProperty("emitted_at")
     @JsonProperty("emitted_at")
-    @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
     var emittedAt: Long = 0
 
     @get:JsonProperty("meta")
     @set:JsonProperty("meta")
     @JsonProperty("meta")
     var meta: AirbyteRecordMessageMeta? = null
+
+    @get:JsonProperty("file")
+    @set:JsonProperty("file")
+    @JsonProperty("file")
+    var file: AirbyteRecordMessageFile? = null
 
     fun withNamespace(namespace: String?): PartialAirbyteRecordMessage {
         this.namespace = namespace
@@ -66,6 +69,11 @@ class PartialAirbyteRecordMessage {
         return this
     }
 
+    fun withFile(file: AirbyteRecordMessageFile): PartialAirbyteRecordMessage {
+        this.file = file
+        return this
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
@@ -77,7 +85,8 @@ class PartialAirbyteRecordMessage {
         return namespace == that.namespace &&
             stream == that.stream &&
             emittedAt == that.emittedAt &&
-            meta == that.meta
+            meta == that.meta &&
+            file == that.file
     }
 
     override fun hashCode(): Int {
@@ -97,6 +106,9 @@ class PartialAirbyteRecordMessage {
             '\'' +
             ", meta='" +
             meta +
+            '\'' +
+            ", file='" +
+            file +
             '\'' +
             '}'
     }
