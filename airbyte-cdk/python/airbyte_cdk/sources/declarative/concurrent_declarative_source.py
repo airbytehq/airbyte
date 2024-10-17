@@ -263,8 +263,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
             )
         return None
 
-    @staticmethod
-    def _stream_supports_concurrent_partition_processing(declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor) -> bool:
+    def _stream_supports_concurrent_partition_processing(self, declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor) -> bool:
         """
         Many connectors make use of stream_state during interpolation on a per-partition basis under the assumption that
         state is updated sequentially. Because the concurrent CDK engine processes different partitions in parallel,
@@ -284,15 +283,24 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         if isinstance(declarative_stream.retriever, SimpleRetriever) and isinstance(declarative_stream.retriever.requester, HttpRequester):
             http_requester = declarative_stream.retriever.requester
             if "stream_state" in http_requester._path.string:
+                self.logger.warning(
+                    f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the HttpRequester which is not thread-safe. Defaulting to synchronous processing"
+                )
                 return False
 
             request_options_provider = http_requester._request_options_provider
             if request_options_provider.request_options_contain_stream_state():
+                self.logger.warning(
+                    f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the HttpRequester which is not thread-safe. Defaulting to synchronous processing"
+                )
                 return False
 
             record_selector = declarative_stream.retriever.record_selector
             if isinstance(record_selector, RecordSelector):
                 if record_selector.record_filter and "stream_state" in record_selector.record_filter.condition:
+                    self.logger.warning(
+                        f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the RecordFilter which is not thread-safe. Defaulting to synchronous processing"
+                    )
                     return False
 
                 for add_fields in [
@@ -300,8 +308,14 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 ]:
                     for field in add_fields.fields:
                         if isinstance(field.value, str) and "stream_state" in field.value:
+                            self.logger.warning(
+                                f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the AddFields which is not thread-safe. Defaulting to synchronous processing"
+                            )
                             return False
                         if isinstance(field.value, InterpolatedString) and "stream_state" in field.value.string:
+                            self.logger.warning(
+                                f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the AddFields which is not thread-safe. Defaulting to synchronous processing"
+                            )
                             return False
         return True
 
