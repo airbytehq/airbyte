@@ -1,10 +1,11 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
-import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -13,7 +14,7 @@ import java.time.Duration
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = [Environment.TEST], rebuildContext = true)
+@MicronautTest(environments = [Environment.TEST, AIRBYTE_CLOUD_ENV], rebuildContext = true)
 class MysqlSourceConfigurationTest {
     @Inject
     lateinit var pojoSupplier:
@@ -24,7 +25,16 @@ class MysqlSourceConfigurationTest {
         SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>
 
     @Test
-    @Property(name = "airbyte.connector.config.json", value = CONFIG)
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.ssl_mode.mode", value = "required")
+    @Property(
+        name = "airbyte.connector.config.jdbc_url_params",
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+    )
     fun testParseJdbcParameters() {
         val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
 
@@ -33,7 +43,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.realHost, "localhost")
         Assertions.assertEquals(config.realPort, 12345)
         Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
-        Assertions.assertTrue(config.sshTunnel is SshPasswordAuthTunnelMethod)
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
 
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
@@ -44,6 +54,19 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    fun testAirbyteCloudDeployment() {
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(pojo)
+        }
     }
 
     @Test

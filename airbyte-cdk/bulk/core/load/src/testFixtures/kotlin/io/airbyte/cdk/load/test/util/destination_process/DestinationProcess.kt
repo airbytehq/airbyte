@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -40,11 +41,6 @@ interface DestinationProcess {
     suspend fun shutdown()
 }
 
-enum class TestDeploymentMode {
-    CLOUD,
-    OSS
-}
-
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
 abstract class DestinationProcessFactory {
     /**
@@ -58,6 +54,6 @@ abstract class DestinationProcessFactory {
         command: String,
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
-        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 }
