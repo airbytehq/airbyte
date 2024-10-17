@@ -1,0 +1,2081 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: A homebrewed connector to pull financial data from Polygon.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Stock OLHC Aggregates
+
+definitions:
+  streams:
+    Stock OLHC Aggregates:
+      type: DeclarativeStream
+      name: Stock OLHC Aggregates
+      primary_key:
+        - ticker
+        - t
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/aggs/ticker/{{ stream_partition['olhc_stock_tickers']
+            }}/range/{{ config['stock_window_multiplier'] }}/{{
+            config['stock_window_timespan'] }}/{{ config['from_date'] }}/{{
+            config['to_date'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_url\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['olhc_stock_tickers'] }}"
+          cursor_field: olhc_stock_tickers
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition['olhc_stock_tickers'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - process_date
+              value: "{{ today_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock OLHC Aggregates"
+    Stock News:
+      type: DeclarativeStream
+      name: Stock News
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/reference/news
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['news_per_page_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_url\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['olhc_stock_tickers'] }}"
+          cursor_field: olhc_stock_tickers
+          request_option:
+            type: RequestOption
+            field_name: ticker
+            inject_into: request_parameter
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['from_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: published_utc.gte
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: published_utc.lte
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['to_date'] }}"
+          datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition['olhc_stock_tickers'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - process_date
+              value: "{{ today_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock News"
+    Stock Financials:
+      type: DeclarativeStream
+      name: Stock Financials
+      primary_key:
+        - cik
+        - filing_date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vX/reference/financials
+          http_method: GET
+          request_parameters:
+            sort: filing_date
+            limit: "{{ config['news_per_page_limit'] }}"
+            order: desc
+            timeframe: "{{ config['financials_timeframe'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_url\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['olhc_stock_tickers'] }}"
+          cursor_field: olhc_stock_tickers
+          request_option:
+            type: RequestOption
+            field_name: ticker
+            inject_into: request_parameter
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: filing_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['from_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: filing_date.gte
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filing_date.lte
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['to_date'] }}"
+          datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition['olhc_stock_tickers'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - process_date
+              value: "{{ today_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Financials"
+    Ticker Details:
+      type: DeclarativeStream
+      name: Ticker Details
+      primary_key:
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/reference/tickers/{{ stream_partition['olhc_stock_tickers'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['olhc_stock_tickers'] }}"
+          cursor_field: olhc_stock_tickers
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - process_date
+              value: "{{ today_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Ticker Details"
+    Related Companies:
+      type: DeclarativeStream
+      name: Related Companies
+      primary_key:
+        - source_ticker
+        - process_date
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/related-companies/{{ stream_partition['olhc_stock_tickers'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - "*"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['olhc_stock_tickers'] }}"
+          cursor_field: olhc_stock_tickers
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - source_ticker
+              value: "{{ stream_partition['olhc_stock_tickers'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - process_date
+              value: "{{ today_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Related Companies"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.polygon.io/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Stock OLHC Aggregates"
+  - $ref: "#/definitions/streams/Stock News"
+  - $ref: "#/definitions/streams/Stock Financials"
+  - $ref: "#/definitions/streams/Ticker Details"
+  - $ref: "#/definitions/streams/Related Companies"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - olhc_stock_tickers
+      - stock_window_multiplier
+      - stock_window_timespan
+      - from_date
+      - to_date
+      - news_per_page_limit
+      - financials_timeframe
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      olhc_stock_tickers:
+        type: array
+        description: >-
+          The list of stocks to request data for. Used in all endpoints in this
+          connector: - Stock OLHC Aggregates - Stock News - Stock Financials -
+          Ticker Details - Related Companies
+        order: 1
+        title: Stock Tickers
+      stock_window_multiplier:
+        type: integer
+        description: >-
+          Used in "Stock OLHC Aggregated endpoint". The window multiplier to use
+          for a time window. If timespan = ‘minute’ and multiplier = ‘5’ then
+          5-minute bars will be returned.
+        order: 2
+        title: Stock Window Multiplier
+      stock_window_timespan:
+        type: string
+        description: >-
+          Used in "Stock OLHC Aggregates" endpoint. The size of the time window
+          that is used in conjuntion with the multiplier to get the aggregates
+          for Open-Close-High-Low  stock data.
+        enum:
+          - minute
+          - hour
+          - day
+          - week
+          - month
+          - quarter
+          - year
+        order: 3
+        title: Stock Window Timespan
+      from_date:
+        type: string
+        description: >-
+          Lower end of the datetime range. Used in all endpoints, except: -
+          Related Copmpanies
+        order: 4
+        title: From Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      to_date:
+        type: string
+        description: >-
+          Upper end of the datetime range. Used in all endpoints, except: -
+          Related Copmpanies
+        order: 5
+        title: To Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      news_per_page_limit:
+        type: number
+        description: >-
+          The amount of news to recover en every paginated request. Used in all
+          endpoints that support pagination: - Stock OLHC Aggregates - Stock
+          News - Stock Financials
+        order: 6
+        title: News Per Page Limit
+      financials_timeframe:
+        type: string
+        description: >-
+          Used only in "stock Financials" endpoint. The type of financial
+          report: Quarterly or Anually.
+        enum:
+          - annual
+          - quarterly
+        order: 7
+        title: Financials Timeframe
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Stock OLHC Aggregates: true
+    Stock News: true
+    Stock Financials: true
+    Ticker Details: true
+    Related Companies: true
+  testedStreams:
+    Stock OLHC Aggregates:
+      hasRecords: true
+      streamHash: 2b6650b18a583863bd6ff410c6f164fcf956eb0a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Stock News:
+      streamHash: 4840df59bb34aa1ccf523ae83bc75b6794d73f18
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Stock Financials:
+      streamHash: b6c4cc94bf627384b779b817bc512aa667c87771
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Ticker Details:
+      hasRecords: true
+      streamHash: 772092d1b52ff7c62bad7688c09d980cbf44270c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Related Companies:
+      streamHash: 6aade565d78cf947da01acb22a3dcf5427ec0a3c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Stock OLHC Aggregates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      "n":
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      process_date:
+        type:
+          - string
+          - "null"
+      t:
+        type: number
+      ticker:
+        type: string
+      v:
+        type:
+          - number
+          - "null"
+      vw:
+        type:
+          - number
+          - "null"
+    required:
+      - ticker
+      - t
+  Stock News:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amp_url:
+        type:
+          - string
+          - "null"
+      article_url:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      insights:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            sentiment:
+              type:
+                - string
+                - "null"
+            sentiment_reasoning:
+              type:
+                - string
+                - "null"
+            ticker:
+              type:
+                - string
+                - "null"
+      keywords:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      process_date:
+        type:
+          - string
+          - "null"
+      published_utc:
+        type: string
+      publisher:
+        type:
+          - object
+          - "null"
+        properties:
+          favicon_url:
+            type:
+              - string
+              - "null"
+          homepage_url:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+      tickers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - published_utc
+  Stock Financials:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptance_datetime:
+        type:
+          - string
+          - "null"
+      cik:
+        type: string
+      company_name:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      filing_date:
+        type: string
+      financials:
+        type:
+          - object
+          - "null"
+        properties:
+          balance_sheet:
+            type:
+              - object
+              - "null"
+            properties:
+              accounts_payable:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              current_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              current_liabilities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              equity:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              equity_attributable_to_noncontrolling_interest:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              equity_attributable_to_parent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              fixed_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              intangible_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              inventory:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              liabilities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              liabilities_and_equity:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              long_term_debt:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              noncurrent_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              noncurrent_liabilities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_current_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_current_liabilities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_noncurrent_assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_noncurrent_liabilities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              wages:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+          cash_flow_statement:
+            type:
+              - object
+              - "null"
+            properties:
+              exchange_gains_losses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_continuing:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_financing_activities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_financing_activities_continuing:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_investing_activities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_investing_activities_continuing:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_operating_activities:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_cash_flow_from_operating_activities_continuing:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+          comprehensive_income:
+            type:
+              - object
+              - "null"
+            properties:
+              comprehensive_income_loss:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              comprehensive_income_loss_attributable_to_noncontrolling_interest:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              comprehensive_income_loss_attributable_to_parent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_comprehensive_income_loss:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_comprehensive_income_loss_attributable_to_parent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+          income_statement:
+            type:
+              - object
+              - "null"
+            properties:
+              basic_average_shares:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              basic_earnings_per_share:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              benefits_costs_expenses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              cost_of_revenue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              costs_and_expenses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              diluted_average_shares:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              diluted_earnings_per_share:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              gross_profit:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              income_loss_from_continuing_operations_after_tax:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              income_loss_from_continuing_operations_before_tax:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              income_tax_expense_benefit:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              income_tax_expense_benefit_deferred:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              interest_expense_operating:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_income_loss:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_income_loss_attributable_to_noncontrolling_interest:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_income_loss_attributable_to_parent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              net_income_loss_available_to_common_stockholders_basic:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              nonoperating_income_loss:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              operating_expenses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              operating_income_loss:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              other_operating_expenses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              participating_securities_distributed_and_undistributed_earnings_loss_basic:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              preferred_stock_dividends_and_other_adjustments:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              research_and_development:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              revenues:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              selling_general_and_administrative_expenses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  unit:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+      fiscal_period:
+        type:
+          - string
+          - "null"
+      fiscal_year:
+        type:
+          - string
+          - "null"
+      process_date:
+        type:
+          - string
+          - "null"
+      sic:
+        type:
+          - string
+          - "null"
+      source_filing_file_url:
+        type:
+          - string
+          - "null"
+      source_filing_url:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+      tickers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      timeframe:
+        type:
+          - string
+          - "null"
+    required:
+      - cik
+      - filing_date
+  Ticker Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      branding:
+        type:
+          - object
+          - "null"
+        properties:
+          icon_url:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+      cik:
+        type:
+          - string
+          - "null"
+      composite_figi:
+        type:
+          - string
+          - "null"
+      currency_name:
+        type:
+          - string
+          - "null"
+      homepage_url:
+        type:
+          - string
+          - "null"
+      list_date:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      market:
+        type:
+          - string
+          - "null"
+      market_cap:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      primary_exchange:
+        type:
+          - string
+          - "null"
+      process_date:
+        type:
+          - string
+          - "null"
+      round_lot:
+        type:
+          - number
+          - "null"
+      share_class_figi:
+        type:
+          - string
+          - "null"
+      share_class_shares_outstanding:
+        type:
+          - number
+          - "null"
+      sic_code:
+        type:
+          - string
+          - "null"
+      sic_description:
+        type:
+          - string
+          - "null"
+      ticker:
+        type: string
+      ticker_root:
+        type:
+          - string
+          - "null"
+      total_employees:
+        type:
+          - number
+          - "null"
+      weighted_shares_outstanding:
+        type:
+          - number
+          - "null"
+    required:
+      - ticker
+  Related Companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      process_date:
+        type: string
+      source_ticker:
+        type: string
+      ticker:
+        type: string
+    required:
+      - source_ticker
+      - process_date
+      - ticker
