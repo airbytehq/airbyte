@@ -137,7 +137,7 @@ class MysqlJdbcPartitionFactory(
                 )
             }
             // resume back to cursor based increment.
-            val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
+            val cursor: Field = stream.schema.find { it.id == sv.cursorField.first() } as Field
             val cursorCheckpoint: JsonNode =
                 when (cursor.type.airbyteSchemaType) {
                     is LeafAirbyteSchemaType ->
