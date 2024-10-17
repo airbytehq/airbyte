@@ -6,13 +6,14 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| orders | id | DefaultPaginator | ✅ |  ❌  |
+| orders | id | DefaultPaginator | ✅ |  ✅  |
 | returns | id | DefaultPaginator | ✅ |  ❌  |
-| products | id | DefaultPaginator | ✅ |  ❌  |
+| products | id | DefaultPaginator | ✅ |  ✅  |
 | purchase_orders | id | DefaultPaginator | ✅ |  ❌  |
 | suppliers | id | DefaultPaginator | ✅ |  ❌  |
 | company |  | DefaultPaginator | ✅ |  ❌  |
@@ -29,6 +30,6 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-10 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-10-17 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

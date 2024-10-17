@@ -87,6 +87,20 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at_min
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
     stores:
       type: DeclarativeStream
       name: stores
@@ -233,6 +247,20 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at_min
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
     customers:
       type: DeclarativeStream
       name: customers
@@ -439,12 +467,19 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
@@ -460,7 +495,7 @@ metadata:
       responsesAreSuccessful: true
     orders:
       hasRecords: true
-      streamHash: b96c78846a77812df643aa876811280d48259960
+      streamHash: 69a7147542ee932501489b9abd45ac35fd359d44
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -481,14 +516,14 @@ metadata:
       responsesAreSuccessful: true
     returns:
       hasRecords: true
-      streamHash: adfd966180eef3d92d1d267d5abb38e0088547bb
+      streamHash: a2c2f51416b67bca4b624aefa606b97007e3232f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     products:
       hasRecords: true
-      streamHash: 97e455894d9e9b1d8068d689f12640e8eb19987f
+      streamHash: da543cb32144b55ea6f0f255a43a61425b75f112
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -570,11 +605,12 @@ schemas:
   orders:
     type: object
     $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
     properties:
       id:
-        type:
-          - number
-          - "null"
+        type: number
       tags:
         type:
           - array
@@ -976,6 +1012,97 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            user:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+            number:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            line_items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  sku_code:
+                    type:
+                      - string
+                      - "null"
+                  sellable_id:
+                    type:
+                      - number
+                      - "null"
+                  refund_amount:
+                    type:
+                      - number
+                      - "null"
+                  refund_quantity:
+                    type:
+                      - number
+                      - "null"
+                  received_quantity:
+                    type:
+                      - number
+                      - "null"
+                  refund_amount_per_unit:
+                    type:
+                      - number
+                      - "null"
+            warehouse_name:
+              type:
+                - string
+                - "null"
       customer:
         type:
           - object
@@ -990,6 +1117,10 @@ schemas:
               - string
               - "null"
           phone:
+            type:
+              - string
+              - "null"
+          mobile:
             type:
               - string
               - "null"
@@ -1035,6 +1166,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              email:
+                type:
+                  - string
+                  - "null"
               phone:
                 type:
                   - string
@@ -1077,6 +1212,10 @@ schemas:
                     - string
                     - "null"
                 city:
+                  type:
+                    - string
+                    - "null"
+                email:
                   type:
                     - string
                     - "null"
@@ -1126,6 +1265,10 @@ schemas:
                   - string
                   - "null"
               city:
+                type:
+                  - string
+                  - "null"
+              email:
                 type:
                   - string
                   - "null"
@@ -1200,6 +1343,10 @@ schemas:
               - string
               - "null"
           city:
+            type:
+              - string
+              - "null"
+          email:
             type:
               - string
               - "null"
@@ -1587,9 +1734,7 @@ schemas:
           - number
           - "null"
       updated_at:
-        type:
-          - string
-          - "null"
+        type: string
       allocations:
         type:
           - array
@@ -2302,39 +2447,55 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            text:
-              type:
-                - string
-                - "null"
-            mentions:
-              type:
-                - array
-                - "null"
-            order_id:
-              type:
-                - number
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            created_by:
-              type:
-                - object
-                - "null"
       subtotal_price:
         type:
           - number
           - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
       delivery_method:
         type:
           - object

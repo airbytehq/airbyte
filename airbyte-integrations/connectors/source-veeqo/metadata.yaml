@@ -16,14 +16,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: ae41ddad-ad1e-46b0-a978-7b2fb5a236b2
+  definitionId: ae647c65-da81-4ae5-958a-86490ce53a5e
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-veeqo
   githubIssueLabel: source-veeqo
   icon: icon.svg
   license: MIT
   name: Veeqo
-  releaseDate: 2024-10-10
+  releaseDate: 2024-10-17
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/veeqo
