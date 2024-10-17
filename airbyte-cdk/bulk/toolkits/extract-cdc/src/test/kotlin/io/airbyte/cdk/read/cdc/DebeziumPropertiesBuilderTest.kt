@@ -46,7 +46,7 @@ class DebeziumPropertiesBuilderTest {
                     StreamIdentifier.from(
                         StreamDescriptor().withName(name).withNamespace(namespace)
                     ),
-                fields = fields.toList(),
+                schema = fields.toSet(),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = null,
                 configuredCursor = null,

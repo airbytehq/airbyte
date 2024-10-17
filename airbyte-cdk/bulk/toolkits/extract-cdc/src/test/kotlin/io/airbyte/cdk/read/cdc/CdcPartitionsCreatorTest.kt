@@ -49,7 +49,7 @@ class CdcPartitionsCreatorTest {
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("test")),
-            fields = listOf(Field("test", StringFieldType)),
+            schema = setOf(Field("test", StringFieldType)),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = null,
