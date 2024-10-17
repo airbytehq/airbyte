@@ -23,10 +23,10 @@ object DevNullTestUtils {
      * most real destinations will put their configs in GSM,
      * so their paths would be `secrets/blah.json`.
      */
-    const val LOGGING_CONFIG_PATH = "test_configs/logging.json"
+    val loggingConfigPath: Path = Path.of("test_configs/logging.json")
     val loggingConfig: DevNullSpecification =
         ValidatedJsonUtils.parseOne(
             DevNullSpecificationOss::class.java,
-            Files.readString(Path.of(LOGGING_CONFIG_PATH)),
+            Files.readString(loggingConfigPath),
         )
 }

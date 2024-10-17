@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        MockDestinationSpecification(),
+        MockDestinationSpecification.configPath,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,

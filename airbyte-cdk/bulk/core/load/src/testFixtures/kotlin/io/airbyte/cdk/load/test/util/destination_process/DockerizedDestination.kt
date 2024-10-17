@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import com.google.common.collect.Lists
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -22,6 +21,7 @@ import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
 import javax.inject.Singleton
+import kotlin.io.path.absolute
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +34,7 @@ private val logger = KotlinLogging.logger {}
 class DockerizedDestination(
     imageTag: String,
     command: String,
-    config: ConfigurationSpecification?,
+    configPath: Path?,
     catalog: ConfiguredAirbyteCatalog?,
     testDeploymentMode: TestDeploymentMode,
     private val testName: String,
@@ -111,20 +111,37 @@ class DockerizedDestination(
                 // Also also yes, we're relying on this env var >.>
                 "-e",
                 "WORKER_JOB_ID=0",
-                imageTag,
-                command,
             )
 
-        fun addInput(paramName: String, fileContents: Any) {
-            Files.write(
-                jobRoot.resolve("destination_$paramName.json"),
-                Jsons.writeValueAsBytes(fileContents),
+        // directly shove the config path into the container
+        // (this has to be before imageTag, otherwise we would run `write --mount ....`)
+        configPath?.let {
+            cmd.add("--mount")
+            cmd.add(
+                """type=bind,source=${configPath.absolute()},target=/destination_config.json,readonly"""
             )
-            cmd.add("--$paramName")
-            cmd.add("destination_$paramName.json")
         }
-        config?.let { addInput("config", it) }
-        catalog?.let { addInput("catalog", it) }
+
+        cmd.add(imageTag)
+        cmd.add(command)
+
+        configPath?.let {
+            cmd.add("--config")
+            cmd.add("/destination_config.json")
+        }
+        // for historical reasons, we write the catalog to
+        // workspaceRoot/job/destination_catalog.json.
+        // We can probably simplify the whole temp dir situation.
+        // (workspaceRoot is mounted to the container as /data, and we launch with workdir
+        // /data/job)
+        catalog?.let {
+            Files.write(
+                jobRoot.resolve("destination_catalog.json"),
+                Jsons.writeValueAsBytes(catalog),
+            )
+            cmd.add("--catalog")
+            cmd.add("destination_catalog.json")
+        }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
@@ -228,14 +245,14 @@ class DockerizedDestinationFactory(
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configPath: Path?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
-            config,
+            configPath,
             catalog,
             deploymentMode,
             testName,

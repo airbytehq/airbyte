@@ -48,7 +48,7 @@ data object CliRunner {
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
-        config: ConfigurationSpecification? = null,
+        configPath: Path? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
@@ -60,7 +60,7 @@ data object CliRunner {
                 .build()
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
-            makeRunnable(op, config, catalog, state) { args: Array<String> ->
+            makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
                     args,
                     testProperties,
@@ -74,7 +74,7 @@ data object CliRunner {
     /** Same as the other [destination] but with [AirbyteMessage] input. */
     fun destination(
         op: String,
-        config: ConfigurationSpecification? = null,
+        configPath: Path? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         vararg input: AirbyteMessage,
@@ -88,7 +88,7 @@ data object CliRunner {
                 baos.toByteArray()
             }
         val inputStream: InputStream = ByteArrayInputStream(inputJsonBytes)
-        return destination(op, config, catalog, state, inputStream)
+        return destination(op, configPath, catalog, state, inputStream)
     }
 
     private fun makeRunnable(
@@ -99,6 +99,16 @@ data object CliRunner {
         connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,
     ): Runnable {
         val configFile: Path? = inputFile(config)
+        return makeRunnable(op, configFile, catalog, state, connectorRunnerConstructor)
+    }
+
+    private fun makeRunnable(
+        op: String,
+        configFile: Path?,
+        catalog: ConfiguredAirbyteCatalog?,
+        state: List<AirbyteStateMessage>?,
+        connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,
+    ): Runnable {
         val catalogFile: Path? = inputFile(catalog)
         val stateFile: Path? = inputFile(state)
         val args: List<String> =

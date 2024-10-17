@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.test.util.destination_process
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -15,11 +14,12 @@ import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
+import java.nio.file.Path
 import javax.inject.Singleton
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    configPath: Path?,
     catalog: ConfiguredAirbyteCatalog?,
     testDeploymentMode: TestDeploymentMode,
 ) : DestinationProcess {
@@ -46,7 +46,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configPath = configPath,
                 catalog = catalog,
                 testProperties = testEnvironments,
                 inputStream = destinationStdin,
@@ -80,11 +80,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configPath: Path?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, deploymentMode)
+        return NonDockerizedDestination(command, configPath, catalog, deploymentMode)
     }
 }
