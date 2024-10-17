@@ -11,13 +11,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - search_message_events
+    - message_events
 
 definitions:
   streams:
-    search_message_events:
+    message_events:
       type: DeclarativeStream
-      name: search_message_events
+      name: message_events
       primary_key:
         - event_id
       retriever:
@@ -26,9 +26,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/events/message
           http_method: GET
-          request_parameters:
-            templates: "{{ config['templates'] }}"
-            recipients: "{{ config['recipients'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -57,7 +54,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/search_message_events"
+          $ref: "#/schemas/message_events"
     sending_domains:
       type: DeclarativeStream
       name: sending_domains
@@ -262,8 +259,8 @@ definitions:
           type: DefaultPaginator
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 10
@@ -298,8 +295,8 @@ definitions:
           type: DefaultPaginator
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 10
@@ -405,7 +402,7 @@ definitions:
           $ref: "#/schemas/snippets"
   base_requester:
     type: HttpRequester
-    url_base: https://api.sparkpost.com
+    url_base: https://api{{ config['region'] }}sparkpost.com
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -415,7 +412,7 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: "#/definitions/streams/search_message_events"
+  - $ref: "#/definitions/streams/message_events"
   - $ref: "#/definitions/streams/sending_domains"
   - $ref: "#/definitions/streams/ab_test"
   - $ref: "#/definitions/streams/templates"
@@ -438,9 +435,9 @@ spec:
       - events
       - recipients
       - templates
-      - domain
       - from
       - metrics
+      - region
     properties:
       api_key:
         type: string
@@ -460,25 +457,26 @@ spec:
         type: string
         order: 3
         title: Templates
-      domain:
-        type: string
-        order: 4
-        title: Domain
       from:
         type: string
-        order: 5
+        order: 4
         title: From
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       metrics:
         type: array
-        order: 6
+        order: 5
         title: Metrics
+      region:
+        type: string
+        title: Region
+        default: "\" \""
+        order: 6
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    search_message_events: true
+    message_events: true
     sending_domains: true
     ab_test: true
     templates: true
@@ -491,104 +489,100 @@ metadata:
     metrics_by_template: true
     snippets: true
   testedStreams:
-    search_message_events:
-      streamHash: a1b4a7e1302c6213be4f8b0abe7a844b41fbb65f
+    message_events:
+      streamHash: d824b049b9bce1d6a0a0fc37b1311f459aba491f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sending_domains:
-      streamHash: decc0a269094e86d446fe3b0da956bddbffd451a
+      streamHash: 596e40acc682042e4812880c62e12764d61d2729
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     ab_test:
-      streamHash: b2064cfe16bc7101bf1663fcc7735b7625728882
+      streamHash: 9e2f54995aa4757283ec3c15a3529cf4cdaf5c8e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     templates:
-      streamHash: 3f676a92796d906d7cbd7da237657a86c58b0ea9
+      streamHash: b9eb1ab5f9d4914434cf24e780cd36a2851e91ac
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     recipients:
-      streamHash: 0b9a997331a015945d337324455007084cc52b1d
+      streamHash: d97968121492e325120da13259fdb1786cbcfbb0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics_summary:
-      streamHash: 186232fd2769b3bdf0f569a09112d26d886375da
+      streamHash: 8b7d0f40e03ee91cf101fc0a838d1f5b91aa2a3f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     subaccounts:
-      streamHash: c7e073222e498fd45ab0f6e691bdc47cc1409a08
+      streamHash: 235691adf0c8df9f0b9edf5f70155eda4d8b21e8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     engagement_details:
-      streamHash: 6a041a63dfac7e9ecd18095dabe4e81d553c8c7e
+      streamHash: 66be5c79b561d5b1046b2d0b697db5210add66a1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     rejection_reason_metrics:
-      streamHash: 2ed33dc4467778a8e0358e2bd7d31f03f5e61540
+      streamHash: a5357d2c0357ac13e8808ccb538ffeec221d849d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics:
-      streamHash: 4661c83a90a98c1506424b58b04f6f32b7c69617
+      streamHash: 0c2fd38189b430f95afc49a108f66ee728011086
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metrics_by_template:
-      streamHash: 52753ff8535567c54ee7260f1784d0d207357902
+      streamHash: 442e01db4bc70d8f13068d03c5f867d1869e3fc7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     snippets:
-      hasRecords: true
-      streamHash: c5667b83c0afa440d5f9e4c01a0a339063169058
+      streamHash: 80d9aa18c15738f53d3ada527ab67ecbcff537f9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://developers.sparkpost.com/api/
 
 schemas:
-  search_message_events:
+  message_events:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
-        type:
-          - string
-          - "null"
-      campaign_id:
         type:
           - string
           - "null"
@@ -609,47 +603,6 @@ schemas:
       friendly_from:
         type:
           - string
-          - "null"
-      geo_ip:
-        type:
-          - object
-          - "null"
-        properties:
-          city:
-            type:
-              - string
-              - "null"
-          continent:
-            type:
-              - string
-              - "null"
-          country:
-            type:
-              - string
-              - "null"
-          latitude:
-            type:
-              - number
-              - "null"
-          longitude:
-            type:
-              - number
-              - "null"
-          postal_code:
-            type:
-              - string
-              - "null"
-          region:
-            type:
-              - string
-              - "null"
-          zip:
-            type:
-              - number
-              - "null"
-      initial_pixel:
-        type:
-          - boolean
           - "null"
       injection_time:
         type:
@@ -687,10 +640,6 @@ schemas:
         type:
           - string
           - "null"
-      open_tracking:
-        type:
-          - boolean
-          - "null"
       outbound_tls:
         type:
           - string
@@ -707,11 +656,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          unique_id:
-            type:
-              - string
-              - "null"
       rcpt_tags:
         type:
           - array
@@ -729,10 +673,6 @@ schemas:
           - string
           - "null"
       routing_domain:
-        type:
-          - string
-          - "null"
-      scheduled_time:
         type:
           - string
           - "null"
@@ -764,47 +704,6 @@ schemas:
         type:
           - string
           - "null"
-      user_agent:
-        type:
-          - string
-          - "null"
-      user_agent_parsed:
-        type:
-          - object
-          - "null"
-        properties:
-          agent_family:
-            type:
-              - string
-              - "null"
-          device_brand:
-            type:
-              - string
-              - "null"
-          device_family:
-            type:
-              - string
-              - "null"
-          is_mobile:
-            type:
-              - boolean
-              - "null"
-          is_prefetched:
-            type:
-              - boolean
-              - "null"
-          is_proxy:
-            type:
-              - boolean
-              - "null"
-          os_family:
-            type:
-              - string
-              - "null"
-          os_version:
-            type:
-              - string
-              - "null"
     required:
       - event_id
   sending_domains:

@@ -9,14 +9,14 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 | `events` | `string` | Events.  |  |
 | `recipients` | `string` | Recipients.  |  |
 | `templates` | `string` | Templates.  |  |
-| `domain` | `string` | Domain.  |  |
 | `from` | `string` | From.  |  |
 | `metrics` | `array` | Metrics.  |  |
+| `region` | `string` | Region.  | &quot; &quot; |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| search_message_events | event_id | DefaultPaginator | ✅ |  ❌  |
+| message_events | event_id | DefaultPaginator | ✅ |  ❌  |
 | sending_domains | domain | No pagination | ✅ |  ❌  |
 | ab_test | id | No pagination | ✅ |  ❌  |
 | templates | id | No pagination | ✅ |  ❌  |
@@ -36,6 +36,6 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-11 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-17 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
