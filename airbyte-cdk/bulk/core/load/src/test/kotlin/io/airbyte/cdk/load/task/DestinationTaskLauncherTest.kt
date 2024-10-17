@@ -276,6 +276,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     T : LeveledTask,
     T : ScopedTask {
         val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
+        val callbacks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
         inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
             override suspend fun execute() {
@@ -283,7 +284,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             }
         }
 
-        override fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+        override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
             runBlocking { wrappedTasks.send(task) }
             val innerTask =
                 object : InternalScope {
@@ -293,11 +294,15 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
                 }
             return IdentityWrapper(innerTask)
         }
+
+        override suspend fun setCallback(callback: suspend () -> Unit) {
+            callbacks.send(callback)
+        }
     }
 
     @Test
-    fun testStart() = runTest {
-        taskLauncher.start()
+    fun testRun() = runTest {
+        val job = launch { taskLauncher.run() }
 
         Assertions.assertTrue(
             mockInputConsumerTask.hasRun.receive(),
@@ -327,6 +332,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             mockSpillToDiskTaskFactory.streamHasRun.size,
             taskList.filterIsInstance<SpillToDiskTask>().size
         )
+        job.cancel()
     }
 
     @Test
@@ -431,7 +437,19 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Test
     fun testHandleTeardownComplete() = runTest {
         // This should close the scope provider.
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didClose)
+        }
         taskLauncher.handleTeardownComplete()
-        Assertions.assertTrue(mockScopeProvider.didClose)
+    }
+
+    @Test
+    fun testHandleCallbackWithFailure() = runTest {
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didKill)
+        }
+        mockExceptionHandler.callbacks.receive().invoke()
     }
 }
