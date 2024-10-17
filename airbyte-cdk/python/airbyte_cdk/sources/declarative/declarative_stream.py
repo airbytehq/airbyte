@@ -182,7 +182,14 @@ class DeclarativeStream(Stream):
         stream_state: MutableMapping[str, Any],
     ) -> CheckpointReader:
         """
-        This method is overridden to skip classification for incremental streams
+        This method is overridden to prevent issues with stream slice classification for incremental streams that have parent streams.
+
+        The classification logic, when used with `itertools.tee`, creates a copy of the stream slices. When `stream_slices` is called
+        the second time, the parent records generated during the classification phase are lost. This occurs because `itertools.tee`
+        only buffers the results, meaning the logic in `simple_retriever` that observes and updates the cursor isn't executed again.
+
+        By overriding this method, we ensure that the stream slices are processed correctly and parent records are not lost,
+        allowing the cursor to function as expected.
         """
         mappings_or_slices = self.stream_slices(
             cursor_field=cursor_field,
@@ -193,7 +200,7 @@ class DeclarativeStream(Stream):
         cursor = self.get_cursor()
         checkpoint_mode = self._checkpoint_mode
 
-        if cursor is not None:
+        if isinstance(cursor, PerPartitionCursor):
             self.has_multiple_slices = True
             return CursorBasedCheckpointReader(
                 stream_slices=mappings_or_slices,
