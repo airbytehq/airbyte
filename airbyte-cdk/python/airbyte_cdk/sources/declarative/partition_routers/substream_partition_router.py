@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import copy
 import logging
 from dataclasses import InitVar, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
@@ -179,11 +180,11 @@ class SubstreamPartitionRouter(PartitionRouter):
                     )
 
                     if incremental_dependency:
-                        self._parent_state[parent_stream.name] = parent_stream.state
+                        self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
 
                 # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
                 if incremental_dependency:
-                    self._parent_state[parent_stream.name] = parent_stream.state
+                    self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
@@ -260,7 +261,7 @@ class SubstreamPartitionRouter(PartitionRouter):
             }
         }
         """
-        return self._parent_state
+        return copy.deepcopy(self._parent_state)
 
     @property
     def logger(self) -> logging.Logger:

@@ -242,10 +242,7 @@ def _run_read(
         ]
     )
     logger = MagicMock()
-    result = []
-    for m in source.read(logger, config, catalog, state):
-        result.append(copy.deepcopy(m))
-    return result
+    return list(source.read(logger, config, catalog, state))
 
 
 @pytest.mark.parametrize(
