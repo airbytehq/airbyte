@@ -13,6 +13,7 @@ from contextlib import suppress
 from functools import lru_cache
 from pathlib import Path
 from platform import python_implementation, python_version, system
+from typing import Any
 
 import requests
 
@@ -92,9 +93,9 @@ def is_jupyter() -> bool:
 
 
 @lru_cache
-def get_notebook_name() -> str | None:
+def get_notebook_name() -> Any:
     if is_colab():
-        session_info: dict | None = None
+        session_info: dict[str, Any] | None = None
         with suppress(Exception):
             response = requests.get(COLAB_SESSION_URL)
             if response.status_code == 200:  # noqa: PLR2004  # Magic number

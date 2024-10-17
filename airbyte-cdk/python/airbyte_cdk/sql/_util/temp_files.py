@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def as_temp_files(files_contents: list[dict | str]) -> Generator[list[str], Any, None]:
+def as_temp_files(files_contents: list[dict[str, Any] | str]) -> Generator[list[str], Any, None]:
     """Write the given contents to temporary files and yield the file paths as strings."""
     temp_files: list[Any] = []
     try:

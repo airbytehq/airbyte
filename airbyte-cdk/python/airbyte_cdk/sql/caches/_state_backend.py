@@ -240,7 +240,7 @@ class SqlStateBackend(StateBackendBase):
                         [*streams_filter, *GLOBAL_STATE_STREAM_NAMES]
                     )
                 )
-            states: list = query.all()
+            states: list[CacheStreamStateModel] = query.all()
             if not destination_name:
                 # When returning cache states, exclude any states where the table name would not
                 # match what the current cache table prefixes would generate. These are logically
@@ -253,7 +253,7 @@ class SqlStateBackend(StateBackendBase):
 
         return StaticInputState(
             from_state_messages=[
-                AirbyteStateMessage.model_validate_json(state.state_json) for state in states
+                AirbyteStateMessage.model_validate_json(state.state_json) for state in states # type: ignore
             ]
         )
 

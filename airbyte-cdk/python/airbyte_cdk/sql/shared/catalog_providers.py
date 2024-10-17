@@ -50,7 +50,7 @@ class CatalogProvider:
         self._catalog: ConfiguredAirbyteCatalog = self.validate_catalog(configured_catalog)
 
     @staticmethod
-    def validate_catalog(catalog: ConfiguredAirbyteCatalog) -> None:
+    def validate_catalog(catalog: ConfiguredAirbyteCatalog) -> Any:
         """Validate the catalog to ensure it is valid.
 
         This requires ensuring that `generationId` and `minGenerationId` are both set. If
@@ -122,7 +122,7 @@ class CatalogProvider:
     def get_stream_properties(
         self,
         stream_name: str,
-    ) -> dict[str, dict]:
+    ) -> dict[str, dict[str, Any]]:
         """Return the names of the top-level properties for the given stream."""
         return self.get_stream_json_schema(stream_name)["properties"]
 
@@ -172,7 +172,7 @@ class CatalogProvider:
     def get_cursor_key(
         self,
         stream_name: str,
-    ) -> str | None:
+    ) -> list[str] | None:
         """Return the cursor key for the given stream."""
         return self.get_configured_stream_info(stream_name).cursor_field
 

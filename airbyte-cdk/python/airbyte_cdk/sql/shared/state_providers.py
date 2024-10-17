@@ -40,7 +40,7 @@ class StateProviderBase(abc.ABC):
     @property
     def stream_state_artifacts(
         self,
-    ) -> list[AirbyteStreamState]:
+    ) -> list[AirbyteStreamState] | None:
         """Return all state artifacts.
 
         This is just a type guard around the private variable `_stream_state_artifacts` and the
@@ -58,7 +58,7 @@ class StateProviderBase(abc.ABC):
     @property
     def state_message_artifacts(
         self,
-    ) -> Iterable[AirbyteStreamState]:
+    ) -> Iterable[AirbyteStateMessage]:
         """Return all state artifacts.
 
         This is just a type guard around the private variable `_state_message_artifacts`.

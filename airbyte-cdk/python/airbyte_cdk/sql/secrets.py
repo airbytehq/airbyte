@@ -81,7 +81,7 @@ class SecretString(str):
         """
         return True
 
-    def parse_json(self) -> dict:
+    def parse_json(self) -> Any:
         """Parse the secret string as JSON."""
         try:
             return json.loads(self)
@@ -228,7 +228,7 @@ class SecretHandle:
         """
         return cast(SecretString, self.parent.get_secret(self.secret_name))
 
-    def parse_json(self) -> dict:
+    def parse_json(self) -> Any:
         """Parse the secret as JSON.
 
         This method is a convenience method to parse the secret as JSON without

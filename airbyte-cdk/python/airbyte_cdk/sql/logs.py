@@ -15,6 +15,7 @@ import logging
 import os
 import platform
 import tempfile
+from typing import Any
 import warnings
 from functools import lru_cache
 from pathlib import Path
@@ -120,7 +121,7 @@ set this value to `None`.
 
 
 @lru_cache
-def get_global_file_logger() -> logging.Logger | None:
+def get_global_file_logger() -> Any:
     """Return the global logger for Airbyte.
 
     This logger is configured to write logs to the console and to a file in the log directory.
@@ -272,7 +273,7 @@ def get_global_stats_logger() -> structlog.BoundLogger:
     return structlog.get_logger("airbyte.stats")
 
 
-def new_passthrough_file_logger(connector_name: str) -> logging.Logger:
+def new_passthrough_file_logger(connector_name: str) -> Any:
     """Create a logger from logging module."""
     logger = logging.getLogger(f"airbyte.{connector_name}")
     logger.setLevel(logging.INFO)

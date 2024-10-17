@@ -27,7 +27,7 @@ class AirbyteWriterInterface(abc.ABC):
         This is used for logging and state tracking.
         """
         if hasattr(self, "_name"):
-            return self._name
+            return str(self._name)
 
         return self.__class__.__name__
 

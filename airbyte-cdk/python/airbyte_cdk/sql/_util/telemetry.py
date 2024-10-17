@@ -109,7 +109,7 @@ def _setup_analytics() -> str | bool:
     if _ANALYTICS_FILE.exists():
         analytics_text = _ANALYTICS_FILE.read_text()
         try:
-            analytics: dict = yaml.safe_load(analytics_text)
+            analytics: dict[str, str | bool] = yaml.safe_load(analytics_text)
         except Exception as ex:
             issues += f"File appears corrupted. Error was: {ex!s}"
 
@@ -210,7 +210,7 @@ def send_telemetry(
     if os.environ.get(DO_NOT_TRACK):
         return
 
-    payload_props: dict[str, str | int | dict] = {
+    payload_props: dict[str, str | int | dict[str, Any]] = {
         "session_id": Airbyte_SESSION_ID,
         "state": state,
         "version": get_version(),

@@ -12,7 +12,7 @@ HASH_SEED = "Airbyte:"
 
 
 def one_way_hash(
-    obj: Mapping | list | object,
+    obj: Mapping[str, str] | list[str] | object,
     /,
 ) -> str:
     """Return a one-way hash of the given string.

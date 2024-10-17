@@ -101,7 +101,7 @@ class StreamRecordHandler:
     def __init__(
         self,
         *,
-        json_schema: dict,
+        json_schema: dict[str, Any],
         normalizer: type[NameNormalizerBase] = LowerCaseNormalizer,
         normalize_keys: bool = False,
         prune_extra_fields: bool,
@@ -197,7 +197,7 @@ class StreamRecord(dict[str, Any]):
 
     def __init__(
         self,
-        from_dict: dict,
+        from_dict: dict[str, Any],
         *,
         stream_record_handler: StreamRecordHandler,
         with_internal_columns: bool = True,

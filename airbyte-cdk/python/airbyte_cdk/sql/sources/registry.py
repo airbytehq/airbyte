@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from typing import Any
 import warnings
 from copy import copy
 from dataclasses import dataclass
@@ -180,7 +181,7 @@ def _get_registry_url() -> str:
     return _REGISTRY_URL
 
 
-def _registry_entry_to_connector_metadata(entry: dict) -> ConnectorMetadata:
+def _registry_entry_to_connector_metadata(entry: dict[str, Any]) -> ConnectorMetadata:
     name = entry["dockerRepository"].replace("airbyte/", "")
     latest_version: str | None = entry.get("dockerImageTag")
     tags = entry.get("tags", [])
@@ -199,8 +200,8 @@ def _registry_entry_to_connector_metadata(entry: dict) -> ConnectorMetadata:
     if not language and _MANIFEST_ONLY_TAG in tags:
         language = Language.MANIFEST_ONLY
 
-    remote_registries: dict = entry.get("remoteRegistries", {})
-    pypi_registry: dict = remote_registries.get("pypi", {})
+    remote_registries: dict[str, Any] = entry.get("remoteRegistries", {})
+    pypi_registry: dict[str, Any] = remote_registries.get("pypi", {})
     pypi_package_name: str = pypi_registry.get("packageName", None)
     pypi_enabled: bool = pypi_registry.get("enabled", False)
     install_types: set[InstallType] = {
