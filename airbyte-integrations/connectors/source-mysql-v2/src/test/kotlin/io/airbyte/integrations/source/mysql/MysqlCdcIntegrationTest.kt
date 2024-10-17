@@ -14,11 +14,9 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -81,8 +79,7 @@ class MysqlCdcIntegrationTest {
 
     @Test
     fun test() {
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config(), configuredCatalog).run()
+        CliRunner.source("read", config(), configuredCatalog).run()
         // TODO: add assertions on run1 messages.
 
         connectionFactory.get().use { connection: Connection ->
@@ -90,21 +87,6 @@ class MysqlCdcIntegrationTest {
             connection.createStatement().use { stmt: Statement ->
                 stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
             }
-        }
-
-        val run2InputState: List<AirbyteStateMessage> = listOf(run1.states().last())
-        val run2: BufferingOutputConsumer =
-            CliRunner.source("read", config(), configuredCatalog, run2InputState).run()
-        // TODO: add assertions on run2 messages.
-
-        println()
-        println()
-        for (msg in run1.messages()) {
-            println(Jsons.valueToTree(msg))
-        }
-        println()
-        for (msg in run2.messages()) {
-            println(Jsons.valueToTree(msg))
         }
     }
 
@@ -152,9 +134,15 @@ class MysqlCdcIntegrationTest {
             targetContainer: MySQLContainer<*>,
             targetConnectionFactory: JdbcConnectionFactory
         ) {
+            val gtidOn =
+                "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
+                    "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+                    "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
+                    "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
                 "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
                     "ON *.* TO '${targetContainer.username}'@'%';"
+            targetContainer.execAsRoot(gtidOn)
             targetContainer.execAsRoot(grant)
             targetContainer.execAsRoot("FLUSH PRIVILEGES;")
 

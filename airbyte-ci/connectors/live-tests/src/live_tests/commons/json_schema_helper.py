@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from __future__ import annotations
 
 from enum import Enum
 from functools import reduce, total_ordering

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "5.11.1"
+version = "5.13.0"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -69,6 +69,7 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
+xmltodict = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
@@ -82,7 +83,6 @@ pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
 requests-mock = "*"
-codeflash = "*"
 
 [tool.poetry.extras]
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "python-snappy"]
@@ -119,10 +119,3 @@ optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
 mount_docker_socket = true
-
-[tool.codeflash]
-# All paths are relative to this pyproject.toml's directory.
-module-root = "airbyte_cdk"
-tests-root = "unit_tests"
-test-framework = "pytest"
-ignore-paths = []

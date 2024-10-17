@@ -199,7 +199,7 @@ class DeployOrchestrator(Step):
         self.context.logger.info(f"Deploying to deployment: {target_deployment}")
 
         container_to_run = (
-            python_with_dependencies.with_mounted_directory("/src", parent_dir)
+            python_with_dependencies.with_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_env_variable("DAGSTER_CLOUD_DEPLOYMENT", target_deployment)
             .with_workdir("/src/orchestrator")
