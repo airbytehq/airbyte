@@ -87,7 +87,6 @@ object TestFixtures {
             )
         return DefaultJdbcSharedState(
             configuration,
-            BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
             ConcurrencyResource(configuration),
@@ -189,4 +188,15 @@ object TestFixtures {
         override val feeds: List<Feed> = listOf()
         override fun current(feed: Feed): OpaqueStateValue? = null
     }
+
+    fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
+        StreamFeedBootstrap(
+            outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            stateQuerier =
+                object : StateQuerier {
+                    override val feeds: List<Feed> = listOf(this@bootstrap)
+                    override fun current(feed: Feed): OpaqueStateValue? = opaqueStateValue
+                },
+            stream = this
+        )
 }
