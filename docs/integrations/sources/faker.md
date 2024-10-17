@@ -104,6 +104,7 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :---------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.19 | 2024-10-12 | [46821](https://github.com/airbytehq/airbyte/pull/46821) | Update dependencies |
 | 6.2.18-rc.1 | 2024-10-09 | [46678](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.17      | 2024-10-05 | [46398](https://github.com/airbytehq/airbyte/pull/46398)                                                              | Update dependencies                                                                                             |
 | 6.2.16      | 2024-09-28 | [46207](https://github.com/airbytehq/airbyte/pull/46207)                                                              | Update dependencies                                                                                             |
