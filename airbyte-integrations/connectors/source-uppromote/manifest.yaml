@@ -97,6 +97,28 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -120,6 +142,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
@@ -130,6 +153,13 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        description: Data before this date will not be fetched.
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
@@ -154,7 +184,7 @@ metadata:
       responsesAreSuccessful: true
     referrals:
       hasRecords: true
-      streamHash: 27a8e723290d28558376cad1ed1ae62af7e81fdc
+      streamHash: 2044e4e30bda35382092aac486ead90556ccbd3a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -288,9 +318,7 @@ schemas:
           - string
           - "null"
       created_at:
-        type:
-          - number
-          - "null"
+        type: number
       id:
         type: number
       status:
@@ -307,3 +335,4 @@ schemas:
           - "null"
     required:
       - id
+      - created_at

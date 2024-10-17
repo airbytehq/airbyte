@@ -12,7 +12,7 @@ The Uppromote Connector for Airbyte enables seamless data integration between Up
 |-------------|-------------|------------|---------------------|----------------------|
 | affiliates | id | DefaultPaginator | ✅ |  ❌  |
 | coupons | id | DefaultPaginator | ✅ |  ❌  |
-| referrals | id | DefaultPaginator | ✅ |  ❌  |
+| referrals | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
