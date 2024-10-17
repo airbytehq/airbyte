@@ -478,7 +478,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
             # Combine records produced before the state with records from the new read
             cumulative_records_state = records_before_state + records_from_state
 
-            # Remove all duplicates using set
+            # Duplicates may occur because the state matches the cursor of the last record, causing it to be re-emitted in the next sync.
             cumulative_records_state_deduped = list({orjson.dumps(record): record for record in cumulative_records_state}.values())
 
             # Compare the cumulative records with the expected records
