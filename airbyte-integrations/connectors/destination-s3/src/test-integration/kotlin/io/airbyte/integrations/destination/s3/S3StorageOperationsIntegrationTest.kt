@@ -196,8 +196,8 @@ class S3StorageOperationsIntegrationTest {
             for (i in 1..numberOfGens) {
                 val numberOfObjects =
                     when (val randomNumber = random.nextInt(5)) {
-                        0 -> 1
-                        else -> randomNumber
+                        0 -> 4
+                        else -> randomNumber + 3
                     }
                 expectedNumberOfObjects += numberOfObjects
                 objectsByGenId[i] =
