@@ -83,7 +83,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private val zeroData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
-                stream.fields.forEach { recordData.putNull(it.id) }
+                stream.schema.forEach { recordData.putNull(it.id) }
             }
 
         private val cachedData: ObjectNode = zeroData.deepCopy()

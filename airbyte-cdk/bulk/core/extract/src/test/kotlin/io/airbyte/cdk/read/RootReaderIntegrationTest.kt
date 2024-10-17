@@ -259,7 +259,7 @@ data class TestCase(
     val stream: Stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("test")),
-            fields = listOf(),
+            schema = emptySet(),
             configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
