@@ -22,8 +22,8 @@ from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field, PrivateAttr
 
-from airbyte_cdk.sql.duckdb import DuckDBConfig
-from airbyte_cdk.sql.motherduck import MotherDuckSqlProcessor
+from airbyte_cdk.sql._processors.duckdb import DuckDBConfig
+from airbyte_cdk.sql._processors.motherduck import MotherDuckSqlProcessor
 from airbyte_cdk.sql.caches.duckdb import DuckDBCache
 from airbyte_cdk.sql.secrets import SecretString
 

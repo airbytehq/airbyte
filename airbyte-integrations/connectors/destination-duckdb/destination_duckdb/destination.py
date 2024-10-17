@@ -21,8 +21,8 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from airbyte_cdk.sql.types import SQLTypeConverter
 from airbyte_cdk.sql.constants import AB_RAW_ID_COLUMN, AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
-from airbyte_cdk.sql.duckdb import DuckDBSqlProcessor, DuckDBConfig
-from airbyte_cdk.sql.motherduck import MotherDuckSqlProcessor
+from airbyte_cdk.sql._processors.duckdb import DuckDBSqlProcessor, DuckDBConfig
+from airbyte_cdk.sql._processors.motherduck import MotherDuckSqlProcessor
 from airbyte_cdk.sql.caches.motherduck import MotherDuckConfig
 from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
 from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT

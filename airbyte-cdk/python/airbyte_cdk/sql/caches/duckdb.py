@@ -21,7 +21,7 @@ import warnings
 from duckdb_engine import DuckDBEngineWarning
 from pydantic import PrivateAttr
 
-from airbyte_cdk.sql.duckdb import DuckDBConfig, DuckDBSqlProcessor
+from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from airbyte_cdk.sql.caches.base import CacheBase
 
 
