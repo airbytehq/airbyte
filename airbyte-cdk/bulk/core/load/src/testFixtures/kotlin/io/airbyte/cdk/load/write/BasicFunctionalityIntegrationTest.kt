@@ -518,6 +518,64 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testAppend() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId,
+            )
+        runSync(
+            config,
+            makeStream(syncId = 42),
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        runSync(
+            config,
+            makeStream(syncId = 43),
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "second_value"}""",
+                    emittedAtMs = 1234,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "name" to "first_value"),
+                    airbyteMeta = OutputRecord.Meta(changes = emptyList(), syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(changes = emptyList(), syncId = 43),
+                )
+            ),
+            streamName = "test_stream",
+            streamNamespace = randomizedNamespace,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     companion object {
         private val intType = FieldType(IntegerType, nullable = true)
         private val stringType = FieldType(StringType, nullable = true)

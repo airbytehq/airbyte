@@ -42,4 +42,9 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testTruncateRefresh() {
         super.testTruncateRefresh()
     }
+
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
 }
