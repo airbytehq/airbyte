@@ -11,7 +11,7 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPostâ
 | `templates` | `string` | Templates.  |  |
 | `from` | `string` | From.  |  |
 | `metrics` | `array` | Metrics.  |  |
-| `region` | `string` | Region.  | &quot; &quot; |
+| `region` | `string` | Region.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

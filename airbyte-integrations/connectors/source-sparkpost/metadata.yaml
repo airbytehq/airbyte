@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: e09ef562-32a6-4677-963c-7b0e006af00d
+  definitionId: b99ad9fc-e8b2-493d-908c-913dfbe9f914
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-sparkpost
   githubIssueLabel: source-sparkpost

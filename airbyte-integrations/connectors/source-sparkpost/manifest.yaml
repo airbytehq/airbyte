@@ -470,7 +470,6 @@ spec:
       region:
         type: string
         title: Region
-        default: "\" \""
         order: 6
     additionalProperties: true
 
