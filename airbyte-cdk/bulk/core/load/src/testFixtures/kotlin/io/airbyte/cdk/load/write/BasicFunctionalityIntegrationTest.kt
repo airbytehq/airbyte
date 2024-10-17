@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write
 
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -20,12 +19,14 @@ import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 abstract class BasicFunctionalityIntegrationTest(
-    val config: ConfigurationSpecification,
+    /** The config to pass into the connector, as a serialized JSON blob */
+    val config: Path,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
@@ -36,6 +37,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val verifyDataWriting: Boolean = true,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
+
     @Test
     open fun testBasicWrite() {
         val stream =

@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.test.util
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -16,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -124,12 +124,12 @@ abstract class IntegrationTest(
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        config: ConfigurationSpecification,
+        configPath: Path,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> =
-        runSync(config, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(configPath, DestinationCatalog(listOf(stream)), messages, streamStatus)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -138,7 +138,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        config: ConfigurationSpecification,
+        configPath: Path,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -146,7 +146,7 @@ abstract class IntegrationTest(
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
-                config,
+                configPath,
                 catalog.asProtocolObject(),
             )
         return runBlocking {
