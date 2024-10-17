@@ -15,7 +15,7 @@ from pathlib import Path
 import requests
 
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.meta import is_docker_installed
+from airbyte_cdk.sql._util.meta import is_docker_installed
 from airbyte_cdk.sql.version import get_version
 
 

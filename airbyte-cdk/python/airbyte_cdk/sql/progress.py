@@ -40,8 +40,8 @@ from airbyte_cdk.models import (
 
 from airbyte_cdk.sql import logs
 from airbyte_cdk.sql._message_iterators import _new_stream_success_message
-from airbyte_cdk.sql import meta
-from airbyte_cdk.sql.telemetry import (
+from airbyte_cdk.sql._util import meta
+from airbyte_cdk.sql._util.telemetry import (
     EventState,
     EventType,
     send_telemetry,

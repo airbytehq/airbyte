@@ -25,13 +25,13 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._connector_base import ConnectorBase
 from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
-from airbyte_cdk.sql.temp_files import as_temp_files
+from airbyte_cdk.sql._util.temp_files import as_temp_files
 from airbyte_cdk.sql.caches.util import get_default_cache
 from airbyte_cdk.sql.datasets._lazy import LazyDataset
 from airbyte_cdk.sql.progress import ProgressStyle, ProgressTracker
 from airbyte_cdk.sql.records import StreamRecord, StreamRecordHandler
 from airbyte_cdk.sql.results import ReadResult
-from airbyte_cdk.sql.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.strategies import WriteStrategy
 
 

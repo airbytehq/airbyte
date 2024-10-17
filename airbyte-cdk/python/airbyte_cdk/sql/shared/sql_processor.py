@@ -40,8 +40,8 @@ from airbyte_cdk.models.airbyte_protocol import (
 )
 
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.hashing import one_way_hash
-from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql._util.hashing import one_way_hash
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import (
     AB_EXTRACTED_AT_COLUMN,
     AB_META_COLUMN,
@@ -50,7 +50,7 @@ from airbyte_cdk.sql.constants import (
 )
 from airbyte_cdk.sql.records import StreamRecordHandler
 from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.state_writers import StdOutStateWriter
+from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
 from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
 from airbyte_cdk.sql.types import SQLTypeConverter
 
@@ -68,8 +68,8 @@ if TYPE_CHECKING:
     from airbyte_cdk.sql._batch_handles import BatchHandle
     from airbyte_cdk.sql._writers.jsonl import FileWriterBase
     from airbyte_cdk.sql.progress import ProgressTracker
-    from airbyte_cdk.sql.catalog_providers import CatalogProvider
-    from airbyte_cdk.sql.state_writers import StateWriterBase
+    from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+    from airbyte_cdk.sql.shared.state_writers import StateWriterBase
 
 
 class RecordDedupeMode(enum.Enum):

@@ -20,14 +20,14 @@ from airbyte_cdk.sql.caches._state_backend_base import (
     StateBackendBase,
 )
 from airbyte_cdk.sql.exceptions import AirbyteInputError, AirbyteInternalError
-from airbyte_cdk.sql.state_providers import StaticInputState
-from airbyte_cdk.sql.state_writers import StateWriterBase
+from airbyte_cdk.sql.shared.state_providers import StaticInputState
+from airbyte_cdk.sql.shared.state_writers import StateWriterBase
 
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
 
-    from airbyte_cdk.sql.state_providers import StateProviderBase
+    from airbyte_cdk.sql.shared.state_providers import StateProviderBase
 
 
 CACHE_STATE_TABLE_NAME = "_airbyte_state"

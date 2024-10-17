@@ -19,8 +19,8 @@ from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 from airbyte_cdk.sql._writers.jsonl import JsonlWriter
 from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.sql_processor import SqlProcessorBase
-from airbyte_cdk.sql.sql_processor import SqlConfig
+from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase, SQLRuntimeError
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
 import pyarrow as pa
@@ -305,7 +305,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 "write_method": write_method,
             },
         )
-    
+
     def _drop_duplicates(self, table_name: str, stream_name: str):
         primary_keys = self.catalog_provider.get_primary_keys(stream_name)
         new_table_name = f"{table_name}_deduped"

@@ -14,9 +14,9 @@ from rich import print  # noqa: A004  # Allow shadowing the built-in
 
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._executors.base import Executor
-from airbyte_cdk.sql.meta import is_windows
-from airbyte_cdk.sql.telemetry import EventState, log_install_state
-from airbyte_cdk.sql.venv_util import get_bin_dir
+from airbyte_cdk.sql._util.meta import is_windows
+from airbyte_cdk.sql._util.telemetry import EventState, log_install_state
+from airbyte_cdk.sql._util.venv_util import get_bin_dir
 
 
 if TYPE_CHECKING:

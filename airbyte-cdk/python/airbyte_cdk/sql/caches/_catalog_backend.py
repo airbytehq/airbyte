@@ -23,7 +23,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 
-from airbyte_cdk.sql.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 
 
 if TYPE_CHECKING:

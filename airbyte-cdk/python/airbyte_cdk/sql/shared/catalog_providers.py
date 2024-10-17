@@ -16,7 +16,7 @@ from airbyte_cdk.models import (
 )
 
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
 
 

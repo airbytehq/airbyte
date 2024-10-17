@@ -14,8 +14,8 @@ from airbyte_cdk.sql._executors.declarative import DeclarativeExecutor
 from airbyte_cdk.sql._executors.docker import DockerExecutor
 from airbyte_cdk.sql._executors.local import PathExecutor
 from airbyte_cdk.sql._executors.python import VenvExecutor
-from airbyte_cdk.sql.meta import which
-from airbyte_cdk.sql.telemetry import EventState, log_install_state  # Non-public API
+from airbyte_cdk.sql._util.meta import which
+from airbyte_cdk.sql._util.telemetry import EventState, log_install_state  # Non-public API
 from airbyte_cdk.sql.constants import TEMP_DIR_OVERRIDE
 from airbyte_cdk.sql.sources.registry import ConnectorMetadata, InstallType, get_connector_metadata
 from airbyte_cdk.sql.version import get_version

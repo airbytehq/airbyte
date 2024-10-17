@@ -7,7 +7,7 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING, NoReturn, final
 
-from airbyte_cdk.sql.state_providers import StateProviderBase
+from airbyte_cdk.sql.shared.state_providers import StateProviderBase
 
 
 if TYPE_CHECKING:

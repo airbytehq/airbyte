@@ -16,12 +16,12 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._connector_base import ConnectorBase
 from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
-from airbyte_cdk.sql.temp_files import as_temp_files
+from airbyte_cdk.sql._util.temp_files import as_temp_files
 from airbyte_cdk.sql._writers.base import AirbyteWriterInterface
 from airbyte_cdk.sql.caches.util import get_default_cache
 from airbyte_cdk.sql.progress import ProgressTracker
 from airbyte_cdk.sql.results import ReadResult, WriteResult
-from airbyte_cdk.sql.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.state_providers import (
     JoinedStateProvider,
     StateProviderBase,

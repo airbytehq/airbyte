@@ -22,14 +22,14 @@ from airbyte_cdk.models import (
 )
 
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.connector_info import ConnectorRuntimeInfo
-from airbyte_cdk.sql.hashing import one_way_hash
-from airbyte_cdk.sql.telemetry import (
+from airbyte_cdk.sql._util.connector_info import ConnectorRuntimeInfo
+from airbyte_cdk.sql._util.hashing import one_way_hash
+from airbyte_cdk.sql._util.telemetry import (
     EventState,
     log_config_validation_result,
     log_connector_check_result,
 )
-from airbyte_cdk.sql.temp_files import as_temp_files
+from airbyte_cdk.sql._util.temp_files import as_temp_files
 from airbyte_cdk.sql.logs import new_passthrough_file_logger
 
 

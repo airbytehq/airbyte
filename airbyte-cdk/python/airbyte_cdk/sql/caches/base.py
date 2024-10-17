@@ -20,12 +20,12 @@ from airbyte_cdk.sql.caches._catalog_backend import CatalogBackendBase, SqlCatal
 from airbyte_cdk.sql.caches._state_backend import SqlStateBackend
 from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE, TEMP_FILE_CLEANUP
 from airbyte_cdk.sql.datasets._sql import CachedDataset
-from airbyte_cdk.sql.catalog_providers import CatalogProvider
-from airbyte_cdk.sql.sql_processor import (
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.shared.sql_processor import (
     SqlConfig,
     SqlProcessorBase,
 )
-from airbyte_cdk.sql.state_writers import StdOutStateWriter
+from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
 
 
 if TYPE_CHECKING:
@@ -35,9 +35,9 @@ if TYPE_CHECKING:
     from airbyte_cdk.sql.caches._state_backend_base import StateBackendBase
     from airbyte_cdk.sql.datasets._base import DatasetBase
     from airbyte_cdk.sql.progress import ProgressTracker
-    from airbyte_cdk.sql.sql_processor import SqlProcessorBase
-    from airbyte_cdk.sql.state_providers import StateProviderBase
-    from airbyte_cdk.sql.state_writers import StateWriterBase
+    from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase
+    from airbyte_cdk.sql.shared.state_providers import StateProviderBase
+    from airbyte_cdk.sql.shared.state_writers import StateWriterBase
     from airbyte_cdk.sql.strategies import WriteStrategy
 
 

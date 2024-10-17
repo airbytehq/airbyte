@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from airbyte._util.meta import is_windows
+from airbyte_cdk.sql._util.meta import is_windows
 
 
 if TYPE_CHECKING:

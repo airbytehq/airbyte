@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, cast
 from pandas import DataFrame
 from pyarrow.dataset import Dataset
 
-from airbyte_cdk.sql.document_rendering import DocumentRenderer
+from airbyte_cdk.sql._util.document_rendering import DocumentRenderer
 from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
 
 

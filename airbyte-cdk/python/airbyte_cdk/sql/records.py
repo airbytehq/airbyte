@@ -74,7 +74,7 @@ from typing import TYPE_CHECKING, Any
 import pytz
 from uuid_extensions import uuid7str
 
-from airbyte_cdk.sql.name_normalizers import LowerCaseNormalizer, NameNormalizerBase
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer, NameNormalizerBase
 from airbyte_cdk.sql.constants import (
     AB_EXTRACTED_AT_COLUMN,
     AB_INTERNAL_COLUMNS,
