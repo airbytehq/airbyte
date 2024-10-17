@@ -38,11 +38,11 @@ class SliceGenerator:
 
 class RangeSliceGenerator(SliceGenerator):
     """
-    Split slices into event ranges of 90 days (or less for final slice) from
+    Split slices into event ranges of 7 days (or less for final slice) from
     start_date up to current date.
     """
 
-    RANGE_LENGTH_DAYS: int = 90
+    RANGE_LENGTH_DAYS: int = 7
     _slices: List[StreamSlice] = []
 
     def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None):
@@ -103,13 +103,13 @@ class AdjustableSliceGenerator(SliceGenerator):
 
     In case if range havent been adjusted before getting next slice (it could
     happend if there were no records for given date range), next slice would
-    have MAX_RANGE_DAYS (180) length.
+    have MAX_RANGE_DAYS (90) length.
     """
 
     REQUEST_PER_MINUTE_LIMIT = 4
-    INITIAL_RANGE_DAYS: int = 30
-    DEFAULT_RANGE_DAYS: int = 90
-    MAX_RANGE_DAYS: int = 180
+    INITIAL_RANGE_DAYS: int = 7
+    DEFAULT_RANGE_DAYS: int = 7
+    MAX_RANGE_DAYS: int = 90
     RANGE_REDUCE_FACTOR = 2
 
     # This variable play important roles: stores length of previos range before
