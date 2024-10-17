@@ -8,12 +8,12 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskExceptionHandler
-import io.airbyte.cdk.load.task.ShutdownScope
+import io.airbyte.cdk.load.task.ImplementorScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailStreamTask : ShutdownScope
+interface FailStreamTask : ImplementorScope
 
 /**
  * FailStreamTask is a task that is executed when a stream fails. It is responsible for cleaning up
