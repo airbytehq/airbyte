@@ -32,15 +32,17 @@ runs:
       id: determine-install-mode
       # When the PR is from a fork, we always install from binary
       if: inputs.is_fork == 'false'
+      # TODO revert this change
       run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
-          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
-          echo "install-mode=source" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
-        else
-          echo "install-mode=binary" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
-        fi
+        echo "install-mode=source" >> $GITHUB_OUTPUT
+        # if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+        #   echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+        #   echo "install-mode=source" >> $GITHUB_OUTPUT
+        #   echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+        # else
+        #   echo "install-mode=binary" >> $GITHUB_OUTPUT
+        #   echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+        # fi
 
     - name: Install Airbyte CI from binary
       id: install-airbyte-ci-binary
