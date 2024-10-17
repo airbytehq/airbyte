@@ -5,7 +5,6 @@
 import copy
 import json
 import logging
-from datetime import datetime
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -205,10 +204,6 @@ class SliceEncoder(json.JSONEncoder):
     def default(self, obj: Any) -> Any:
         if hasattr(obj, "__json_serializable__"):
             return obj.__json_serializable__()
-
-        # This needs to be revisited as we can't lose precision
-        if isinstance(obj, datetime):
-            return list(obj.timetuple())[0:6]
 
         # Let the base class default method raise the TypeError
         return super().default(obj)

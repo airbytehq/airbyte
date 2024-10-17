@@ -14,7 +14,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors import RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
@@ -220,7 +220,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
     def _get_cursor_attributes(
         self, declarative_stream: DeclarativeStream, config: Mapping[str, Any]
     ) -> Optional[DeclarativeCursorAttributes]:
-        declarative_cursor = self._get_cursor(stream=declarative_stream)
+        declarative_cursor = declarative_stream.get_cursor()
 
         if (
             isinstance(declarative_cursor, DatetimeBasedCursor)
@@ -304,19 +304,6 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                         if isinstance(field.value, InterpolatedString) and "stream_state" in field.value.string:
                             return False
         return True
-
-    @staticmethod
-    def _get_cursor(stream: DeclarativeStream) -> Optional[DeclarativeCursor]:
-        """
-        Returns the low-code cursor component of a stream if it is concurrent compatible. Otherwise, returns None.
-        """
-        if not stream.supports_incremental:
-            return None
-
-        if isinstance(stream.retriever, SimpleRetriever):
-            return stream.retriever.cursor
-
-        return None
 
     @staticmethod
     def _select_streams(streams: List[AbstractStream], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:

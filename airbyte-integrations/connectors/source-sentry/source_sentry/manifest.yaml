@@ -51,7 +51,7 @@ definitions:
     record_selector:
       $ref: "#/definitions/record_selector"
       record_filter:
-        condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+        condition: "{{ record[parameters['cursor_field']] > stream_interval.get('start_time', '') }}"
     paginator:
       $ref: "#/definitions/paginator"
     partition_router: []

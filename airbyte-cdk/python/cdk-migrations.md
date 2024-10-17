@@ -89,6 +89,16 @@ Connectors that have streams that use `stream_state` during interpolation and mu
 To enable concurrency on these streams, `stream_state` should be removed from the interpolated value and replaced
 by a thread safe interpolation context like `stream_interval` or `stream_partition`.
 
+### Upgrading manifest-only sources to process incremental streams concurrently
+
+All manifest-only sources are run using the `source-declarative-manifest` which serves as the base image with the common code and flows for connectors that only define a `manifest.yaml` file.
+
+Within this package, to enable concurrent processing:
+- Modify `airbyte-cdk` package in `pyproject.toml` to the current version
+- In `run.py`, parse all entrypoint arguments into the respective config, catalog, and state objects
+- In `run.py`, modify the flow that instantiates a `ManifestDeclarativeSource` from the `__injected_declarative_manifest` to instantiate a `ConcurrentDeclarativeSource`
+- In `run.py` modify the `SourceLocalYaml` class to accept config, catalog, and state. And use that in the `YamlDeclarativeSource.__init__`. This should look similar to the migration of sources that are not manifest-only
+
 ## Upgrading to 5.0.0
 
 Version 5.0.0 of the CDK updates the `airbyte_cdk.models` dependency to replace Pydantic v2 models with Python `dataclasses`. It also
