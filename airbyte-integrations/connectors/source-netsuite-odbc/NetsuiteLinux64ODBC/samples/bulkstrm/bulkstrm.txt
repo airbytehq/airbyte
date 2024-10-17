@@ -1,0 +1,169 @@
+     Progress DataDirect
+     Bulk Streaming Application Readme File
+
+The Bulk Streaming application is a sample application that 
+demonstrates how to export data from one data source and upload it into 
+another without going through an intermediate file.
+
+
+EXECUTING THE APPLICATION
+
+Windows - Command Line
+----------------------
+Following is the syntax to execute the application from a command line:
+
+bulkstrm "<source_connect_string>" "<source-SQL>" "<dest_table_name>"  
+["<dest_connect_string>"] [-maxBindSize xxxx] [-numRows xxx] [-Unicode]
+
+Where:
+
+<source_connect_string> - is the connection string used to connect to 
+the data source from which the data will be exported.
+
+<source-SQL> - is the SQL statement used to generate the source data 
+for the bulk load.
+
+<dest_table_name> - is the name of the destination table where the data 
+is loaded.
+
+dest_connect_string - is an optional argument that specifies the 
+connection information for the destination data source. If omitted, the 
+destination connection information is assumed to be the same as the 
+source connection information.
+
+-maxBindSize xxxx - is an optional argument that specifies the maximum 
+size for column bindings. The default is 4096.
+
+-numRows xxx - is an optional argument that specifies the number of 
+rows to load at a time. The default is 128.
+
+-Unicode - is an optional argument that forces all character data to be 
+bound as SQL_C_WCHAR to reconcile any character set differences.
+
+Note that the three required arguments must be entered in the correct 
+order. The optional arguments do not have to be listed in a specific 
+order; they can follow the required arguments in any order.
+
+The following are command line examples:
+
+bulkstrm "DSN=DB2source1" "SELECT * FROM Account" "Account2" 
+"DSN=DB2source3" -Unicode -maxBindSize 8192 -numRows 500
+
+In the first example, DB2source1 contains connection information for 
+the source data; the SQL statement selects data from the table Account; 
+the data is loaded into the table Acccount2; the connection information 
+for Account2 is contained in DB2source3; all character data is bound as 
+SQL_C_WCHAR; the maximum size for column binding is 8192; and the 
+number of rows to load at a time is 500.
+
+bulkstrm "DSN=Oraclesource2;uid=user1;pwd=mypassword" "SELECT * FROM 
+Address" "NewAddress"
+
+In the second example, Oraclesource2 does not contain the UserID and 
+Password within the data source, so it must be specified in the 
+connection string; the SQL statement selects data from the table 
+Address; the data is loaded into the table NewAddress; the connection 
+information for NewAddress is the same as for the source data and does 
+not need to be specified; the maximum size for column binding is 4096 
+(the default); and the number of rows to load at a time is 128 (the 
+default).
+
+If you do not specify sufficient connection information, Windows 
+prompts you with a dialog box. Any other errors or messages are 
+detailed in a separate Bulk Streaming Messages window that remains open 
+as long as the Bulk Steaming application is open.
+
+Windows - GUI
+-------------
+You can also run application as a GUI by executing bulkstrm.exe. Doing 
+so displays a screen with controls that correspond to the previously 
+described arguments as follows:
+
+Input Data Source - is a drop-down list from which you can select 
+existing Progress DataDirect OpenAccess for ODBC data sources that contain 
+the data to be loaded.
+
+Input Connection String - is an edit field in which you enter 
+additional connection string information, for example, UserID and 
+Password.
+
+Input SQL Statement - is an edit field in which you enter a SQL 
+Statement, including the table name from which the data is generated.
+
+Output Table - is an edit field in which you enter the name of the 
+destination table where the data is loaded.
+
+Output Data Source - is a drop-down list from which you can select an 
+existing Progress DataDirect OpenAccess for ODBC data source as the 
+destination for the bulk load; or, you can select <Same as Input Data 
+Source>.
+
+Output Connection String - is an edit field in which you can, 
+optionally, enter connection information for the destination data 
+source. If omitted, the destination connection information is assumed 
+to be the same as the source connection information.
+
+Maximum Binding - is an edit field in which you, optionally, specify 
+the maximum size for column bindings. The default is 4096.
+
+Number of Rows - is an edit field in which you, optionally, specify the 
+number of rows to load at a time. The default is 128.
+
+Unicode - is a check box. When enabled, all character data is bound as 
+SQL_C_WCHAR to reconcile any character set differences. When disabled 
+(the default), character data is not bound as SQL_C_WCHAR.
+See the examples in the description of the command line version of the 
+application for samples of strings that might be entered in the GUI.
+
+If you do not specify sufficient connection information, Windows 
+prompts you with a dialog box. Any other errors or messages are 
+detailed in a separate Bulk Streaming Messages window that remains open 
+as long as the Bulk Steaming application is open.
+
+UNIX/Linux
+----------
+The application runs on UNIX/Linux from a command line only, the syntax 
+of which is identical to Windows. See the description of the Windows 
+command line version of the application. The UNIX/Linux version does 
+not prompt you for any connection information.
+
+
+BUILDING THE APPLICATION
+
+Windows
+-------
+The Bulk Streaming application can be built from the following files, 
+located in the \SAMPLES\BULKSTRM directory of the Progress DataDirect OpenAccess
+for ODBC installation directory:
+
+BULK.CPP                Bulk streaming example source
+BULK.HPP                Bulk streaming example header
+BULK.RC                 Bulk streaming example resource file
+BULKSTREAMING.VCXPROJ   Bulk streaming example project file
+BULKSTRM.EXE            Bulk streaming example application
+MSGPRINTF.HPP           Bulk streaming example header file
+PROGRESSDATADIRECT.BMP
+PROGRESSDATADIRECT.ICO
+WINMAIN.CPP             Bulk streaming example source file
+STREAMBULK.MAK          Bulk streaming example make file (instead of 
+                        .SLN and .VCPROJ files on Itanium 64 only)
+
+UNIX
+----
+Instructions for building the Bulk Streaming application are contained 
+inside the file bulk.mak, which can be read with a text editor. The 
+application can be built from the following files, located in the 
+/samples/bulkstrm directory of the Progress DataDirect OpenAccess for ODBC 
+installation directory:
+
+bulk.cpp        Bulk streaming example source
+bulk.hpp        Bulk streaming example header
+bulkstrm        Bulk streaming example application
+main.cpp        Bulk streaming example source file
+msgprintf.hpp   Bulk streaming example header file
+streambulk.mak  Bulk streaming example make file
+
+
+~~~~~~~~~~~~~
+End of Readme
+0810
