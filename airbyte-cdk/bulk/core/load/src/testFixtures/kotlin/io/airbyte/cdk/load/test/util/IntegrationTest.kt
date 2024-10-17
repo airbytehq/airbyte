@@ -115,7 +115,7 @@ abstract class IntegrationTest(
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        config: ConfigurationSpecification,
+        config: String,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -129,7 +129,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        config: ConfigurationSpecification,
+        config: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,

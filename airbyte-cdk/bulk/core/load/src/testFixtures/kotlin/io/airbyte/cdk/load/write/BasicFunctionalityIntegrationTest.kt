@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -35,7 +36,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 abstract class BasicFunctionalityIntegrationTest(
-    val config: ConfigurationSpecification,
+    /** The config to pass into the connector, as a serialized JSON blob */
+    val config: String,
+    val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
@@ -46,6 +49,8 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val verifyDataWriting: Boolean = true,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, config)
+
     @Test
     open fun testBasicWrite() {
         val stream =
@@ -110,7 +115,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        config,
+                        parsedConfig,
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -267,7 +272,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     }
                 )
                 if (verifyDataWriting) {
-                    val records = dataDumper.dumpRecords(config, makeStream(streamName))
+                    val records = dataDumper.dumpRecords(parsedConfig, makeStream(streamName))
                     val expectedId =
                         when (streamName) {
                             "test_stream1" -> 12

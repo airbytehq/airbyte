@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        MockDestinationSpecification(),
+        MockDestinationSpecification.CONFIG,
+        MockDestinationSpecification::class.java,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,

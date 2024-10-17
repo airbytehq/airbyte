@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.test.util.destination_process
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -21,7 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    config: String?,
     catalog: ConfiguredAirbyteCatalog?,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
@@ -42,7 +41,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configContents = config,
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
@@ -78,7 +77,7 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        config: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
