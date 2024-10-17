@@ -207,6 +207,7 @@ spec:
     required:
       - domain
       - api_key
+      - start_date
     properties:
       domain:
         type: string
