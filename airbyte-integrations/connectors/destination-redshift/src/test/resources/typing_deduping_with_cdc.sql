@@ -173,7 +173,7 @@ with
             order by
                 "updated_at" desc NULLS LAST,
                 "_airbyte_extracted_at" desc
-            ) as "row_number"
+            ) as "_airbyte_row_number"
         from "intermediate_data"
     )
 select
@@ -198,7 +198,7 @@ select
     "_airbyte_generation_id",
     "_airbyte_meta"
 from "numbered_rows"
-where "row_number" = 1;
+where "_airbyte_row_number" = 1;
 delete from "test_schema"."users_finalunittest"
 where "_airbyte_raw_id" in (
     select "_airbyte_raw_id"
@@ -210,10 +210,10 @@ where "_airbyte_raw_id" in (
                 order by
                     "updated_at" desc NULLS LAST,
                     "_airbyte_extracted_at" desc
-                ) as "row_number"
+                ) as "_airbyte_row_number"
              from "test_schema"."users_finalunittest"
          ) as "airbyte_ids"
-    where "row_number" <> 1
+    where "_airbyte_row_number" <> 1
 );
 delete from "test_schema"."users_finalunittest"
 where "_ab_cdc_deleted_at" is not null;
