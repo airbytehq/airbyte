@@ -6,4 +6,3 @@
    2. Fill the file `credentials.json` with your personal credentials from step 1.
    3. Run the `./get_credentials.sh` script and follow the instructions.
    4. Copy the `refresh_token` from the console.
-

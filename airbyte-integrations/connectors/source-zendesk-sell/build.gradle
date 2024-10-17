@@ -1,9 +1,0 @@
-plugins {
-    id 'airbyte-python'
-    id 'airbyte-docker'
-    id 'airbyte-connector-acceptance-test'
-}
-
-airbytePython {
-    moduleDirectory 'source_zendesk_sell'
-}

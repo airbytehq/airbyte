@@ -1,0 +1,50 @@
+[
+  {
+    "eventID": "9fac2ceed9344f2bbfdd1fdacb0ed9b1",
+    "tags": [
+      { "key": "browser", "value": "Chrome 60.0" },
+      {
+        "key": "device",
+        "value": "Other"
+      },
+      { "key": "environment", "value": "production" },
+      { "value": "fatal", "key": "level" },
+      { "key": "os", "value": "Mac OS X 10.12.6" },
+      { "value": "CPython 2.7.16", "key": "runtime" },
+      { "key": "release", "value": "17642328ead24b51867165985996d04b29310337" },
+      { "key": "server_name", "value": "web1.example.com" }
+    ],
+    "dateCreated": "2023-02-01T00:00:00.0Z",
+    "user": null,
+    "message": "",
+    "title": "This is an example Python exception",
+    "id": "dfb1a2d057194e76a4186cc8a5271553",
+    "platform": "python",
+    "event.type": "error",
+    "groupID": "1889724436"
+  },
+  {
+    "eventID": "9fac2ceed9344f2bbfdd1fdacb0ed9b1",
+    "tags": [
+      { "key": "browser", "value": "Chrome 60.0" },
+      {
+        "key": "device",
+        "value": "Other"
+      },
+      { "key": "environment", "value": "production" },
+      { "value": "fatal", "key": "level" },
+      { "key": "os", "value": "Mac OS X 10.12.6" },
+      { "value": "CPython 2.7.16", "key": "runtime" },
+      { "key": "release", "value": "17642328ead24b51867165985996d04b29310337" },
+      { "key": "server_name", "value": "web1.example.com" }
+    ],
+    "dateCreated": "2024-03-31T15:03:36+00:00",
+    "user": null,
+    "message": "",
+    "title": "This is an example Python exception",
+    "id": "dfb1a2d057194e76a4186cc8a5271553",
+    "platform": "python",
+    "event.type": "error",
+    "groupID": "1889724436"
+  }
+]

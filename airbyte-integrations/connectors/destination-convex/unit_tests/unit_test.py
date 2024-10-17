@@ -94,7 +94,12 @@ def setup_good_responses(config):
 
 
 def setup_bad_response(config):
-    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=400, json={"code": "ErrorCode", "message": "error message"})
+    responses.add(
+        responses.PUT,
+        f"{config['deployment_url']}/api/streaming_import/clear_tables",
+        status=400,
+        body="error message",
+    )
 
 
 @responses.activate
@@ -103,7 +108,11 @@ def test_bad_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCa
     client = ConvexClient(config, {})
     with pytest.raises(Exception) as e:
         client.delete([])
-    assert "/api/streaming_import/clear_tables failed with: 400: {'code': 'ErrorCode', 'message': 'error message'}" in str(e.value)
+
+    assert (
+        "Request to `http://deployment_url.convex.cloud/api/streaming_import/clear_tables` failed with status code 400: error message"
+        in str(e.value)
+    )
 
 
 @responses.activate

@@ -1,8 +1,11 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.45.1'
+    features = ['db-sources', 'datastore-mongo']
+    useLocalCdk = false
 }
 
 application {
@@ -10,18 +13,111 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    dataGenerator.extendsFrom testImplementation
+    debeziumTest.extendsFrom testImplementation
+}
+
+sourceSets {
+    dataGenerator {
+        kotlin {
+            srcDirs('src/test/generator')
+        }
+    }
+    debeziumTest {
+        kotlin {
+            srcDirs('src/test/debezium')
+        }
+    }
+}
+
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
+
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation 'io.debezium:debezium-embedded:2.6.2.Final'
+    implementation 'io.debezium:debezium-connector-mongodb:2.6.2.Final'
 
-    implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
+    testImplementation 'org.testcontainers:mongodb:1.19.0'
 
-    testImplementation libs.connectors.testcontainers.mongodb
+    dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
+    dataGeneratorImplementation platform('com.fasterxml.jackson:jackson-bom:2.15.2')
+    dataGeneratorImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    dataGeneratorImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    dataGeneratorImplementation ('com.github.javafaker:javafaker:1.0.2') { exclude module: 'snakeyaml' }
+    dataGeneratorImplementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+    dataGeneratorImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    dataGeneratorImplementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+
+    debeziumTestImplementation 'io.debezium:debezium-embedded:2.6.0.Final'
+    debeziumTestImplementation 'io.debezium:debezium-connector-mongodb:2.6.0.Final'
+    debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    debeziumTestImplementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
+}
+
+/*
+ * Executes the script that generates test data and inserts it into the provided database/collection.
+ *
+ * To execute this task, use the following command:
+ *
+ * ./gradlew :airbyte-integrations:connectors:source-mongodb-v2:generateTestData -PconnectionString=<connection string> -PdatabaseName=<database name> -PcollectionName=<collection name> -Pusername=<username>
+ *
+ * Optionally, you can provide -PnumberOfDocuments to change the number of generated documents from the default (10,000).
+ */
+tasks.register('generateTestData', JavaExec) {
+    def arguments = []
+
+    if(project.hasProperty('collectionName')) {
+        arguments.addAll(['--collection-name', collectionName])
+    }
+    if(project.hasProperty('connectionString')) {
+        arguments.addAll(['--connection-string', connectionString])
+    }
+    if(project.hasProperty('databaseName')) {
+        arguments.addAll(['--database-name', databaseName])
+    }
+    if (project.hasProperty('numberOfDocuments')) {
+        arguments.addAll(['--number', numberOfDocuments])
+    }
+    if(project.hasProperty('username')) {
+        arguments.addAll(['--username', username])
+    }
+
+    classpath = sourceSets.dataGenerator.runtimeClasspath
+    main 'io.airbyte.integrations.source.mongodb.MongoDbInsertClient'
+    standardInput = System.in
+    args arguments
+}
+
+/**
+ * Executes the Debezium MongoDB Connector test harness.
+ *
+ * To execute this task, use the following command:
+ *
+ * ./gradlew :airbyte-integrations:connectors:source-mongodb-v2:debeziumTest -PconnectionString=<connection string> -PdatabaseName=<database name> -PcollectionName=<collection name> -Pusername=<username>
+ */
+tasks.register('debeziumTest', JavaExec) {
+    def arguments = []
+
+    if(project.hasProperty('collectionName')) {
+        arguments.addAll(['--collection-name', collectionName])
+    }
+    if(project.hasProperty('connectionString')) {
+        arguments.addAll(['--connection-string', connectionString])
+    }
+    if(project.hasProperty('databaseName')) {
+        arguments.addAll(['--database-name', databaseName])
+    }
+    if(project.hasProperty('username')) {
+        arguments.addAll(['--username', username])
+    }
+
+    classpath = sourceSets.debeziumTest.runtimeClasspath
+    main 'io.airbyte.integrations.source.mongodb.DebeziumMongoDbConnectorTest'
+    standardInput = System.in
+    args arguments
 }

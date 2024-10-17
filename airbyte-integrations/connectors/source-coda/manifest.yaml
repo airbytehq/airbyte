@@ -1,0 +1,5815 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - docs
+    - permissions
+    - categories
+    - pages
+    - tables
+    - formulas
+    - controls
+    - rows
+definitions:
+  streams:
+    docs:
+      type: DeclarativeStream
+      name: docs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            browserLink:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+            docSize:
+              type:
+                - "null"
+                - object
+              properties:
+                overApiSizeLimit:
+                  type:
+                    - "null"
+                    - boolean
+                pageCount:
+                  type:
+                    - "null"
+                    - integer
+                tableViewCount:
+                  type:
+                    - "null"
+                    - integer
+                totalRowCount:
+                  type:
+                    - "null"
+                    - integer
+            folder:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+            folderId:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+            icon:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            owner:
+              type:
+                - "null"
+                - string
+            ownerName:
+              type:
+                - "null"
+                - string
+            published:
+              type:
+                - "null"
+                - object
+              properties:
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                categories:
+                  type:
+                    - "null"
+                    - string
+                  items:
+                    type:
+                      - "null"
+                      - string
+                description:
+                  type:
+                    - "null"
+                    - string
+                discoverable:
+                  type:
+                    - "null"
+                    - boolean
+                earnCredit:
+                  type:
+                    - "null"
+                    - boolean
+                imageLink:
+                  type:
+                    - "null"
+                    - string
+                mode:
+                  type:
+                    - "null"
+                    - string
+            sourceDoc:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+                totalRowCount:
+                  type:
+                    - "null"
+                    - string
+            updatedAt:
+              type:
+                - "null"
+                - string
+            workspace:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                organizationId:
+                  type:
+                    - "null"
+                    - string
+            workspaceId:
+              type:
+                - "null"
+                - string
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+    permissions:
+      type: DeclarativeStream
+      name: permissions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs/{{ stream_partition.doc_id }}/acl/permissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            access:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            principal:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs/{{ stream_partition.doc_id }}/pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type: string
+            authors:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  "@context":
+                    type: string
+                  "@type":
+                    type: string
+                  additionalType:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+            browserLink:
+              type: string
+            children:
+              type: array
+              authors:
+                type: array
+                createdAt:
+                  type: string
+                createdBy:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    "@context":
+                      type: string
+                    "@type":
+                      type: string
+                    additionalType:
+                      type: string
+                    email:
+                      type: string
+                    name:
+                      type: string
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    "@context":
+                      type: string
+                    "@type":
+                      type: string
+                    additionalType:
+                      type: string
+                    email:
+                      type: string
+                    name:
+                      type: string
+                updatedBy:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    "@context":
+                      type: string
+                    "@type":
+                      type: string
+                    additionalType:
+                      type: string
+                    email:
+                      type: string
+                    name:
+                      type: string
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  browserLink:
+                    type: string
+                  href:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+            contentType:
+              type:
+                - "null"
+                - string
+              enum:
+                - canvas
+                - embed
+            createdAt:
+              type:
+                - "null"
+                - string
+            createdBy:
+              type: object
+              properties:
+                "@context":
+                  type: string
+                "@type":
+                  type: string
+                additionalType:
+                  type: string
+                email:
+                  type: string
+                name:
+                  type: string
+            href:
+              type: string
+            icon:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type: string
+                browserLink:
+                  type: string
+                name:
+                  type: string
+            id:
+              type: string
+            image:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type: string
+                browserLink:
+                  type: string
+                height:
+                  type: number
+                width:
+                  type: number
+            name:
+              type: string
+            parent:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type: string
+                browserLink:
+                  type: string
+                href:
+                  type: string
+                id:
+                  type: string
+                name:
+                  type: string
+            subtitle:
+              type: string
+            updatedAt:
+              type:
+                - "null"
+                - string
+            updatedBy:
+              type:
+                - "null"
+                - object
+              properties:
+                "@context":
+                  type: string
+                "@type":
+                  type: string
+                additionalType:
+                  type: string
+                email:
+                  type: string
+                name:
+                  type: string
+    tables:
+      type: DeclarativeStream
+      name: tables
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs/{{ stream_partition.doc_id }}/tables
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            browserLink:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            parent:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+            tableType:
+              type:
+                - "null"
+                - string
+    formulas:
+      type: DeclarativeStream
+      name: formulas
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs/{{ stream_partition.doc_id }}/formulas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            parent:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+    controls:
+      type: DeclarativeStream
+      name: controls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: /docs/{{ stream_partition.doc_id }}/controls
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+            - "null"
+            - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            parent:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                browserLink:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+    rows:
+      type: DeclarativeStream
+      name: rows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://coda.io/apis/v1
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['auth_token'] }}"
+          path: >-
+            /docs/{{ stream_partition.doc_id }}/tables/{{
+            stream_partition.table_id }}/rows
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: doc_id
+                stream:
+                  type: DeclarativeStream
+                  name: docs
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        createdAt:
+                          type:
+                            - "null"
+                            - string
+                        docSize:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            overApiSizeLimit:
+                              type:
+                                - "null"
+                                - boolean
+                            pageCount:
+                              type:
+                                - "null"
+                                - integer
+                            tableViewCount:
+                              type:
+                                - "null"
+                                - integer
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - integer
+                        folder:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        folderId:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        icon:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        owner:
+                          type:
+                            - "null"
+                            - string
+                        ownerName:
+                          type:
+                            - "null"
+                            - string
+                        published:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            categories:
+                              type:
+                                - "null"
+                                - string
+                              items:
+                                type:
+                                  - "null"
+                                  - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            discoverable:
+                              type:
+                                - "null"
+                                - boolean
+                            earnCredit:
+                              type:
+                                - "null"
+                                - boolean
+                            imageLink:
+                              type:
+                                - "null"
+                                - string
+                            mode:
+                              type:
+                                - "null"
+                                - string
+                        sourceDoc:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            totalRowCount:
+                              type:
+                                - "null"
+                                - string
+                        updatedAt:
+                          type:
+                            - "null"
+                            - string
+                        workspace:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            organizationId:
+                              type:
+                                - "null"
+                                - string
+                        workspaceId:
+                          type:
+                            - "null"
+                            - string
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: table_id
+                stream:
+                  type: DeclarativeStream
+                  name: tables
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://coda.io/apis/v1
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['auth_token'] }}"
+                      path: /docs/{{ stream_partition.doc_id }}/tables
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestPath
+                      pagination_strategy:
+                        type: CursorPagination
+                        cursor_value: "{{ response.nextPageLink }}"
+                        stop_condition: >-
+                          {{ 'nextPageLink' not in response or response.nextPageLink ==
+                          ''
+                          }}
+                    partition_router:
+                      - type: SubstreamPartitionRouter
+                        parent_stream_configs:
+                          - type: ParentStreamConfig
+                            parent_key: id
+                            partition_field: doc_id
+                            stream:
+                              type: DeclarativeStream
+                              name: docs
+                              primary_key:
+                                - id
+                              retriever:
+                                type: SimpleRetriever
+                                requester:
+                                  type: HttpRequester
+                                  url_base: https://coda.io/apis/v1
+                                  authenticator:
+                                    type: BearerAuthenticator
+                                    api_token: "{{ config['auth_token'] }}"
+                                  path: /docs
+                                  http_method: GET
+                                record_selector:
+                                  type: RecordSelector
+                                  extractor:
+                                    type: DpathExtractor
+                                    field_path:
+                                      - items
+                                paginator:
+                                  type: DefaultPaginator
+                                  page_token_option:
+                                    type: RequestPath
+                                  pagination_strategy:
+                                    type: CursorPagination
+                                    cursor_value: "{{ response.nextPageLink }}"
+                                    stop_condition: >-
+                                      {{ 'nextPageLink' not in response or response.nextPageLink
+                                      == ''
+                                      }}
+                              schema_loader:
+                                type: InlineSchemaLoader
+                                schema:
+                                  type:
+                                    - "null"
+                                    - object
+                                  $schema: http://json-schema.org/draft-07/schema#
+                                  additionalProperties: true
+                                  properties:
+                                    type:
+                                      type:
+                                        - "null"
+                                        - string
+                                    browserLink:
+                                      type:
+                                        - "null"
+                                        - string
+                                    createdAt:
+                                      type:
+                                        - "null"
+                                        - string
+                                    docSize:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        overApiSizeLimit:
+                                          type:
+                                            - "null"
+                                            - boolean
+                                        pageCount:
+                                          type:
+                                            - "null"
+                                            - integer
+                                        tableViewCount:
+                                          type:
+                                            - "null"
+                                            - integer
+                                        totalRowCount:
+                                          type:
+                                            - "null"
+                                            - integer
+                                    folder:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        type:
+                                          type:
+                                            - "null"
+                                            - string
+                                        browserLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        id:
+                                          type:
+                                            - "null"
+                                            - string
+                                        name:
+                                          type:
+                                            - "null"
+                                            - string
+                                    folderId:
+                                      type:
+                                        - "null"
+                                        - string
+                                    href:
+                                      type:
+                                        - "null"
+                                        - string
+                                    icon:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        type:
+                                          type:
+                                            - "null"
+                                            - string
+                                        browserLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        name:
+                                          type:
+                                            - "null"
+                                            - string
+                                    id:
+                                      type:
+                                        - "null"
+                                        - string
+                                    name:
+                                      type:
+                                        - "null"
+                                        - string
+                                    owner:
+                                      type:
+                                        - "null"
+                                        - string
+                                    ownerName:
+                                      type:
+                                        - "null"
+                                        - string
+                                    published:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        browserLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        categories:
+                                          type:
+                                            - "null"
+                                            - string
+                                          items:
+                                            type:
+                                              - "null"
+                                              - string
+                                        description:
+                                          type:
+                                            - "null"
+                                            - string
+                                        discoverable:
+                                          type:
+                                            - "null"
+                                            - boolean
+                                        earnCredit:
+                                          type:
+                                            - "null"
+                                            - boolean
+                                        imageLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        mode:
+                                          type:
+                                            - "null"
+                                            - string
+                                    sourceDoc:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        type:
+                                          type:
+                                            - "null"
+                                            - string
+                                        browserLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        href:
+                                          type:
+                                            - "null"
+                                            - string
+                                        totalRowCount:
+                                          type:
+                                            - "null"
+                                            - string
+                                    updatedAt:
+                                      type:
+                                        - "null"
+                                        - string
+                                    workspace:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        type:
+                                          type:
+                                            - "null"
+                                            - string
+                                        browserLink:
+                                          type:
+                                            - "null"
+                                            - string
+                                        id:
+                                          type:
+                                            - "null"
+                                            - string
+                                        name:
+                                          type:
+                                            - "null"
+                                            - string
+                                        organizationId:
+                                          type:
+                                            - "null"
+                                            - string
+                                    workspaceId:
+                                      type:
+                                        - "null"
+                                        - string
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type:
+                        - "null"
+                        - object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        browserLink:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        parent:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            browserLink:
+                              type:
+                                - "null"
+                                - string
+                            href:
+                              type:
+                                - "null"
+                                - string
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                        tableType:
+                          type:
+                            - "null"
+                            - string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            type:
+              type: string
+            browserLink:
+              type: string
+            createdAt:
+              type: string
+            href:
+              type: string
+            id:
+              type: string
+            index:
+              type: number
+            name:
+              type: string
+            updatedAt:
+              type: string
+            values:
+              type: object
+              properties:
+                ^c-_:
+                  type:
+                    - string
+                    - number
+                    - object
+                    - array
+                    - boolean
+                    - "null"
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://coda.io/apis/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['auth_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: docs
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          docSize:
+            type:
+              - "null"
+              - object
+            properties:
+              overApiSizeLimit:
+                type:
+                  - "null"
+                  - boolean
+              pageCount:
+                type:
+                  - "null"
+                  - integer
+              tableViewCount:
+                type:
+                  - "null"
+                  - integer
+              totalRowCount:
+                type:
+                  - "null"
+                  - integer
+          folder:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          folderId:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          icon:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - string
+          ownerName:
+            type:
+              - "null"
+              - string
+          published:
+            type:
+              - "null"
+              - object
+            properties:
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              categories:
+                type:
+                  - "null"
+                  - string
+                items:
+                  type:
+                    - "null"
+                    - string
+              description:
+                type:
+                  - "null"
+                  - string
+              discoverable:
+                type:
+                  - "null"
+                  - boolean
+              earnCredit:
+                type:
+                  - "null"
+                  - boolean
+              imageLink:
+                type:
+                  - "null"
+                  - string
+              mode:
+                type:
+                  - "null"
+                  - string
+          sourceDoc:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+              totalRowCount:
+                type:
+                  - "null"
+                  - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+          workspace:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              organizationId:
+                type:
+                  - "null"
+                  - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: categories
+    primary_key:
+      - name
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /categories
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: permissions
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs/{{ stream_partition.doc_id }}/acl/permissions
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          access:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          principal:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+  - type: DeclarativeStream
+    name: pages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs/{{ stream_partition.doc_id }}/pages
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type: string
+          authors:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                "@context":
+                  type: string
+                "@type":
+                  type: string
+                additionalType:
+                  type: string
+                email:
+                  type: string
+                name:
+                  type: string
+          browserLink:
+            type: string
+          children:
+            type: array
+            authors:
+              type: array
+              createdAt:
+                type: string
+              createdBy:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    type: string
+                  "@type":
+                    type: string
+                  additionalType:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    type: string
+                  "@type":
+                    type: string
+                  additionalType:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+              updatedBy:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    type: string
+                  "@type":
+                    type: string
+                  additionalType:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type: string
+                browserLink:
+                  type: string
+                href:
+                  type: string
+                id:
+                  type: string
+                name:
+                  type: string
+          contentType:
+            type:
+              - "null"
+              - string
+            enum:
+              - canvas
+              - embed
+          createdAt:
+            type:
+              - "null"
+              - string
+          createdBy:
+            type: object
+            properties:
+              "@context":
+                type: string
+              "@type":
+                type: string
+              additionalType:
+                type: string
+              email:
+                type: string
+              name:
+                type: string
+          href:
+            type: string
+          icon:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type: string
+              browserLink:
+                type: string
+              name:
+                type: string
+          id:
+            type: string
+          image:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type: string
+              browserLink:
+                type: string
+              height:
+                type: number
+              width:
+                type: number
+          name:
+            type: string
+          parent:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type: string
+              browserLink:
+                type: string
+              href:
+                type: string
+              id:
+                type: string
+              name:
+                type: string
+          subtitle:
+            type: string
+          updatedAt:
+            type:
+              - "null"
+              - string
+          updatedBy:
+            type:
+              - "null"
+              - object
+            properties:
+              "@context":
+                type: string
+              "@type":
+                type: string
+              additionalType:
+                type: string
+              email:
+                type: string
+              name:
+                type: string
+  - type: DeclarativeStream
+    name: tables
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs/{{ stream_partition.doc_id }}/tables
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          parent:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          tableType:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: formulas
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs/{{ stream_partition.doc_id }}/formulas
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          parent:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+  - type: DeclarativeStream
+    name: controls
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: /docs/{{ stream_partition.doc_id }}/controls
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          parent:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+  - type: DeclarativeStream
+    name: rows
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://coda.io/apis/v1
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['auth_token'] }}"
+        path: >-
+          /docs/{{ stream_partition.doc_id }}/tables/{{
+          stream_partition.table_id }}/rows
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.nextPageLink }}"
+          stop_condition: >-
+            {{ 'nextPageLink' not in response or response.nextPageLink == ''
+            }}
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: doc_id
+              stream:
+                type: DeclarativeStream
+                name: docs
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                      docSize:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          overApiSizeLimit:
+                            type:
+                              - "null"
+                              - boolean
+                          pageCount:
+                            type:
+                              - "null"
+                              - integer
+                          tableViewCount:
+                            type:
+                              - "null"
+                              - integer
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - integer
+                      folder:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      folderId:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      icon:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      owner:
+                        type:
+                          - "null"
+                          - string
+                      ownerName:
+                        type:
+                          - "null"
+                          - string
+                      published:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          categories:
+                            type:
+                              - "null"
+                              - string
+                            items:
+                              type:
+                                - "null"
+                                - string
+                          description:
+                            type:
+                              - "null"
+                              - string
+                          discoverable:
+                            type:
+                              - "null"
+                              - boolean
+                          earnCredit:
+                            type:
+                              - "null"
+                              - boolean
+                          imageLink:
+                            type:
+                              - "null"
+                              - string
+                          mode:
+                            type:
+                              - "null"
+                              - string
+                      sourceDoc:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          totalRowCount:
+                            type:
+                              - "null"
+                              - string
+                      updatedAt:
+                        type:
+                          - "null"
+                          - string
+                      workspace:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          organizationId:
+                            type:
+                              - "null"
+                              - string
+                      workspaceId:
+                        type:
+                          - "null"
+                          - string
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: table_id
+              stream:
+                type: DeclarativeStream
+                name: tables
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://coda.io/apis/v1
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['auth_token'] }}"
+                    path: /docs/{{ stream_partition.doc_id }}/tables
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: "{{ response.nextPageLink }}"
+                      stop_condition: >-
+                        {{ 'nextPageLink' not in response or response.nextPageLink == ''
+                        }}
+                  partition_router:
+                    - type: SubstreamPartitionRouter
+                      parent_stream_configs:
+                        - type: ParentStreamConfig
+                          parent_key: id
+                          partition_field: doc_id
+                          stream:
+                            type: DeclarativeStream
+                            name: docs
+                            primary_key:
+                              - id
+                            retriever:
+                              type: SimpleRetriever
+                              requester:
+                                type: HttpRequester
+                                url_base: https://coda.io/apis/v1
+                                authenticator:
+                                  type: BearerAuthenticator
+                                  api_token: "{{ config['auth_token'] }}"
+                                path: /docs
+                                http_method: GET
+                              record_selector:
+                                type: RecordSelector
+                                extractor:
+                                  type: DpathExtractor
+                                  field_path:
+                                    - items
+                              paginator:
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: "{{ response.nextPageLink }}"
+                                  stop_condition: >-
+                                    {{ 'nextPageLink' not in response or response.nextPageLink
+                                    == ''
+                                    }}
+                            schema_loader:
+                              type: InlineSchemaLoader
+                              schema:
+                                type:
+                                  - "null"
+                                  - object
+                                $schema: http://json-schema.org/draft-07/schema#
+                                additionalProperties: true
+                                properties:
+                                  type:
+                                    type:
+                                      - "null"
+                                      - string
+                                  browserLink:
+                                    type:
+                                      - "null"
+                                      - string
+                                  createdAt:
+                                    type:
+                                      - "null"
+                                      - string
+                                  docSize:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      overApiSizeLimit:
+                                        type:
+                                          - "null"
+                                          - boolean
+                                      pageCount:
+                                        type:
+                                          - "null"
+                                          - integer
+                                      tableViewCount:
+                                        type:
+                                          - "null"
+                                          - integer
+                                      totalRowCount:
+                                        type:
+                                          - "null"
+                                          - integer
+                                  folder:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                      browserLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      id:
+                                        type:
+                                          - "null"
+                                          - string
+                                      name:
+                                        type:
+                                          - "null"
+                                          - string
+                                  folderId:
+                                    type:
+                                      - "null"
+                                      - string
+                                  href:
+                                    type:
+                                      - "null"
+                                      - string
+                                  icon:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                      browserLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      name:
+                                        type:
+                                          - "null"
+                                          - string
+                                  id:
+                                    type:
+                                      - "null"
+                                      - string
+                                  name:
+                                    type:
+                                      - "null"
+                                      - string
+                                  owner:
+                                    type:
+                                      - "null"
+                                      - string
+                                  ownerName:
+                                    type:
+                                      - "null"
+                                      - string
+                                  published:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      browserLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      categories:
+                                        type:
+                                          - "null"
+                                          - string
+                                        items:
+                                          type:
+                                            - "null"
+                                            - string
+                                      description:
+                                        type:
+                                          - "null"
+                                          - string
+                                      discoverable:
+                                        type:
+                                          - "null"
+                                          - boolean
+                                      earnCredit:
+                                        type:
+                                          - "null"
+                                          - boolean
+                                      imageLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      mode:
+                                        type:
+                                          - "null"
+                                          - string
+                                  sourceDoc:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                      browserLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      href:
+                                        type:
+                                          - "null"
+                                          - string
+                                      totalRowCount:
+                                        type:
+                                          - "null"
+                                          - string
+                                  updatedAt:
+                                    type:
+                                      - "null"
+                                      - string
+                                  workspace:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                      browserLink:
+                                        type:
+                                          - "null"
+                                          - string
+                                      id:
+                                        type:
+                                          - "null"
+                                          - string
+                                      name:
+                                        type:
+                                          - "null"
+                                          - string
+                                      organizationId:
+                                        type:
+                                          - "null"
+                                          - string
+                                  workspaceId:
+                                    type:
+                                      - "null"
+                                      - string
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      browserLink:
+                        type:
+                          - "null"
+                          - string
+                      href:
+                        type:
+                          - "null"
+                          - string
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      parent:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          browserLink:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                      tableType:
+                        type:
+                          - "null"
+                          - string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type: string
+          browserLink:
+            type: string
+          createdAt:
+            type: string
+          href:
+            type: string
+          id:
+            type: string
+          index:
+            type: number
+          name:
+            type: string
+          updatedAt:
+            type: string
+          values:
+            type: object
+            properties:
+              ^c-_:
+                type:
+                  - string
+                  - number
+                  - object
+                  - array
+                  - boolean
+                  - "null"
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - auth_token
+    properties:
+      auth_token:
+        type: string
+        title: Authentication token
+        description: Bearer token
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    docs: false
+    categories: false
+    permissions: false
+    pages: false
+    tables: false
+    formulas: false
+    controls: false
+    rows: false
+schemas:
+  docs:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      browserLink:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+      docSize:
+        type:
+          - "null"
+          - object
+        properties:
+          overApiSizeLimit:
+            type:
+              - "null"
+              - boolean
+          pageCount:
+            type:
+              - "null"
+              - integer
+          tableViewCount:
+            type:
+              - "null"
+              - integer
+          totalRowCount:
+            type:
+              - "null"
+              - integer
+      folder:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+      folderId:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      icon:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      owner:
+        type:
+          - "null"
+          - string
+      ownerName:
+        type:
+          - "null"
+          - string
+      published:
+        type:
+          - "null"
+          - object
+        properties:
+          browserLink:
+            type:
+              - "null"
+              - string
+          categories:
+            type:
+              - "null"
+              - string
+            items:
+              type:
+                - "null"
+                - string
+          description:
+            type:
+              - "null"
+              - string
+          discoverable:
+            type:
+              - "null"
+              - boolean
+          earnCredit:
+            type:
+              - "null"
+              - boolean
+          imageLink:
+            type:
+              - "null"
+              - string
+          mode:
+            type:
+              - "null"
+              - string
+      sourceDoc:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          totalRowCount:
+            type:
+              - "null"
+              - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          organizationId:
+            type:
+              - "null"
+              - string
+      workspaceId:
+        type:
+          - "null"
+          - string
+  categories:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+  permissions:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      principal:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+  pages:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            "@context":
+              type: string
+            "@type":
+              type: string
+            additionalType:
+              type: string
+            email:
+              type: string
+            name:
+              type: string
+      browserLink:
+        type: string
+      children:
+        type: array
+        authors:
+          type: array
+          createdAt:
+            type: string
+          createdBy:
+            type:
+              - "null"
+              - object
+            properties:
+              "@context":
+                type: string
+              "@type":
+                type: string
+              additionalType:
+                type: string
+              email:
+                type: string
+              name:
+                type: string
+          items:
+            type:
+              - "null"
+              - object
+            properties:
+              "@context":
+                type: string
+              "@type":
+                type: string
+              additionalType:
+                type: string
+              email:
+                type: string
+              name:
+                type: string
+          updatedBy:
+            type:
+              - "null"
+              - object
+            properties:
+              "@context":
+                type: string
+              "@type":
+                type: string
+              additionalType:
+                type: string
+              email:
+                type: string
+              name:
+                type: string
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type: string
+            browserLink:
+              type: string
+            href:
+              type: string
+            id:
+              type: string
+            name:
+              type: string
+      contentType:
+        type:
+          - "null"
+          - string
+        enum:
+          - canvas
+          - embed
+      createdAt:
+        type:
+          - "null"
+          - string
+      createdBy:
+        type: object
+        properties:
+          "@context":
+            type: string
+          "@type":
+            type: string
+          additionalType:
+            type: string
+          email:
+            type: string
+          name:
+            type: string
+      href:
+        type: string
+      icon:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type: string
+          browserLink:
+            type: string
+          name:
+            type: string
+      id:
+        type: string
+      image:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type: string
+          browserLink:
+            type: string
+          height:
+            type: number
+          width:
+            type: number
+      name:
+        type: string
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type: string
+          browserLink:
+            type: string
+          href:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+      subtitle:
+        type: string
+      updatedAt:
+        type:
+          - "null"
+          - string
+      updatedBy:
+        type:
+          - "null"
+          - object
+        properties:
+          "@context":
+            type: string
+          "@type":
+            type: string
+          additionalType:
+            type: string
+          email:
+            type: string
+          name:
+            type: string
+  tables:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      browserLink:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+      tableType:
+        type:
+          - "null"
+          - string
+  formulas:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+  controls:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      href:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          browserLink:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+  rows:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type: string
+      browserLink:
+        type: string
+      createdAt:
+        type: string
+      href:
+        type: string
+      id:
+        type: string
+      index:
+        type: number
+      name:
+        type: string
+      updatedAt:
+        type: string
+      values:
+        type: object
+        properties:
+          ^c-_:
+            type:
+              - string
+              - number
+              - object
+              - array
+              - boolean
+              - "null"
+    additionalProperties: true

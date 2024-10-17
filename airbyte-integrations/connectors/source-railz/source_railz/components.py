@@ -19,7 +19,7 @@ from isodate import Duration, parse_duration
 
 
 @dataclass
-class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
+class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
     """
     [Low-Code Custom Component] ShortLivedTokenAuthenticator
     https://github.com/airbytehq/airbyte/issues/22872

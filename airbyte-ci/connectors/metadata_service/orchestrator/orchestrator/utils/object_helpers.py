@@ -1,9 +1,13 @@
-import mergedeep
-import json
-from deepdiff import DeepDiff
-from typing import TypeVar
-from pydantic import BaseModel
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import copy
+from enum import EnumMeta
+from typing import TypeVar
+
+import mergedeep
+from deepdiff import DeepDiff
 
 T = TypeVar("T")
 
@@ -32,15 +36,34 @@ def deep_copy_params(to_call):
     return f
 
 
-def to_json_sanitized_dict(pydantic_model_obj: BaseModel) -> dict:
-    """A helper function to convert a pydantic model to a sanitized dict.
+def default_none_to_dict(value, key, obj):
+    """Set the value of a key in a dictionary to an empty dictionary if the value is None.
 
-    Without this pydantic dictionary may contain values that are not JSON serializable.
+    Useful with pydash's set_with function.
+
+    e.g. set_with(obj, key, value, default_none_to_dict)
+
+    For more information, see https://github.com/dgilland/pydash/issues/122
 
     Args:
-        pydantic_model_obj (BaseModel): a pydantic model
-
-    Returns:
-        dict: a sanitized dictionary
+        value: The value to check.
+        key: The key to set in the dictionary.
+        obj: The dictionary to set the key in.
     """
-    return json.loads(pydantic_model_obj.json())
+    if obj is None:
+        return
+
+    if value is None:
+        obj[key] = {}
+
+
+class CaseInsensitveKeys(EnumMeta):
+    """A metaclass for creating enums with case-insensitive keys."""
+
+    def __getitem__(cls, item):
+        try:
+            return super().__getitem__(item)
+        except:
+            for key in cls._member_map_:
+                if key.casefold() == item.casefold():
+                    return super().__getitem__(key)

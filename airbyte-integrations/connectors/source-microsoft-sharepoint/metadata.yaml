@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - graph.microsoft.com
+      - login.microsoftonline.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-sharepoint
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
+  dockerImageTag: 0.5.2
+  dockerRepository: airbyte/source-microsoft-sharepoint
+  githubIssueLabel: source-microsoft-sharepoint
+  icon: microsoft-sharepoint.svg
+  license: MIT
+  maxSecondsBetweenMessages: 5400
+  name: Microsoft SharePoint
+  supportLevel: certified
+  releaseStage: alpha
+  releaseDate: 2024-02-02
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
+  tags:
+    - language:python
+    - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MICROSOFT-SHAREPOINTS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

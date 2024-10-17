@@ -8,17 +8,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class Main {
 
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
   private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {
@@ -28,6 +29,7 @@ public class Main {
     // TODO: (ryankfu) add function parity with destination_performance
     int numOfParallelStreams = 1;
     String syncMode = "full_refresh";
+    boolean reportToDatadog = false;
 
     // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
@@ -47,6 +49,13 @@ public class Main {
         numOfParallelStreams = Integer.parseInt(args[2]);
         syncMode = args[3];
       }
+      case 5 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+        syncMode = args[3];
+        reportToDatadog = Boolean.parseBoolean(args[4]);
+      }
       default -> {
         log.info("unexpected arguments");
         System.exit(1);
@@ -65,7 +74,7 @@ public class Main {
 
     final JsonNode catalog;
     try {
-      catalog = getCatalog(dataset, connector);
+      catalog = getCatalog(dataset, connector, syncMode);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -78,6 +87,9 @@ public class Main {
     try {
       final PerformanceTest test = new PerformanceTest(
           image,
+          dataset,
+          syncMode,
+          reportToDatadog,
           config.toString(),
           catalog.toString());
       test.runTest();
@@ -89,11 +101,11 @@ public class Main {
     System.exit(0);
   }
 
-  static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
+  static JsonNode getCatalog(final String dataset, final String connector, final String syncMode) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
-    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
-    return objectMapper.readTree(is);
+    final String template = MoreResources.readResource(catalogFilename);
+    return objectMapper.readTree(String.format(template, syncMode));
   }
 
 }

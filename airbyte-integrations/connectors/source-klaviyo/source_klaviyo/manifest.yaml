@@ -1,0 +1,978 @@
+version: 0.81.6
+type: DeclarativeSource
+
+definitions:
+  # Authenticator
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "Klaviyo-API-Key {{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: "Authorization"
+      inject_into: header
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: "https://a.klaviyo.com/api/"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401, 403]
+          failure_type: config_error
+          error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
+    request_headers:
+      Accept: "application/json"
+      Revision: "2023-10-15"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  # Paginator
+  cursor_pagination_strategy:
+    type: CursorPagination
+    cursor_value: "{{ response.get('links', {}).get('next') }}"
+
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy: "#/definitions/cursor_pagination_strategy"
+    page_token_option:
+      type: RequestPath
+
+  # Retrievers
+  base_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  semi_incremental_retriever:
+    $ref: "#/definitions/base_retriever"
+    record_selector:
+      $ref: "#/definitions/selector"
+      record_filter:
+        type: RecordFilter
+        condition: |
+          {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
+          {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
+
+  profiles_retriever:
+    $ref: "#/definitions/base_retriever"
+    paginator:
+      $ref: "#/definitions/paginator"
+      pagination_strategy:
+        $ref: "#/definitions/cursor_pagination_strategy"
+        page_size: 100
+      page_size_option:
+        type: RequestOption
+        field_name: "page[size]"
+        inject_into: request_parameter
+    requester:
+      $ref: "#/definitions/requester"
+      request_headers:
+        Accept: "application/json"
+        Revision: "2023-02-22"
+      request_parameters:
+        "additional-fields[profile]": "{{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}"
+
+  # Base streams
+  base_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated"]
+            value: "{{ record.get('attributes', {}).get('updated') }}"
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/base_retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoDatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
+        inject_into: request_parameter
+
+  base_incremental_checkpoint_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/base_retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoCheckpointDatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
+        inject_into: request_parameter
+      # Syncing historical data from events endpoint can take days to sync and cause memory issues.
+      # Checkpoint after each slice, which means the next sync will start from the last successful slice.
+      # This ensures that even if the sync runs out of memory or fails, it won’t start over from the beginning.
+      step: P1M
+      cursor_granularity: PT1S
+
+  base_semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/semi_incremental_retriever"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+
+  # Incremental streams
+  profiles_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    name: "profiles"
+    $ref: "#/definitions/base_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/profiles_schema"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        schema_normalization: Default
+    $parameters:
+      path: "profiles"
+
+  global_exclusions_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    name: "global_exclusions"
+    $ref: "#/definitions/profiles_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/global_exclusions_schema"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppressions'] }}"
+
+  events_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_events
+    name: "events"
+    $ref: "#/definitions/base_incremental_checkpoint_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "fields[metric]": "name,created,updated,integration"
+          "include": "metric"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/events_schema"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["datetime"]
+            value: "{{ record.get('attributes', {}).get('datetime') }}"
+    $parameters:
+      path: "events"
+      cursor_field: "datetime"
+
+  email_templates_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_templates
+    name: "email_templates"
+    $ref: "#/definitions/base_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/email_templates_schema"
+    $parameters:
+      path: "templates"
+
+  # Semi-Incremental streams
+  metrics_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_metrics
+    name: "metrics"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/metrics_schema"
+    $parameters:
+      path: "metrics"
+
+  lists_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_lists
+    name: "lists"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/lists_schema"
+    $parameters:
+      path: "lists"
+
+  lists_detailed_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_list
+    name: "lists_detailed"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/lists_detailed_schema"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "additional-fields[list]": "profile_count"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/lists_stream"
+            partition_field: "id"
+    $parameters:
+      path: "lists/{{ stream_slice.id }}"
+
+  events_detailed_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_event
+    name: "events_detailed"
+    $ref: "#/definitions/base_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/events_detailed_schema"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_klaviyo.components.included_fields_extractor.KlaviyoIncludedFieldExtractor
+          field_path: ["data"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "include": "metric"
+          "fields[metric]": "name"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["datetime"]
+            value: "{{ record.get('attributes', {}).get('datetime') }}"
+    $parameters:
+      path: "events"
+      cursor_field: "datetime"
+
+  # Schemas
+  shared:
+    list_properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated:
+        type: ["null", string]
+        format: date-time
+      attributes:
+        type: ["null", object]
+        properties:
+          name:
+            type: string
+          created:
+            type: ["null", string]
+            format: date-time
+          updated:
+            type: ["null", string]
+            format: date-time
+          opt_in_process:
+            type: ["null", string]
+      links:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          profiles:
+            type: ["null", object]
+            properties:
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          tags:
+            type: ["null", object]
+            properties:
+              data:
+                type: array
+                items:
+                  type: ["null", object]
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
+    subscriptions:
+      type: ["null", object]
+      properties:
+        email:
+          type: ["null", object]
+          properties:
+            marketing:
+              type: ["null", object]
+              properties:
+                can_receive_email_marketing:
+                  type: boolean
+                consent:
+                  type: string
+                timestamp:
+                  type: ["null", string]
+                  format: date-time
+                last_updated:
+                  type: ["null", string]
+                  format: date-time
+                method:
+                  type: ["null", string]
+                method_detail:
+                  type: ["null", string]
+                custom_method_detail:
+                  type: ["null", string]
+                double_optin:
+                  type: ["null", boolean]
+                suppressions:
+                  type: ["null", array]
+                  items:
+                    type: ["null", object]
+                    properties:
+                      reason:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+                list_suppressions:
+                  type: ["null", array]
+                  items:
+                    type: ["null", object]
+                    properties:
+                      list_id:
+                        type: string
+                      reason:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+        sms:
+          type: ["null", object]
+          properties:
+            marketing:
+              type: ["null", object]
+              properties:
+                can_receive_sms_marketing:
+                  type: ["null", boolean]
+                consent:
+                  type: ["null", string]
+                consent_timestamp:
+                  type: ["null", string]
+                  format: date-time
+                method:
+                  type: ["null", string]
+                method_detail:
+                  type: ["null", string]
+                last_updated:
+                  type: ["null", string]
+                  format: date-time
+                timestamp:
+                  type: ["null", string]
+                  format: date-time
+
+  profiles_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: ["null", string]
+      id:
+        type: string
+      updated:
+        type: ["null", string]
+        format: date-time
+      attributes:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          email:
+            type: ["null", string]
+          phone_number:
+            type: ["null", string]
+          anonymous_id:
+            type: ["null", string]
+          external_id:
+            type: ["null", string]
+          first_name:
+            type: ["null", string]
+          last_name:
+            type: ["null", string]
+          organization:
+            type: ["null", string]
+          title:
+            type: ["null", string]
+          image:
+            type: ["null", string]
+          created:
+            type: ["null", string]
+            format: date-time
+          updated:
+            type: ["null", string]
+            format: date-time
+          last_event_date:
+            type: ["null", string]
+            format: date-time
+          location:
+            type: ["null", object]
+            properties:
+              address1:
+                type: ["null", string]
+              address2:
+                type: ["null", string]
+              city:
+                type: ["null", string]
+              country:
+                type: ["null", string]
+              latitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              longitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              region:
+                type: ["null", string]
+              zip:
+                type: ["null", string]
+              timezone:
+                type: ["null", string]
+              ip:
+                type: ["null", string]
+          properties:
+            type: ["null", object]
+            additionalProperties: true
+          subscriptions: "#/definitions/shared/subscriptions"
+          predictive_analytics:
+            type: ["null", object]
+            properties:
+              historic_clv:
+                type: ["null", number]
+              predicted_clv:
+                type: ["null", number]
+              total_clv:
+                type: ["null", number]
+              historic_number_of_orders:
+                type: ["null", integer]
+              predicted_number_of_orders:
+                type: ["null", number]
+              average_days_between_orders:
+                type: ["null", number]
+              average_order_value:
+                type: ["null", number]
+              churn_probability:
+                type: ["null", number]
+              expected_date_of_next_order:
+                type: ["null", string]
+      links:
+        type: ["null", object]
+        properties:
+          self:
+            type: ["null", string]
+      relationships:
+        type: ["null", object]
+        properties:
+          lists:
+            type: ["null", object]
+            properties:
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
+          segments:
+            type: ["null", object]
+            properties:
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
+      segments:
+        type: ["null", object]
+
+  global_exclusions_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: ["null", string]
+      id:
+        type: string
+      updated:
+        type: ["null", string]
+        format: date-time
+      attributes:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          email:
+            type: ["null", string]
+          phone_number:
+            type: ["null", string]
+          anonymous_id:
+            type: ["null", string]
+          external_id:
+            type: ["null", string]
+          first_name:
+            type: ["null", string]
+          last_name:
+            type: ["null", string]
+          organization:
+            type: ["null", string]
+          title:
+            type: ["null", string]
+          image:
+            type: ["null", string]
+          created:
+            type: ["null", string]
+            format: date-time
+          updated:
+            type: ["null", string]
+            format: date-time
+          last_event_date:
+            type: ["null", string]
+            format: date-time
+          location:
+            type: ["null", object]
+            properties:
+              address1:
+                type: ["null", string]
+              address2:
+                type: ["null", string]
+              city:
+                type: ["null", string]
+              country:
+                type: ["null", string]
+              latitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              longitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              region:
+                type: ["null", string]
+              zip:
+                type: ["null", string]
+              timezone:
+                type: ["null", string]
+              ip:
+                type: ["null", string]
+          properties:
+            type: ["null", object]
+            additionalProperties: true
+          subscriptions: "#/definitions/shared/subscriptions"
+          predictive_analytics:
+            type: ["null", object]
+            properties:
+              historic_clv:
+                type: ["null", number]
+              predicted_clv:
+                type: ["null", number]
+              total_clv:
+                type: ["null", number]
+              historic_number_of_orders:
+                type: ["null", integer]
+              predicted_number_of_orders:
+                type: ["null", number]
+              average_days_between_orders:
+                type: ["null", number]
+              average_order_value:
+                type: ["null", number]
+              churn_probability:
+                type: ["null", number]
+              expected_date_of_next_order:
+                type: ["null", string]
+      links:
+        type: ["null", object]
+        properties:
+          self:
+            type: ["null", string]
+      relationships:
+        type: ["null", object]
+        properties:
+          lists:
+            type: ["null", object]
+            properties:
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
+          segments:
+            type: ["null", object]
+            properties:
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
+      segments:
+        type: ["null", object]
+
+  events_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      datetime:
+        type: string
+        format: date-time
+      attributes:
+        type: ["null", object]
+        properties:
+          timestamp:
+            type: integer
+          event_properties:
+            type: ["null", object]
+            additionalProperties: true
+          datetime:
+            type: string
+            format: date-time
+          uuid:
+            type: string
+      links:
+        type: ["null", object]
+        properties:
+          self:
+            type: string
+      relationships:
+        type: ["null", object]
+        properties:
+          profile:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          metric:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
+  events_detailed_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      datetime:
+        type: string
+        format: date-time
+      attributes:
+        type: ["null", object]
+        properties:
+          timestamp:
+            type: integer
+          event_properties:
+            type: ["null", object]
+            additionalProperties: true
+          datetime:
+            type: string
+            format: date-time
+          uuid:
+            type: string
+      links:
+        type: ["null", object]
+        properties:
+          self:
+            type: string
+      relationships:
+        type: ["null", object]
+        properties:
+          profile:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          metric:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
+  email_templates_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated:
+        type: ["null", string]
+        format: date-time
+      attributes:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          name:
+            type: string
+          editor_type:
+            type: ["null", string]
+          html:
+            type: string
+          text:
+            type: ["null", string]
+          created:
+            type: ["null", string]
+            format: date-time
+          updated:
+            type: ["null", string]
+            format: date-time
+          company_id:
+            type: ["null", string]
+      links:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+
+  metrics_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated:
+        type: string
+        format: date-time
+      attributes:
+        type: ["null", object]
+        properties:
+          name:
+            type: string
+          created:
+            type: string
+            format: date-time
+          updated:
+            type: string
+            format: date-time
+          integration:
+            type: ["null", object]
+            additionalProperties: true
+      links:
+        type: ["null", object]
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+
+  lists_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties: "#/definitions/shared/list_properties"
+
+  lists_detailed_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      $ref: "#/definitions/shared/list_properties"
+      attributes:
+        type: ["null", object]
+        properties:
+          name:
+            type: string
+          created:
+            type: ["null", string]
+            format: date-time
+          updated:
+            type: ["null", string]
+            format: date-time
+          opt_in_process:
+            type: ["null", string]
+          profile_count:
+            type: ["null", integer]
+
+streams:
+  # Incremental streams
+  - "#/definitions/profiles_stream"
+  - "#/definitions/global_exclusions_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/events_detailed_stream"
+  - "#/definitions/email_templates_stream"
+
+  # Semi-Incremental streams
+  - "#/definitions/metrics_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/lists_detailed_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - metrics
+
+spec:
+  type: Spec
+  documentation_url: "https://docs.airbyte.com/integrations/sources/klaviyo"
+  connection_specification:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    title: "Klaviyo Spec"
+    type: object
+    properties:
+      api_key:
+        type: string
+        title: "Api Key"
+        description: 'Klaviyo API Key. See our <a href="https://docs.airbyte.com/integrations/sources/klaviyo">docs</a> if you need help finding this key.'
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: "Start Date"
+        description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. This field is optional - if not provided, all data will be replicated."
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples: ["2017-01-25T00:00:00Z"]
+        format: date-time
+        order: 1
+      disable_fetching_predictive_analytics:
+        type: boolean
+        title: "Disable Fetching Predictive Analytics"
+        description: >-
+          Certain streams like the profiles stream can retrieve predictive analytics data from Klaviyo's
+          API. However, at high volume, this can lead to service availability issues on the API which can
+          be improved by not fetching this field. WARNING: Enabling this setting will stop the 
+          "predictive_analytics" column from being populated in your downstream destination.
+        order: 2
+    required: ["api_key"]

@@ -42,6 +42,8 @@ sudo yum install -y docker-compose-plugin
 docker compose version
 ```
 
+If you encounter an error on this part, you might prefer to follow the documentation to [install the docker compose plugin manually](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually) (_make sure to do it for all users_).
+
 4. To close the SSH connection, run the following command in your SSH session on the instance terminal:
 
 ```bash
@@ -90,7 +92,7 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 
 ## Get Airbyte logs in CloudWatch
 
-Follow this [guide](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) to get your logs from your Airbyte Docker containers in CloudWatch.
+Follow this [guide](https://aws.amazon.com/en/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) to get your logs from your Airbyte Docker containers in CloudWatch.
 
 ## Troubleshooting
 

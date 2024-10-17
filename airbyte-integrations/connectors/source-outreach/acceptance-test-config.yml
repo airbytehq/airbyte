@@ -1,25 +1,45 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-outreach:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_outreach/spec.json"
+    tests:
+      - spec_path: "source_outreach/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-  # https://github.com/airbytehq/airbyte/issues/8180
-  # basic_read:
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "integration_tests/configured_catalog.json"
-  #     empty_streams: []
-  # incremental:
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "integration_tests/configured_catalog.json"
-  #     future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.5.0 # The sequence_steps changed its ['properties']['creator']['items']['type'] field to include integers
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "sequence_states"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "sequence_steps"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "snippets"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "templates"
+            bypass_reason: "Sandbox account cannot seed the stream"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        skip_comprehensive_incremental_tests: true
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

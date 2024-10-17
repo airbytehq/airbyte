@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - cloud.getdbt.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-dbt
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.2@sha256:efe8a454f740dc6a07252c4a457777e7c81d95f0d2ea8e9d68114d3610e9a602
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6eaa4fc5-cf11-413d-a0d6-0023402f71f6
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-dbt
+  githubIssueLabel: source-dbt
+  icon: icon.svg
+  license: MIT
+  name: DBT
+  releaseDate: 2024-08-22
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dbt
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

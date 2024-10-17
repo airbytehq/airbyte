@@ -3,11 +3,7 @@
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
 
 :::info
-Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
-:::
-
-:::note
-The low-code framework is in [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta), which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+Developer updates will be announced via our [#help-connector-development Slack channel](https://airbytehq.slack.com/archives/C027KKE4BCZ). If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
 ## Why low-code?
@@ -65,9 +61,8 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 ## Prerequisites
 
 - An API key for the source you want to build a connector for
-- Python >= 3.9
+- Python >= 3.10
 - Docker
-- NodeJS
 
 ## Overview of the process
 
@@ -90,7 +85,7 @@ We recommend iterating on this YAML file is via the [connector builder UI](https
 
 ## Configuring the YAML file
 
-The low-code framework involves editing a boilerplate YAML file. The general structure of the YAML file is as follows:
+The low-code framework involves editing the Connector Manifest, which is a boilerplate YAML file. The general structure of the YAML file is as follows:
 
 ```
 version: "0.1.0"
@@ -138,7 +133,7 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 ## Tutorial
 
-This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)
@@ -155,3 +150,7 @@ For examples of production-ready config-based connectors, refer to:
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
 - [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
+
+## Reference
+
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

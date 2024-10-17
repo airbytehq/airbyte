@@ -5,83 +5,37 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import java.sql.SQLException;
-import java.util.Map;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
-  @AfterAll
-  public static void closeContainer() {
-    if (db != null) {
-      db.close();
-      db.stop();
-    }
+  @Override
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withEncrytedTrustServerCertificate()
+        .build();
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense();
-      db.start();
-    }
+  protected void setupEnvironment(final TestDestinationEnv environment) {
+    final var container = new MsSQLContainerFactory().shared(BaseImage.MSSQL_2022.reference);
+    testdb = new MsSQLTestDatabase(container);
+    testdb = testdb
+        .withConnectionProperty("encrypt", "true")
+        .withConnectionProperty("trustServerCertificate", "true")
+        .withConnectionProperty("databaseName", testdb.getDatabaseName())
+        .initialized()
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
+        .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)
+        .with("INSERT INTO id_and_name (id, name, born) VALUES " +
+            "(1, 'picard', '2124-03-04T01:01:01Z'), " +
+            "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
+            "(3, 'vash', '2124-03-04T01:01:01Z');")
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato'), (4, 'Argo');", SCHEMA_NAME, STREAM_NAME2)
+        .with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);", SCHEMA_NAME, STREAM_NAME3)
+        .with("INSERT INTO %s.%s (id, name) VALUES (4,'voyager');", SCHEMA_NAME, STREAM_NAME3);
 
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .build());
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
-    try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-        ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
-        ctx.fetch(
-            "INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
-                "(3, 'vash', '2124-03-04T01:01:01Z');");
-        return null;
-      });
-    }
-
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
-  }
-
-  private static DSLContext getDslContext(final JsonNode baseConfig) {
-    return DSLContextFactory.create(
-        baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
-            baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-            baseConfig.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
-  }
-
-  private static Database getDatabase(final DSLContext dslContext) {
-    return new Database(dslContext);
   }
 
 }

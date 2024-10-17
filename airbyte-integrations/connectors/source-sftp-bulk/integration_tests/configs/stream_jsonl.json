@@ -1,0 +1,13 @@
+{
+  "streams": [
+    {
+      "name": "test_stream",
+      "file_type": "jsonl",
+      "globs": ["**/*.jsonl"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "jsonl"
+      }
+    }
+  ]
+}

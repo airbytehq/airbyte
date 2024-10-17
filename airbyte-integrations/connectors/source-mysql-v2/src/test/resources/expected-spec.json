@@ -1,0 +1,399 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
+  "connectionSpecification": {
+    "type": "object",
+    "title": "Mysql Source Spec",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+      "host",
+      "port",
+      "database",
+      "username",
+      "tunnel_method",
+      "ssl_mode",
+      "replication_method"
+    ],
+    "properties": {
+      "host": {
+        "type": "string",
+        "order": 1,
+        "title": "Host",
+        "description": "Hostname of the database."
+      },
+      "port": {
+        "type": "integer",
+        "order": 2,
+        "title": "Port",
+        "default": 3306,
+        "maximum": 65536,
+        "minimum": 0,
+        "description": "Port of the database."
+      },
+      "database": {
+        "type": "string",
+        "order": 6,
+        "title": "Database",
+        "always_show": true,
+        "description": "The database name."
+      },
+      "password": {
+        "type": "string",
+        "order": 5,
+        "title": "Password",
+        "always_show": true,
+        "description": "The password associated with the username.",
+        "airbyte_secret": true
+      },
+      "ssl_mode": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "preferred",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "enum": ["preferred"],
+                "type": "string",
+                "default": "preferred"
+              }
+            },
+            "description": "To allow unencrypted communication only when the source doesn't support encryption.",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "required",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "enum": ["required"],
+                "type": "string",
+                "default": "required"
+              }
+            },
+            "description": "To always require encryption. Note: The connection will fail if the source doesn't support encryption.",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "verify_ca",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "enum": ["verify_ca"],
+                "type": "string",
+                "default": "verify_ca"
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "multiline": true,
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+                "airbyte_secret": true
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "multiline": true,
+                "description": "CA certificate",
+                "airbyte_secret": true
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate File",
+                "multiline": true,
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+                "airbyte_secret": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "multiline": true,
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true
+              }
+            },
+            "description": "To always require encryption and verify that the source has a valid SSL certificate.",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "verify_identity",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "enum": ["verify_identity"],
+                "type": "string",
+                "default": "verify_identity"
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "multiline": true,
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+                "airbyte_secret": true
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "multiline": true,
+                "description": "CA certificate",
+                "airbyte_secret": true
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate File",
+                "multiline": true,
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+                "airbyte_secret": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "multiline": true,
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true
+              }
+            },
+            "description": "To always require encryption and verify that the source has a valid SSL certificate.",
+            "additionalProperties": true
+          }
+        ],
+        "order": 8,
+        "title": "Encryption",
+        "description": "The encryption method with is used when communicating with the database."
+      },
+      "username": {
+        "type": "string",
+        "order": 4,
+        "title": "User",
+        "description": "The username which is used to access the database."
+      },
+      "concurrency": {
+        "type": "integer",
+        "order": 12,
+        "title": "Concurrency",
+        "default": 1,
+        "description": "Maximum number of concurrent queries to the database."
+      },
+      "tunnel_method": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "No Tunnel",
+            "required": ["tunnel_method"],
+            "properties": {
+              "tunnel_method": {
+                "enum": ["NO_TUNNEL"],
+                "type": "string",
+                "default": "NO_TUNNEL"
+              }
+            },
+            "description": "No ssh tunnel needed to connect to database",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "SSH Key Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ],
+            "properties": {
+              "ssh_key": {
+                "type": "string",
+                "order": 4,
+                "title": "SSH Private Key",
+                "multiline": true,
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "airbyte_secret": true
+              },
+              "tunnel_host": {
+                "type": "string",
+                "order": 1,
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel."
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "order": 2,
+                "title": "SSH Connection Port",
+                "default": 22,
+                "maximum": 65536,
+                "minimum": 0,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections."
+              },
+              "tunnel_user": {
+                "type": "string",
+                "order": 3,
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host"
+              },
+              "tunnel_method": {
+                "enum": ["SSH_KEY_AUTH"],
+                "type": "string",
+                "default": "SSH_KEY_AUTH"
+              }
+            },
+            "description": "Connect through a jump server tunnel host using username and ssh key",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Password Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ],
+            "properties": {
+              "tunnel_host": {
+                "type": "string",
+                "order": 1,
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel."
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "order": 2,
+                "title": "SSH Connection Port",
+                "default": 22,
+                "maximum": 65536,
+                "minimum": 0,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections."
+              },
+              "tunnel_user": {
+                "type": "string",
+                "order": 3,
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host"
+              },
+              "tunnel_method": {
+                "enum": ["SSH_PASSWORD_AUTH"],
+                "type": "string",
+                "default": "SSH_PASSWORD_AUTH"
+              },
+              "tunnel_user_password": {
+                "type": "string",
+                "order": 4,
+                "title": "Password",
+                "description": "OS-level password for logging into the jump server host",
+                "airbyte_secret": true
+              }
+            },
+            "description": "Connect through a jump server tunnel host using username and password authentication",
+            "additionalProperties": true
+          }
+        ],
+        "order": 9,
+        "title": "SSH Tunnel Method",
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
+      },
+      "jdbc_url_params": {
+        "type": "string",
+        "order": 7,
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+      },
+      "check_privileges": {
+        "type": "boolean",
+        "order": 13,
+        "title": "Check Table and Column Access Privileges",
+        "default": true,
+        "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
+        "display_type": "check"
+      },
+      "replication_method": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Scan Changes with User Defined Cursor",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "enum": ["STANDARD"],
+                "type": "string",
+                "default": "STANDARD"
+              }
+            },
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "enum": ["CDC"],
+                "type": "string",
+                "default": "CDC"
+              },
+              "server_timezone": {
+                "type": "string",
+                "order": 2,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              },
+              "initial_waiting_seconds": {
+                "max": 1200,
+                "min": 120,
+                "type": "integer",
+                "order": 1,
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "default": 300,
+                "always_show": true,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
+              },
+              "initial_load_timeout_hours": {
+                "max": 24,
+                "min": 4,
+                "type": "integer",
+                "order": 4,
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "default": 8,
+                "always_show": true,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
+              },
+              "invalid_cdc_cursor_position_behavior": {
+                "enum": ["Fail sync", "Re-sync data"],
+                "default": "Fail sync",
+                "type": "string",
+                "order": 3,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              }
+            },
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "additionalProperties": true
+          }
+        ],
+        "order": 10,
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
+        "display_type": "radio"
+      },
+      "checkpoint_target_interval_seconds": {
+        "type": "integer",
+        "order": 11,
+        "title": "Checkpoint Target Time Interval",
+        "default": 300,
+        "description": "How often (in seconds) a stream should checkpoint, when possible."
+      }
+    },
+    "additionalProperties": true
+  },
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": []
+}

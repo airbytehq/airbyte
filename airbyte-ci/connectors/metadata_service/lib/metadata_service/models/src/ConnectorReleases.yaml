@@ -1,0 +1,16 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorReleases.yaml
+title: ConnectorReleases
+description: Contains information about different types of releases for a connector.
+type: object
+additionalProperties: false
+properties:
+  rolloutConfiguration:
+    $ref: RolloutConfiguration.yaml
+  breakingChanges:
+    $ref: ConnectorBreakingChanges.yaml
+  migrationDocumentationUrl:
+    description: URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations
+    type: string
+    format: uri
