@@ -561,7 +561,7 @@ class SqlProcessorBase(abc.ABC):
         self,
         /,
         stream_name: str,
-        batch_id: str,
+        batch_id: str | None,
     ) -> str:
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)

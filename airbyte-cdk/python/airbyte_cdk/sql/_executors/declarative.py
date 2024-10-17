@@ -41,7 +41,7 @@ class DeclarativeExecutor(Executor):
     def __init__(
         self,
         name: str,
-        manifest: dict | Path,
+        manifest: dict[str, str] | Path,
     ) -> None:
         """Initialize a declarative executor.
 
@@ -52,7 +52,7 @@ class DeclarativeExecutor(Executor):
         _suppress_cdk_pydantic_deprecation_warnings()
 
         self.name = name
-        self._manifest_dict: dict
+        self._manifest_dict: dict[str, str]
         if isinstance(manifest, Path):
             self._manifest_dict = cast(dict, yaml.safe_load(manifest.read_text()))
 
@@ -74,7 +74,7 @@ class DeclarativeExecutor(Executor):
         _ = raise_on_error, recheck  # Not used
         return self.reported_version
 
-    def _validate_manifest(self, manifest_dict: dict) -> None:
+    def _validate_manifest(self, manifest_dict: dict[str, str]) -> None:
         """Validate the manifest."""
         manifest_text = yaml.safe_dump(manifest_dict)
         if "class_name:" in manifest_text:

@@ -240,7 +240,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             sql, zip(entries_to_write[column_name] for column_name in column_names_list)
         )
 
-    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table):
+    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table)-> None:
         full_table_name = self._fully_qualified(table_name)
         sql = f"""
         -- Write from PyArrow table
@@ -300,13 +300,13 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             return
 
         raise exc.AirbyteInternalError(
-            message="Write method is not supported.",
+            message="Sync mode is not supported.",
             context={
-                "write_method": write_method,
+                "sync_mode": sync_mode,
             },
         )
 
-    def _drop_duplicates(self, table_name: str, stream_name: str):
+    def _drop_duplicates(self, table_name: str, stream_name: str) -> str:
         primary_keys = self.catalog_provider.get_primary_keys(stream_name)
         new_table_name = f"{table_name}_deduped"
         if primary_keys:
@@ -322,7 +322,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             return new_table_name
         return table_name
 
-    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode):
+    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode) -> None:
         table_name = f"_airbyte_raw_{stream_name}"
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
