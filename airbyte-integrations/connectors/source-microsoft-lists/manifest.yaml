@@ -1,0 +1,1032 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  Microsoft Lists connector enables seamless data integration and
+  synchronization between Microsoft Lists and other destination. The connector
+  leverages Microsoft Graph API to retrieve list items efficiently, ensuring
+  smooth workflows and real-time data accessibility
+
+check:
+  type: CheckStream
+  stream_names:
+    - lists
+
+definitions:
+  streams:
+    items:
+      type: DeclarativeStream
+      name: items
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
+            }}/items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/lists"
+              parent_key: id
+              partition_field: list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sites/{{ config["site_id"] }}/lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    listitems:
+      type: DeclarativeStream
+      name: listitems
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
+            }}/items/{{ stream_partition.item }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/lists"
+                parent_key: id
+                partition_field: list
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/items"
+                parent_key: id
+                partition_field: item
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/listitems"
+    columnvalues:
+      type: DeclarativeStream
+      name: columnvalues
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
+            }}/items/{{ stream_partition.item}}
+          http_method: GET
+          request_parameters:
+            expand: fields
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/lists"
+                parent_key: id
+                partition_field: list
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/items"
+                parent_key: id
+                partition_field: item
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/columnvalues"
+    listcontenttypes:
+      type: DeclarativeStream
+      name: listcontenttypes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /sites/{{ config['site_id'] }}/lists/{{ stream_partition.list
+            }}/contentTypes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/lists"
+              parent_key: id
+              partition_field: list
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/listcontenttypes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://graph.microsoft.com/v1.0
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_request_body:
+        scope: "{{ config['application_id_uri'] }}"
+      token_refresh_endpoint: >-
+        https://login.microsoftonline.com/{{ config['tenant_id']
+        }}/oauth2/v2.0/token
+
+streams:
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/listcontenttypes"
+  - $ref: "#/definitions/streams/listitems"
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/columnvalues"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - application_id_uri
+      - site_id
+      - tenant_id
+      - domain
+    properties:
+      domain:
+        type: string
+        order: 5
+        title: Domain
+        airbyte_secret: true
+      site_id:
+        type: string
+        order: 3
+        title: Site Id
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      tenant_id:
+        type: string
+        order: 4
+        title: Tenant Id
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      application_id_uri:
+        type: string
+        order: 2
+        title: Application Id URI
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: >-
+      https://learn.microsoft.com/en-us/graph/api/resources/list?view=graph-rest-1.0
+  testedStreams:
+    items:
+      hasRecords: true
+      streamHash: 632a07de352b93525cf6d219ba72b4a035c001a0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists:
+      hasRecords: true
+      streamHash: cf4a8fca3306172876f0b757ce3b728e50f9c97c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    listitems:
+      hasRecords: true
+      streamHash: 85fabf4496bc00d0eb1ee01a1487d01cbbcf3c9c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    columnvalues:
+      hasRecords: true
+      streamHash: 21d05c683a1a47cd491510f3e9f26dda2dea6780
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    listcontenttypes:
+      hasRecords: true
+      streamHash: c1b7739298f356e14c3775940f0a10049f6e16d8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    items: true
+    lists: true
+    listitems: true
+    columnvalues: true
+    listcontenttypes: true
+
+schemas:
+  items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      eTag:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      parentReference:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          siteId:
+            type:
+              - string
+              - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      eTag:
+        type:
+          - string
+          - "null"
+      list:
+        type:
+          - object
+          - "null"
+        properties:
+          hidden:
+            type:
+              - boolean
+              - "null"
+          template:
+            type:
+              - string
+              - "null"
+          contentTypesEnabled:
+            type:
+              - boolean
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      parentReference:
+        type:
+          - object
+          - "null"
+        properties:
+          siteId:
+            type:
+              - string
+              - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  listitems:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      eTag:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          Edit:
+            type:
+              - string
+              - "null"
+          Created:
+            type:
+              - string
+              - "null"
+          Modified:
+            type:
+              - string
+              - "null"
+          RecipeGuid:
+            type:
+              - string
+              - "null"
+          StageIndex:
+            type:
+              - number
+              - "null"
+          StageTitle:
+            type:
+              - string
+              - "null"
+          "@odata.etag":
+            type:
+              - string
+              - "null"
+          ActionIndex:
+            type:
+              - number
+              - "null"
+          Attachments:
+            type:
+              - boolean
+              - "null"
+          ContentType:
+            type:
+              - string
+              - "null"
+          OutcomeCode:
+            type:
+              - number
+              - "null"
+          OutcomeText:
+            type:
+              - string
+              - "null"
+          RecipeIndex:
+            type:
+              - number
+              - "null"
+          RecipeTitle:
+            type:
+              - string
+              - "null"
+          AuthorLookupId:
+            type:
+              - string
+              - "null"
+          EditorLookupId:
+            type:
+              - string
+              - "null"
+          ItemChildCount:
+            type:
+              - string
+              - "null"
+          _ComplianceTag:
+            type:
+              - string
+              - "null"
+          FolderChildCount:
+            type:
+              - string
+              - "null"
+          _ComplianceFlags:
+            type:
+              - string
+              - "null"
+          _UIVersionString:
+            type:
+              - string
+              - "null"
+          OrdinalStageIndex:
+            type:
+              - number
+              - "null"
+          _ComplianceTagUserId:
+            type:
+              - string
+              - "null"
+          _ComplianceTagWrittenTime:
+            type:
+              - string
+              - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      "@odata.context":
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      parentReference:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          siteId:
+            type:
+              - string
+              - "null"
+      fields@odata.context:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  columnvalues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      eTag:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          Edit:
+            type:
+              - string
+              - "null"
+          Created:
+            type:
+              - string
+              - "null"
+          Modified:
+            type:
+              - string
+              - "null"
+          RecipeGuid:
+            type:
+              - string
+              - "null"
+          StageIndex:
+            type:
+              - number
+              - "null"
+          StageTitle:
+            type:
+              - string
+              - "null"
+          "@odata.etag":
+            type:
+              - string
+              - "null"
+          ActionIndex:
+            type:
+              - number
+              - "null"
+          Attachments:
+            type:
+              - boolean
+              - "null"
+          ContentType:
+            type:
+              - string
+              - "null"
+          OutcomeCode:
+            type:
+              - number
+              - "null"
+          OutcomeText:
+            type:
+              - string
+              - "null"
+          RecipeIndex:
+            type:
+              - number
+              - "null"
+          RecipeTitle:
+            type:
+              - string
+              - "null"
+          AuthorLookupId:
+            type:
+              - string
+              - "null"
+          EditorLookupId:
+            type:
+              - string
+              - "null"
+          ItemChildCount:
+            type:
+              - string
+              - "null"
+          _ComplianceTag:
+            type:
+              - string
+              - "null"
+          FolderChildCount:
+            type:
+              - string
+              - "null"
+          _ComplianceFlags:
+            type:
+              - string
+              - "null"
+          _UIVersionString:
+            type:
+              - string
+              - "null"
+          OrdinalStageIndex:
+            type:
+              - number
+              - "null"
+          _ComplianceTagUserId:
+            type:
+              - string
+              - "null"
+          _ComplianceTagWrittenTime:
+            type:
+              - string
+              - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      "@odata.context":
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      parentReference:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          siteId:
+            type:
+              - string
+              - "null"
+      fields@odata.context:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  listcontenttypes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      base:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          group:
+            type:
+              - string
+              - "null"
+          hidden:
+            type:
+              - boolean
+              - "null"
+          sealed:
+            type:
+              - boolean
+              - "null"
+          readOnly:
+            type:
+              - boolean
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      group:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      sealed:
+        type:
+          - boolean
+          - "null"
+      parentId:
+        type:
+          - string
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+    additionalProperties: true
