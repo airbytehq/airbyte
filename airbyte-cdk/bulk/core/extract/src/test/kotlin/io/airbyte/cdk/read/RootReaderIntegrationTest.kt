@@ -623,18 +623,15 @@ open class TestPartitionsCreatorFactory(
 ) : PartitionsCreatorFactory {
     private val log = KotlinLogging.logger {}
 
-    override fun make(
-        stateQuerier: StateQuerier,
-        feed: Feed,
-    ): PartitionsCreator {
-        if (feed is Global) {
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
+        if (feedBootstrap !is StreamFeedBootstrap) {
             return makeGlobalPartitionsCreator()
         }
         // For a stream feed, pick the CreatorCase in the corresponding TestCase
         // which is the successor of the one whose corresponding state is in the StateQuerier.
-        val testCase: TestCase = testCases.find { it.name == (feed as Stream).name }!!
+        val testCase: TestCase = testCases.find { it.name == feedBootstrap.feed.name }!!
         val checkpointedPartitionCreatorID: Long =
-            when (val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)) {
+            when (val opaqueStateValue: OpaqueStateValue? = feedBootstrap.currentState) {
                 null -> 0L
                 is ArrayNode -> opaqueStateValue.get(0).asLong()
                 else -> TODO("unreachable code")
