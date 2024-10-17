@@ -61,10 +61,16 @@ sealed class AirbyteConnectorRunner(
     systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
 ) {
-
     val envs: Array<String> =
         arrayOf(Environment.CLI, connectorType) +
-            FeatureFlag.active(systemEnv).map { it.micronautEnvironmentName }
+            // Set feature flag environments
+            FeatureFlag.active(systemEnv).map { it.micronautEnvironmentName } +
+            // Micronaut's TEST env detection relies on inspecting the stacktrace and checking for
+            // any junit calls. This doesn't work if we launch the connector from a different
+            // thread, e.g. `Dispatchers.IO`. Force the test env if needed. (Some tests launch the
+            // connector from the IO context to avoid blocking themselves.)
+            listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() })
+
 
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
@@ -87,6 +93,10 @@ sealed class AirbyteConnectorRunner(
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
+        // We can't rely on the isTest value from our constructor,
+        // because that won't autodetect junit in our stacktrace.
+        // So instead we ask micronaut (which will include if we explicitly added
+        // the TEST env).
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)
         val picocliFactory: CommandLine.IFactory = MicronautFactory(ctx)
         val picocliCommandLine: CommandLine =
@@ -95,6 +105,11 @@ sealed class AirbyteConnectorRunner(
         if (!isTest) {
             // Required by the platform, otherwise syncs may hang.
             exitProcess(exitCode)
+        }
+        // At this point, we're in a test.
+        if (exitCode != 0) {
+            // Propagate failure to test callers.
+            throw ConnectorUncleanExitException(exitCode)
         }
     }
 }

@@ -66,7 +66,7 @@ data object CliRunner {
                     args,
                     featureFlags.systemEnv,
                     inputBeanDefinition,
-                    out.beanDefinition
+                    out.beanDefinition,
                 )
             }
         return CliRunnable(runnable, out.results)
