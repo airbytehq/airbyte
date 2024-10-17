@@ -1,20 +1,44 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
+from gettext import Catalog
 import json
 import os
+from pathlib import Path
 import re
 import uuid
 from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 
+from airbyte_cdk import ConfiguredAirbyteStream
 import duckdb
 import pyarrow as pa
 
 import logging
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
+from airbyte_cdk.sql.types import SQLTypeConverter
+from airbyte_cdk.sql.constants import (
+    AB_RAW_ID_COLUMN,
+    AB_EXTRACTED_AT_COLUMN,
+    AB_META_COLUMN,
+)
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql._processors.duckdb import DuckDBSqlProcessor, DuckDBConfig
+from airbyte_cdk.sql._processors.motherduck import MotherDuckSqlProcessor
+from airbyte_cdk.sql.caches.motherduck import MotherDuckConfig
+from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
+from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+import sqlalchemy
 
 
 logger = getLogger("airbyte")
@@ -34,13 +58,61 @@ def validated_sql_name(sql_name: Any) -> str:
 
 
 class DestinationDuckdb(Destination):
+    type_converter_class = SQLTypeConverter
+    normalizer = LowerCaseNormalizer
+
+    @staticmethod
+    def _is_motherduck(path: str):
+        return "md:" in str(path)
+
+    def _get_sql_processor(
+        self,
+        configured_catalog: ConfiguredAirbyteCatalog,
+        schema_name: str,
+        table_prefix: str | None = "",
+        db_path: str | None = ":memory:",
+        motherduck_token: str | None = None,
+    ):
+        """
+        Get sql processor for processing queries
+        """
+        catalog_provider = CatalogProvider(configured_catalog)
+        if self._is_motherduck(db_path):
+            config = MotherDuckConfig(
+                schema_name=schema_name,
+                table_prefix=table_prefix,
+                db_path=db_path,
+                api_key=motherduck_token,
+            )
+            processor = MotherDuckSqlProcessor(
+                sql_config=config,
+                catalog_provider=catalog_provider,
+                state_writer=StdOutStateWriter(),
+                temp_dir=Path(DEFAULT_CACHE_ROOT),
+                temp_file_cleanup=True,
+            )
+        else:
+            config = DuckDBConfig(
+                schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
+            )
+            processor = DuckDBSqlProcessor(
+                sql_config=config,
+                catalog_provider=catalog_provider,
+                state_writer=StdOutStateWriter(),
+                temp_dir=Path(DEFAULT_CACHE_ROOT),
+                temp_file_cleanup=True,
+            )
+        return processor
+
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
         """
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
-        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+        if destination_path.startswith("md:") or destination_path.startswith(
+            "motherduck:"
+        ):
             return destination_path
 
         if not destination_path.startswith("/local"):
@@ -49,10 +121,15 @@ class DestinationDuckdb(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path."
+                "A valid path shall start with /local or no / prefix"
             )
 
         return destination_path
+
+    def _quote_identifier(self, identifier: str) -> str:
+        """Return the given identifier, quoted."""
+        return f'"{identifier}"'
 
     def write(
         self,
@@ -87,38 +164,48 @@ class DestinationDuckdb(Destination):
             duckdb_config["motherduck_token"] = motherduck_api_key
             duckdb_config["custom_user_agent"] = "airbyte"
 
-        con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
-
-        con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
-
         for configured_stream in configured_catalog.streams:
-            name = configured_stream.stream.name
-            table_name = f"_airbyte_raw_{name}"
+            stream_name = configured_stream.stream.name
+            # TODO: we're calling private methods on processor, should move this to write_stream_data or similar
+            processor = self._get_sql_processor(
+                configured_catalog=configured_catalog,
+                schema_name=schema_name,
+                db_path=path,
+            )
+            processor._ensure_schema_exists()
+
+            table_name = f"_airbyte_raw_{stream_name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
-                query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
-                con.execute(query)
-            # create the table if needed
-            query = f"""
-            CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
-                _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at DATETIME,
-                _airbyte_data JSON
-            )
-            """
 
-            con.execute(query)
+                processor._drop_temp_table(table_name, if_exists=True)
+
+            # Get the SQL column definitions
+            sql_columns = processor._get_sql_column_definitions(stream_name)
+            column_definition_str = ",\n                ".join(
+                f"{self._quote_identifier(column_name)} {sql_type}"
+                for column_name, sql_type in sql_columns.items()
+            )
+
+            # create the table if needed
+            catalog_provider = CatalogProvider(configured_catalog)
+            primary_keys = catalog_provider.get_primary_keys(stream_name)
+            processor._create_table_if_not_exists(
+                table_name=table_name,
+                column_definition_str=column_definition_str,
+                primary_keys=primary_keys,
+            )
+
+            processor._ensure_compatible_table_schema(
+                stream_name=stream_name, table_name=table_name
+            )
 
         buffer = defaultdict(lambda: defaultdict(list))
-
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
-                for stream_name in buffer.keys():
-                    logger.info(f"flushing buffer for state: {message}")
-                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
-
+                self._flush_buffer(buffer, configured_catalog, path, schema_name)
                 buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
@@ -126,44 +213,58 @@ class DestinationDuckdb(Destination):
                 data = message.record.data
                 stream_name = message.record.stream
                 if stream_name not in streams:
-                    logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
+                    logger.debug(
+                        f"Stream {stream_name} was not present in configured streams, skipping"
+                    )
                     continue
                 # add to buffer
-                buffer[stream_name]["_airbyte_ab_id"].append(str(uuid.uuid4()))
-                buffer[stream_name]["_airbyte_emitted_at"].append(datetime.datetime.now().isoformat())
-                buffer[stream_name]["_airbyte_data"].append(json.dumps(data))
+                record_meta = {}
+                for column_name in sql_columns:
+                    if column_name in data:
+                        buffer[stream_name][column_name].append(data[column_name])
+                    elif column_name not in [
+                        AB_RAW_ID_COLUMN,
+                        AB_EXTRACTED_AT_COLUMN,
+                        AB_META_COLUMN,
+                    ]:
+                        buffer[stream_name][column_name].append(None)
+                buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
+                buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(
+                    datetime.datetime.now().isoformat()
+                )
+                buffer[stream_name][AB_META_COLUMN].append({json.dumps(record_meta)})
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
-        for stream_name in buffer.keys():
-            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
+        self._flush_buffer(buffer, configured_catalog, path, schema_name)
 
-    @staticmethod
-    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
-        table_name = f"_airbyte_raw_{stream_name}"
-        try:
-            pa_table = pa.Table.from_pydict(buffer[stream_name])
-        except:
-            logger.exception(
-                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
-            )
-            query = f"""
-            INSERT INTO {schema_name}.{table_name}
-                (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
-            VALUES (?,?,?)
-            """
-            entries_to_write = buffer[stream_name]
-            con.executemany(
-                query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"])
-            )
-        else:
-            # DuckDB will automatically find and SELECT from the `pa_table`
-            # local variable defined above.
-            con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
+    def _flush_buffer(
+        self,
+        buffer: Dict[str, Dict[str, List[Any]]],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        db_path: str,
+        schema_name: str,
+    ):
+        """
+        Flush the buffer to the destination
+        """
+        for configured_stream in configured_catalog.streams:
+            stream_name = configured_stream.stream.name
+            if stream_name in buffer:
+                processor = self._get_sql_processor(
+                    configured_catalog=configured_catalog,
+                    schema_name=schema_name,
+                    db_path=db_path,
+                )
+                processor.write_stream_data_from_buffer(
+                    buffer, stream_name, configured_stream.destination_sync_mode
+                )
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: logging.Logger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -185,7 +286,9 @@ class DestinationDuckdb(Destination):
 
             duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["motherduck_token"] = str(
+                    config[CONFIG_MOTHERDUCK_API_KEY]
+                )
                 duckdb_config["custom_user_agent"] = "airbyte"
 
             con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
@@ -194,4 +297,6 @@ class DestinationDuckdb(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )
