@@ -335,6 +335,31 @@ def _run_read(
                     "https://api.example.com/community/posts/3/comments/30/votes?per_page=100",
                     {"votes": [{"id": 300, "comment_id": 30, "created_at": "2024-01-10T00:00:00Z"}]},
                 ),
+                # Requests with intermediate states
+                # Fetch votes for comment 10 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&start_time=2024-01-15T00:00:00Z",
+                    {
+                        "votes": [{"id": 100, "comment_id": 10, "created_at": "2024-01-15T00:00:00Z"}],
+                    },
+                ),
+                # Fetch votes for comment 11 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/11/votes?per_page=100&start_time=2024-01-13T00:00:00Z",
+                    {
+                        "votes": [{"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"}],
+                    },
+                ),
+                # Fetch votes for comment 20 of post 2
+                (
+                    "https://api.example.com/community/posts/2/comments/20/votes?per_page=100&start_time=2024-01-12T00:00:00Z",
+                    {"votes": [{"id": 200, "comment_id": 20, "created_at": "2024-01-12T00:00:00Z"}]},
+                ),
+                # Fetch votes for comment 21 of post 2
+                (
+                    "https://api.example.com/community/posts/2/comments/21/votes?per_page=100&start_time=2024-01-12T00:00:15Z",
+                    {"votes": [{"id": 201, "comment_id": 21, "created_at": "2024-01-12T00:00:15Z"}]},
+                ),
             ],
             # Expected records
             [
@@ -422,10 +447,44 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
         for url, response in mock_requests:
             m.get(url, json=response)
 
+        # Run the initial read
         output = _run_read(manifest, config, _stream_name, initial_state)
         output_data = [message.record.data for message in output if message.record]
 
+        # Assert that output_data equals expected_records
         assert output_data == expected_records
+
+        # Collect the intermediate states and records produced before each state
+        cumulative_records = []
+        intermediate_states = []
+        for message in output:
+            if message.type.value == "RECORD":
+                record_data = message.record.data
+                cumulative_records.append(record_data)
+            elif message.type.value == "STATE":
+                # Record the state and the records produced before this state
+                state = message.state
+                records_before_state = cumulative_records.copy()
+                intermediate_states.append((state, records_before_state))
+
+        # For each intermediate state, perform another read starting from that state
+        for state, records_before_state in intermediate_states[:-1]:
+            output_intermediate = _run_read(manifest, config, _stream_name, [state])
+            records_from_state = [message.record.data for message in output_intermediate if message.record]
+
+            # Combine records produced before the state with records from the new read
+            cumulative_records_state = records_before_state + records_from_state
+
+            # Duplicates may occur because the state matches the cursor of the last record, causing it to be re-emitted in the next sync.
+            cumulative_records_state_deduped = list({orjson.dumps(record): record for record in cumulative_records_state}.values())
+
+            # Compare the cumulative records with the expected records
+            expected_records_set = list({orjson.dumps(record): record for record in expected_records}.values())
+            assert sorted(cumulative_records_state_deduped, key=lambda x: orjson.dumps(x)) == sorted(
+                expected_records_set, key=lambda x: orjson.dumps(x)
+            ), f"Records mismatch with intermediate state {state}. Expected {expected_records}, got {cumulative_records_state_deduped}"
+
+        # Assert that the final state matches the expected state
         final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
 
