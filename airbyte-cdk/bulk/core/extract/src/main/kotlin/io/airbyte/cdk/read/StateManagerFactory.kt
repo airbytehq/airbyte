@@ -200,9 +200,10 @@ class StateManagerFactory(
             }
 
             val cursorColumnID: String = cursorColumnIDComponents.joinToString(separator = ".")
-            val maybeField: FieldOrMetaField? = metadataQuerier.commonCursorOrNull(cursorColumnID)
-            return maybeField ?: dataColumnOrNull(cursorColumnID)
+            val maybeCursorField: FieldOrMetaField? = metadataQuerier.commonCursorOrNull(cursorColumnID)
+            return maybeCursorField ?: dataColumnOrNull(cursorColumnID)
         }
+
         val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =

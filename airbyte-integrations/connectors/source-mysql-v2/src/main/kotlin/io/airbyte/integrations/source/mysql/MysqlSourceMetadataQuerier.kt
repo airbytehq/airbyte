@@ -13,6 +13,7 @@ import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.integrations.source.mysql.MysqlJdbcStreamFactory.MysqlCDCMetaFields
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -177,10 +178,10 @@ class MysqlSourceMetadataQuerier(
     }
 
     override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
-        if (cursorColumnID == MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id) {
-            return MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR
+        return when (cursorColumnID) {
+            MysqlCDCMetaFields.CDC_CURSOR.id -> MysqlCDCMetaFields.CDC_CURSOR
+            else -> null
         }
-        return null
     }
 
     private data class AllPrimaryKeysRow(

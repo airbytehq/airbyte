@@ -74,7 +74,10 @@ class ResourceDrivenMetadataQuerierFactory(
 
             override fun extraChecks() {}
             override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
-                TODO("Not yet implemented")
+                return when (cursorColumnID) {
+                    CommonMetaField.CDC_LSN.id -> CommonMetaField.CDC_LSN
+                    else -> null
+                }
             }
 
             override fun close() {

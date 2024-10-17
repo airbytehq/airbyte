@@ -326,10 +326,10 @@ class JdbcMetadataQuerier(
     }
 
     override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
-        if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
-            return CommonMetaField.CDC_LSN
+        return when (cursorColumnID) {
+            CommonMetaField.CDC_LSN.id -> CommonMetaField.CDC_LSN
+            else -> null
         }
-        return null
     }
 
     override fun close() {
