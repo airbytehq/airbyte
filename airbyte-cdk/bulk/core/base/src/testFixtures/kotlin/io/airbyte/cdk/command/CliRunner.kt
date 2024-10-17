@@ -65,7 +65,7 @@ data object CliRunner {
                     args,
                     testProperties,
                     inputBeanDefinition,
-                    out.beanDefinition
+                    out.beanDefinition,
                 )
             }
         return CliRunnable(runnable, out.results)

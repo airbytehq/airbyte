@@ -58,7 +58,18 @@ sealed class AirbyteConnectorRunner(
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
     val testProperties: Map<String, String> = emptyMap(),
 ) {
-    val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
+    // Micronaut's TEST env detection relies on inspecting the stacktrace and checking for
+    // any junit calls. This doesn't work if we launch the connector from a different thread, e.g.
+    // `Dispatchers.IO`. Force the test env if needed. (Some tests launch the connector from the IO
+    // context to avoid blocking themselves.)
+    private val isTest = testBeanDefinitions.isNotEmpty()
+    val envs: Array<String> =
+        arrayOf(Environment.CLI, connectorType) +
+            if (isTest) {
+                arrayOf(Environment.TEST)
+            } else {
+                emptyArray()
+            }
 
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
@@ -82,6 +93,10 @@ sealed class AirbyteConnectorRunner(
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
+        // We can't rely on the isTest value from our constructor,
+        // because that won't autodetect junit in our stacktrace.
+        // So instead we ask micronaut (which will include if we explicitly added
+        // the TEST env).
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)
         val picocliFactory: CommandLine.IFactory = MicronautFactory(ctx)
         val picocliCommandLine: CommandLine =
