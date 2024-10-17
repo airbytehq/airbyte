@@ -13,7 +13,6 @@ import io.airbyte.cdk.command.StreamInputState
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.MetaField
@@ -200,14 +199,15 @@ class StateManagerFactory(
             }
 
             val cursorColumnID: String = cursorColumnIDComponents.joinToString(separator = ".")
-            val maybeCursorField: FieldOrMetaField? = metadataQuerier.commonCursorOrNull(cursorColumnID)
+            val maybeCursorField: FieldOrMetaField? =
+                metadataQuerier.commonCursorOrNull(cursorColumnID)
             return maybeCursorField ?: dataColumnOrNull(cursorColumnID)
         }
 
         val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
-            configuredStream.cursorField?.asSequence()?.let {cursorOrNull(it.toList())}
+            configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
