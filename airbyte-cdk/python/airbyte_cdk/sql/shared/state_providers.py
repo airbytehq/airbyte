@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import abc
+from dataclasses import asdict
+import json
 from typing import TYPE_CHECKING, Literal
 
 from airbyte_cdk.models import (
@@ -85,7 +87,7 @@ class StateProviderBase(abc.ABC):
             "["
             + "\n, ".join(
                 [
-                    state_artifact.model_dump_json()
+                    json.dumps(asdict(state_artifact))
                     for state_artifact in (self._state_message_artifacts or [])
                 ]
             )

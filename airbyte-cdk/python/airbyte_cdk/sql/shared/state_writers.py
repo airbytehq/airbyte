@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import abc
+from dataclasses import asdict
+import json
 from typing import TYPE_CHECKING, NoReturn, final
 
 from airbyte_cdk.sql.shared.state_providers import StateProviderBase
@@ -76,7 +78,7 @@ class StdOutStateWriter(StateWriterBase):
         state_message: AirbyteStateMessage,
     ) -> None:
         """Save or 'write' a state artifact."""
-        print(state_message.model_dump_json())
+        print(json.dumps(asdict(state_message)))
 
 
 class NoOpStateWriter(StateWriterBase):

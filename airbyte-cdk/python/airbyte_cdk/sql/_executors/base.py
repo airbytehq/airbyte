@@ -1,6 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+from dataclasses import asdict
+import json
 import subprocess
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
@@ -40,7 +42,7 @@ def _pump_input(
     """Pump lines into a pipe."""
     with pipe:
         try:
-            pipe.writelines(message.model_dump_json() + "\n" for message in messages)
+            pipe.writelines(json.dumps(asdict(message)) + "\n" for message in messages)
             pipe.flush()  # Ensure data is sent immediately
         except Exception as ex:
             exception_holder.set_exception(ex)

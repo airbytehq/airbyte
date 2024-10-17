@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime
+import json
 from typing import TYPE_CHECKING
 
 from pytz import utc
@@ -144,14 +146,14 @@ class SqlStateWriter(StateWriterBase):
                 destination_name=self.destination_name,
                 source_name=self.source_name,
                 stream_name=stream_name,
-                state_json=state_message.model_dump_json(),
+                state_json=json.dumps(asdict(state_message)),
             )
             if self.destination_name
             else CacheStreamStateModel(
                 source_name=self.source_name,
                 stream_name=stream_name,
                 table_name=table_prefix + stream_name,
-                state_json=state_message.model_dump_json(),
+                state_json=json.dumps(asdict(state_message)),
             )
         )
 

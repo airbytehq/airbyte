@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 import datetime
+import json
 import sys
 from collections.abc import Iterator
 from typing import IO, TYPE_CHECKING, cast
@@ -78,7 +80,7 @@ class AirbyteMessageIterator:
     @final
     def read(self) -> str:
         """Read the next message from the iterator."""
-        return next(self).model_dump_json()
+        return json.dumps(asdict(next(self)))
 
     @classmethod
     def from_read_result(cls, read_result: ReadResult) -> AirbyteMessageIterator:
