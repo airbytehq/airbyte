@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import java.util.concurrent.ConcurrentHashMap
@@ -25,9 +27,12 @@ object MockDestinationBackend {
 }
 
 object MockDestinationDataDumper : DestinationDataDumper {
-    override fun dumpRecords(streamName: String, streamNamespace: String?): List<OutputRecord> {
+    override fun dumpRecords(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            MockStreamLoader.getFilename(streamNamespace, streamName)
+            MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
     }
 }

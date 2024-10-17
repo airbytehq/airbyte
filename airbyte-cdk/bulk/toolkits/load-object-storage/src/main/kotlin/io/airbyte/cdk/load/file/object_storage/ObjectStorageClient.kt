@@ -4,11 +4,19 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
-import io.airbyte.cdk.load.message.RemoteObject
+import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
-interface ObjectStorageClient<T : RemoteObject> {
+interface ObjectStorageClient<T : RemoteObject<*>, U : ObjectStorageStreamingUploadWriter> {
     suspend fun list(prefix: String): Flow<T>
-    suspend fun put(key: String, bytes: ByteArray)
-    suspend fun delete(key: String)
+    suspend fun move(remoteObject: T, toKey: String): T
+    suspend fun <U> get(key: String, block: (InputStream) -> U): U
+    suspend fun put(key: String, bytes: ByteArray): T
+    suspend fun delete(remoteObject: T)
+    suspend fun streamingUpload(key: String, collector: suspend U.() -> Unit): T
+}
+
+interface ObjectStorageStreamingUploadWriter {
+    suspend fun write(bytes: ByteArray)
+    suspend fun write(string: String)
 }
