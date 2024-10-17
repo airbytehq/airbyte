@@ -114,25 +114,6 @@ class DestinationDuckdb(Destination):
             )
 
         return destination_path
-
-    def _get_sql_column_definitions(
-        self,
-        stream: ConfiguredAirbyteStream,
-    ) -> dict[str, sqlalchemy.types.TypeEngine]:
-        """Return the column definitions for the given stream."""
-        columns: dict[str, sqlalchemy.types.TypeEngine] = {}
-        properties = stream.stream.json_schema["properties"]
-        for property_name, json_schema_property_def in properties.items():
-            clean_prop_name = self.normalizer.normalize(property_name)
-            columns[clean_prop_name] = self.type_converter_class().to_sql_type(
-                json_schema_property_def,
-            )
-
-        columns[AB_RAW_ID_COLUMN] = self.type_converter_class.get_string_type()
-        columns[AB_EXTRACTED_AT_COLUMN] = sqlalchemy.TIMESTAMP()
-        columns[AB_META_COLUMN] = self.type_converter_class.get_json_type()
-
-        return columns
     
     def _quote_identifier(self, identifier: str) -> str:
         """Return the given identifier, quoted."""
@@ -189,7 +170,7 @@ class DestinationDuckdb(Destination):
                 processor._drop_temp_table(table_name, if_exists=True)
 
             # Get the SQL column definitions
-            sql_columns = self._get_sql_column_definitions(configured_stream)
+            sql_columns = processor._get_sql_column_definitions(stream_name)
             column_definition_str = ",\n                ".join(
                 f"{self._quote_identifier(column_name)} {sql_type}"
                 for column_name, sql_type in sql_columns.items()
