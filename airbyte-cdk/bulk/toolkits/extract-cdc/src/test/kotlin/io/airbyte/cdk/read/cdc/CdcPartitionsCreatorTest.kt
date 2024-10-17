@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.StringFieldType
+import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
@@ -49,10 +50,10 @@ class CdcPartitionsCreatorTest {
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("test")),
-            schema = setOf(Field("test", StringFieldType)),
+            schema = setOf(Field("test", StringFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
-            configuredCursor = null,
+            configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
 
     val global = Global(listOf(stream))

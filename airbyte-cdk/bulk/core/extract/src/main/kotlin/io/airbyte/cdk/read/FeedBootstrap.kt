@@ -9,12 +9,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.time.ZoneOffset
 
 /**
  * [FeedBootstrap] is the input to a [PartitionsCreatorFactory].
@@ -28,6 +30,10 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 sealed class FeedBootstrap<T : Feed>(
     /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
     val outputConsumer: OutputConsumer,
+    /**
+     * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
+     */
+    val metaFieldDecorator: MetaFieldDecorator,
     /** [StateQuerier] singleton for use by [PartitionsCreatorFactory]. */
     val stateQuerier: StateQuerier,
     /** [Feed] to emit records for. */
@@ -81,9 +87,23 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
+        private val precedingGlobalFeed: Global? =
+            stateQuerier.feeds
+                .filterIsInstance<Global>()
+                .filter { it.streams.contains(stream) }
+                .firstOrNull()
+
         private val zeroData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
+                if (feed is Stream && precedingGlobalFeed != null) {
+                    metaFieldDecorator.decorateRecordData(
+                        timestamp = outputConsumer.emittedAt.atOffset(ZoneOffset.UTC),
+                        globalStateValue = stateQuerier.current(precedingGlobalFeed),
+                        stream,
+                        recordData,
+                    )
+                }
             }
 
         private val cachedData: ObjectNode = zeroData.deepCopy()
@@ -161,12 +181,15 @@ sealed class FeedBootstrap<T : Feed>(
         /** [FeedBootstrap] factory method. */
         fun create(
             outputConsumer: OutputConsumer,
+            metaFieldDecorator: MetaFieldDecorator,
             stateQuerier: StateQuerier,
             feed: Feed,
         ): FeedBootstrap<*> =
             when (feed) {
-                is Global -> GlobalFeedBootstrap(outputConsumer, stateQuerier, feed)
-                is Stream -> StreamFeedBootstrap(outputConsumer, stateQuerier, feed)
+                is Global ->
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateQuerier, feed)
+                is Stream ->
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateQuerier, feed)
             }
     }
 }
@@ -194,16 +217,18 @@ enum class FieldValueChange {
 /** [FeedBootstrap] implementation for [Global] feeds. */
 class GlobalFeedBootstrap(
     outputConsumer: OutputConsumer,
+    metaFieldDecorator: MetaFieldDecorator,
     stateQuerier: StateQuerier,
     global: Global,
-) : FeedBootstrap<Global>(outputConsumer, stateQuerier, global)
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateQuerier, global)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
     outputConsumer: OutputConsumer,
+    metaFieldDecorator: MetaFieldDecorator,
     stateQuerier: StateQuerier,
     stream: Stream,
-) : FeedBootstrap<Stream>(outputConsumer, stateQuerier, stream) {
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateQuerier, stream) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(): StreamRecordConsumer = streamRecordConsumers()[feed.id]!!
