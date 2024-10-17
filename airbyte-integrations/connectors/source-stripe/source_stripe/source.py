@@ -206,13 +206,18 @@ class SourceStripe(ConcurrentSourceAdapter):
             ],
             **args,
         )
-        subscription_items = StripeLazySubStream(
+        subscription_items = UpdatedCursorIncrementalStripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
+            slice_data_retriever=lambda record, stream_slice: {
+                "updated": stream_slice["parent"]["updated"],
+                **record,
+            },
             use_cache=USE_CACHE,
             sub_items_attr="items",
+            event_types=["customer.subscription.created", "customer.subscription.updated"],
             **args,
         )
         transfers = IncrementalStripeStream(
@@ -513,12 +518,25 @@ class SourceStripe(ConcurrentSourceAdapter):
                 },
                 **args,
             ),
-            StripeLazySubStream(
+            UpdatedCursorIncrementalStripeLazySubStream(
                 name="invoice_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
+                event_types=[
+                    "invoice.created",
+                    "invoice.deleted",
+                    "invoice.updated",
+                    # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
+                    # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
+                    # reference issue: https://github.com/airbytehq/oncall/issues/5560
+                ],
                 sub_items_attr="lines",
-                slice_data_retriever=lambda record, stream_slice: {"invoice_id": stream_slice["parent"]["id"], **record},
+                slice_data_retriever=lambda record, stream_slice: {
+                    "invoice_id": stream_slice["parent"]["id"],
+                    "created": stream_slice["parent"]["created"],
+                    "updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
                 **args,
             ),
             subscription_items,
