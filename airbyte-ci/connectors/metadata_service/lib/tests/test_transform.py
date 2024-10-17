@@ -59,7 +59,14 @@ def have_same_keys(dict1, dict2, omitted_keys=None):
 def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, valid_metadata_yaml_files):
     all_valid_metadata_files = valid_metadata_upload_files + valid_metadata_yaml_files
 
-    fields_with_defaults = ["data.supportsRefreshes", "data.releases.isReleaseCandidate"]
+    fields_with_defaults = [
+        "data.supportsRefreshes",
+        "data.releases.rolloutConfiguration.enableProgressiveRollout",
+        "data.releases.rolloutConfiguration.initialPercentage",
+        "data.releases.rolloutConfiguration.maxPercentage",
+        "data.releases.rolloutConfiguration.advanceDelayMinutes",
+        "data.releases.breakingChanges.2.0.0.deadlineAction",
+    ]
 
     for file_path in all_valid_metadata_files:
         metadata_file_path = pathlib.Path(file_path)

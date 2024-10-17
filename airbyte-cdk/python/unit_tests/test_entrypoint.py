@@ -10,6 +10,7 @@ from typing import Any, List, Mapping, MutableMapping, Union
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
+import freezegun
 import pytest
 import requests
 from airbyte_cdk import AirbyteEntrypoint
@@ -32,6 +33,7 @@ from airbyte_cdk.models import (
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConnectorSpecification,
+    FailureType,
     OrchestratorType,
     Status,
     StreamDescriptor,
@@ -151,6 +153,8 @@ def _wrap_message(submessage: Union[AirbyteConnectionStatus, ConnectorSpecificat
         message = AirbyteMessage(type=Type.CATALOG, catalog=submessage)
     elif isinstance(submessage, AirbyteRecordMessage):
         message = AirbyteMessage(type=Type.RECORD, record=submessage)
+    elif isinstance(submessage, AirbyteTraceMessage):
+        message = AirbyteMessage(type=Type.TRACE, trace=submessage)
     else:
         raise Exception(f"Unknown message type: {submessage}")
 
@@ -219,13 +223,59 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
     assert spec_mock.called
 
 
+@freezegun.freeze_time("1970-01-01T00:00:00.001Z")
 def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = ValueError("Any error")
     parsed_args = Namespace(command="check", config="config_path")
-    mocker.patch.object(MockSource, "check", side_effect=ValueError("Any error"))
+    mocker.patch.object(MockSource, "check", side_effect=exception)
 
     with pytest.raises(ValueError):
-        messages = list(entrypoint.run(parsed_args))
-        assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode()] == messages
+        list(entrypoint.run(parsed_args))
+
+
+@freezegun.freeze_time("1970-01-01T00:00:00.001Z")
+def test_run_check_with_traced_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = AirbyteTracedException.from_exception(ValueError("Any error"))
+    parsed_args = Namespace(command="check", config="config_path")
+    mocker.patch.object(MockSource, "check", side_effect=exception)
+
+    with pytest.raises(AirbyteTracedException):
+        list(entrypoint.run(parsed_args))
+
+
+@freezegun.freeze_time("1970-01-01T00:00:00.001Z")
+def test_run_check_with_config_error(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = AirbyteTracedException.from_exception(ValueError("Any error"))
+    exception.failure_type = FailureType.config_error
+    parsed_args = Namespace(command="check", config="config_path")
+    mocker.patch.object(MockSource, "check", side_effect=exception)
+
+    messages = list(entrypoint.run(parsed_args))
+    expected_trace = exception.as_airbyte_message()
+    expected_trace.emitted_at = 1
+    expected_trace.trace.emitted_at = 1
+    expected_messages = [
+        orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),
+        orjson.dumps(AirbyteMessageSerializer.dump(expected_trace)).decode(),
+        _wrap_message(
+            AirbyteConnectionStatus(
+                status=Status.FAILED,
+                message=AirbyteTracedException.from_exception(exception).message
+            )
+        ),
+    ]
+    assert messages == expected_messages
+
+
+@freezegun.freeze_time("1970-01-01T00:00:00.001Z")
+def test_run_check_with_transient_error(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = AirbyteTracedException.from_exception(ValueError("Any error"))
+    exception.failure_type = FailureType.transient_error
+    parsed_args = Namespace(command="check", config="config_path")
+    mocker.patch.object(MockSource, "check", side_effect=exception)
+
+    with pytest.raises(AirbyteTracedException):
+        list(entrypoint.run(parsed_args))
 
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):

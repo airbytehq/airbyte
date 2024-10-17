@@ -23,7 +23,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.10.2"
+PYAIRBYTE_VERSION = "0.18.1"
 
 
 class PytestStep(Step, ABC):
@@ -162,9 +162,7 @@ class PytestStep(Step, ABC):
             )
         )
         if self.common_test_dependencies:
-            container_with_test_deps = container_with_test_deps.with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
-            )
+            container_with_test_deps = container_with_test_deps.with_exec(["pip", "install", f'{" ".join(self.common_test_dependencies)}'])
         return (
             container_with_test_deps
             # Mount the test config file
@@ -215,7 +213,14 @@ class PyAirbyteValidation(Step):
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
-            hacks.never_fail_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--validate-install-only"])
+            hacks.never_fail_exec(
+                [
+                    "pyab",
+                    "validate",
+                    f"--connector={self.context.connector.technical_name}",
+                    "--pip-url='.'",
+                ]
+            )
         )
 
         return await self.get_step_result(test_execution)
@@ -230,13 +235,7 @@ class PyAirbyteValidation(Step):
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
         )
-        return container_with_test_deps.with_exec(
-            [
-                "pip",
-                "install",
-                f"airbyte=={PYAIRBYTE_VERSION}",
-            ]
-        )
+        return container_with_test_deps.with_exec(["pip", "install", f"airbyte=={PYAIRBYTE_VERSION}"], use_entrypoint=True)
 
 
 class IntegrationTests(PytestStep):

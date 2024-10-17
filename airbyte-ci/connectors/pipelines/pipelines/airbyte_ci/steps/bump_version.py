@@ -12,10 +12,10 @@ from connector_ops.utils import METADATA_FILE_NAME, PYPROJECT_FILE_NAME  # type:
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import List
+    pass
 
 
 class ConnectorVersionNotFoundError(Exception):
@@ -26,9 +26,8 @@ class PoetryVersionBumpError(Exception):
     pass
 
 
-class SetConnectorVersion(Step):
+class SetConnectorVersion(StepModifyingFiles):
     context: ConnectorContext
-    modified_files: List[str]
 
     @property
     def title(self) -> str:
@@ -37,13 +36,11 @@ class SetConnectorVersion(Step):
     def __init__(
         self,
         context: ConnectorContext,
+        connector_directory: dagger.Directory,
         new_version: str,
-        connector_directory: dagger.Directory | None = None,
     ) -> None:
-        super().__init__(context)
+        super().__init__(context, connector_directory)
         self.new_version = new_version
-        self.modified_files = []
-        self.connector_directory = connector_directory
 
     @staticmethod
     async def _set_version_in_metadata(new_version: str, connector_directory: dagger.Directory) -> dagger.Directory:
@@ -69,7 +66,7 @@ class SetConnectorVersion(Step):
             connector_directory_with_updated_pyproject = await (
                 container_with_poetry.with_directory("/connector", connector_directory)
                 .with_workdir("/connector")
-                .with_exec(["poetry", "version", new_version])
+                .with_exec(["poetry", "version", new_version], use_entrypoint=True)
                 .directory("/connector")
             )
         except dagger.ExecError as e:
@@ -77,9 +74,9 @@ class SetConnectorVersion(Step):
         return connector_directory_with_updated_pyproject
 
     async def _run(self) -> StepResult:
-        original_connector_directory = self.connector_directory or await self.context.get_connector_dir()
+        original_connector_directory = self.modified_directory
         try:
-            updated_connector_directory = await self._set_version_in_metadata(self.new_version, original_connector_directory)
+            self.modified_directory = await self._set_version_in_metadata(self.new_version, original_connector_directory)
             self.modified_files.append(METADATA_FILE_NAME)
         except (FileNotFoundError, ConnectorVersionNotFoundError) as e:
             return StepResult(
@@ -92,8 +89,8 @@ class SetConnectorVersion(Step):
         if self.context.connector.pyproject_file_path.is_file():
             try:
                 poetry_container = with_poetry(self.context)
-                updated_connector_directory = await self._set_version_in_poetry_package(
-                    poetry_container, updated_connector_directory, self.new_version
+                self.modified_directory = await self._set_version_in_poetry_package(
+                    poetry_container, self.modified_directory, self.new_version
                 )
                 self.modified_files.append(PYPROJECT_FILE_NAME)
             except PoetryVersionBumpError as e:
@@ -108,7 +105,7 @@ class SetConnectorVersion(Step):
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Updated connector to {self.new_version}",
-            output=updated_connector_directory,
+            output=self.modified_directory,
         )
 
 
@@ -116,11 +113,16 @@ class BumpConnectorVersion(SetConnectorVersion):
     def __init__(
         self,
         context: ConnectorContext,
+        connector_directory: dagger.Directory,
         bump_type: str,
-        connector_directory: dagger.Directory | None = None,
     ) -> None:
         self.bump_type = bump_type
-        super().__init__(context, self.get_bumped_version(context.connector.version, bump_type), connector_directory=connector_directory)
+        new_version = self.get_bumped_version(context.connector.version, bump_type)
+        super().__init__(
+            context,
+            connector_directory,
+            new_version,
+        )
 
     @property
     def title(self) -> str:
@@ -137,6 +139,8 @@ class BumpConnectorVersion(SetConnectorVersion):
             new_version = current_version.bump_minor()
         elif bump_type == "major":
             new_version = current_version.bump_major()
+        elif bump_type == "rc":
+            new_version = current_version.bump_prerelease()
         elif bump_type.startswith("version:"):
             version_str = bump_type.split("version:", 1)[1]
             if semver.VersionInfo.is_valid(version_str):
