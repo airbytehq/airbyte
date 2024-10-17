@@ -167,13 +167,7 @@ class MySqlDebeziumOperations(
         INVALID_RESET
     }
 
-    override fun position(offset: DebeziumOffset): MySqlPosition {
-        if (offset.wrapped.size != 1) {
-            throw ConfigErrorException("Expected exactly 1 key in $offset")
-        }
-        val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-        return MySqlPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
-    }
+    override fun position(offset: DebeziumOffset): MySqlPosition = Companion.position(offset)
 
     override fun position(recordValue: DebeziumRecordValue): MySqlPosition? {
         val file: JsonNode = recordValue.source["file"]?.takeIf { it.isTextual } ?: return null
@@ -297,42 +291,6 @@ class MySqlDebeziumOperations(
         return DebeziumInput(properties, debeziumState, isSynthetic = false)
     }
 
-    private fun deserializeDebeziumState(opaqueStateValue: OpaqueStateValue): DebeziumState {
-        val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
-        // Deserialize offset.
-        val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
-        val offsetMap: Map<JsonNode, JsonNode> =
-            offsetNode
-                .fields()
-                .asSequence()
-                .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
-                .toMap()
-        if (offsetMap.size != 1) {
-            throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
-        }
-        val offset = DebeziumOffset(offsetMap)
-        // Deserialize schema history.
-        val schemaNode: JsonNode =
-            stateNode[MYSQL_DB_HISTORY] ?: return DebeziumState(offset, schemaHistory = null)
-        val isCompressed: Boolean = stateNode[IS_COMPRESSED]?.asBoolean() ?: false
-        val uncompressedString: String =
-            if (isCompressed) {
-                val compressedBytes: ByteArray =
-                    Jsons.readValue(schemaNode.textValue(), ByteArray::class.java)
-                GZIPInputStream(ByteArrayInputStream(compressedBytes))
-                    .reader(Charsets.UTF_8)
-                    .readText()
-            } else {
-                schemaNode.textValue()
-            }
-        val schemaHistoryList: List<HistoryRecord> =
-            uncompressedString
-                .lines()
-                .filter { it.isNotBlank() }
-                .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
-        return DebeziumState(offset, DebeziumSchemaHistory(schemaHistoryList))
-    }
-
     override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
@@ -439,5 +397,49 @@ class MySqlDebeziumOperations(
         /** Configuration for offset state key/value converters. */
         val INTERNAL_CONVERTER_CONFIG: Map<String, String> =
             java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, false.toString())
+
+        internal fun deserializeDebeziumState(opaqueStateValue: OpaqueStateValue): DebeziumState {
+            val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
+            // Deserialize offset.
+            val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
+            val offsetMap: Map<JsonNode, JsonNode> =
+                offsetNode
+                    .fields()
+                    .asSequence()
+                    .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
+                    .toMap()
+            if (offsetMap.size != 1) {
+                throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
+            }
+            val offset = DebeziumOffset(offsetMap)
+            // Deserialize schema history.
+            val schemaNode: JsonNode =
+                stateNode[MYSQL_DB_HISTORY] ?: return DebeziumState(offset, schemaHistory = null)
+            val isCompressed: Boolean = stateNode[IS_COMPRESSED]?.asBoolean() ?: false
+            val uncompressedString: String =
+                if (isCompressed) {
+                    val compressedBytes: ByteArray =
+                        Jsons.readValue(schemaNode.textValue(), ByteArray::class.java)
+                    GZIPInputStream(ByteArrayInputStream(compressedBytes))
+                        .reader(Charsets.UTF_8)
+                        .readText()
+                } else {
+                    schemaNode.textValue()
+                }
+            val schemaHistoryList: List<HistoryRecord> =
+                uncompressedString
+                    .lines()
+                    .filter { it.isNotBlank() }
+                    .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
+            return DebeziumState(offset, DebeziumSchemaHistory(schemaHistoryList))
+        }
+
+        internal fun position(offset: DebeziumOffset): MySqlPosition {
+            if (offset.wrapped.size != 1) {
+                throw ConfigErrorException("Expected exactly 1 key in $offset")
+            }
+            val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
+            return MySqlPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+        }
     }
 }
