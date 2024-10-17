@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -63,6 +64,8 @@ class DefaultDestinationTaskExceptionHandler<T>(
 T : LeveledTask,
 T : ScopedTask {
     val log = KotlinLogging.logger {}
+
+    val onException = AtomicReference(suspend {})
 
     inner class SyncTaskWrapper(
         private val syncManager: SyncManager,
@@ -142,7 +145,11 @@ T : ScopedTask {
         }
     }
 
-    override fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+    override suspend fun setCallback(callback: suspend () -> Unit) {
+        onException.set(callback)
+    }
+
+    override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
         return when (task) {
             is SyncLevel -> SyncTaskWrapper(syncManager, task)
             is StreamLevel -> StreamTaskWrapper(task.stream, syncManager, task)
@@ -167,6 +174,6 @@ T : ScopedTask {
     }
 
     override suspend fun handleSyncFailed() {
-        taskScopeProvider.kill()
+        onException.get().invoke()
     }
 }

@@ -46,7 +46,7 @@ class MockTaskLauncher : DestinationTaskLauncher {
         throw NotImplementedError()
     }
 
-    override suspend fun start() {
+    override suspend fun run() {
         throw NotImplementedError()
     }
 }
