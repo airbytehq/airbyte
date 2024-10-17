@@ -62,6 +62,7 @@ class TestYamlDeclarativeSource:
               pagination_strategy:
                 type: "CursorPagination"
                 cursor_value: "{{ response._metadata.next }}"
+                page_size: 10
             requester:
               url_base: "https://api.sendgrid.com"
               path: "/v3/marketing/lists"
