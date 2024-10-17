@@ -10,12 +10,14 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.strea
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 @MicronautTest(
     rebuildContext = true,
@@ -124,5 +126,18 @@ class SyncManagerTest {
 
         syncManager.markSucceeded()
         Assertions.assertEquals(SyncSuccess, completionChannel.receive())
+    }
+
+    @Test
+    fun testCrashOnNoEndOfStream() = runTest {
+        val manager1 = syncManager.getStreamManager(stream1.descriptor)
+        manager1.markEndOfStream()
+        // This should fail, because stream2 was not marked with end of stream
+        val e = assertThrows<IllegalStateException> { syncManager.markInputConsumed() }
+        assertEquals(
+            // stream1 is fine, so the message only includes stream2
+            "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
+            e.message
+        )
     }
 }
