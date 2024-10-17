@@ -84,6 +84,7 @@ public class ElasticsearchTypeMapper {
 
       // TEXT SEARCH TYPES
       put("text", Arrays.asList("string", "array"));
+      put("match_only_text", Arrays.asList("string", "array"));
       put("alias", Arrays.asList("string", "array"));
       put("search_as_you_type", Arrays.asList("string", "array"));
       put("token_count", Arrays.asList("integer", "array"));
