@@ -15,6 +15,8 @@ The Squarespace connector enables seamless integration with your Squarespace sto
 | store_pages | id | DefaultPaginator | ✅ |  ❌  |
 | products | id | DefaultPaginator | ✅ |  ✅  |
 | profiles | id | DefaultPaginator | ✅ |  ❌  |
+| orders | id | DefaultPaginator | ✅ |  ✅  |
+| transactions | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
