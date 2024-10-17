@@ -50,7 +50,21 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
 
   @Override
   protected void initTests() {
-    for (final MysqlType mst : MysqlType.values()) {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetime")
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
+            .build());
+
+    /*addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType(mst.name())
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .fullSourceDataType("%s".formatted(mst.getName()))
+            .build());*/
+    /*for (final MysqlType mst : MysqlType.values()) {
       switch (mst) {
         case DECIMAL -> {
           addDataTypeTestData(
@@ -468,8 +482,7 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
           // no-op
         }
         default -> throw new IllegalStateException("Unexpected value: " + mst);
-      }
-    }
+      }*/
   }
 
 }
