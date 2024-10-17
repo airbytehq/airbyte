@@ -39,23 +39,37 @@ class MysqlJdbcPartitionFactory(
     private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-        if (
-            stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH ||
-                sharedState.configuration.global
-        ) {
+        if (sharedState.configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
-                return MysqlJdbcNonResumableSnapshotPartition(
+                if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+                    return MysqlJdbcNonResumableSnapshotPartition(
+                        selectQueryGenerator,
+                        streamState,
+                    )
+                } else {
+                    throw ConfigErrorException("CDC incremental sync requires having primary key in the table.")
+                }
+            }
+
+            // The difference between the following two partitions are just their final state representation.
+            // For FULL_REFRESH, the content of the state does not need to change.
+            // For INCREMENTAL, we need to change the state to indicate the snapshot is completed.
+            if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+                return MysqlJdbcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
+                    upperBound = null,
+                )
+            } else {
+                return MysqlJdbcCdcSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
                 )
             }
-            return MysqlJdbcSnapshotPartition(
-                selectQueryGenerator,
-                streamState,
-                pkChosenFromCatalog,
-                lowerBound = null,
-                upperBound = null,
-            )
         }
 
         val cursorChosenFromCatalog: Field =
@@ -104,19 +118,52 @@ class MysqlJdbcPartitionFactory(
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: MysqlJdbcStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
 
         val isCursorBasedIncremental: Boolean =
             stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&
                 !sharedState.configuration.global
 
         if (!isCursorBasedIncremental) {
-            // TODO: This should consider v1 state format for CDC initial read and return
-            // a MysqlJdbcSnapshotPartition, or a different partition if we can't reuse
-            // MysqlJdbcStreamStateValue.
-            return null
+            val sv: MysqlCdcInitialSnapshotStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
+
+            if (sv.pkName == null) {
+                // This indicates initial snapshot has been completed. CDC snapshot will be handled by CDCPartitionFactory.
+                // Nothing to do here.
+                return null
+            } else {
+                // This branch indicates snapshot is incomplete. We need to resume based on previous snapshot state.
+                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
+                val pkField = pkChosenFromCatalog.first()
+
+                val pkLowerBound: JsonNode =
+                    when (pkField.type.airbyteSchemaType) {
+                        is LeafAirbyteSchemaType ->
+                            when (pkField.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                                LeafAirbyteSchemaType.INTEGER -> {
+                                    Jsons.valueToTree(sv.pkVal?.toInt())
+                                }
+                                LeafAirbyteSchemaType.NUMBER -> {
+                                    Jsons.valueToTree(sv.pkVal?.toDouble())
+                                }
+                                else -> Jsons.valueToTree(sv.pkVal)
+                            }
+                        else ->
+                            throw IllegalStateException(
+                                "PK field must be leaf type but is ${pkField.type.airbyteSchemaType}."
+                            )
+                    }
+                return MysqlJdbcCdcSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = listOf(pkLowerBound),
+                )
+            }
         } else {
+            val sv: MysqlJdbcStreamStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
