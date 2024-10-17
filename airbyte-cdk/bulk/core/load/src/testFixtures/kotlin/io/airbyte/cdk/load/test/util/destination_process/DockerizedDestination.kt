@@ -196,13 +196,13 @@ class DockerizedDestination(
     override suspend fun shutdown() {
         withContext(Dispatchers.IO) {
             destinationStdin.close()
-            // The old cdk had a 1-minute timeout here. That seems... weird?
-            // We can just rely on the junit timeout, presumably?
-            process.waitFor()
             // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
             // all the destination output (logs/trace messages).
             stdoutDrained.join()
             stderrDrained.join()
+            // The old cdk had a 1-minute timeout here. That seems... weird?
+            // We can just rely on the junit timeout, presumably?
+            process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
                 throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())

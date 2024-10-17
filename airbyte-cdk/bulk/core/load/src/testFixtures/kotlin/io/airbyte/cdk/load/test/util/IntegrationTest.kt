@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.test.fail
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
@@ -41,7 +41,8 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
     // values as injectable properties.
     // This is _infinitely_ easier than trying to wire up
     // MetadataYamlPropertySource to be available at test time.
-    propertySources = ["classpath:metadata.yaml"]
+    propertySources = ["classpath:metadata.yaml"],
+    rebuildContext = true,
 )
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
@@ -150,7 +151,7 @@ abstract class IntegrationTest(
                 catalog.asProtocolObject(),
             )
         return runBlocking {
-            val destinationCompletion = async { destination.run() }
+            launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
@@ -175,7 +176,6 @@ abstract class IntegrationTest(
                 }
             }
             destination.shutdown()
-            destinationCompletion.await()
             destination.readMessages()
         }
     }

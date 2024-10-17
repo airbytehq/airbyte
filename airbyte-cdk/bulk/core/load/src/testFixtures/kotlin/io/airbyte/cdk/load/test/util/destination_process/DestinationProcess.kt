@@ -29,13 +29,15 @@ interface DestinationProcess {
     suspend fun run()
 
     fun sendMessage(message: AirbyteMessage)
+    fun sendMessages(vararg messages: AirbyteMessage) {
+        messages.forEach { sendMessage(it) }
+    }
 
     /** Return all messages the destination emitted since the last call to [readMessages]. */
     fun readMessages(): List<AirbyteMessage>
 
     /**
-     * Wait for the destination to terminate, then return all messages it emitted since the last
-     * call to [readMessages].
+     * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
 }

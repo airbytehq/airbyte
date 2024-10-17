@@ -16,6 +16,7 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import javax.inject.Singleton
+import kotlinx.coroutines.CompletableDeferred
 
 class NonDockerizedDestination(
     command: String,
@@ -25,6 +26,7 @@ class NonDockerizedDestination(
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
+    private val destinationComplete = CompletableDeferred<Unit>()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -59,6 +61,7 @@ class NonDockerizedDestination(
         } catch (e: ConnectorUncleanExitException) {
             throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
         }
+        destinationComplete.complete(Unit)
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -69,6 +72,7 @@ class NonDockerizedDestination(
 
     override suspend fun shutdown() {
         destinationStdinPipe.close()
+        destinationComplete.join()
     }
 }
 
