@@ -4,11 +4,11 @@
 
 
 import json
+import logging
 from datetime import datetime
 from typing import Dict, Generator
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -41,7 +41,7 @@ class SourceAmazonSqs(Source):
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit("/", 1)[-1]
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         try:
             if "max_batch_size" in config:
                 # Max batch size must be between 1 and 10
@@ -79,7 +79,7 @@ class SourceAmazonSqs(Source):
                 status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {str(e)}"
             )
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         streams = []
 
         # Get the queue name by getting substring after last /
@@ -95,7 +95,7 @@ class SourceAmazonSqs(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: logging.Logger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Read - stream is: " + stream_name)
