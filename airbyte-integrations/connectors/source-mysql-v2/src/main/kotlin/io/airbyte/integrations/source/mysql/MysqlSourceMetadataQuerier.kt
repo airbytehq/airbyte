@@ -6,6 +6,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
@@ -173,6 +174,13 @@ class MysqlSourceMetadataQuerier(
     ): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
+    }
+
+    override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+        if (cursorColumnID == MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id) {
+            return MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR
+        }
+        return null
     }
 
     private data class AllPrimaryKeysRow(

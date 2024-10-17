@@ -325,6 +325,13 @@ class JdbcMetadataQuerier(
         checkQueries.executeAll(conn)
     }
 
+    override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+        if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
+            return CommonMetaField.CDC_LSN
+        }
+        return null
+    }
+
     override fun close() {
         log.info { "Closing JDBC connection." }
         conn.close()

@@ -73,6 +73,9 @@ class ResourceDrivenMetadataQuerierFactory(
             }
 
             override fun extraChecks() {}
+            override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+                TODO("Not yet implemented")
+            }
 
             override fun close() {
                 isClosed = true

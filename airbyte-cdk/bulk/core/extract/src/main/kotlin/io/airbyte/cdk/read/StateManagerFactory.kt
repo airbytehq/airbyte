@@ -198,19 +198,15 @@ class StateManagerFactory(
             if (cursorColumnIDComponents.isEmpty()) {
                 return null
             }
+
             val cursorColumnID: String = cursorColumnIDComponents.joinToString(separator = ".")
-            if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
-                return CommonMetaField.CDC_LSN
-            }
-            if (cursorColumnID == CommonMetaField.CDC_CURSOR.id) {
-                return CommonMetaField.CDC_CURSOR
-            }
-            return dataColumnOrNull(cursorColumnID)
+            val maybeField: FieldOrMetaField? = metadataQuerier.commonCursorOrNull(cursorColumnID)
+            return maybeField ?: dataColumnOrNull(cursorColumnID)
         }
         val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
-            configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
+            configuredStream.cursorField?.asSequence()?.let {cursorOrNull(it.toList())}
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
