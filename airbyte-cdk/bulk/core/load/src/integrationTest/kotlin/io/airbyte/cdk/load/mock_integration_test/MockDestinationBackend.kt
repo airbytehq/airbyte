@@ -19,6 +19,12 @@ object MockDestinationBackend {
         return getFile(filename)
     }
 
+    fun retainNewRecords(filename: String, minGenerationId: Long) {
+        getFile(filename).removeAll {
+            it.generationId == null || it.generationId!! < minGenerationId
+        }
+    }
+
     private fun getFile(filename: String): MutableList<OutputRecord> {
         return files.getOrPut(filename) { mutableListOf() }
     }

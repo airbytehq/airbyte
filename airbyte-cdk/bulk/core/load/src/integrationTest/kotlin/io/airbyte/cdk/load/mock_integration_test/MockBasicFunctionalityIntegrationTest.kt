@@ -37,4 +37,9 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testFunkyStreamAndColumnNames() {
         super.testFunkyStreamAndColumnNames()
     }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
