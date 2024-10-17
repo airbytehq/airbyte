@@ -1,0 +1,382 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/shipstation
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Shipstation Spec
+  type: object
+  required:
+    - api_key
+    - api_secret
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: API Key
+      airbyte_secret: true
+      order: 0
+    api_secret:
+      title: API Secret
+      type: string
+      description: API Secret
+      airbyte_secret: true
+      order: 1
+    # Customers API
+    stateCode:
+      title: State Code
+      type: string
+      description: |
+        Returns customers that reside in the specified stateCode.
+      order: 2
+    countryCode:
+      title: Country Code
+      type: string
+      description: |
+        Returns customers that reside in the specified countryCode. Use the two-letter ISO Origin Country code.
+      order: 3
+    marketplaceId:
+      title: Marketplace Id
+      type: number
+      description: |
+        Returnfs customers that purchased items from the specified marketplaceId.
+      order: 4
+    tagId:
+      title: Tag Id
+      type: number
+      description: |
+        Returns customers that have been tagged with the specified tagId.
+      order: 5
+    # Fulfillments API
+    fulfillmentId:
+      title: Fulfillment Id
+      type: number
+      description: |
+        Returns the fulfillment with the specified fulfillment ID.
+      order: 6
+    trackingNumber:
+      title: Tracking Number
+      type: string
+      description: |
+        Returns fulfillments with the specified tracking number.
+      order: 7
+    # Orders API
+    customerName:
+      title: Customer name
+      type: string
+      description: |
+        Returns orders that match the specified name.
+      order: 8
+    itemKeyword:
+      title: Item keyword
+      type: string
+      description: |
+        Returns orders that contain items that match the specified keyword. Fields searched are Sku, Description, and Options.
+      order: 9
+    modifyDateStart:
+      title: Modify Date Start
+      type: string
+      description: |
+        Returns orders that were modified after the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 10
+    modifyDateEnd:
+      title: Modify Date End
+      type: string
+      description: |
+        Returns orders that were modified before the specified date
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 11
+    orderDateStart:
+      title: Order Date Start
+      type: string
+      description: |
+        Returns orders greater than the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 12
+    orderDateEnd:
+      title: Order Date End
+      type: string
+      description: |
+        Returns orders less than or equal to the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 13
+    orderStatus:
+      title: Order Status
+      type: string
+      description: |
+        Filter by order status. If left empty, orders of all statuses are returned.
+      enum:
+        - awaiting_payment
+        - awaiting_shipment
+        - pending_fulfillment
+        - shipped
+        - on_hold
+        - cancelled
+        - rejected_fulfillment
+      order: 14
+    paymentDateStart:
+      title: Payment Date Start
+      type: string
+      description: |
+        Returns orders that were paid after the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 15
+    paymentDateEnd:
+      title: Payment Date End
+      type: string
+      description: |
+        Returns orders that were paid before the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 16
+  # products API
+    sku:
+      title: Sku
+      type: string
+      description: |
+        Returns products that match the specified SKU.
+      order: 17
+    name:
+      title: Name
+      type: string
+      description: |
+        Returns products that match the specified product name.
+      order: 18
+    productCategoryId:
+      title: Product Category Id
+      type: string
+      description: |
+        Returns products that match the specified productCategoryId.
+      order: 19
+    productTypeId:
+      title: Product Type Id
+      type: string
+      description: |
+        Returns products that match the specified productTypeId.
+      order: 20
+    productTypeId:
+      title: Product Type Id
+      type: string
+      description: |
+        Returns products that match the specified productTypeId.
+      order: 21
+    startDate:
+      title: Start Date
+      type: string
+      description: |
+        Returns products that were created after the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 22
+    endDate:
+      title: End Date
+      type: string
+      description: |
+        Returns products that were created before the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 23
+    showInactive:
+      title: Show Inactive
+      type: string
+      description: |
+        Specifies whether the list should include inactive products.
+      order: 24
+# Shipments
+    recipientCountryCode:
+      title: Recipient Country Code
+      type: string
+      description: |
+        Returns shipments shipped to the specified country code. Please use the two-letter ISO Origin Country code
+      order: 25
+    recipientCountryCode:
+      title: Recipient Country Code
+      type: string
+      description: |
+        Returns shipments shipped to the specified country code. Please use the two-letter ISO Origin Country code
+      order: 26
+    voidDateStart:
+      title: Void Date Start
+      type: string
+      description: |
+        Returns shipments voided on or after the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 27
+    voidDateEnd:
+      title: Void Date End
+      type: string
+      description: |
+        Returns shipments voided on or before the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 28
+    includeShipmentItems:
+      title: Include Shipment Items?
+      type: boolean
+      description: |
+        Specifies whether to include shipment items with results.
+      default: false
+      order: 29
+# Stores API
+    marketplaceId:
+      title: Marketplace Id
+      type: number
+      description: |
+        Returns stores of this marketplace type.
+      order: 30
+# Used in multiple API's
+    tagId:
+      title: Tag Id
+      type: number
+      description: |
+        Returns products/customers that have been tagged with the specified tagId.
+      order: 31
+    recipientName:
+      title: Recipient Name
+      type: string
+      description: |
+        Returns fulfillments/shipments shipped to the specified recipient name.
+      order: 32
+    orderNumber:
+      title: Order Number
+      type: string
+      description: |
+        Returns fulfillments/shipments whose orders have the specified order number.
+      order: 33
+    orderId:
+      title: Order Id
+      type: number
+      description: |
+        Returns fulfillments/shipments whose orders have the specified order ID.
+      order: 34
+    trackingNumber:
+      title: Tracking Number
+      type: string
+      description: |
+        Returns fulfillments/shipments with the specified tracking number.
+      order: 35
+    customsCountryCode:
+      title: Customs Country Code
+      type: string
+      description: |
+        The default two-letter ISO Origin Country code for the Product.
+      order: 36
+    createDateStart:
+      title: Create Date Start
+      type: string
+      description: |
+        Returns fulfillments/shipments created on or after the specified createDate.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 37
+    createDateEnd:
+      title: Create Date End
+      type: string
+      description: |
+        Returns fulfillments/shipments created on or before the specified createDate.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 38
+    shipDateStart:
+      title: Ship Date Start
+      type: string
+      description: |
+        Returns fulfillments/shipments with the shipDate on or after the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 39
+    shipDateEnd:
+      title: Ship Date End
+      type: string
+      description: |
+        Returns fulfillments/shipments with the shipDate on or before the specified date.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2}$"
+      examples:
+        - "2024-01-01T00:00:00.00"
+      format: "date-time"
+      order: 40
+    storeId:
+      title: Store Id
+      type: number
+      description: |
+        Filters orders to a single, identified store. Call List Stores to obtain a list of storeIds.
+      order: 41
+    carrierCode:
+      title: Carrier Code
+      type: string
+      description: |
+        Returns shipments shipped with the specified carrier.
+      order: 42
+    showInactive:
+      title: Show Inactive?
+      type: boolean
+      description: |
+        Determines whether or not inactive stores/users will be returned in the list of stores.
+      order: 43
+    sortBy:
+      title: Sort By
+      type: string
+      description: |
+        Sorts the order of the response based off the specified value.
+      enum:
+        - Name
+        - SKU
+        - OrderDate
+        - ModifyDate
+        - ShipDate
+        - CreateDate
+      order: 44
+    sortDir:
+      title: Sort Direction
+      type: string
+      description: |
+        Sets the direction of the sort order.
+      enum:
+        - ASC
+        - DESC
+      default: DESC
+      order: 45
+    page:
+      type: number
+      description: |
+        Page number.
+      default: 1
+      order: 4
+      airbyte_hidden: true
+    page_size:
+      type: number
+      description: |
+        Requested page size. Max value is 500.
+      default: 500
+      order: 46
+      airbyte_hidden: true
