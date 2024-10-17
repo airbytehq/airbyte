@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import java.util.*
 import kotlin.math.min
+import kotlin.math.abs
 
 class PostgresSQLNameTransformer : StandardNameTransformer() {
     // I _think_ overriding these two methods is sufficient to apply the truncation logic everywhere
@@ -37,6 +38,16 @@ class PostgresSQLNameTransformer : StandardNameTransformer() {
      * truncation explicitly, so that we can detect e.g. name collisions.
      */
     private fun truncate(str: String): String {
-        return str.substring(0, min(str.length.toDouble(), 63.0).toInt())
+        /*
+            V2 Now uses {rawTableName}_airbyte_tmp, but never checks the length of the full string.
+            Truncating the rawTableName to 63 leaves no room for this crazy long suffix name (why is it not _tmp??)
+            I've put this hack in for 2 purposes. First, anything longer than 60 gets truncated down and has a base36 hashcode
+            applied based on the untruncated string for deterministic uniquness. This still will cause `_airbyte_tmp` to get truncated
+            because nothing checks the length of that string (appears to be built deeper in the CDK), but that seems to be okay since everything
+            before that point is already unique. I'd also suggest shortening the suffix this to something like _tmp,
+            which will always fit with the algorithm below since we leave 4 characters for suffixes.
+        */
+
+        return if (str.length >= 60.0) str.substring(0, min(str.length.toDouble(), 52.0).toInt()).plus(abs(str.hashCode()).toString(36)) else str
     }
 }
