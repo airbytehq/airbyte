@@ -11,6 +11,8 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
@@ -24,6 +26,7 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Duration
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
@@ -189,9 +192,22 @@ object TestFixtures {
         override fun current(feed: Feed): OpaqueStateValue? = null
     }
 
+    object MockMetaFieldDecorator : MetaFieldDecorator {
+        override val globalCursor: MetaField? = null
+        override val globalMetaFields: Set<MetaField> = emptySet()
+
+        override fun decorateRecordData(
+            timestamp: OffsetDateTime,
+            globalStateValue: OpaqueStateValue?,
+            stream: Stream,
+            recordData: ObjectNode
+        ) {}
+    }
+
     fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
         StreamFeedBootstrap(
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            metaFieldDecorator = MockMetaFieldDecorator,
             stateQuerier =
                 object : StateQuerier {
                     override val feeds: List<Feed> = listOf(this@bootstrap)
