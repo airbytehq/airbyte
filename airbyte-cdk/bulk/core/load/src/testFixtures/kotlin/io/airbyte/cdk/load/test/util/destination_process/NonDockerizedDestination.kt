@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
+import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -53,7 +54,11 @@ class NonDockerizedDestination(
     }
 
     override suspend fun run() {
-        destination.run()
+        try {
+            destination.run()
+        } catch (e: ConnectorUncleanExitException) {
+            throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
+        }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
