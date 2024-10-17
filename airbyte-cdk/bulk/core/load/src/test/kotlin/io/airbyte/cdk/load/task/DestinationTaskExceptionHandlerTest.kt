@@ -232,8 +232,10 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     }
 
     @Test
-    fun testHandleSyncFailed(scopeProvider: MockScopeProvider) = runTest {
+    fun testHandleSyncFailed() = runTest {
+        val wasHandled = Channel<Boolean>(Channel.UNLIMITED)
+        exceptionHandler.setCallback { wasHandled.send(true) }
         exceptionHandler.handleSyncFailed()
-        Assertions.assertTrue(scopeProvider.didKill)
+        Assertions.assertTrue(wasHandled.receive())
     }
 }

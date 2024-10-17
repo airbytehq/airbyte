@@ -44,7 +44,7 @@ class TestSimpleDockerStep:
 
         # Check if environment variables are set
         for key, expected_value in env_variables.items():
-            stdout_value = await container.with_exec(["printenv", key]).stdout()
+            stdout_value = await container.with_exec(["printenv", key], use_entrypoint=True).stdout()
             actual_value = stdout_value.strip()
             assert actual_value == expected_value
 
@@ -66,7 +66,9 @@ class TestSimpleDockerStep:
         container = await step.init_container()
 
         for path_to_mount in paths_to_mount:
-            exit_code, _stdout, _stderr = await get_exec_result(container.with_exec(["test", "-f", f"{str(path_to_mount)}"]))
+            exit_code, _stdout, _stderr = await get_exec_result(
+                container.with_exec(["test", "-f", f"{str(path_to_mount)}"], use_entrypoint=True)
+            )
 
             expected_exit_code = 1 if path_to_mount.optional else 0
             assert exit_code == expected_exit_code
@@ -95,6 +97,6 @@ class TestSimpleDockerStep:
         container = await step.init_container()
 
         # Check if working directory is set
-        stdout_value = await container.with_exec(["pwd"]).stdout()
+        stdout_value = await container.with_exec(["pwd"], use_entrypoint=True).stdout()
         actual_value = stdout_value.strip()
         assert actual_value == working_directory
