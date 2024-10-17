@@ -10,12 +10,12 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -84,24 +84,29 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
         }
     }
 
-    @OptIn(InternalCoroutinesApi::class)
     override suspend fun close() {
         // Under normal operation, all tasks should be complete
         // (except things like force flush, which loop). So
         // - it's safe to force cancel the internal tasks
         // - implementor scope should join immediately
         log.info { "Closing task scopes (${implementorScope.runningJobs.get()} remaining)" }
-        if (!implementorScope.job.isActive) {
-            val cause =
-                implementorScope.job.children
-                    .find { it.isCancelled }
-                    ?.getCancellationException()
-                    ?.cause
-            throw IllegalStateException("Implementor job killed by uncaught exception", cause)
+        val uncaughtExceptions = AtomicReference<Throwable>()
+        implementorScope.job.children.forEach {
+            it.invokeOnCompletion { cause ->
+                if (cause != null) {
+                    log.error { "Uncaught exception in implementor task: $cause" }
+                    uncaughtExceptions.set(cause)
+                }
+            }
         }
         implementorScope.job.complete()
         implementorScope.job.join()
-
+        if (uncaughtExceptions.get() != null) {
+            throw IllegalStateException(
+                "Uncaught exceptions in implementor tasks",
+                uncaughtExceptions.get()
+            )
+        }
         log.info {
             "Implementor tasks completed, cancelling internal tasks (${internalScope.runningJobs.get()} remaining)."
         }
