@@ -6,12 +6,14 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.integrations.source.mysql.MysqlJdbcStreamFactory.MysqlCDCMetaFields
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -173,6 +175,13 @@ class MysqlSourceMetadataQuerier(
     ): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
+    }
+
+    override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+        return when (cursorColumnID) {
+            MysqlCDCMetaFields.CDC_CURSOR.id -> MysqlCDCMetaFields.CDC_CURSOR
+            else -> null
+        }
     }
 
     private data class AllPrimaryKeysRow(

@@ -94,14 +94,11 @@ class FormatCommand(click.Command):
             .from_(GIT_IMAGE)
             .with_workdir(REPO_MOUNT_PATH)
             .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
-            # All with_exec commands below will re-run if the to_format directory changes
-            .with_exec(["init"])
-            # Remove all gitignored files
-            .with_exec(["clean", "-dfqX"])
+            .with_exec(["init"], use_entrypoint=True)
+            .with_exec(["clean", "-dfqX"], use_entrypoint=True)
             # Delete all .gitignore files
-            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
-            # Delete .git
-            .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']))
+            .with_exec(["rm", "-rf", ".git"])
             .directory(REPO_MOUNT_PATH)
             .with_timestamps(0)
         )
@@ -119,7 +116,7 @@ class FormatCommand(click.Command):
             Any: The result of running the command
         """
 
-        dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Format {self.formatter.value}")
+        dagger_client = await click_pipeline_context.get_dagger_client()
         dir_to_format = self.get_dir_to_format(dagger_client)
 
         container = self.get_format_container_fn(dagger_client, dir_to_format)
@@ -169,7 +166,7 @@ class FormatCommand(click.Command):
             format_commands (List[str]): The list of commands to run to format the repository
             not_formatted_code (dagger.Directory): The directory with the code to format
         """
-        format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
+        format_container = container.with_exec(sh_dash_c(format_commands))
         formatted_directory = format_container.directory(REPO_MOUNT_PATH)
         if warmup_dir := warmup_directory(dagger_client, self.formatter):
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)
