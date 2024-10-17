@@ -24,14 +24,14 @@ jobs:
         cache: 'poetry'
 
     - name: Install dependencies
-      run: poetry install
+      run: cd airbyte-cdk/python && poetry install
 
     - name: Generate documentation
       run: |
-        poetry run poe docs-generate
+        cd airbyte-cdk/python && poetry run poe docs-generate
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         # Upload entire repository
-        path: 'docs/generated'
+        path: 'airbyte-cdk/python/docs/generated'
