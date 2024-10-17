@@ -78,7 +78,7 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
-            fields = listOf(Field("v", IntFieldType)),
+            schema = setOf(Field("v", IntFieldType)),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = null,

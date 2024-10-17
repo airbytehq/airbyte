@@ -38,7 +38,7 @@ object TestFixtures {
     ) =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("events")),
-            fields = listOf(id, ts, msg),
+            schema = setOf(id, ts, msg),
             configuredSyncMode =
                 if (withCursor) ConfiguredSyncMode.INCREMENTAL else ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = listOf(id).takeIf { withPK },

@@ -221,7 +221,7 @@ class StateManagerFactory(
             }
         return Stream(
             streamID,
-            streamFields,
+            streamFields.toSet(),
             configuredSyncMode,
             configuredPrimaryKey,
             configuredCursor,
