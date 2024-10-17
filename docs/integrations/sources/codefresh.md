@@ -8,12 +8,9 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 | `type` | `string` | Type.  |  |
 | `api_key` | `string` | API Key.  |  |
 | `account_id` | `string` | Account Id.  |  |
-| `account_name` | `string` | Account Name.  |  |
 | `report_name` | `string` | Report Name.  |  |
 | `report_granularity` | `string` | Report Granularity.  |  |
 | `report_date_range` | `array` | Report Date Range.  |  |
-| `entity_type` | `string` | Entity Type.  |  |
-| `entity_id` | `string` | Entity Id.  |  |
 | `start_date` | `string` | Start date.  |  |
 | `from` | `string` | From.  |  |
 | `to` | `string` | To.  |  |
@@ -38,7 +35,6 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 | step_types | metadata | No pagination | ✅ |  ❌  |
 | environments |  | DefaultPaginator | ✅ |  ❌  |
 | helm_repos |  | No pagination | ✅ |  ❌  |
-| favorites | _id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -47,6 +43,6 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-08 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-17 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
