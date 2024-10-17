@@ -26,13 +26,17 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
+
+
+DEFAULT_CONCURRENCY = 4
+"""How many files/streams to download from concurrently."""
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
@@ -41,7 +45,7 @@ _V3_DEPRECATION_FIELD_MAPPING = {
     "provider": "bucket, aws_access_key_id, aws_secret_access_key and endpoint",
     "schema": "streams.input_schema",
 }
-
+"""Mapping of V3 fields to their V4 counterparts."""
 
 class SourceS3(FileBasedSource):
     _concurrency_level = 4
