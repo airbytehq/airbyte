@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.CommonMetaField
@@ -24,14 +25,14 @@ import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
@@ -62,31 +63,34 @@ class MySqlDebeziumOperations(
 ) : DebeziumOperations<MySqlPosition> {
     private val log = KotlinLogging.logger {}
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue
-    ): AirbyteRecordMessage {
+    ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
         val isDelete: Boolean = after.isNull
-
-        airbyteRecord.meta.changes.clear()
-        airbyteRecord.stream = source["table"].asText()
-        airbyteRecord.namespace = source["db"].asText()
+        val desc =
+            StreamDescriptor()
+                .withName(source["table"].asText())
+                .withNamespace(source["db"].asText())
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         val transactionTimestampJsonNode: JsonNode =
             OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
         data.set<JsonNode>(CommonMetaField.CDC_UPDATED_AT.id, transactionTimestampJsonNode)
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
-        return airbyteRecord.withData(data)
+        return DeserializedRecord(
+            streamID = StreamIdentifier.from(desc),
+            data = data,
+            changes = emptyMap(),
+        )
     }
 
     /**
@@ -162,8 +166,6 @@ class MySqlDebeziumOperations(
         INVALID_ABORT,
         INVALID_RESET
     }
-
-    private val airbyteRecord = AirbyteRecordMessage().withMeta(AirbyteRecordMessageMeta())
 
     override fun position(offset: DebeziumOffset): MySqlPosition {
         if (offset.wrapped.size != 1) {
