@@ -51,4 +51,6 @@ interface FeatureFlags {
      * @return empty string for the default deployment mode, "CLOUD" for cloud deployment mode.
      */
     fun deploymentMode(): String?
+
+    fun logInvalidJsonDeserialization(): Boolean
 }
