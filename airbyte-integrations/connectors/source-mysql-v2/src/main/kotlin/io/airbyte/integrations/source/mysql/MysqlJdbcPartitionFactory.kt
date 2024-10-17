@@ -133,9 +133,26 @@ class MysqlJdbcPartitionFactory(
                 return null
             } else {
                 // This branch indicates snapshot is incomplete. We need to resume based on previous snapshot state.
-                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-                val pkLowerBound: JsonNode = Jsons.valueToTree(sv.pkVal)
+                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
+                val pkField = pkChosenFromCatalog.first()
 
+                val pkLowerBound: JsonNode =
+                    when (pkField.type.airbyteSchemaType) {
+                        is LeafAirbyteSchemaType ->
+                            when (pkField.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                                LeafAirbyteSchemaType.INTEGER -> {
+                                    Jsons.valueToTree(sv.pkVal?.toInt())
+                                }
+                                LeafAirbyteSchemaType.NUMBER -> {
+                                    Jsons.valueToTree(sv.pkVal?.toDouble())
+                                }
+                                else -> Jsons.valueToTree(sv.pkVal)
+                            }
+                        else ->
+                            throw IllegalStateException(
+                                "PK field must be leaf type but is ${pkField.type.airbyteSchemaType}."
+                            )
+                    }
                 return MysqlJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
