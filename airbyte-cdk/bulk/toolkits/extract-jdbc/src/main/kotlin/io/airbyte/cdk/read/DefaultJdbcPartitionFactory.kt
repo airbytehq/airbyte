@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
@@ -31,16 +32,17 @@ class DefaultJdbcPartitionFactory(
         DefaultJdbcPartition,
     > {
 
-    private val streamStates = ConcurrentHashMap<String, DefaultJdbcStreamState>()
+    private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
-    override fun streamState(stream: Stream): DefaultJdbcStreamState =
-        streamStates.getOrPut(stream.label) { DefaultJdbcStreamState(sharedState, stream) }
+    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
+        streamStates.getOrPut(streamFeedBootstrap.feed.id) {
+            DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
+        }
 
-    override fun create(
-        stream: Stream,
-        opaqueStateValue: OpaqueStateValue?,
-    ): DefaultJdbcPartition? {
-        val streamState: DefaultJdbcStreamState = streamState(stream)
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcPartition? {
+        val stream: Stream = streamFeedBootstrap.feed
+        val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
+        val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
@@ -142,7 +144,7 @@ class DefaultJdbcPartitionFactory(
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? = stream.fields.find { it.id == cursorLabel }
+        val cursor: FieldOrMetaField? = stream.schema.find { it.id == cursorLabel }
         if (cursor !is Field) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),

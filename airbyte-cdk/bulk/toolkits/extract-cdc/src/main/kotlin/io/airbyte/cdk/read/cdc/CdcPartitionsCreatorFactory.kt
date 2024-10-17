@@ -4,14 +4,11 @@
 
 package io.airbyte.cdk.read.cdc
 
-import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
-import io.airbyte.cdk.read.Feed
-import io.airbyte.cdk.read.Global
+import io.airbyte.cdk.read.FeedBootstrap
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
-import io.airbyte.cdk.read.StateQuerier
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicReference
@@ -22,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
     val globalLockResource: CdcGlobalLockResource,
-    val outputConsumer: OutputConsumer,
     val debeziumOps: DebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
 
@@ -32,21 +28,18 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      */
     private val upperBoundReference = AtomicReference<T>()
 
-    override fun make(stateQuerier: StateQuerier, feed: Feed): PartitionsCreator? {
-        if (feed !is Global) {
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
+        if (feedBootstrap !is GlobalFeedBootstrap) {
             // Fall through on non-Global streams.
             return null
         }
-        val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return CdcPartitionsCreator(
             concurrencyResource,
             globalLockResource,
-            stateQuerier,
-            outputConsumer,
+            feedBootstrap,
             debeziumOps,
             debeziumOps,
             upperBoundReference,
-            opaqueStateValue,
         )
     }
 }

@@ -17,7 +17,7 @@ class StreamStatusManagerTest {
     val streamIncremental =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("streamIncremental")),
-            fields = listOf(Field("v", IntFieldType)),
+            schema = setOf(Field("v", IntFieldType)),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = null,
@@ -25,7 +25,7 @@ class StreamStatusManagerTest {
     val streamFullRefresh =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("streamFullRefresh")),
-            fields = listOf(Field("v", IntFieldType)),
+            schema = setOf(Field("v", IntFieldType)),
             configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
