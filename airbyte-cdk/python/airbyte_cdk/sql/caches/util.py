@@ -136,18 +136,11 @@ def get_colab_cache(
         from google.colab import drive  # noqa: PLC0415 # type: ignore[reportMissingImports]
     except ImportError:
         drive = None
-        msg = (
-            "The `google.colab` interface is only available in Google Colab. "
-            "Please run this code in a Google Colab notebook."
-        )
+        msg = "The `google.colab` interface is only available in Google Colab. " "Please run this code in a Google Colab notebook."
         raise ImportError(msg) from None
 
     drive.mount(mount_path)
-    drive_root = (
-        Path(mount_path) / drive_name
-        if drive_name == _MY_DRIVE
-        else Path(mount_path) / "Shareddrives" / drive_name
-    )
+    drive_root = Path(mount_path) / drive_name if drive_name == _MY_DRIVE else Path(mount_path) / "Shareddrives" / drive_name
 
     cache_dir = drive_root / sub_dir
     cache_dir.mkdir(parents=True, exist_ok=True)

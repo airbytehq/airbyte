@@ -52,9 +52,7 @@ class StateWriterBase(StateProviderBase, abc.ABC):
         the `_write_state` method.
         """
         if state_message.stream:
-            self._latest_stream_state_messages[state_message.stream.stream_descriptor.name] = (
-                state_message
-            )
+            self._latest_stream_state_messages[state_message.stream.stream_descriptor.name] = state_message
 
         self._write_state(state_message)
 

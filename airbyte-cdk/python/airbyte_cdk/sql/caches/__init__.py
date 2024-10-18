@@ -6,6 +6,4 @@ from __future__ import annotations
 from airbyte_cdk.sql.caches.base import CacheBase
 
 # We export these classes for easy access: `airbyte.caches...`
-__all__ = [
-    "CacheBase"
-]
+__all__ = ["CacheBase"]

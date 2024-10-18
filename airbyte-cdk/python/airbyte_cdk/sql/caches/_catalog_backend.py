@@ -144,14 +144,10 @@ class SqlCatalogBackend(CatalogBackendBase):
 
         # Now update the in-memory catalog
         unchanged_streams: list[ConfiguredAirbyteStream] = [
-            stream
-            for stream in self._full_catalog.streams
-            if stream.stream.name not in incoming_stream_names
+            stream for stream in self._full_catalog.streams if stream.stream.name not in incoming_stream_names
         ]
         new_streams: list[ConfiguredAirbyteStream] = [
-            stream
-            for stream in incoming_source_catalog.streams
-            if stream.stream.name in incoming_stream_names
+            stream for stream in incoming_source_catalog.streams if stream.stream.name in incoming_stream_names
         ]
         # We update the existing catalog in place, rather than creating a new one.
         # This is so that any CatalogProvider references to the catalog will see the updated
@@ -162,16 +158,8 @@ class SqlCatalogBackend(CatalogBackendBase):
         if source_name in self._source_catalogs:
             source_streams = self._source_catalogs[source_name].configured_catalog.streams
             # Now use the same process to update the source-specific catalog if it exists
-            unchanged_streams = [
-                stream
-                for stream in source_streams
-                if stream.stream.name not in incoming_stream_names
-            ]
-            new_streams = [
-                stream
-                for stream in incoming_source_catalog.streams
-                if stream.stream.name in incoming_stream_names
-            ]
+            unchanged_streams = [stream for stream in source_streams if stream.stream.name not in incoming_stream_names]
+            new_streams = [stream for stream in incoming_source_catalog.streams if stream.stream.name in incoming_stream_names]
             self._source_catalogs[source_name].configured_catalog.streams = new_streams + unchanged_streams
 
     def _save_catalog_info(
@@ -184,15 +172,8 @@ class SqlCatalogBackend(CatalogBackendBase):
         engine = self._engine
         with Session(engine) as session:
             # Delete and replace existing stream entries from the catalog cache
-            table_name_entries_to_delete = [
-                self._table_prefix + incoming_stream_name
-                for incoming_stream_name in incoming_stream_names
-            ]
-            result = (
-                session.query(CachedStream)
-                .filter(CachedStream.table_name.in_(table_name_entries_to_delete))
-                .delete()
-            )
+            table_name_entries_to_delete = [self._table_prefix + incoming_stream_name for incoming_stream_name in incoming_stream_names]
+            result = session.query(CachedStream).filter(CachedStream.table_name.in_(table_name_entries_to_delete)).delete()
             _ = result
             session.commit()
             insert_streams = [

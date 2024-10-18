@@ -53,11 +53,7 @@ class VenvExecutor(Executor):
                 },
             )
 
-        self.pip_url = pip_url or (
-            metadata.pypi_package_name
-            if metadata and metadata.pypi_package_name
-            else f"airbyte-{self.name}"
-        )
+        self.pip_url = pip_url or (metadata.pypi_package_name if metadata and metadata.pypi_package_name else f"airbyte-{self.name}")
         self.install_root = install_root or Path.cwd()
 
     def _get_venv_name(self) -> str:
@@ -97,28 +93,21 @@ class VenvExecutor(Executor):
     @property
     def docs_url(self) -> str:
         """Get the URL to the connector's documentation."""
-        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
-            "source-", ""
-        )
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace("source-", "")
 
     def install(self) -> None:
         """Install the connector in a virtual environment.
 
         After installation, the installed version will be stored in self.reported_version.
         """
-        self._run_subprocess_and_raise_on_failure(
-            [sys.executable, "-m", "venv", str(self._get_venv_path())]
-        )
+        self._run_subprocess_and_raise_on_failure([sys.executable, "-m", "venv", str(self._get_venv_path())])
 
         pip_path = str(get_bin_dir(self._get_venv_path()) / "pip")
         print(
-            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'.\n"
-            f"Running 'pip install {self.pip_url}'...\n"
+            f"Installing '{self.name}' into virtual environment '{self._get_venv_path()!s}'.\n" f"Running 'pip install {self.pip_url}'...\n"
         )
         try:
-            self._run_subprocess_and_raise_on_failure(
-                args=[pip_path, "install", *shlex.split(self.pip_url)]
-            )
+            self._run_subprocess_and_raise_on_failure(args=[pip_path, "install", *shlex.split(self.pip_url)])
         except exc.AirbyteSubprocessFailedError as ex:
             # If the installation failed, remove the virtual environment
             # Otherwise, the connector will be considered as installed and the user may not be able
@@ -172,9 +161,7 @@ class VenvExecutor(Executor):
 
         try:
             package_name = (
-                self.metadata.pypi_package_name
-                if self.metadata and self.metadata.pypi_package_name
-                else f"airbyte-{connector_name}"
+                self.metadata.pypi_package_name if self.metadata and self.metadata.pypi_package_name else f"airbyte-{connector_name}"
             )
             return subprocess.check_output(
                 [
@@ -239,10 +226,7 @@ class VenvExecutor(Executor):
 
             # If the connector path does not exist, uninstall and re-install.
             # This is sometimes caused by a failed or partial installation.
-            print(
-                "Connector executable not found within the virtual environment "
-                f"at {self._get_connector_path()!s}.\nReinstalling..."
-            )
+            print("Connector executable not found within the virtual environment " f"at {self._get_connector_path()!s}.\nReinstalling...")
             self.uninstall()
             self.install()
             reinstalled = True

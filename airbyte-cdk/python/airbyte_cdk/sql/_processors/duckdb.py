@@ -147,9 +147,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             stream_name=stream_name,
             batch_id=batch_id,
         )
-        columns_list = list(
-            self._get_sql_column_definitions(stream_name=stream_name).keys()
-        )
+        columns_list = list(self._get_sql_column_definitions(stream_name=stream_name).keys())
         columns_list_str = indent(
             "\n, ".join([self._quote_identifier(col) for col in columns_list]),
             "    ",
@@ -160,11 +158,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 [
                     self._quote_identifier(self.normalizer.normalize(prop_name))
                     + ': "'
-                    + str(
-                        self._get_sql_column_definitions(stream_name)[
-                            self.normalizer.normalize(prop_name)
-                        ]
-                    )
+                    + str(self._get_sql_column_definitions(stream_name)[self.normalizer.normalize(prop_name)])
                     + '"'
                     for prop_name in columns_list
                 ]
@@ -218,7 +212,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         with self.get_sql_connection() as conn:
             try:
                 entries = list(params)
-                conn.engine.pool.connect().executemany(str(sql), entries) # type: ignore
+                conn.engine.pool.connect().executemany(str(sql), entries)  # type: ignore
             except (
                 ProgrammingError,
                 SQLAlchemyError,
@@ -226,9 +220,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-    def _write_with_executemany(
-        self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str
-    ) -> None:
+    def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str) -> None:
         column_names_list = list(buffer[stream_name].keys())
         column_names = ", ".join(column_names_list)
         params = ", ".join(["?"] * len(column_names_list))
@@ -240,10 +232,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         """
         entries_to_write = buffer[stream_name]
         num_entries = len(entries_to_write[column_names_list[0]])
-        parameters = [
-            [entries_to_write[column_name][n] for column_name in column_names_list]
-            for n in range(num_entries)
-        ]
+        parameters = [[entries_to_write[column_name][n] for column_name in column_names_list] for n in range(num_entries)]
         self._executemany(sql, parameters)
 
     def _write_from_pa_table(self, table_name: str, pa_table: pa.Table) -> None:

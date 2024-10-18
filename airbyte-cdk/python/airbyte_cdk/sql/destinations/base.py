@@ -108,9 +108,7 @@ class Destination(ConnectorBase, AirbyteWriterInterface):
 
         # Resolve `source`, `read_result`, and `source_name`
         source: Source | None = source_data if isinstance(source_data, Source) else None
-        read_result: ReadResult | None = (
-            source_data if isinstance(source_data, ReadResult) else None
-        )
+        read_result: ReadResult | None = source_data if isinstance(source_data, ReadResult) else None
         source_name: str = source.name if source else cast(ReadResult, read_result).source_name
 
         # State providers and writers default to no-op, unless overridden below.

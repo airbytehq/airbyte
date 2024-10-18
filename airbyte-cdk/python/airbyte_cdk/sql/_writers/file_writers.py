@@ -206,9 +206,7 @@ class FileWriterBase(AirbyteWriterInterface):
         handles state tracking and other logic.
         """
         _ = stdin, catalog_provider, write_strategy, state_writer, progress_tracker
-        raise exc.AirbyteInternalError from NotImplementedError(
-            "File writers should be wrapped by another AirbyteWriterInterface."
-        )
+        raise exc.AirbyteInternalError from NotImplementedError("File writers should be wrapped by another AirbyteWriterInterface.")
 
     def flush_active_batches(
         self,
@@ -268,9 +266,7 @@ class FileWriterBase(AirbyteWriterInterface):
 
     def get_pending_batches(self, stream_name: str) -> list[BatchHandle]:
         """Return the pending batches for a specific stream name."""
-        return [
-            batch for batch in self._completed_batches.get(stream_name, []) if not batch.finalized
-        ]
+        return [batch for batch in self._completed_batches.get(stream_name, []) if not batch.finalized]
 
     def get_finalized_batches(self, stream_name: str) -> list[BatchHandle]:
         """Return the finalized batches for a specific stream name."""

@@ -118,9 +118,7 @@ class SecretString(str):
         handler: GetCoreSchemaHandler,
     ) -> CoreSchema:
         """Return a modified core schema for the secret string."""
-        return core_schema.with_info_after_validator_function(
-            function=cls.validate, schema=handler(str), field_name=handler.field_name
-        )
+        return core_schema.with_info_after_validator_function(function=cls.validate, schema=handler(str), field_name=handler.field_name)
 
     @classmethod
     def __get_pydantic_json_schema__(  # noqa: PLW3201  # Pydantic dunder method
@@ -253,9 +251,7 @@ class SecretHandle:
         This method is a convenience method that writes the secret to a file as text.
         """
         if not silent:
-            print(
-                f"Writing secret '{self.secret_name.split('/')[-1]}' to '{file_path.absolute()!s}'"
-            )
+            print(f"Writing secret '{self.secret_name.split('/')[-1]}' to '{file_path.absolute()!s}'")
 
         file_path.write_text(
             str(self.get_value()),

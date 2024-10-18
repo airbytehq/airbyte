@@ -27,8 +27,7 @@ def get_connector(
 ) -> Source:
     """Deprecated. Use get_source instead."""
     warnings.warn(
-        "The `get_connector()` function is deprecated and will be removed in a future version."
-        "Please use `get_source()` instead.",
+        "The `get_connector()` function is deprecated and will be removed in a future version." "Please use `get_source()` instead.",
         DeprecationWarning,
         stacklevel=2,
     )

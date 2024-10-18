@@ -61,11 +61,7 @@ class DocumentRenderer(BaseModel):
         """
         content = ""
         if not self.metadata_properties:
-            self.metadata_properties = [
-                key
-                for key in record
-                if key not in (self.content_properties or []) and key != self.title_property
-            ]
+            self.metadata_properties = [key for key in record if key not in (self.content_properties or []) and key != self.title_property]
         if self.title_property:
             content += f"# {record[self.title_property]}\n\n"
         if self.render_metadata or not self.content_properties:
@@ -80,9 +76,7 @@ class DocumentRenderer(BaseModel):
             content += str(record[self.content_properties[0]])
         else:
             # Multiple properties to render as content; use H2 section headers.
-            content += "\n".join(
-                f"## {_to_title_case(key)}\n\n{record[key]}\n\n" for key in self.content_properties
-            )
+            content += "\n".join(f"## {_to_title_case(key)}\n\n{record[key]}\n\n" for key in self.content_properties)
 
         return Document(
             # id=doc_id,  # TODD: Add support for primary key and doc ID generation.

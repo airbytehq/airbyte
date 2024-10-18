@@ -278,13 +278,9 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
 
             elif message.trace and message.trace.stream_status:
                 if message.trace.stream_status.status is AirbyteStreamStatus.STARTED:
-                    self.log_stream_start(
-                        stream_name=message.trace.stream_status.stream_descriptor.name
-                    )
+                    self.log_stream_start(stream_name=message.trace.stream_status.stream_descriptor.name)
                 if message.trace.stream_status.status is AirbyteStreamStatus.COMPLETE:
-                    self._log_stream_read_end(
-                        stream_name=message.trace.stream_status.stream_descriptor.name
-                    )
+                    self._log_stream_read_end(stream_name=message.trace.stream_status.stream_descriptor.name)
 
             # Bail if we're not due for a progress update.
             if count % update_period != 0:
@@ -350,9 +346,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
                 # This is a state message from the destination. Tally the records written.
                 if message.state.stream and message.state.destinationStats:
                     stream_name = message.state.stream.stream_descriptor.name
-                    self.destination_stream_records_confirmed[stream_name] += int(
-                        message.state.destinationStats.recordCount or 0
-                    )
+                    self.destination_stream_records_confirmed[stream_name] += int(message.state.destinationStats.recordCount or 0)
                 self._update_display()
 
             yield message
@@ -397,11 +391,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         send_telemetry(
             source=self._source._get_connector_runtime_info() if self._source else None,  # noqa: SLF001
             cache=self._cache._get_writer_runtime_info() if self._cache else None,  # noqa: SLF001
-            destination=(
-                self._destination._get_connector_runtime_info()  # noqa: SLF001
-                if self._destination
-                else None
-            ),
+            destination=(self._destination._get_connector_runtime_info() if self._destination else None),  # noqa: SLF001
             state=state,
             number_of_records=number_of_records,
             event_type=event_type,
@@ -410,9 +400,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
 
     def _log_sync_start(self) -> None:
         """Log the start of a sync operation."""
-        self._print_info_message(
-            f"Started `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
-        )
+        self._print_info_message(f"Started `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`...")  # type: ignore
         # We access a non-public API here (noqa: SLF001) to get the runtime info for participants.
         self._send_telemetry(
             state=EventState.STARTED,
@@ -424,14 +412,12 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         if stream_name not in self.stream_read_start_times:
             self._print_info_message(
                 f"Read started on stream `{stream_name}` at "
-                f"`{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
+                f"`{pendulum.now().format('HH:mm:ss')}`..."  # type: ignore
             )
             self.stream_read_start_times[stream_name] = time.time()
 
     def _log_stream_read_end(self, stream_name: str) -> None:
-        self._print_info_message(
-            f"Read completed on stream `{stream_name}` at `{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
-        )
+        self._print_info_message(f"Read completed on stream `{stream_name}` at `{pendulum.now().format('HH:mm:ss')}`...")  # type: ignore
         self.stream_read_end_times[stream_name] = time.time()
 
     @property
@@ -468,9 +454,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         perf_metrics["read_start_time"] = self.read_start_time
         perf_metrics["read_end_time"] = self.read_end_time
         if self.elapsed_read_seconds > 0:
-            perf_metrics["records_per_second"] = round(
-                self.total_records_read / self.elapsed_read_seconds, 4
-            )
+            perf_metrics["records_per_second"] = round(self.total_records_read / self.elapsed_read_seconds, 4)
             if self.bytes_tracking_enabled:
                 mb_read = self.total_megabytes_read
                 perf_metrics["mb_read"] = mb_read
@@ -483,23 +467,12 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
                 "read_start_time": self.stream_read_start_times.get(stream_name),
                 "read_end_time": self.stream_read_end_times.get(stream_name),
             }
-            if (
-                stream_name in self.stream_read_end_times
-                and stream_name in self.stream_read_start_times
-                and count > 0
-            ):
-                duration: float = (
-                    self.stream_read_end_times[stream_name]
-                    - self.stream_read_start_times[stream_name]
-                )
+            if stream_name in self.stream_read_end_times and stream_name in self.stream_read_start_times and count > 0:
+                duration: float = self.stream_read_end_times[stream_name] - self.stream_read_start_times[stream_name]
                 stream_metrics[stream_name]["read_time_seconds"] = duration
                 if duration > 0:
                     stream_metrics[stream_name]["records_per_second"] = round(
-                        count
-                        / (
-                            self.stream_read_end_times[stream_name]
-                            - self.stream_read_start_times[stream_name]
-                        ),
+                        count / (self.stream_read_end_times[stream_name] - self.stream_read_start_times[stream_name]),
                         4,
                     )
                     if self.bytes_tracking_enabled:
@@ -518,11 +491,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
     @property
     def _unclosed_stream_names(self) -> list[str]:
         """Return a list of streams that have not yet been fully read."""
-        return [
-            stream_name
-            for stream_name in self.stream_read_counts
-            if stream_name not in self.stream_read_end_times
-        ]
+        return [stream_name for stream_name in self.stream_read_counts if stream_name not in self.stream_read_end_times]
 
     def log_success(
         self,
@@ -535,9 +504,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
 
         self._update_display(force_refresh=True)
         self._stop_rich_view()
-        self._print_info_message(
-            f"Completed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`." # type: ignore
-        )
+        self._print_info_message(f"Completed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`.")  # type: ignore
         self._log_read_metrics()
         self._send_telemetry(
             state=EventState.SUCCEEDED,
@@ -552,9 +519,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         """Log the failure of a sync operation."""
         self._update_display(force_refresh=True)
         self._stop_rich_view()
-        self._print_info_message(
-            f"Failed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`." # type: ignore
-        )
+        self._print_info_message(f"Failed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`.")  # type: ignore
         self._send_telemetry(
             state=EventState.FAILED,
             number_of_records=self.total_records_read,
@@ -790,9 +755,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         status_message = HORIZONTAL_LINE + f"\n### Sync Progress: `{self.job_description}`\n\n"
 
         def join_streams_strings(streams_list: list[str]) -> str:
-            separator: Literal["\n  - ", ", "] = (
-                "\n  - " if len(streams_list) <= MAX_ITEMIZED_STREAMS else ", "
-            )
+            separator: Literal["\n  - ", ", "] = "\n  - " if len(streams_list) <= MAX_ITEMIZED_STREAMS else ", "
             return separator.join(streams_list)
 
         # Source read progress:
@@ -807,17 +770,10 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         if self.stream_read_counts:
             status_message += (
                 f"- Received records for {len(self.stream_read_counts)}"
-                + (
-                    f" out of {self.num_streams_expected} expected"
-                    if self.num_streams_expected
-                    else ""
-                )
+                + (f" out of {self.num_streams_expected} expected" if self.num_streams_expected else "")
                 + " streams:\n  - "
                 + join_streams_strings(
-                    [
-                        f"{self.stream_read_counts[stream_name]:,} {stream_name}"
-                        for stream_name in self.stream_read_counts
-                    ]
+                    [f"{self.stream_read_counts[stream_name]:,} {stream_name}" for stream_name in self.stream_read_counts]
                 )
                 + "\n\n"
             )
@@ -825,8 +781,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         # Source cache writes
         if self.total_records_written > 0:
             status_message += (
-                f"- Cached **{self.total_records_written:,}** records "
-                f"into {self.total_batches_written:,} local cache file(s).\n\n"
+                f"- Cached **{self.total_records_written:,}** records " f"into {self.total_batches_written:,} local cache file(s).\n\n"
             )
 
         # Source read completed
@@ -839,8 +794,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
             finalize_start_time_str = _to_time_str(self.finalize_start_time)
             status_message += f"**Started cache processing at `{finalize_start_time_str}`:**\n\n"
             status_message += (
-                f"- Processed **{self.total_batches_finalized}** "
-                f"cache file(s) over **{self.elapsed_finalization_time_str}**.\n\n"
+                f"- Processed **{self.total_batches_finalized}** " f"cache file(s) over **{self.elapsed_finalization_time_str}**.\n\n"
             )
 
             # Cache processing completion (per stream)
@@ -860,10 +814,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         status_message += "\n\n"
 
         if self.first_destination_record_sent_time:
-            status_message += (
-                f"**Started writing to destination at "
-                f"`{_to_time_str(self.first_destination_record_sent_time)}`:**\n\n"
-            )
+            status_message += f"**Started writing to destination at " f"`{_to_time_str(self.first_destination_record_sent_time)}`:**\n\n"
             if self.destination_stream_records_delivered:
                 status_message += (
                     f"- Sent **{self.total_destination_records_delivered:,} records** "
@@ -873,12 +824,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
                 )
                 status_message += (
                     "- Stream records delivered:\n  - "
-                    + join_streams_strings(
-                        [
-                            f"{count:,} {stream}"
-                            for stream, count in self.destination_stream_records_delivered.items()
-                        ]
-                    )
+                    + join_streams_strings([f"{count:,} {stream}" for stream, count in self.destination_stream_records_delivered.items()])
                     + "\n\n"
                 )
 
@@ -886,8 +832,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
 
         if self.end_time is not None:
             status_message += (
-                f"\n\n**Sync completed at `{_to_time_str(self.end_time)}`. "
-                f"Total time elapsed: {self.total_time_elapsed_str}**\n\n"
+                f"\n\n**Sync completed at `{_to_time_str(self.end_time)}`. " f"Total time elapsed: {self.total_time_elapsed_str}**\n\n"
             )
 
         status_message += HORIZONTAL_LINE
@@ -917,9 +862,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
     def destination_records_delivered_per_second(self) -> float:
         """Return the number of records delivered per second."""
         if self.total_destination_write_time_seconds > 0:
-            return (
-                self.total_destination_records_delivered / self.total_destination_write_time_seconds
-            )
+            return self.total_destination_records_delivered / self.total_destination_write_time_seconds
 
         return 0
 

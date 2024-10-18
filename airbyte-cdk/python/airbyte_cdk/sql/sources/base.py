@@ -101,14 +101,9 @@ class Source(ConnectorBase):
     def _log_warning_preselected_stream(self, streams: str | list[str]) -> None:
         """Logs a warning message indicating stream selection which are not selected yet."""
         if streams == "*":
-            print(
-                "Warning: Config is not set yet. All streams will be selected after config is set."
-            )
+            print("Warning: Config is not set yet. All streams will be selected after config is set.")
         else:
-            print(
-                "Warning: Config is not set yet. "
-                f"Streams to be selected after config is set: {streams}"
-            )
+            print("Warning: Config is not set yet. " f"Streams to be selected after config is set: {streams}")
 
     def select_all_streams(self) -> None:
         """Select all streams.
@@ -220,11 +215,7 @@ class Source(ConnectorBase):
 
     def _get_incremental_stream_names(self) -> list[str]:
         """Get the name of streams that support incremental sync."""
-        return [
-            stream.name
-            for stream in self.discovered_catalog.streams
-            if SyncMode.incremental in stream.supported_sync_modes
-        ]
+        return [stream.name for stream in self.discovered_catalog.streams if SyncMode.incremental in stream.supported_sync_modes]
 
     def _get_spec(self, *, force_refresh: bool = False) -> ConnectorSpecification:
         """Call spec on the connector.
@@ -311,9 +302,7 @@ class Source(ConnectorBase):
     @property
     def docs_url(self) -> str:
         """Get the URL to the connector's documentation."""
-        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace(
-            "source-", ""
-        )
+        return "https://docs.airbyte.com/integrations/sources/" + self.name.lower().replace("source-", "")
 
     @property
     def discovered_catalog(self) -> AirbyteCatalog:
@@ -385,9 +374,7 @@ class Source(ConnectorBase):
     def get_stream_json_schema(self, stream_name: str) -> dict[str, Any]:
         """Return the JSON Schema spec for the specified stream name."""
         catalog: AirbyteCatalog = self.discovered_catalog
-        found: list[AirbyteStream] = [
-            stream for stream in catalog.streams if stream.name == stream_name
-        ]
+        found: list[AirbyteStream] = [stream for stream in catalog.streams if stream.name == stream_name]
 
         if len(found) == 0:
             raise exc.AirbyteInputError(
@@ -727,9 +714,7 @@ class Source(ConnectorBase):
         if state_provider and state_provider.known_stream_names:
             # Retrieve set of the known streams support which support incremental sync
             incremental_streams = (
-                set(self._get_incremental_stream_names())
-                & state_provider.known_stream_names
-                & set(self.get_selected_streams())
+                set(self._get_incremental_stream_names()) & state_provider.known_stream_names & set(self.get_selected_streams())
             )
             if incremental_streams:
                 self._log_incremental_streams(incremental_streams=incremental_streams)

@@ -26,9 +26,7 @@ if TYPE_CHECKING:
 
 
 VERSION_LATEST = "latest"
-DEFAULT_MANIFEST_URL = (
-    "https://connectors.airbyte.com/files/metadata/airbyte/{source_name}/{version}/manifest.yaml"
-)
+DEFAULT_MANIFEST_URL = "https://connectors.airbyte.com/files/metadata/airbyte/{source_name}/{version}/manifest.yaml"
 
 
 def _try_get_source_manifest(
@@ -82,9 +80,7 @@ def _get_local_executor(
 ) -> Executor:
     """Get a local executor for a connector."""
     if version:
-        raise exc.AirbyteInputError(
-            message="Param 'version' is not supported when 'local_executable' is set."
-        )
+        raise exc.AirbyteInputError(message="Param 'version' is not supported when 'local_executable' is set.")
 
     if local_executable is True:
         # Use the default executable name for the connector
@@ -141,10 +137,7 @@ def get_connector_executor(  # noqa: PLR0912, PLR0913 # Too complex
     )
     if install_method_count > 1:
         raise exc.AirbyteInputError(
-            message=(
-                "You can only specify one of the settings: 'local_executable', 'docker_image', "
-                "'source_manifest', or 'pip_url'."
-            ),
+            message=("You can only specify one of the settings: 'local_executable', 'docker_image', " "'source_manifest', or 'pip_url'."),
             context={
                 "local_executable": local_executable,
                 "docker_image": docker_image,
@@ -191,8 +184,7 @@ def get_connector_executor(  # noqa: PLR0912, PLR0913 # Too complex
 
         if version is not None and ":" in docker_image:
             raise exc.AirbyteInputError(
-                message="The 'version' parameter is not supported when a tag is already set in the "
-                "'docker_image' parameter.",
+                message="The 'version' parameter is not supported when a tag is already set in the " "'docker_image' parameter.",
                 context={
                     "docker_image": docker_image,
                     "version": version,

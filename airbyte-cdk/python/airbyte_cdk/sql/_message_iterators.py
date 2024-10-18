@@ -98,11 +98,7 @@ class AirbyteMessageIterator:
                         record=AirbyteRecordMessage(
                             stream=stream_name,
                             data=record,
-                            emitted_at=int(
-                                cast(
-                                    datetime.datetime, record.get(AB_EXTRACTED_AT_COLUMN)
-                                ).timestamp()
-                            ),
+                            emitted_at=int(cast(datetime.datetime, record.get(AB_EXTRACTED_AT_COLUMN)).timestamp()),
                             # `meta` and `namespace` are not handled:
                             meta=None,
                             namespace=None,
@@ -161,9 +157,7 @@ class AirbyteMessageIterator:
         return cls.from_str_buffer(sys.stdin)
 
     @classmethod
-    def from_files(
-        cls, file_iterator: Iterator[Path], file_opener: Callable[[Path], IO[str]]
-    ) -> AirbyteMessageIterator:
+    def from_files(cls, file_iterator: Iterator[Path], file_opener: Callable[[Path], IO[str]]) -> AirbyteMessageIterator:
         """Create an iterator that reads messages from a file iterator."""
 
         def generator() -> Generator[AirbyteMessage, None, None]:

@@ -376,6 +376,7 @@ class AirbyteSecretNotFoundError(AirbyteError):
     secret_name: str | None = None
     sources: list[str] | None = None
 
+
 # Airbyte Resource Errors (General)
 
 

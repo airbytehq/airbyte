@@ -307,30 +307,20 @@ def get_available_connectors(install_type: InstallType | str | None = None) -> l
         logging.info("Docker was not detected. Returning only Python and Manifest-only connectors.")
 
         # If Docker is not available, return only Python and Manifest-based connectors.
-        return sorted(
-            conn.name
-            for conn in _get_registry_cache().values()
-            if conn.language in {Language.PYTHON, Language.MANIFEST_ONLY}
-        )
+        return sorted(conn.name for conn in _get_registry_cache().values() if conn.language in {Language.PYTHON, Language.MANIFEST_ONLY})
 
     if not isinstance(install_type, InstallType):
         install_type = InstallType(install_type)
 
     if install_type == InstallType.PYTHON:
-        return sorted(
-            conn.name
-            for conn in _get_registry_cache().values()
-            if conn.pypi_package_name is not None
-        )
+        return sorted(conn.name for conn in _get_registry_cache().values() if conn.pypi_package_name is not None)
 
     if install_type == InstallType.JAVA:
         warnings.warn(
             message="Java connectors are not yet supported.",
             stacklevel=2,
         )
-        return sorted(
-            conn.name for conn in _get_registry_cache().values() if conn.language == Language.JAVA
-        )
+        return sorted(conn.name for conn in _get_registry_cache().values() if conn.language == Language.JAVA)
 
     if install_type == InstallType.DOCKER:
         return sorted(conn.name for conn in _get_registry_cache().values())
@@ -339,8 +329,7 @@ def get_available_connectors(install_type: InstallType | str | None = None) -> l
         return sorted(
             conn.name
             for conn in _get_registry_cache().values()
-            if InstallType.YAML in conn.install_types
-            and conn.name not in _LOWCODE_CONNECTORS_EXCLUDED
+            if InstallType.YAML in conn.install_types and conn.name not in _LOWCODE_CONNECTORS_EXCLUDED
         )
 
     # pragma: no cover  # Should never be reached.

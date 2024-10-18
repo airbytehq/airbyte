@@ -57,9 +57,7 @@ DEBUG = True
 """Enable debug mode for telemetry code."""
 
 
-Airbyte_APP_TRACKING_KEY = (
-    os.environ.get("AIRBYTE_TRACKING_KEY", "") or "cukeSffc0G6gFQehKDhhzSurDzVSZ2OP"
-)
+Airbyte_APP_TRACKING_KEY = os.environ.get("AIRBYTE_TRACKING_KEY", "") or "cukeSffc0G6gFQehKDhhzSurDzVSZ2OP"
 """This key corresponds globally to the "Airbyte" application."""
 
 
@@ -123,10 +121,7 @@ def _setup_analytics() -> str | bool:
                 return analytics["anonymous_user_id"]
 
             issues.append("Provided analytics ID did not match the file. Rewriting the file.")
-            print(
-                f"Received a user-provided analytics ID override in the '{_ENV_ANALYTICS_ID}' "
-                "environment variable."
-            )
+            print(f"Received a user-provided analytics ID override in the '{_ENV_ANALYTICS_ID}' " "environment variable.")
 
     # File is missing, incomplete, or stale. Create a new one.
     anonymous_user_id = anonymous_user_id or str(ulid.ULID())
@@ -183,13 +178,7 @@ def get_env_flags() -> dict[str, Any]:
         "CI": meta.is_ci(),
         "LANGCHAIN": meta.is_langchain(),
         "NOTEBOOK_RUNTIME": (
-            "GOOGLE_COLAB"
-            if meta.is_colab()
-            else "JUPYTER"
-            if meta.is_jupyter()
-            else "VS_CODE"
-            if meta.is_vscode_notebook()
-            else False
+            "GOOGLE_COLAB" if meta.is_colab() else "JUPYTER" if meta.is_jupyter() else "VS_CODE" if meta.is_vscode_notebook() else False
         ),
     }
     # Drop these flags if value is False or None

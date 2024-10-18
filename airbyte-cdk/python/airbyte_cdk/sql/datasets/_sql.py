@@ -63,9 +63,7 @@ class SQLDataset(DatasetBase):
         self._query_statement: Select = query_statement
         if stream_configuration is None:
             try:
-                stream_configuration = cache.processor.catalog_provider.get_configured_stream_info(
-                    stream_name=stream_name
-                )
+                stream_configuration = cache.processor.catalog_provider.get_configured_stream_info(stream_name=stream_name)
             except Exception as ex:
                 warnings.warn(
                     f"Failed to get stream configuration for {stream_name}: {ex}",
@@ -125,10 +123,9 @@ class SQLDataset(DatasetBase):
         """
         # Convert all strings to TextClause objects.
         filters: list[ClauseElement] = [
-            text(expression) if isinstance(expression, str) else expression
-            for expression in filter_expressions
+            text(expression) if isinstance(expression, str) else expression for expression in filter_expressions
         ]
-        filtered_select = self._query_statement.where(and_(*filters)) # type: ignore
+        filtered_select = self._query_statement.where(and_(*filters))  # type: ignore
         return SQLDataset(
             cache=self._cache,
             stream_name=self._stream_name,

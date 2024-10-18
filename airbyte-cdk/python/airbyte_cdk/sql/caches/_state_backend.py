@@ -61,9 +61,7 @@ class CacheStreamStateModel(SqlAlchemyModel):  # type: ignore[misc]
     state_json = Column(String)
     """The JSON string representation of the state message."""
 
-    last_updated = Column(
-        DateTime(timezone=True), onupdate=datetime.now(utc), default=datetime.now(utc)
-    )
+    last_updated = Column(DateTime(timezone=True), onupdate=datetime.now(utc), default=datetime.now(utc))
     """The last time the state was updated."""
 
 
@@ -91,9 +89,7 @@ class DestinationStreamStateModel(SqlAlchemyModel):  # type: ignore[misc]
     state_json = Column(String)
     """The JSON string representation of the state message."""
 
-    last_updated = Column(
-        DateTime(timezone=True), onupdate=datetime.now(utc), default=datetime.now(utc)
-    )
+    last_updated = Column(DateTime(timezone=True), onupdate=datetime.now(utc), default=datetime.now(utc))
     """The last time the state was updated."""
 
 
@@ -169,9 +165,7 @@ class SqlStateWriter(StateWriterBase):
                     )
                 ).delete()
             else:
-                session.query(CacheStreamStateModel).filter(
-                    CacheStreamStateModel.table_name == table_prefix + stream_name
-                ).delete()
+                session.query(CacheStreamStateModel).filter(CacheStreamStateModel.table_name == table_prefix + stream_name).delete()
 
             # This commit prevents "duplicate key" errors but (in theory) should not be necessary.
             session.commit()
@@ -213,9 +207,7 @@ class SqlStateBackend(StateBackendBase):
     ) -> StateProviderBase:
         """Return the state provider."""
         if destination_name and table_prefix:
-            raise AirbyteInputError(
-                message="Both 'destination_name' and 'table_prefix' cannot be set at the same time."
-            )
+            raise AirbyteInputError(message="Both 'destination_name' and 'table_prefix' cannot be set at the same time.")
 
         _ = refresh  # Always refresh the state (for now)
         self._ensure_internal_tables()
@@ -230,33 +222,22 @@ class SqlStateBackend(StateBackendBase):
             query = session.query(stream_state_model).filter(
                 stream_state_model.source_name == source_name
                 and (
-                    stream_state_model.table_name.startswith(table_prefix)
-                    or stream_state_model.stream_name.in_(GLOBAL_STATE_STREAM_NAMES)
+                    stream_state_model.table_name.startswith(table_prefix) or stream_state_model.stream_name.in_(GLOBAL_STATE_STREAM_NAMES)
                 )
             )
             if destination_name:
                 query = query.filter(stream_state_model.destination_name == destination_name)
             if streams_filter:
-                query = query.filter(
-                    stream_state_model.stream_name.in_(
-                        [*streams_filter, *GLOBAL_STATE_STREAM_NAMES]
-                    )
-                )
+                query = query.filter(stream_state_model.stream_name.in_([*streams_filter, *GLOBAL_STATE_STREAM_NAMES]))
             states: list[CacheStreamStateModel] = query.all()
             if not destination_name:
                 # When returning cache states, exclude any states where the table name would not
                 # match what the current cache table prefixes would generate. These are logically
                 # part of a different cache, since each cache uses its own table prefix.
-                states = [
-                    state
-                    for state in states
-                    if state.table_name == table_prefix + state.stream_name
-                ]
+                states = [state for state in states if state.table_name == table_prefix + state.stream_name]
 
         return StaticInputState(
-            from_state_messages=[
-                AirbyteStateMessage.model_validate_json(state.state_json) for state in states # type: ignore
-            ]
+            from_state_messages=[AirbyteStateMessage.model_validate_json(state.state_json) for state in states]  # type: ignore
         )
 
     def get_state_writer(

@@ -89,10 +89,7 @@ class ReadResult(Mapping[str, CachedDataset]):
     @property
     def streams(self) -> Mapping[str, CachedDataset]:
         """Return a mapping of stream names to cached datasets."""
-        return {
-            stream_name: CachedDataset(self._cache, stream_name)
-            for stream_name in self._processed_streams
-        }
+        return {stream_name: CachedDataset(self._cache, stream_name) for stream_name in self._processed_streams}
 
     @property
     def cache(self) -> CacheBase:

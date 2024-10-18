@@ -54,8 +54,7 @@ class StateProviderBase(abc.ABC):
         return [
             state_msg.stream
             for state_msg in self._state_message_artifacts
-            if state_msg.type == AirbyteStateType.STREAM
-            and state_msg.stream is not None
+            if state_msg.type == AirbyteStateType.STREAM and state_msg.stream is not None
         ]
 
     @property
@@ -84,16 +83,7 @@ class StateProviderBase(abc.ABC):
 
         This is used when sending the state artifacts to the destination.
         """
-        return (
-            "["
-            + "\n, ".join(
-                [
-                    json.dumps(asdict(state_artifact))
-                    for state_artifact in (self._state_message_artifacts or [])
-                ]
-            )
-            + "]"
-        )
+        return "[" + "\n, ".join([json.dumps(asdict(state_artifact)) for state_artifact in (self._state_message_artifacts or [])]) + "]"
 
     def get_stream_state(
         self,
@@ -149,10 +139,7 @@ class JoinedStateProvider(StateProviderBase):
         self,
     ) -> set[str]:
         """Return the unique set of all stream names with stored state."""
-        return (
-            self._primary_state_provider.known_stream_names
-            | self._secondary_state_provider.known_stream_names
-        )
+        return self._primary_state_provider.known_stream_names | self._secondary_state_provider.known_stream_names
 
     @property
     def _state_message_artifacts(self) -> Iterable[AirbyteStateMessage]:

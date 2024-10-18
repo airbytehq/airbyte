@@ -89,9 +89,7 @@ def _stream_from_subprocess(
 
         # Don't bother raising broken pipe errors, as they only
         # indicate that a subprocess has terminated early.
-        if exception_holder.exception and not isinstance(
-            exception_holder.exception, BrokenPipeError
-        ):
+        if exception_holder.exception and not isinstance(exception_holder.exception, BrokenPipeError):
             raise exception_holder.exception
 
     else:
@@ -140,11 +138,7 @@ def _stream_from_subprocess(
             raise exc.AirbyteSubprocessFailedError(
                 run_args=args,
                 exit_code=exit_code,
-                original_exception=(
-                    exception_holder.exception
-                    if not isinstance(exception_holder.exception, BrokenPipeError)
-                    else None
-                ),
+                original_exception=(exception_holder.exception if not isinstance(exception_holder.exception, BrokenPipeError) else None),
             )
 
 
@@ -221,6 +215,4 @@ class Executor(ABC):
     ) -> str | None:
         """Detect the version of the connector installed."""
         _ = raise_on_error, recheck  # Unused
-        raise NotImplementedError(
-            f"'{type(self).__name__}' class cannot yet detect connector versions."
-        )
+        raise NotImplementedError(f"'{type(self).__name__}' class cannot yet detect connector versions.")

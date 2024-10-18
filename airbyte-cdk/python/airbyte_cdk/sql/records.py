@@ -120,13 +120,8 @@ class StreamRecordHandler:
         self._normalize_keys: bool = normalize_keys
         self.prune_extra_fields: bool = prune_extra_fields
 
-        self.index_keys: list[str] = [
-            self._normalizer.normalize(key) if self._normalize_keys else key
-            for key in self._expected_keys
-        ]
-        self.normalized_keys: list[str] = [
-            self._normalizer.normalize(key) for key in self._expected_keys
-        ]
+        self.index_keys: list[str] = [self._normalizer.normalize(key) if self._normalize_keys else key for key in self._expected_keys]
+        self.normalized_keys: list[str] = [self._normalizer.normalize(key) for key in self._expected_keys]
         self.quick_lookup: dict[str, str]
 
         for internal_col in AB_INTERNAL_COLUMNS:
@@ -135,15 +130,12 @@ class StreamRecordHandler:
 
         # Store a lookup from normalized keys to pretty cased (originally cased) keys.
         self._pretty_case_lookup: dict[str, str] = {
-            self._normalizer.normalize(pretty_case.lower()): pretty_case
-            for pretty_case in self._expected_keys
+            self._normalizer.normalize(pretty_case.lower()): pretty_case for pretty_case in self._expected_keys
         }
         # Store a map from all key versions (normalized and pretty-cased) to their normalized
         # version.
         self.quick_lookup = {
-            key: self._normalizer.normalize(key)
-            if self._normalize_keys
-            else self.to_display_case(key)
+            key: self._normalizer.normalize(key) if self._normalize_keys else self.to_display_case(key)
             for key in set(self._expected_keys) | set(self._pretty_case_lookup.values())
         }
 
@@ -160,11 +152,7 @@ class StreamRecordHandler:
         try:
             return self.quick_lookup[key]
         except KeyError:
-            result = (
-                self._normalizer.normalize(key)
-                if self._normalize_keys
-                else self.to_display_case(key)
-            )
+            result = self._normalizer.normalize(key) if self._normalize_keys else self.to_display_case(key)
             self.quick_lookup[key] = result
             return result
 
@@ -264,10 +252,7 @@ class StreamRecord(dict[str, Any]):
     def __setitem__(self, key: str, value: Any) -> None:  # noqa: ANN401
         """Set the item with the given key to the given value."""
         index_case_key = self._stream_handler.to_index_case(key)
-        if (
-            self._stream_handler.prune_extra_fields
-            and index_case_key not in self._stream_handler.index_keys
-        ):
+        if self._stream_handler.prune_extra_fields and index_case_key not in self._stream_handler.index_keys:
             return
 
         super().__setitem__(index_case_key, value)
@@ -290,9 +275,7 @@ class StreamRecord(dict[str, Any]):
     def __contains__(self, key: object) -> bool:
         """Return whether the dictionary contains the given key."""
         assert isinstance(key, str), "Key must be a string."
-        return super().__contains__(key) or super().__contains__(
-            self._stream_handler.to_index_case(key)
-        )
+        return super().__contains__(key) or super().__contains__(self._stream_handler.to_index_case(key))
 
     def __iter__(self) -> Iterator[str]:
         """Return an iterator over the keys of the dictionary."""
@@ -308,9 +291,7 @@ class StreamRecord(dict[str, Any]):
             return dict(self) == dict(other)
 
         if isinstance(other, dict):
-            return {k.lower(): v for k, v in self.items()} == {
-                k.lower(): v for k, v in other.items()
-            }
+            return {k.lower(): v for k, v in self.items()} == {k.lower(): v for k, v in other.items()}
         return False
 
     def __hash__(self) -> int:  # type: ignore [override]  # Doesn't match superclass (dict)
