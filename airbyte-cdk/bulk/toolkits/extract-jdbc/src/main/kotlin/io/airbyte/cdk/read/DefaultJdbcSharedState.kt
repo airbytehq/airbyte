@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
-import io.airbyte.cdk.output.OutputConsumer
 import jakarta.inject.Singleton
 import java.time.Instant
 
@@ -14,7 +13,6 @@ import java.time.Instant
 @Singleton
 class DefaultJdbcSharedState(
     override val configuration: JdbcSourceConfiguration,
-    override val outputConsumer: OutputConsumer,
     override val selectQuerier: SelectQuerier,
     val constants: DefaultJdbcConstants,
     internal val concurrencyResource: ConcurrencyResource,

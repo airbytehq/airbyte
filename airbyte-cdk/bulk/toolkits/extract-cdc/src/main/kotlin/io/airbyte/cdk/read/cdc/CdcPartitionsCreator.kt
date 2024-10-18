@@ -5,13 +5,10 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
-import io.airbyte.cdk.read.ConfiguredSyncMode
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
-import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
@@ -20,12 +17,10 @@ import java.util.concurrent.atomic.AtomicReference
 class CdcPartitionsCreator<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
     val globalLockResource: CdcGlobalLockResource,
-    val stateQuerier: StateQuerier,
-    val outputConsumer: OutputConsumer,
+    val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBoundReference: AtomicReference<T>,
-    val incumbentOpaqueStateValue: OpaqueStateValue?,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
@@ -44,10 +39,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
 
     override suspend fun run(): List<PartitionReader> {
         val activeStreams: List<Stream> by lazy {
-            stateQuerier.feeds
-                .filterIsInstance<Stream>()
-                .filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }
-                .filter { stateQuerier.current(it) != null }
+            feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
         val syntheticInput: DebeziumInput by lazy { creatorOps.synthesize() }
         // Ensure that the WAL position upper bound has been computed for this sync.
@@ -57,22 +49,29 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             }
         // Deserialize the incumbent state value, if it exists.
         val input: DebeziumInput =
-            if (incumbentOpaqueStateValue == null) {
-                syntheticInput
-            } else {
-                // validate if existing state is still valid on DB.
-                try {
-                    creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
-                } catch (ex: ConfigErrorException) {
-                    log.error(ex) { "Existing state is invalid." }
-                    globalLockResource.markCdcAsComplete()
-                    throw ex
+            when (val incumbentOpaqueStateValue = feedBootstrap.currentState) {
+                null -> syntheticInput
+                else -> {
+                    // validate if existing state is still valid on DB.
+                    try {
+                        creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
+                    } catch (ex: ConfigErrorException) {
+                        log.error(ex) { "Existing state is invalid." }
+                        globalLockResource.markCdcAsComplete()
+                        throw ex
+                    }
                 }
             }
 
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
-            CdcPartitionReader(concurrencyResource, outputConsumer, readerOps, upperBound, input)
+            CdcPartitionReader(
+                concurrencyResource,
+                feedBootstrap.streamRecordConsumers(),
+                readerOps,
+                upperBound,
+                input
+            )
         if (input.isSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
