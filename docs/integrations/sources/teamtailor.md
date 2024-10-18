@@ -5,7 +5,7 @@ Teamtailor is a recruitment software, provding a new way to attract and hire top
 
 In order to use this source, you must first create an account on teamtailor.
 
-Navigate to your organisation settings -&gt; API Key to create the required API token. You must also specify a version number and can use today&#39;s date as X-Api-Version to always get the latest version of the API.
+Navigate to your organisation Settings Page -> API Key to create the required API token. You must also specify a version number and can use today's date as X-Api-Version to always get the latest version of the API.
 
 Make sure to have the add-ons installed in your account for using the `nps-response` and `job-offers` endpoints.
 
