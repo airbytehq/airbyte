@@ -1,0 +1,161 @@
+{
+  "type": "object",
+  "properties": {
+    "bigintColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "yearColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "integerColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "datetimeColumn": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "timestamp6Column": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "jsonColumn": {
+      "type": "json"
+    },
+    "smallintColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "decColumn": {
+      "type": "number"
+    },
+    "bitColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "decimalColumn": {
+      "type": "number"
+    },
+    "mediumblobColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "set_f": {
+      "type": "string"
+    },
+    "doubleColumn": {
+      "type": "number"
+    },
+    "varcharColumn": {
+      "type": "string"
+    },
+    "boolColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "time6Column": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_without_timezone"
+    },
+    "longblobColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "varbinaryColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "fixedColumn": {
+      "type": "number"
+    },
+    "tinytextColumn": {
+      "type": "string"
+    },
+    "numericColumn": {
+      "type": "number"
+    },
+    "longtextColumn": {
+      "type": "string"
+    },
+    "mediumintColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "tinyblobColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "floatColumn": {
+      "type": "number"
+    },
+    "realColumn": {
+      "type": "number"
+    },
+    "charColumn": {
+      "type": "string"
+    },
+    "tinyintColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "booleanColumn": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "textColumn": {
+      "type": "string"
+    },
+    "id1": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "id2": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "geographyColumn": {
+      "type": "string"
+    },
+    "mediumtextColumn": {
+      "type": "string"
+    },
+    "binaryColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "timeColumn": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_without_timezone"
+    },
+    "datetime6Column": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "blobColumn": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "enum_f": {
+      "type": "string"
+    },
+    "geographypointColumn": {
+      "type": "string"
+    },
+    "dateColumn": {
+      "type": "string",
+      "format": "date"
+    },
+    "timestampColumn": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    }
+  }
+}
