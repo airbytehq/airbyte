@@ -4,12 +4,12 @@ import json
 from unittest import TestCase
 
 from advetiser_slices import mock_advertisers_slices
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
 from source_tiktok_marketing import SourceTiktokMarketing
 
@@ -162,7 +162,7 @@ class TestAdsReportHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -339,7 +339,7 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -492,7 +492,7 @@ class TestAdvertisersReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -607,7 +607,7 @@ class TestCampaignsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
