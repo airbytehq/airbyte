@@ -1,0 +1,1638 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  FxFeed provides data related to foreign exchange rates of about 161
+  currencies.
+
+  With this connector we have streams which fetch data for latest and historical
+  data. There is a stream for currency conversion aswell.
+
+  Currently Time Series stream has not been implemented due to some problem with
+  response/schema
+
+check:
+  type: CheckStream
+  stream_names:
+    - Latest Currency Data
+
+definitions:
+  streams:
+    Latest Currency Data:
+      type: DeclarativeStream
+      name: Latest Currency Data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: latest
+          http_method: GET
+          request_parameters:
+            base: "{{ config['base'] }}"
+            currencies: "{{ config['currencies'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Latest Currency Data"
+    Historical Currency Data:
+      type: DeclarativeStream
+      name: Historical Currency Data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: historical
+          http_method: GET
+          request_parameters:
+            base: "{{ config[\"base\"] }}"
+            currencies: "{{ config[\"currencies\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Historical Currency Data"
+    Currency Conversion:
+      type: DeclarativeStream
+      name: Currency Conversion
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: convert
+          http_method: GET
+          request_parameters:
+            to: "{{ config['to'] }}"
+            from: "{{ config['from'] }}"
+            amount: "{{ config['amount'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"date\"] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Currency Conversion"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.fxfeed.io/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/Latest Currency Data"
+  - $ref: "#/definitions/streams/Historical Currency Data"
+  - $ref: "#/definitions/streams/Currency Conversion"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      base:
+        type: string
+        description: The base currency symbol (e.g., USD, EUR)
+        order: 1
+        title: base
+        default: USD
+      currencies:
+        type: string
+        description: >-
+          A comma-separated list of currency symbols to retrieve rates for(to 
+          limit output currencies)
+        order: 2
+        title: currencies
+        default: EUR,JPY,GBP,AUD,CAD,CHF,CNH,HKD,NZD,INR
+      date:
+        type: string
+        description: The date for historical data in ISO format (YYYY-MM-DD)
+        order: 3
+        title: date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      from:
+        type: string
+        description: The three-letter currency code to convert from
+        order: 4
+        title: From
+        default: USD
+      to:
+        type: string
+        description: The three-letter currency code to convert to
+        order: 5
+        title: To
+        default: EUR
+      amount:
+        type: string
+        description: The amount to be converted
+        order: 6
+        title: Amount
+        default: "1"
+      end_data:
+        type: string
+        description: " The end date of your preferred timeframe (YYYY-MM-DD)"
+        order: 7
+        title: End Data
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      startdate:
+        type: string
+        description: The start date of your preferred timeframe (YYYY-MM-DD)
+        order: 8
+        title: Start Date
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 9
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Latest Currency Data: true
+    Historical Currency Data: true
+    Currency Conversion: true
+  testedStreams:
+    Latest Currency Data:
+      streamHash: 66061846252418db4fd360094b6cc04ec07cacd9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Historical Currency Data:
+      streamHash: 68b30e31ef11669c4284122f21ea6fe7e714fbe6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Currency Conversion:
+      streamHash: 0f45b8696ffb4c37d89659650eec3c702794140b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Latest Currency Data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      base:
+        type:
+          - string
+          - "null"
+      date:
+        type: string
+      privacy:
+        type:
+          - string
+          - "null"
+      rates:
+        type:
+          - object
+          - "null"
+        properties:
+          AED:
+            type:
+              - number
+              - "null"
+          AFN:
+            type:
+              - number
+              - "null"
+          ALL:
+            type:
+              - number
+              - "null"
+          AMD:
+            type:
+              - number
+              - "null"
+          ANG:
+            type:
+              - number
+              - "null"
+          AOA:
+            type:
+              - number
+              - "null"
+          ARS:
+            type:
+              - number
+              - "null"
+          AUD:
+            type:
+              - number
+              - "null"
+          AWG:
+            type:
+              - number
+              - "null"
+          AZN:
+            type:
+              - number
+              - "null"
+          BAM:
+            type:
+              - number
+              - "null"
+          BBD:
+            type:
+              - number
+              - "null"
+          BDT:
+            type:
+              - number
+              - "null"
+          BGN:
+            type:
+              - number
+              - "null"
+          BHD:
+            type:
+              - number
+              - "null"
+          BIF:
+            type:
+              - number
+              - "null"
+          BMD:
+            type:
+              - number
+              - "null"
+          BND:
+            type:
+              - number
+              - "null"
+          BOB:
+            type:
+              - number
+              - "null"
+          BRL:
+            type:
+              - number
+              - "null"
+          BSD:
+            type:
+              - number
+              - "null"
+          BTN:
+            type:
+              - number
+              - "null"
+          BWP:
+            type:
+              - number
+              - "null"
+          BYN:
+            type:
+              - number
+              - "null"
+          BZD:
+            type:
+              - number
+              - "null"
+          CAD:
+            type:
+              - number
+              - "null"
+          CDF:
+            type:
+              - number
+              - "null"
+          CHF:
+            type:
+              - number
+              - "null"
+          CLP:
+            type:
+              - number
+              - "null"
+          CNY:
+            type:
+              - number
+              - "null"
+          COP:
+            type:
+              - number
+              - "null"
+          CRC:
+            type:
+              - number
+              - "null"
+          CUC:
+            type:
+              - number
+              - "null"
+          CUP:
+            type:
+              - number
+              - "null"
+          CVE:
+            type:
+              - number
+              - "null"
+          CZK:
+            type:
+              - number
+              - "null"
+          DJF:
+            type:
+              - number
+              - "null"
+          DKK:
+            type:
+              - number
+              - "null"
+          DOP:
+            type:
+              - number
+              - "null"
+          DZD:
+            type:
+              - number
+              - "null"
+          EGP:
+            type:
+              - number
+              - "null"
+          ERN:
+            type:
+              - number
+              - "null"
+          ETB:
+            type:
+              - number
+              - "null"
+          EUR:
+            type:
+              - number
+              - "null"
+          FJD:
+            type:
+              - number
+              - "null"
+          FKP:
+            type:
+              - number
+              - "null"
+          GBP:
+            type:
+              - number
+              - "null"
+          GEL:
+            type:
+              - number
+              - "null"
+          GHS:
+            type:
+              - number
+              - "null"
+          GIP:
+            type:
+              - number
+              - "null"
+          GMD:
+            type:
+              - number
+              - "null"
+          GNF:
+            type:
+              - number
+              - "null"
+          GTQ:
+            type:
+              - number
+              - "null"
+          GYD:
+            type:
+              - number
+              - "null"
+          HKD:
+            type:
+              - number
+              - "null"
+          HNL:
+            type:
+              - number
+              - "null"
+          HRK:
+            type:
+              - number
+              - "null"
+          HTG:
+            type:
+              - number
+              - "null"
+          HUF:
+            type:
+              - number
+              - "null"
+          IDR:
+            type:
+              - number
+              - "null"
+          ILS:
+            type:
+              - number
+              - "null"
+          INR:
+            type:
+              - number
+              - "null"
+          IQD:
+            type:
+              - number
+              - "null"
+          IRR:
+            type:
+              - number
+              - "null"
+          ISK:
+            type:
+              - number
+              - "null"
+          JMD:
+            type:
+              - number
+              - "null"
+          JOD:
+            type:
+              - number
+              - "null"
+          JPY:
+            type:
+              - number
+              - "null"
+          KES:
+            type:
+              - number
+              - "null"
+          KGS:
+            type:
+              - number
+              - "null"
+          KHR:
+            type:
+              - number
+              - "null"
+          KMF:
+            type:
+              - number
+              - "null"
+          KPW:
+            type:
+              - number
+              - "null"
+          KRW:
+            type:
+              - number
+              - "null"
+          KWD:
+            type:
+              - number
+              - "null"
+          KYD:
+            type:
+              - number
+              - "null"
+          KZT:
+            type:
+              - number
+              - "null"
+          LAK:
+            type:
+              - number
+              - "null"
+          LBP:
+            type:
+              - number
+              - "null"
+          LKR:
+            type:
+              - number
+              - "null"
+          LRD:
+            type:
+              - number
+              - "null"
+          LSL:
+            type:
+              - number
+              - "null"
+          LTL:
+            type:
+              - number
+              - "null"
+          LVL:
+            type:
+              - number
+              - "null"
+          LYD:
+            type:
+              - number
+              - "null"
+          MAD:
+            type:
+              - number
+              - "null"
+          MDL:
+            type:
+              - number
+              - "null"
+          MGA:
+            type:
+              - number
+              - "null"
+          MKD:
+            type:
+              - number
+              - "null"
+          MMK:
+            type:
+              - number
+              - "null"
+          MNT:
+            type:
+              - number
+              - "null"
+          MOP:
+            type:
+              - number
+              - "null"
+          MRO:
+            type:
+              - number
+              - "null"
+          MUR:
+            type:
+              - number
+              - "null"
+          MVR:
+            type:
+              - number
+              - "null"
+          MWK:
+            type:
+              - number
+              - "null"
+          MXN:
+            type:
+              - number
+              - "null"
+          MYR:
+            type:
+              - number
+              - "null"
+          MZN:
+            type:
+              - number
+              - "null"
+          NAD:
+            type:
+              - number
+              - "null"
+          NGN:
+            type:
+              - number
+              - "null"
+          NIO:
+            type:
+              - number
+              - "null"
+          NOK:
+            type:
+              - number
+              - "null"
+          NPR:
+            type:
+              - number
+              - "null"
+          NZD:
+            type:
+              - number
+              - "null"
+          OMR:
+            type:
+              - number
+              - "null"
+          PAB:
+            type:
+              - number
+              - "null"
+          PEN:
+            type:
+              - number
+              - "null"
+          PGK:
+            type:
+              - number
+              - "null"
+          PHP:
+            type:
+              - number
+              - "null"
+          PKR:
+            type:
+              - number
+              - "null"
+          PLN:
+            type:
+              - number
+              - "null"
+          PYG:
+            type:
+              - number
+              - "null"
+          QAR:
+            type:
+              - number
+              - "null"
+          RON:
+            type:
+              - number
+              - "null"
+          RSD:
+            type:
+              - number
+              - "null"
+          RUB:
+            type:
+              - number
+              - "null"
+          RWF:
+            type:
+              - number
+              - "null"
+          SAR:
+            type:
+              - number
+              - "null"
+          SBD:
+            type:
+              - number
+              - "null"
+          SCR:
+            type:
+              - number
+              - "null"
+          SDG:
+            type:
+              - number
+              - "null"
+          SEK:
+            type:
+              - number
+              - "null"
+          SGD:
+            type:
+              - number
+              - "null"
+          SHP:
+            type:
+              - number
+              - "null"
+          SLL:
+            type:
+              - number
+              - "null"
+          SOS:
+            type:
+              - number
+              - "null"
+          SRD:
+            type:
+              - number
+              - "null"
+          STD:
+            type:
+              - number
+              - "null"
+          SVC:
+            type:
+              - number
+              - "null"
+          SYP:
+            type:
+              - number
+              - "null"
+          SZL:
+            type:
+              - number
+              - "null"
+          THB:
+            type:
+              - number
+              - "null"
+          TJS:
+            type:
+              - number
+              - "null"
+          TMT:
+            type:
+              - number
+              - "null"
+          TND:
+            type:
+              - number
+              - "null"
+          TOP:
+            type:
+              - number
+              - "null"
+          TRY:
+            type:
+              - number
+              - "null"
+          TTD:
+            type:
+              - number
+              - "null"
+          TWD:
+            type:
+              - number
+              - "null"
+          TZS:
+            type:
+              - number
+              - "null"
+          UAH:
+            type:
+              - number
+              - "null"
+          UGX:
+            type:
+              - number
+              - "null"
+          USD:
+            type:
+              - number
+              - "null"
+          UYU:
+            type:
+              - number
+              - "null"
+          UZS:
+            type:
+              - number
+              - "null"
+          VEF:
+            type:
+              - number
+              - "null"
+          VND:
+            type:
+              - number
+              - "null"
+          VUV:
+            type:
+              - number
+              - "null"
+          WST:
+            type:
+              - number
+              - "null"
+          XAF:
+            type:
+              - number
+              - "null"
+          XCD:
+            type:
+              - number
+              - "null"
+          XOF:
+            type:
+              - number
+              - "null"
+          XPF:
+            type:
+              - number
+              - "null"
+          YER:
+            type:
+              - number
+              - "null"
+          ZAR:
+            type:
+              - number
+              - "null"
+          ZMW:
+            type:
+              - number
+              - "null"
+          ZWL:
+            type:
+              - number
+              - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+      terms:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+  Historical Currency Data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      base:
+        type:
+          - string
+          - "null"
+      date:
+        type: string
+      historical:
+        type:
+          - boolean
+          - "null"
+      privacy:
+        type:
+          - string
+          - "null"
+      rates:
+        type:
+          - object
+          - "null"
+        properties:
+          AED:
+            type:
+              - number
+              - "null"
+          AFN:
+            type:
+              - number
+              - "null"
+          ALL:
+            type:
+              - number
+              - "null"
+          AMD:
+            type:
+              - number
+              - "null"
+          ANG:
+            type:
+              - number
+              - "null"
+          AOA:
+            type:
+              - number
+              - "null"
+          ARS:
+            type:
+              - number
+              - "null"
+          AUD:
+            type:
+              - number
+              - "null"
+          AWG:
+            type:
+              - number
+              - "null"
+          AZN:
+            type:
+              - number
+              - "null"
+          BAM:
+            type:
+              - number
+              - "null"
+          BBD:
+            type:
+              - number
+              - "null"
+          BDT:
+            type:
+              - number
+              - "null"
+          BGN:
+            type:
+              - number
+              - "null"
+          BHD:
+            type:
+              - number
+              - "null"
+          BIF:
+            type:
+              - number
+              - "null"
+          BMD:
+            type:
+              - number
+              - "null"
+          BND:
+            type:
+              - number
+              - "null"
+          BOB:
+            type:
+              - number
+              - "null"
+          BRL:
+            type:
+              - number
+              - "null"
+          BSD:
+            type:
+              - number
+              - "null"
+          BTN:
+            type:
+              - number
+              - "null"
+          BWP:
+            type:
+              - number
+              - "null"
+          BYN:
+            type:
+              - number
+              - "null"
+          BZD:
+            type:
+              - number
+              - "null"
+          CAD:
+            type:
+              - number
+              - "null"
+          CDF:
+            type:
+              - number
+              - "null"
+          CHF:
+            type:
+              - number
+              - "null"
+          CLP:
+            type:
+              - number
+              - "null"
+          CNY:
+            type:
+              - number
+              - "null"
+          COP:
+            type:
+              - number
+              - "null"
+          CRC:
+            type:
+              - number
+              - "null"
+          CUC:
+            type:
+              - number
+              - "null"
+          CUP:
+            type:
+              - number
+              - "null"
+          CVE:
+            type:
+              - number
+              - "null"
+          CZK:
+            type:
+              - number
+              - "null"
+          DJF:
+            type:
+              - number
+              - "null"
+          DKK:
+            type:
+              - number
+              - "null"
+          DOP:
+            type:
+              - number
+              - "null"
+          DZD:
+            type:
+              - number
+              - "null"
+          EGP:
+            type:
+              - number
+              - "null"
+          ERN:
+            type:
+              - number
+              - "null"
+          ETB:
+            type:
+              - number
+              - "null"
+          EUR:
+            type:
+              - number
+              - "null"
+          FJD:
+            type:
+              - number
+              - "null"
+          FKP:
+            type:
+              - number
+              - "null"
+          GBP:
+            type:
+              - number
+              - "null"
+          GEL:
+            type:
+              - number
+              - "null"
+          GHS:
+            type:
+              - number
+              - "null"
+          GIP:
+            type:
+              - number
+              - "null"
+          GMD:
+            type:
+              - number
+              - "null"
+          GNF:
+            type:
+              - number
+              - "null"
+          GTQ:
+            type:
+              - number
+              - "null"
+          GYD:
+            type:
+              - number
+              - "null"
+          HKD:
+            type:
+              - number
+              - "null"
+          HNL:
+            type:
+              - number
+              - "null"
+          HRK:
+            type:
+              - number
+              - "null"
+          HTG:
+            type:
+              - number
+              - "null"
+          HUF:
+            type:
+              - number
+              - "null"
+          IDR:
+            type:
+              - number
+              - "null"
+          ILS:
+            type:
+              - number
+              - "null"
+          INR:
+            type:
+              - number
+              - "null"
+          IQD:
+            type:
+              - number
+              - "null"
+          IRR:
+            type:
+              - number
+              - "null"
+          ISK:
+            type:
+              - number
+              - "null"
+          JMD:
+            type:
+              - number
+              - "null"
+          JOD:
+            type:
+              - number
+              - "null"
+          JPY:
+            type:
+              - number
+              - "null"
+          KES:
+            type:
+              - number
+              - "null"
+          KGS:
+            type:
+              - number
+              - "null"
+          KHR:
+            type:
+              - number
+              - "null"
+          KMF:
+            type:
+              - number
+              - "null"
+          KPW:
+            type:
+              - number
+              - "null"
+          KRW:
+            type:
+              - number
+              - "null"
+          KWD:
+            type:
+              - number
+              - "null"
+          KYD:
+            type:
+              - number
+              - "null"
+          KZT:
+            type:
+              - number
+              - "null"
+          LAK:
+            type:
+              - number
+              - "null"
+          LBP:
+            type:
+              - number
+              - "null"
+          LKR:
+            type:
+              - number
+              - "null"
+          LRD:
+            type:
+              - number
+              - "null"
+          LSL:
+            type:
+              - number
+              - "null"
+          LTL:
+            type:
+              - number
+              - "null"
+          LVL:
+            type:
+              - number
+              - "null"
+          LYD:
+            type:
+              - number
+              - "null"
+          MAD:
+            type:
+              - number
+              - "null"
+          MDL:
+            type:
+              - number
+              - "null"
+          MGA:
+            type:
+              - number
+              - "null"
+          MKD:
+            type:
+              - number
+              - "null"
+          MMK:
+            type:
+              - number
+              - "null"
+          MNT:
+            type:
+              - number
+              - "null"
+          MOP:
+            type:
+              - number
+              - "null"
+          MRO:
+            type:
+              - number
+              - "null"
+          MUR:
+            type:
+              - number
+              - "null"
+          MVR:
+            type:
+              - number
+              - "null"
+          MWK:
+            type:
+              - number
+              - "null"
+          MXN:
+            type:
+              - number
+              - "null"
+          MYR:
+            type:
+              - number
+              - "null"
+          MZN:
+            type:
+              - number
+              - "null"
+          NAD:
+            type:
+              - number
+              - "null"
+          NGN:
+            type:
+              - number
+              - "null"
+          NIO:
+            type:
+              - number
+              - "null"
+          NOK:
+            type:
+              - number
+              - "null"
+          NPR:
+            type:
+              - number
+              - "null"
+          NZD:
+            type:
+              - number
+              - "null"
+          OMR:
+            type:
+              - number
+              - "null"
+          PAB:
+            type:
+              - number
+              - "null"
+          PEN:
+            type:
+              - number
+              - "null"
+          PGK:
+            type:
+              - number
+              - "null"
+          PHP:
+            type:
+              - number
+              - "null"
+          PKR:
+            type:
+              - number
+              - "null"
+          PLN:
+            type:
+              - number
+              - "null"
+          PYG:
+            type:
+              - number
+              - "null"
+          QAR:
+            type:
+              - number
+              - "null"
+          RON:
+            type:
+              - number
+              - "null"
+          RSD:
+            type:
+              - number
+              - "null"
+          RUB:
+            type:
+              - number
+              - "null"
+          RWF:
+            type:
+              - number
+              - "null"
+          SAR:
+            type:
+              - number
+              - "null"
+          SBD:
+            type:
+              - number
+              - "null"
+          SCR:
+            type:
+              - number
+              - "null"
+          SDG:
+            type:
+              - number
+              - "null"
+          SEK:
+            type:
+              - number
+              - "null"
+          SGD:
+            type:
+              - number
+              - "null"
+          SHP:
+            type:
+              - number
+              - "null"
+          SLL:
+            type:
+              - number
+              - "null"
+          SOS:
+            type:
+              - number
+              - "null"
+          SRD:
+            type:
+              - number
+              - "null"
+          STD:
+            type:
+              - number
+              - "null"
+          SVC:
+            type:
+              - number
+              - "null"
+          SYP:
+            type:
+              - number
+              - "null"
+          SZL:
+            type:
+              - number
+              - "null"
+          THB:
+            type:
+              - number
+              - "null"
+          TJS:
+            type:
+              - number
+              - "null"
+          TMT:
+            type:
+              - number
+              - "null"
+          TND:
+            type:
+              - number
+              - "null"
+          TOP:
+            type:
+              - number
+              - "null"
+          TRY:
+            type:
+              - number
+              - "null"
+          TTD:
+            type:
+              - number
+              - "null"
+          TWD:
+            type:
+              - number
+              - "null"
+          TZS:
+            type:
+              - number
+              - "null"
+          UAH:
+            type:
+              - number
+              - "null"
+          UGX:
+            type:
+              - number
+              - "null"
+          USD:
+            type:
+              - number
+              - "null"
+          UYU:
+            type:
+              - number
+              - "null"
+          UZS:
+            type:
+              - number
+              - "null"
+          VEF:
+            type:
+              - number
+              - "null"
+          VND:
+            type:
+              - number
+              - "null"
+          VUV:
+            type:
+              - number
+              - "null"
+          WST:
+            type:
+              - number
+              - "null"
+          XAF:
+            type:
+              - number
+              - "null"
+          XCD:
+            type:
+              - number
+              - "null"
+          XOF:
+            type:
+              - number
+              - "null"
+          XPF:
+            type:
+              - number
+              - "null"
+          YER:
+            type:
+              - number
+              - "null"
+          ZAR:
+            type:
+              - number
+              - "null"
+          ZMW:
+            type:
+              - number
+              - "null"
+          ZWL:
+            type:
+              - number
+              - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+      terms:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+  Currency Conversion:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      historical:
+        type:
+          - boolean
+          - "null"
+      info:
+        type:
+          - object
+          - "null"
+        properties:
+          rate:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - number
+              - "null"
+      privacy:
+        type:
+          - string
+          - "null"
+      query:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          from:
+            type:
+              - string
+              - "null"
+          to:
+            type:
+              - string
+              - "null"
+      result:
+        type:
+          - number
+          - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+      terms:
+        type:
+          - string
+          - "null"
+    required:
+      - date
