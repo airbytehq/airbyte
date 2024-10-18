@@ -33,7 +33,12 @@ class RecordFilter:
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
+        kwargs = {
+            "stream_state": stream_state,
+            "stream_slice": stream_slice,
+            "next_page_token": next_page_token,
+            "stream_slice.extra_fields": stream_slice.extra_fields if stream_slice else {},
+        }
         for record in records:
             if self._filter_interpolator.eval(self.config, record=record, **kwargs):
                 yield record

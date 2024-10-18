@@ -40,7 +40,7 @@ def create_http_response(field_names: List[str], record_count: int = 1) -> HttpR
     This method does not handle field types for now which may cause some test failures on change if we start considering using some
     fields for calculation. One example of that would be cursor field parsing to datetime.
     """
-    records = [{field_name: f"{field_name}_{i}" for field_name in field_names} for i in range(record_count)]
+    records = [{field: "2021-01-18T21:18:20.000Z" if field in {"SystemModstamp"} else f"{field}_value" for field in field_names} for i in range(record_count)]
     return HttpResponse(json.dumps({"records": records}))
 
 
@@ -120,7 +120,7 @@ class IncrementalTest(TestCase):
         self._config.stream_slice_step("P30D").start_date(start)
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
-            create_http_response([_A_FIELD_NAME], record_count=1),
+            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}))
@@ -145,11 +145,11 @@ class IncrementalTest(TestCase):
 
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
-            create_http_response([_A_FIELD_NAME], record_count=1),
+            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
-            create_http_response([_A_FIELD_NAME], record_count=1),
+            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
