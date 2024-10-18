@@ -9,9 +9,9 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import org.junit.jupiter.api.Test
 
-class S3V2WriteTestJsonUncompressed :
+abstract class S3V2WriteTest(path: String) :
     BasicFunctionalityIntegrationTest(
-        S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
+        S3V2TestUtils.getConfig(path),
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
@@ -22,15 +22,10 @@ class S3V2WriteTestJsonUncompressed :
     }
 }
 
-class S3V2WriteTestJsonGzip :
-    BasicFunctionalityIntegrationTest(
-        S3V2TestUtils.getConfig(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
-        S3V2DataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+class S3V2WriteTestJsonUncompressed : S3V2WriteTest(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH)
+
+class S3V2WriteTestJsonGzip : S3V2WriteTest(S3V2TestUtils.JSON_GZIP_CONFIG_PATH)
+
+class S3V2WriteTestCsvUncompressed : S3V2WriteTest(S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH)
+
+class S3V2WriteTestCsvGzip : S3V2WriteTest(S3V2TestUtils.CSV_GZIP_CONFIG_PATH)

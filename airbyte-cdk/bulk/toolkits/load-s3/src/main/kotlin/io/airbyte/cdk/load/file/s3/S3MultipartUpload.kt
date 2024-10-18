@@ -12,10 +12,16 @@ import aws.sdk.kotlin.services.s3.model.UploadPartRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.StreamProcessor
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageStreamingUploadWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.io.Writer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class S3MultipartUpload<T : OutputStream>(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
@@ -32,16 +38,34 @@ class S3MultipartUpload<T : OutputStream>(
             ?: throw IllegalStateException("Streaming upload part size is not configured")
     private val wrappingBuffer = streamProcessor.wrapper(underlyingBuffer)
 
-    inner class Writer : ObjectStorageStreamingUploadWriter {
-        override suspend fun write(bytes: ByteArray) {
-            wrappingBuffer.write(bytes)
-            if (underlyingBuffer.size() >= partSize) {
+    private val work = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    suspend fun start(): Job =
+        CoroutineScope(Dispatchers.IO).launch {
+            for (unit in work) {
                 uploadPart()
+            }
+            completeInner()
+        }
+
+    inner class UploadWriter : Writer() {
+        override fun close() {
+            log.warn { "Close called on UploadWriter, ignoring." }
+        }
+
+        override fun flush() {
+            throw NotImplementedError("flush() is not supported on S3MultipartUpload.UploadWriter")
+        }
+
+        override fun write(str: String) {
+            wrappingBuffer.write(str.toByteArray(Charsets.UTF_8))
+            if (underlyingBuffer.size() >= partSize) {
+                runBlocking { work.send { uploadPart() } }
             }
         }
 
-        override suspend fun write(string: String) {
-            write(string.toByteArray(Charsets.UTF_8))
+        override fun write(cbuf: CharArray, off: Int, len: Int) {
+            write(String(cbuf, off, len))
         }
     }
 
@@ -66,6 +90,10 @@ class S3MultipartUpload<T : OutputStream>(
     }
 
     suspend fun complete() {
+        work.close()
+    }
+
+    private suspend fun completeInner() {
         if (underlyingBuffer.size() > 0) {
             uploadPart()
         }

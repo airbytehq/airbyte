@@ -36,4 +36,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-CSV-CONFIG
+          fileName: s3_dest_v2_csv_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-CSV-GZIP-CONFIG
+          fileName: s3_dest_v2_csv_gzip_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
