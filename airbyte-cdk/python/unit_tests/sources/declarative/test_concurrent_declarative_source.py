@@ -137,7 +137,6 @@ _MANIFEST = {
           }
         ]
       },
-      "use_cache": False,  # necessary to ensure all tests are independent and that HttpMocker can validate the HTTP requests
     },
     "retriever": {
       "type": "SimpleRetriever",
@@ -731,7 +730,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
     concurrent_cursor_party_members_slices = [
         {"start": "2024-07-01", "end": "2024-07-15"},
-        {"start": "2024-07-30", "end": "2024-08-13"},  # FIXME this is an interesting case where we restart from that top boundary. I'm wondering if we need to change that because if this was within one sync, we would start from 2024-09-01 and not 2024-07-30
+        {"start": "2024-07-30", "end": "2024-08-13"},  # FIXME this is an interesting case where we restart from that top boundary. I'm wondering if we need to change that because if this was within one sync, we would start from 2024-08-01 and not 2024-07-30
         {"start": "2024-08-14", "end": "2024-08-14"},
         {"start": "2024-09-04", "end": "2024-09-09"},  # considering lookback window
     ]
