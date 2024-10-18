@@ -25,7 +25,6 @@ from duckdb_engine import DuckDBEngineWarning
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 
-
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905
 warnings.filterwarnings(
