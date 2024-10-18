@@ -24,6 +24,7 @@ from airbyte_protocol_dataclasses.models import AirbyteStateMessage
 from pandas import Index
 from pydantic import BaseModel, Field
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -35,13 +36,6 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
     from sqlalchemy.sql.elements import TextClause
     from sqlalchemy.sql.type_api import TypeEngine
-
-
-class RecordDedupeMode(enum.Enum):
-    """The deduplication mode to use when writing records."""
-
-    APPEND = "append"
-    REPLACE = "replace"
 
 
 class SQLRuntimeError(Exception):
@@ -239,6 +233,7 @@ class SqlProcessorBase(abc.ABC):
         return self._get_table_by_name(
             self.get_sql_table_name(stream_name),
         )
+
     # Protected members (non-public interface):
 
     def _init_connection_settings(self, connection: Connection) -> None:  # noqa: B027  # Intentionally empty, not abstract
@@ -375,7 +370,7 @@ class SqlProcessorBase(abc.ABC):
         """Return a list of all tables in the database."""
         with self.get_sql_connection() as conn:
             inspector: Inspector = sqlalchemy.inspect(conn)
-            return cast(list[str], inspector.get_table_names(schema=self.sql_config.schema_name))
+            return inspector.get_table_names(schema=self.sql_config.schema_name)
 
     def _get_schemas_list(
         self,
@@ -461,7 +456,7 @@ class SqlProcessorBase(abc.ABC):
         stream_name: str,
     ) -> dict[str, sqlalchemy.types.TypeEngine[Any]]:
         """Return the column definitions for the given stream."""
-        columns: dict[str, sqlalchemy.types.TypeEngine] = {}
+        columns: dict[str, sqlalchemy.types.TypeEngine[Any]] = {}
         properties = self.catalog_provider.get_stream_properties(stream_name)
         for property_name, json_schema_property_def in properties.items():
             clean_prop_name = self.normalizer.normalize(property_name)
@@ -475,7 +470,7 @@ class SqlProcessorBase(abc.ABC):
 
         return columns
 
-    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
+    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult[Any]:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
             sql = text(sql)
@@ -484,8 +479,8 @@ class SqlProcessorBase(abc.ABC):
             try:
                 result = conn.execute(sql)
             except (
-                sqlalchemy.exc.ProgrammingError,
-                sqlalchemy.exc.SQLAlchemyError,
+                ProgrammingError,
+                SQLAlchemyError,
             ) as ex:
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
@@ -517,7 +512,7 @@ class SqlProcessorBase(abc.ABC):
         for file_path in files:
             dataframe = pd.read_json(file_path, lines=True)
 
-            sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(stream_name)
+            sql_column_definitions: dict[str, TypeEngine[Any]] = self._get_sql_column_definitions(stream_name)
 
             # Remove fields that are not in the schema
             for col_name in dataframe.columns:
@@ -551,7 +546,7 @@ class SqlProcessorBase(abc.ABC):
         self,
         table: Table,
         column_name: str,
-        column_type: sqlalchemy.types.TypeEngine,
+        column_type: sqlalchemy.types.TypeEngine[Any],
     ) -> None:
         """Add a column to the given table."""
         self._execute_sql(
@@ -677,7 +672,7 @@ class SqlProcessorBase(abc.ABC):
             """,
         )
 
-    def _get_column_by_name(self, table: str | Table, column_name: str) -> Column:
+    def _get_column_by_name(self, table: str | Table, column_name: str) -> Column[Any]:
         """Return the column object for the given column name.
 
         This method is case-insensitive.
