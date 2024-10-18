@@ -4,12 +4,11 @@
 from __future__ import annotations
 
 import abc
-import enum
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast, final
+from typing import TYPE_CHECKING, Any, final
 
 import pandas as pd
 import sqlalchemy
