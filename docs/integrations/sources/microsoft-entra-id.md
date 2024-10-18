@@ -1,9 +1,6 @@
 # Microsoft Entra Id
 The Microsoft Entra ID Connector for Airbyte allows seamless integration with Microsoft Entra ID, enabling secure and automated data synchronization of identity and access management information. With this connector, users can efficiently retrieve and manage user, group, and directory data to streamline identity workflows and ensure up-to-date access control within their applications.
 
-## Authentication
-First of all you need to register an application in the Microsoft Entra Admin Center. Please folow [these](https://learn.microsoft.com/en-us/graph/auth-register-app-v2) steps to do so. After that you need to follow [these](https://learn.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0&tabs=http) steps to configure the api with right permissions and get the access token.
-
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -22,13 +19,13 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 |-------------|-------------|------------|---------------------|----------------------|
 | users | id | DefaultPaginator | ✅ |  ❌  |
 | groups | id | DefaultPaginator | ✅ |  ❌  |
-| applications | id | No pagination | ✅ |  ❌  |
+| applications | id | DefaultPaginator | ✅ |  ❌  |
 | user_owned_deleted_items | id | DefaultPaginator | ✅ |  ❌  |
 | directoryroles | id | No pagination | ✅ |  ❌  |
-| auditlogs |  | DefaultPaginator | ✅ |  ❌  |
+| auditlogs | id | DefaultPaginator | ✅ |  ❌  |
 | directoryobjects | id | DefaultPaginator | ✅ |  ❌  |
-| directoryroletemplates | id | DefaultPaginator | ✅ |  ❌  |
-| directoryaudits |  | DefaultPaginator | ✅ |  ❌  |
+| directoryroletemplates | id | No pagination | ✅ |  ❌  |
+| directoryaudits | id | DefaultPaginator | ✅ |  ❌  |
 | serviceprincipals | id | DefaultPaginator | ✅ |  ❌  |
 | identityproviders |  | DefaultPaginator | ✅ |  ❌  |
 | adminconsentrequestpolicy |  | DefaultPaginator | ✅ |  ❌  |
@@ -40,6 +37,6 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-13 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-18 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
