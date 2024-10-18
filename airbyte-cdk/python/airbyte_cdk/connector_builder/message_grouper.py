@@ -313,7 +313,10 @@ class MessageGrouper:
             # If it matches, don't yield this as we don't need to show this in the Builder.
             # This is somewhat brittle as it relies on the message string, but if they drift then the worst case
             # is that this message will be shown in the Builder.
-            if traced_exception.message is not None and "During the sync, the following streams did not sync successfully" in traced_exception.message:
+            if (
+                traced_exception.message is not None
+                and "During the sync, the following streams did not sync successfully" in traced_exception.message
+            ):
                 return
             yield traced_exception.as_airbyte_message()
         except Exception as e:
