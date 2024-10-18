@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import java.nio.file.Files
-import java.nio.file.Path
 
 class MockDestinationConfiguration : DestinationConfiguration() {
     // override to 10KB instead of 200MB

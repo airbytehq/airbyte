@@ -91,7 +91,14 @@ data object CliRunner {
                 baos.toByteArray()
             }
         val inputStream: InputStream = ByteArrayInputStream(inputJsonBytes)
-        return destination(op, configContents, catalog, state, inputStream, *featureFlags.toTypedArray())
+        return destination(
+            op,
+            configContents,
+            catalog,
+            state,
+            inputStream,
+            *featureFlags.toTypedArray()
+        )
     }
 
     private fun makeRunnable(
@@ -137,14 +144,10 @@ data object CliRunner {
         get() = toSet().map { it.envVar.name to it.requiredEnvVarValue }.toMap()
 
     private fun inputFile(contents: Any?): Path? =
-        contents?.let {
-            inputFileFromString(Jsons.writeValueAsString(contents))
-        }
+        contents?.let { inputFileFromString(Jsons.writeValueAsString(contents)) }
 
     private fun inputFileFromString(contents: String?): Path? =
         contents?.let {
-            Files.createTempFile(null, null).also { file ->
-                Files.writeString(file, contents)
-            }
+            Files.createTempFile(null, null).also { file -> Files.writeString(file, contents) }
         }
 }

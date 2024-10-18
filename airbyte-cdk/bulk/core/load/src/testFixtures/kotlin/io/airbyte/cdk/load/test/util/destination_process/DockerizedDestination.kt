@@ -126,9 +126,7 @@ class DockerizedDestination(
             cmd.add("destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
-        catalog?.let {
-            addInput("catalog", Jsons.writeValueAsBytes(catalog))
-        }
+        catalog?.let { addInput("catalog", Jsons.writeValueAsBytes(catalog)) }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
