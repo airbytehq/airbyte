@@ -37,7 +37,10 @@ class MysqlJdbcPartitionFactoryTest {
         val fieldId = Field("id", IntFieldType)
         val stream =
             Stream(
-                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("stream1")),
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("stream1")
+                    ),
                 fields = listOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(fieldId),
@@ -93,7 +96,10 @@ class MysqlJdbcPartitionFactoryTest {
     fun testColdStartWithoutPk() {
         val streamWithoutPk =
             Stream(
-                id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("stream2")),
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("stream2")
+                    ),
                 fields = listOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(),

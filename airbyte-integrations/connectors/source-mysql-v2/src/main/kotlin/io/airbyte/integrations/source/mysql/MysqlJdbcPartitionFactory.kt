@@ -47,11 +47,14 @@ class MysqlJdbcPartitionFactory(
                         streamState,
                     )
                 } else {
-                    throw ConfigErrorException("CDC incremental sync requires having primary key in the table.")
+                    throw ConfigErrorException(
+                        "CDC incremental sync requires having primary key in the table."
+                    )
                 }
             }
 
-            // The difference between the following two partitions are just their final state representation.
+            // The difference between the following two partitions are just their final state
+            // representation.
             // For FULL_REFRESH, the content of the state does not need to change.
             // For INCREMENTAL, we need to change the state to indicate the snapshot is completed.
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -128,31 +131,16 @@ class MysqlJdbcPartitionFactory(
                 Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
 
             if (sv.pkName == null) {
-                // This indicates initial snapshot has been completed. CDC snapshot will be handled by CDCPartitionFactory.
+                // This indicates initial snapshot has been completed. CDC snapshot will be handled
+                // by CDCPartitionFactory.
                 // Nothing to do here.
                 return null
             } else {
-                // This branch indicates snapshot is incomplete. We need to resume based on previous snapshot state.
+                // This branch indicates snapshot is incomplete. We need to resume based on previous
+                // snapshot state.
                 val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
                 val pkField = pkChosenFromCatalog.first()
-
-                val pkLowerBound: JsonNode =
-                    when (pkField.type.airbyteSchemaType) {
-                        is LeafAirbyteSchemaType ->
-                            when (pkField.type.airbyteSchemaType as LeafAirbyteSchemaType) {
-                                LeafAirbyteSchemaType.INTEGER -> {
-                                    Jsons.valueToTree(sv.pkVal?.toInt())
-                                }
-                                LeafAirbyteSchemaType.NUMBER -> {
-                                    Jsons.valueToTree(sv.pkVal?.toDouble())
-                                }
-                                else -> Jsons.valueToTree(sv.pkVal)
-                            }
-                        else ->
-                            throw IllegalStateException(
-                                "PK field must be leaf type but is ${pkField.type.airbyteSchemaType}."
-                            )
-                    }
+                val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
                 return MysqlJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -184,23 +172,8 @@ class MysqlJdbcPartitionFactory(
             }
             // resume back to cursor based increment.
             val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
-            val cursorCheckpoint: JsonNode =
-                when (cursor.type.airbyteSchemaType) {
-                    is LeafAirbyteSchemaType ->
-                        when (cursor.type.airbyteSchemaType as LeafAirbyteSchemaType) {
-                            LeafAirbyteSchemaType.INTEGER -> {
-                                Jsons.valueToTree(sv.cursors.toInt())
-                            }
-                            LeafAirbyteSchemaType.NUMBER -> {
-                                Jsons.valueToTree(sv.cursors.toDouble())
-                            }
-                            else -> Jsons.valueToTree(sv.cursors)
-                        }
-                    else ->
-                        throw IllegalStateException(
-                            "Cursor field must be leaf type but is ${cursor.type.airbyteSchemaType}."
-                        )
-                }
+            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
+
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
             if (cursorCheckpoint == streamState.cursorUpperBound) {
@@ -215,6 +188,25 @@ class MysqlJdbcPartitionFactory(
                 isLowerBoundIncluded = false,
                 cursorUpperBound = streamState.cursorUpperBound,
             )
+        }
+    }
+
+    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+        when (field.type.airbyteSchemaType) {
+            is LeafAirbyteSchemaType ->
+                return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                    LeafAirbyteSchemaType.INTEGER -> {
+                        Jsons.valueToTree(stateValue?.toInt())
+                    }
+                    LeafAirbyteSchemaType.NUMBER -> {
+                        Jsons.valueToTree(stateValue?.toDouble())
+                    }
+                    else -> Jsons.valueToTree(stateValue)
+                }
+            else ->
+                throw IllegalStateException(
+                    "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+                )
         }
     }
 
