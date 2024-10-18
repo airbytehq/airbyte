@@ -63,6 +63,7 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0, description="The percentage of users that should receive the new version initially."
     )
@@ -239,7 +240,6 @@ class ConnectorRegistryReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    isReleaseCandidate: Optional[bool] = Field(None, description="Whether the current version is a release candidate.")
     releaseCandidates: Optional[ConnectorReleaseCandidates] = None
     rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: Optional[ConnectorBreakingChanges] = None
