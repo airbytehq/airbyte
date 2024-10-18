@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "orchestrator"
-version = "0.5.8"
+version = "0.6.5"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"

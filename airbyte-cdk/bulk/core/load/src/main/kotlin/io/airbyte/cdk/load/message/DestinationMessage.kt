@@ -63,6 +63,14 @@ data class DestinationRecord(
     )
 
     data class Meta(val changes: List<Change>?) {
+        companion object {
+            const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
+            const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
+            const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
+            const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
+            const val COLUMN_NAME_DATA: String = "_airbyte_data"
+        }
+
         fun asProtocolObject(): AirbyteRecordMessageMeta =
             AirbyteRecordMessageMeta().also {
                 if (changes != null) {
