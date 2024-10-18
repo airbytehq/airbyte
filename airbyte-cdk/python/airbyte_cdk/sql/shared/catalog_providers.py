@@ -8,17 +8,14 @@ streams as they are discovered, providing a thin layer of abstraction over the c
 
 from __future__ import annotations
 
-import copy
 from typing import TYPE_CHECKING, Any, cast, final
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
-from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
 
 if TYPE_CHECKING:
     from airbyte_cdk.models import ConfiguredAirbyteStream
-    from airbyte_cdk.sql.results import ReadResult
 
 
 class CatalogProvider:
@@ -115,18 +112,6 @@ class CatalogProvider:
         """Return the names of the top-level properties for the given stream."""
         return cast(dict[str, Any], self.get_stream_json_schema(stream_name)["properties"])
 
-    @classmethod
-    def from_read_result(
-        cls,
-        read_result: ReadResult,
-    ) -> CatalogProvider:
-        """Create a catalog provider from a `ReadResult` object."""
-        return cls(
-            ConfiguredAirbyteCatalog(
-                streams=[dataset._stream_metadata for dataset in read_result.values()]  # noqa: SLF001  # Non-public API
-            )
-        )
-
     def get_primary_keys(
         self,
         stream_name: str,
@@ -149,56 +134,3 @@ class CatalogProvider:
                 )
 
         return [pk_nodes[0] for pk_nodes in normalized_pks]
-
-    def get_cursor_key(
-        self,
-        stream_name: str,
-    ) -> list[str] | None:
-        """Return the cursor key for the given stream."""
-        ret = self.get_configured_stream_info(stream_name).cursor_field
-        return ret if ret is None else cast(list[str], ret)
-
-    def resolve_write_method(
-        self,
-        stream_name: str,
-        write_strategy: WriteStrategy,
-    ) -> WriteMethod:
-        """Return the write method for the given stream."""
-        has_pks: bool = bool(self.get_primary_keys(stream_name))
-        has_incremental_key: bool = bool(self.get_cursor_key(stream_name))
-        if write_strategy == WriteStrategy.MERGE and not has_pks:
-            raise exc.AirbyteInputError(
-                message="Cannot use merge strategy on a stream with no primary keys.",
-                context={
-                    "stream_name": stream_name,
-                },
-            )
-
-        if write_strategy != WriteStrategy.AUTO:
-            return WriteMethod(write_strategy)
-
-        if has_pks:
-            return WriteMethod.MERGE
-
-        if has_incremental_key:
-            return WriteMethod.APPEND
-
-        return WriteMethod.REPLACE
-
-    def with_write_strategy(
-        self,
-        write_strategy: WriteStrategy,
-    ) -> CatalogProvider:
-        """Return a new catalog provider with the specified write strategy applied.
-
-        The original catalog provider is not modified.
-        """
-        new_catalog: ConfiguredAirbyteCatalog = copy.deepcopy(self.configured_catalog)
-        for stream in new_catalog.streams:
-            write_method = self.resolve_write_method(
-                stream_name=stream.stream.name,
-                write_strategy=write_strategy,
-            )
-            stream.destination_sync_mode = write_method.destination_sync_mode
-
-        return CatalogProvider(new_catalog)

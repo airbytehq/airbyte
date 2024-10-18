@@ -173,18 +173,6 @@ class AirbyteInputError(AirbyteError, ValueError):
     input_value: str | None = None
 
 
-@dataclass
-class AirbyteNoStreamsSelectedError(AirbyteInputError):
-    """No streams were selected for the source."""
-
-    guidance = (
-        "Please call `select_streams()` to select at least one stream from the list provided. "
-        "You can also call `select_all_streams()` to select all available streams for this source."
-    )
-    connector_name: str | None = None
-    available_streams: list[str] | None = None
-
-
 # Normalization Errors
 
 
@@ -197,75 +185,6 @@ class AirbyteNameNormalizationError(AirbyteError, ValueError):
 
     raw_name: str | None = None
     normalization_result: str | None = None
-
-
-# Airbyte Cache Errors
-
-
-class AirbyteCacheError(AirbyteError):
-    """Error occurred while accessing the cache."""
-
-
-@dataclass
-class AirbyteCacheTableValidationError(AirbyteCacheError):
-    """Cache table validation failed."""
-
-    violation: str | None = None
-
-
-@dataclass
-class AirbyteConnectorConfigurationMissingError(AirbyteCacheError):
-    """Connector is missing configuration."""
-
-    connector_name: str | None = None
-
-
-# Subprocess Errors
-
-
-@dataclass
-class AirbyteSubprocessError(AirbyteError):
-    """Error when running subprocess."""
-
-    run_args: list[str] | None = None
-
-
-@dataclass
-class AirbyteSubprocessFailedError(AirbyteSubprocessError):
-    """Subprocess failed."""
-
-    exit_code: int | None = None
-
-
-# Connector Registry Errors
-
-
-class AirbyteConnectorRegistryError(AirbyteError):
-    """Error when accessing the connector registry."""
-
-
-@dataclass
-class AirbyteConnectorNotRegisteredError(AirbyteConnectorRegistryError):
-    """Connector not found in registry."""
-
-    connector_name: str | None = None
-    guidance = (
-        "Please double check the connector name. "
-        "Alternatively, you can provide an explicit connector install method to `get_source()`: "
-        "`pip_url`, `local_executable`, `docker_image`, or `source_manifest`."
-    )
-    help_url = DOCS_URL_BASE + "/airbyte/sources/util.html#get_source"
-
-
-@dataclass
-class AirbyteConnectorNotPyPiPublishedError(AirbyteConnectorRegistryError):
-    """Connector found, but not published to PyPI."""
-
-    connector_name: str | None = None
-    guidance = "This likely means that the connector is not ready for use with Airbyte."
-
-
-# Connector Errors
 
 
 @dataclass
@@ -295,124 +214,9 @@ class AirbyteConnectorError(AirbyteError):
         return None
 
 
-class AirbyteConnectorExecutableNotFoundError(AirbyteConnectorError):
-    """Connector executable not found."""
-
-
-class AirbyteConnectorInstallationError(AirbyteConnectorError):
-    """Error when installing the connector."""
-
-
-class AirbyteConnectorReadError(AirbyteConnectorError):
-    """Error when reading from the connector."""
-
-
-class AirbyteConnectorWriteError(AirbyteConnectorError):
-    """Error when writing to the connector."""
-
-
-class AirbyteConnectorSpecFailedError(AirbyteConnectorError):
-    """Error when getting spec from the connector."""
-
-
-class AirbyteConnectorDiscoverFailedError(AirbyteConnectorError):
-    """Error when running discovery on the connector."""
-
-
-class AirbyteNoDataFromConnectorError(AirbyteConnectorError):
-    """No data was provided from the connector."""
-
-
-class AirbyteConnectorMissingCatalogError(AirbyteConnectorError):
-    """Connector did not return a catalog."""
-
-
-class AirbyteConnectorMissingSpecError(AirbyteConnectorError):
-    """Connector did not return a spec."""
-
-
-class AirbyteConnectorValidationFailedError(AirbyteConnectorError):
-    """Connector config validation failed."""
-
-    guidance = "Please double-check your config and review the validation errors for more information."
-
-
-class AirbyteConnectorCheckFailedError(AirbyteConnectorError):
-    """Connector check failed."""
-
-    guidance = "Please double-check your config or review the connector's logs for more information."
-
-
-@dataclass
-class AirbyteConnectorFailedError(AirbyteConnectorError):
-    """Connector failed."""
-
-    exit_code: int | None = None
-
-
 @dataclass
 class AirbyteStreamNotFoundError(AirbyteConnectorError):
     """Connector stream not found."""
 
     stream_name: str | None = None
     available_streams: list[str] | None = None
-
-
-@dataclass
-class AirbyteStateNotFoundError(AirbyteConnectorError, KeyError):
-    """State entry not found."""
-
-    stream_name: str | None = None
-    available_streams: list[str] | None = None
-
-
-@dataclass
-class AirbyteSecretNotFoundError(AirbyteError):
-    """Secret not found."""
-
-    guidance = "Please ensure that the secret is set."
-    help_url = "https://docs.airbyte.com/using-airbyte/airbyte-lib/getting-started#secrets-management"
-
-    secret_name: str | None = None
-    sources: list[str] | None = None
-
-
-# Airbyte Resource Errors (General)
-
-
-@dataclass
-class AirbyteMissingResourceError(AirbyteError):
-    """Remote Airbyte resources does not exist."""
-
-    resource_type: str | None = None
-    resource_name_or_id: str | None = None
-
-
-@dataclass
-class AirbyteMultipleResourcesError(AirbyteError):
-    """Could not locate the resource because multiple matching resources were found."""
-
-    resource_type: str | None = None
-    resource_name_or_id: str | None = None
-
-
-# Custom Warnings
-
-
-class AirbyteExperimentalFeatureWarning(FutureWarning):
-    """Warning whenever using experimental features in Airbyte."""
-
-
-# Airbyte Warnings
-
-
-class AirbyteWarning(Warning):
-    """General warnings from airbyte_cdk.sql."""
-
-
-class AirbyteDataLossWarning(AirbyteWarning):
-    """Warning for potential data loss.
-
-    Users can ignore this warning by running:
-    > warnings.filterwarnings("ignore", category="airbyte.exceptions.AirbyteDataLossWarning")
-    """
