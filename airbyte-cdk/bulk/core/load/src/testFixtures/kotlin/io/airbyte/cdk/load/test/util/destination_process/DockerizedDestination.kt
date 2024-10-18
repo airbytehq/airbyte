@@ -103,7 +103,6 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, "/data"),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
-                    "-e",
                 ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
