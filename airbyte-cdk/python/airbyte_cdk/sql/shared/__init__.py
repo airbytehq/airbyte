@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase
 
-
 __all__ = [
     "SqlProcessorBase",
 ]

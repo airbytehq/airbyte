@@ -77,11 +77,7 @@ from __future__ import annotations
 
 from airbyte_cdk.sql.destinations import util
 from airbyte_cdk.sql.destinations.base import Destination
-from airbyte_cdk.sql.destinations.util import (
-    get_destination,
-    get_noop_destination,
-)
-
+from airbyte_cdk.sql.destinations.util import get_destination, get_noop_destination
 
 __all__ = [
     # Modules

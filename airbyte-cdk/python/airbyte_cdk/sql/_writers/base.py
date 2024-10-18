@@ -8,7 +8,6 @@ from typing import IO, TYPE_CHECKING
 
 from airbyte_cdk.sql._util.connector_info import WriterRuntimeInfo
 
-
 if TYPE_CHECKING:
     from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
     from airbyte_cdk.sql.progress import ProgressTracker

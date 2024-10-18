@@ -8,12 +8,8 @@ import json
 from typing import IO, TYPE_CHECKING, cast
 
 import orjson
+from airbyte_cdk.sql._writers.file_writers import FileWriterBase
 from overrides import overrides
-
-from airbyte_cdk.sql._writers.file_writers import (
-    FileWriterBase,
-)
-
 
 if TYPE_CHECKING:
     from pathlib import Path

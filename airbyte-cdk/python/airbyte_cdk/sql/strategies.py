@@ -8,7 +8,6 @@ from enum import Enum
 
 from airbyte_cdk.models import DestinationSyncMode
 
-
 _MERGE = "merge"
 _REPLACE = "replace"
 _APPEND = "append"

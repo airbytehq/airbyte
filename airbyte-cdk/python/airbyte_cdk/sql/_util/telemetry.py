@@ -42,16 +42,11 @@ from typing import Any, cast
 import requests
 import ulid
 import yaml
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util import meta
-from airbyte_cdk.sql._util.connector_info import (
-    ConnectorRuntimeInfo,
-    WriterRuntimeInfo,
-)
+from airbyte_cdk.sql._util.connector_info import ConnectorRuntimeInfo, WriterRuntimeInfo
 from airbyte_cdk.sql._util.hashing import one_way_hash
 from airbyte_cdk.sql.version import get_version
-
 
 DEBUG = True
 """Enable debug mode for telemetry code."""

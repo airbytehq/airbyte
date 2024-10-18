@@ -17,7 +17,6 @@ from typing import Any
 
 import requests
 
-
 COLAB_SESSION_URL = "http://172.28.0.12:9000/api/sessions"
 """URL to get the current Google Colab session information."""
 

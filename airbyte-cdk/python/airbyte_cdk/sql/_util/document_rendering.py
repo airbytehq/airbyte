@@ -6,10 +6,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import yaml
-from pydantic import BaseModel
-
 from airbyte_cdk.sql.documents import Document
-
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

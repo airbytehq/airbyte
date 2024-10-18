@@ -6,7 +6,6 @@ from __future__ import annotations
 from airbyte_cdk.sql.datasets._base import DatasetBase
 from airbyte_cdk.sql.datasets._sql import CachedDataset, SQLDataset
 
-
 __all__ = [
     "CachedDataset",
     "DatasetBase",

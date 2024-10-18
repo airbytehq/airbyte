@@ -29,37 +29,26 @@ from enum import Enum, auto
 from typing import IO, TYPE_CHECKING, Any, Literal, cast
 
 import pendulum
-from rich.errors import LiveError
-from rich.live import Live as RichLive
-from rich.markdown import Markdown as RichMarkdown
-
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteStreamStatus,
-)
-
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.sql import logs
 from airbyte_cdk.sql._message_iterators import _new_stream_success_message
 from airbyte_cdk.sql._util import meta
-from airbyte_cdk.sql._util.telemetry import (
-    EventState,
-    EventType,
-    send_telemetry,
-)
+from airbyte_cdk.sql._util.telemetry import EventState, EventType, send_telemetry
 from airbyte_cdk.sql.logs import get_global_file_logger
-
+from rich.errors import LiveError
+from rich.live import Live as RichLive
+from rich.markdown import Markdown as RichMarkdown
 
 if TYPE_CHECKING:
     import logging
     from collections.abc import Generator, Iterable
     from types import ModuleType
 
-    from structlog import BoundLogger
-
     from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
     from airbyte_cdk.sql.caches.base import CacheBase
     from airbyte_cdk.sql.destinations.base import Destination
     from airbyte_cdk.sql.sources.base import Source
+    from structlog import BoundLogger
 
 IS_REPL = hasattr(sys, "ps1")  # True if we're in a Python REPL, in which case we can use Rich.
 HORIZONTAL_LINE = "------------------------------------------------\n"

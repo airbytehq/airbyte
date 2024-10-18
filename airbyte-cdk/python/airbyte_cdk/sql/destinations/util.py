@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any
 from airbyte_cdk.sql._executors.util import get_connector_executor
 from airbyte_cdk.sql.destinations.base import Destination
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 

@@ -72,23 +72,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import pytz
-from uuid_extensions import uuid7str
-
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer, NameNormalizerBase
-from airbyte_cdk.sql.constants import (
-    AB_EXTRACTED_AT_COLUMN,
-    AB_INTERNAL_COLUMNS,
-    AB_META_COLUMN,
-    AB_RAW_ID_COLUMN,
-)
-
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
+from uuid_extensions import uuid7str
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from airbyte_cdk.models import (
-        AirbyteRecordMessage,
-    )
+    from airbyte_cdk.models import AirbyteRecordMessage
 
 
 class StreamRecordHandler:

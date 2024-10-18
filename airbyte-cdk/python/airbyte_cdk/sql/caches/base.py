@@ -9,11 +9,7 @@ from typing import IO, TYPE_CHECKING, Any, final
 import pandas as pd
 import pyarrow as pa
 import pyarrow.dataset as ds
-from pydantic import Field, PrivateAttr
-from sqlalchemy import text
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-
 from airbyte_cdk.sql import constants
 from airbyte_cdk.sql._writers.base import AirbyteWriterInterface
 from airbyte_cdk.sql.caches._catalog_backend import CatalogBackendBase, SqlCatalogBackend
@@ -21,12 +17,10 @@ from airbyte_cdk.sql.caches._state_backend import SqlStateBackend
 from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE, TEMP_FILE_CLEANUP
 from airbyte_cdk.sql.datasets._sql import CachedDataset
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-from airbyte_cdk.sql.shared.sql_processor import (
-    SqlConfig,
-    SqlProcessorBase,
-)
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase
 from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
-
+from pydantic import Field, PrivateAttr
+from sqlalchemy import text
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

@@ -9,9 +9,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import yaml
-from rich import print  # noqa: A004  # Allow shadowing the built-in
-from rich.syntax import Syntax
-
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -21,7 +18,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._connector_base import ConnectorBase
 from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
@@ -33,14 +29,14 @@ from airbyte_cdk.sql.records import StreamRecord, StreamRecordHandler
 from airbyte_cdk.sql.results import ReadResult
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.strategies import WriteStrategy
-
+from rich import print  # noqa: A004  # Allow shadowing the built-in
+from rich.syntax import Syntax
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator
 
     from airbyte_cdk import ConnectorSpecification
     from airbyte_cdk.models import AirbyteStream
-
     from airbyte_cdk.sql._executors.base import Executor
     from airbyte_cdk.sql.caches import CacheBase
     from airbyte_cdk.sql.documents import Document

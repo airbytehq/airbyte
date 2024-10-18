@@ -5,12 +5,11 @@
 from __future__ import annotations
 
 import abc
-from dataclasses import asdict
 import json
+from dataclasses import asdict
 from typing import TYPE_CHECKING, NoReturn, final
 
 from airbyte_cdk.sql.shared.state_providers import StateProviderBase
-
 
 if TYPE_CHECKING:
     from airbyte_cdk.models import AirbyteStateMessage

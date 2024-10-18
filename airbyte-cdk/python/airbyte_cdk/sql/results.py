@@ -13,20 +13,18 @@ from typing import TYPE_CHECKING
 
 from airbyte_cdk.sql.datasets._sql import CachedDataset
 
-
 if TYPE_CHECKING:
     from collections.abc import Iterator
-
-    from sqlalchemy.engine import Engine
 
     from airbyte_cdk.sql._writers.base import AirbyteWriterInterface
     from airbyte_cdk.sql.caches import CacheBase
     from airbyte_cdk.sql.destinations.base import Destination
     from airbyte_cdk.sql.progress import ProgressTracker
     from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+    from airbyte_cdk.sql.sources.base import Source
     from airbyte_cdk.sql.state_providers import StateProviderBase
     from airbyte_cdk.sql.state_writers import StateWriterBase
-    from airbyte_cdk.sql.sources.base import Source
+    from sqlalchemy.engine import Engine
 
 
 class ReadResult(Mapping[str, CachedDataset]):

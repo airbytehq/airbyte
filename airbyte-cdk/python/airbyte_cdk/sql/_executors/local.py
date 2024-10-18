@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, NoReturn
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._executors.base import Executor
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 

@@ -5,16 +5,8 @@ from __future__ import annotations
 
 from airbyte_cdk.sql.sources import base, util
 from airbyte_cdk.sql.sources.base import Source
-from airbyte_cdk.sql.sources.registry import (
-    ConnectorMetadata,
-    get_available_connectors,
-    get_connector_metadata,
-)
-from airbyte_cdk.sql.sources.util import (
-    get_benchmark_source,
-    get_source,
-)
-
+from airbyte_cdk.sql.sources.registry import ConnectorMetadata, get_available_connectors, get_connector_metadata
+from airbyte_cdk.sql.sources.util import get_benchmark_source, get_source
 
 __all__ = [
     # Submodules

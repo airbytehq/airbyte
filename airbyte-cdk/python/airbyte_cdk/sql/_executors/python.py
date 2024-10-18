@@ -9,15 +9,13 @@ from pathlib import Path
 from shutil import rmtree
 from typing import TYPE_CHECKING, Literal
 
-from overrides import overrides
-from rich import print  # noqa: A004  # Allow shadowing the built-in
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._executors.base import Executor
 from airbyte_cdk.sql._util.meta import is_windows
 from airbyte_cdk.sql._util.telemetry import EventState, log_install_state
 from airbyte_cdk.sql._util.venv_util import get_bin_dir
-
+from overrides import overrides
+from rich import print  # noqa: A004  # Allow shadowing the built-in
 
 if TYPE_CHECKING:
     from airbyte_cdk.sql.sources.registry import ConnectorMetadata

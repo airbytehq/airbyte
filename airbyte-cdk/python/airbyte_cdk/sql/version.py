@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import importlib.metadata
 
-
 airbyte_version = importlib.metadata.version("airbyte_cdk")
 
 

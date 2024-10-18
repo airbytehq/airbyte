@@ -6,19 +6,17 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any
 import warnings
 from copy import copy
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import requests
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.meta import is_docker_installed
 from airbyte_cdk.sql.version import get_version
-
 
 __cache: dict[str, ConnectorMetadata] | None = None
 

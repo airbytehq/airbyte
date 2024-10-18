@@ -3,17 +3,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import datetime
 import json
 import sys
 from collections.abc import Iterator
+from dataclasses import asdict
 from typing import IO, TYPE_CHECKING, cast
 
 import pendulum
 import pydantic
-from typing_extensions import final
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -24,9 +22,8 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
-
+from typing_extensions import final
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable, Iterator

@@ -9,12 +9,8 @@ from typing import TYPE_CHECKING
 
 from airbyte_cdk.models import AirbyteStreamState
 
-
 if TYPE_CHECKING:
-    from airbyte_cdk.models import (
-        AirbyteStreamState,
-    )
-
+    from airbyte_cdk.models import AirbyteStreamState
     from airbyte_cdk.sql.shared.state_providers import StateProviderBase
     from airbyte_cdk.sql.shared.state_writers import StateWriterBase
 

@@ -5,19 +5,15 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator
 from typing import TYPE_CHECKING, Any, cast
 
+from airbyte_cdk.sql._util.document_rendering import DocumentRenderer
+from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
 from pandas import DataFrame
 from pyarrow.dataset import Dataset
 
-from airbyte_cdk.sql._util.document_rendering import DocumentRenderer
-from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
-
-
 if TYPE_CHECKING:
-    from pyarrow.dataset import Dataset
-
     from airbyte_cdk.models import ConfiguredAirbyteStream
-
     from airbyte_cdk.sql.documents import Document
+    from pyarrow.dataset import Dataset
 
 
 class DatasetBase(ABC):

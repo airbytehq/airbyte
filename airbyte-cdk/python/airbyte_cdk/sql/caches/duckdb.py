@@ -18,12 +18,10 @@ from __future__ import annotations
 
 import warnings
 
-from duckdb_engine import DuckDBEngineWarning
-from pydantic import PrivateAttr
-
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from airbyte_cdk.sql.caches.base import CacheBase
-
+from duckdb_engine import DuckDBEngineWarning
+from pydantic import PrivateAttr
 
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905

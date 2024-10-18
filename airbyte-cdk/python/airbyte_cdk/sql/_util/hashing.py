@@ -6,7 +6,6 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Mapping
 
-
 HASH_SEED = "Airbyte:"
 """Additional seed for randomizing one-way hashed strings."""
 

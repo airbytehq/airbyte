@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from airbyte_cdk.sql._util.meta import is_windows
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 

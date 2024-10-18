@@ -5,26 +5,17 @@
 from __future__ import annotations
 
 import abc
-from dataclasses import asdict
 import json
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Literal
 
-from airbyte_cdk.models import (
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStreamState,
-)
-
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState
 from airbyte_cdk.sql import exceptions as exc
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from airbyte_cdk.models import (
-        AirbyteStateMessage,
-        AirbyteStreamState,
-    )
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamState
 
 
 class StateProviderBase(abc.ABC):

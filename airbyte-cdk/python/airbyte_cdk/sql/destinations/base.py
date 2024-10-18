@@ -9,10 +9,7 @@ from __future__ import annotations
 import warnings
 from typing import IO, TYPE_CHECKING, Any, Literal, cast
 
-from airbyte_cdk.models import (
-    Type,
-)
-
+from airbyte_cdk.models import Type
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._connector_base import ConnectorBase
 from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
@@ -22,15 +19,10 @@ from airbyte_cdk.sql.caches.util import get_default_cache
 from airbyte_cdk.sql.progress import ProgressTracker
 from airbyte_cdk.sql.results import ReadResult, WriteResult
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-from airbyte_cdk.sql.state_providers import (
-    JoinedStateProvider,
-    StateProviderBase,
-    StaticInputState,
-)
-from airbyte_cdk.sql.state_writers import NoOpStateWriter, StdOutStateWriter
 from airbyte_cdk.sql.sources.base import Source
+from airbyte_cdk.sql.state_providers import JoinedStateProvider, StateProviderBase, StaticInputState
+from airbyte_cdk.sql.state_writers import NoOpStateWriter, StdOutStateWriter
 from airbyte_cdk.sql.strategies import WriteStrategy
-
 
 if TYPE_CHECKING:
     from airbyte_cdk.sql._executors.base import Executor

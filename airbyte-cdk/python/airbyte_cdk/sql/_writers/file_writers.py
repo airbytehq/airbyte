@@ -9,19 +9,14 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, final
 
 import ulid
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql import progress
 from airbyte_cdk.sql._batch_handles import BatchHandle
 from airbyte_cdk.sql._writers.base import AirbyteWriterInterface
 from airbyte_cdk.sql.records import StreamRecord, StreamRecordHandler
 
-
 if TYPE_CHECKING:
-    from airbyte_cdk.models import (
-        AirbyteRecordMessage,
-    )
-
+    from airbyte_cdk.models import AirbyteRecordMessage
     from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
     from airbyte_cdk.sql.progress import ProgressTracker
     from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider

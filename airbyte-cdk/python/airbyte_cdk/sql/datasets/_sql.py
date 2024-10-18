@@ -6,27 +6,22 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from overrides import overrides
-from sqlalchemy import and_, func, select, text
-
 from airbyte_cdk.models import ConfiguredAirbyteStream
-
 from airbyte_cdk.sql.constants import DEFAULT_ARROW_MAX_CHUNK_SIZE
 from airbyte_cdk.sql.datasets._base import DatasetBase
-
+from overrides import overrides
+from sqlalchemy import and_, func, select, text
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from airbyte_cdk.models import ConfiguredAirbyteStream
+    from airbyte_cdk.sql.caches.base import CacheBase
     from pandas import DataFrame
     from pyarrow.dataset import Dataset
     from sqlalchemy import Table
     from sqlalchemy.sql import ClauseElement
     from sqlalchemy.sql.expression import Select
-
-    from airbyte_cdk.models import ConfiguredAirbyteStream
-
-    from airbyte_cdk.sql.caches.base import CacheBase
 
 
 class SQLDataset(DatasetBase):

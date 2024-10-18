@@ -12,19 +12,10 @@ import abc
 import json
 from typing import TYPE_CHECKING
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session, declarative_base
-
-from airbyte_cdk.models import (
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    SyncMode,
-)
-
-from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine

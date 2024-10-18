@@ -15,20 +15,15 @@ from typing import TYPE_CHECKING, cast, final
 import pandas as pd
 import sqlalchemy
 import ulid
-from pandas import Index
-from pydantic import BaseModel, Field
-from sqlalchemy import (
-    Column,
-    Table,
-    and_,
-    create_engine,
-    insert,
-    null,
-    select,
-    text,
-    update,
-)
-
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql._util.hashing import one_way_hash
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.records import StreamRecordHandler
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
+from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
+from airbyte_cdk.sql.types import SQLTypeConverter
 from airbyte_protocol_dataclasses.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -38,38 +33,24 @@ from airbyte_protocol_dataclasses.models import (
     AirbyteTraceMessage,
     Type,
 )
-
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql._util.hashing import one_way_hash
-from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
-from airbyte_cdk.sql.constants import (
-    AB_EXTRACTED_AT_COLUMN,
-    AB_META_COLUMN,
-    AB_RAW_ID_COLUMN,
-    DEBUG_MODE,
-)
-from airbyte_cdk.sql.records import StreamRecordHandler
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
-from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
-from airbyte_cdk.sql.types import SQLTypeConverter
-
+from pandas import Index
+from pydantic import BaseModel, Field
+from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
-
-    from sqlalchemy.engine import Connection, Engine
-    from sqlalchemy.engine.cursor import CursorResult
-    from sqlalchemy.engine.reflection import Inspector
-    from sqlalchemy.sql.base import Executable
-    from sqlalchemy.sql.elements import TextClause
-    from sqlalchemy.sql.type_api import TypeEngine
 
     from airbyte_cdk.sql._batch_handles import BatchHandle
     from airbyte_cdk.sql._writers.jsonl import FileWriterBase
     from airbyte_cdk.sql.progress import ProgressTracker
     from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
     from airbyte_cdk.sql.shared.state_writers import StateWriterBase
+    from sqlalchemy.engine import Connection, Engine
+    from sqlalchemy.engine.cursor import CursorResult
+    from sqlalchemy.engine.reflection import Inspector
+    from sqlalchemy.sql.base import Executable
+    from sqlalchemy.sql.elements import TextClause
+    from sqlalchemy.sql.type_api import TypeEngine
 
 
 class RecordDedupeMode(enum.Enum):

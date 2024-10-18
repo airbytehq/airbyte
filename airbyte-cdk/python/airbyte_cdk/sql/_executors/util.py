@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, Literal, cast
 
 import requests
 import yaml
-from rich import print  # noqa: A004  # Allow shadowing the built-in
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._executors.declarative import DeclarativeExecutor
 from airbyte_cdk.sql._executors.docker import DockerExecutor
@@ -19,7 +17,7 @@ from airbyte_cdk.sql._util.telemetry import EventState, log_install_state  # Non
 from airbyte_cdk.sql.constants import TEMP_DIR_OVERRIDE
 from airbyte_cdk.sql.sources.registry import ConnectorMetadata, InstallType, get_connector_metadata
 from airbyte_cdk.sql.version import get_version
-
+from rich import print  # noqa: A004  # Allow shadowing the built-in
 
 if TYPE_CHECKING:
     from airbyte_cdk.sql._executors.base import Executor

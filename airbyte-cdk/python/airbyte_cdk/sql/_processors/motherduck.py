@@ -6,12 +6,10 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from duckdb_engine import DuckDBEngineWarning
-from overrides import overrides
-
 from airbyte_cdk.sql._processors.duckdb import DuckDBSqlProcessor
 from airbyte_cdk.sql._writers.jsonl import JsonlWriter
-
+from duckdb_engine import DuckDBEngineWarning
+from overrides import overrides
 
 if TYPE_CHECKING:
     from airbyte_cdk.sql.caches.motherduck import MotherDuckCache

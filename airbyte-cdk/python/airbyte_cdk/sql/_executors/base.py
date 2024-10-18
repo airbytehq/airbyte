@@ -1,18 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
-from dataclasses import asdict
 import json
 import subprocess
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from dataclasses import asdict
 from threading import Event, Thread
 from typing import IO, TYPE_CHECKING, Any, cast
 
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._message_iterators import AirbyteMessageIterator
 from airbyte_cdk.sql.sources.registry import ConnectorMetadata
-
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Iterator

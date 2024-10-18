@@ -4,32 +4,23 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import asdict
 from datetime import datetime
-import json
 from typing import TYPE_CHECKING
 
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType
+from airbyte_cdk.sql.caches._state_backend_base import StateBackendBase
+from airbyte_cdk.sql.exceptions import AirbyteInputError, AirbyteInternalError
+from airbyte_cdk.sql.shared.state_providers import StaticInputState
+from airbyte_cdk.sql.shared.state_writers import StateWriterBase
 from pytz import utc
 from sqlalchemy import Column, DateTime, PrimaryKeyConstraint, String, and_
 from sqlalchemy.orm import Session, declarative_base
 
-from airbyte_cdk.models import (
-    AirbyteStateMessage,
-    AirbyteStateType,
-)
-
-from airbyte_cdk.sql.caches._state_backend_base import (
-    StateBackendBase,
-)
-from airbyte_cdk.sql.exceptions import AirbyteInputError, AirbyteInternalError
-from airbyte_cdk.sql.shared.state_providers import StaticInputState
-from airbyte_cdk.sql.shared.state_writers import StateWriterBase
-
-
 if TYPE_CHECKING:
-    from sqlalchemy.engine import Engine
-
     from airbyte_cdk.sql.shared.state_providers import StateProviderBase
+    from sqlalchemy.engine import Engine
 
 
 CACHE_STATE_TABLE_NAME = "_airbyte_state"

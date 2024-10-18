@@ -11,27 +11,14 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import jsonschema
 import rich
 import yaml
-from rich.syntax import Syntax
-
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    ConnectorSpecification,
-    Status,
-    TraceType,
-    Type,
-)
-
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, TraceType, Type
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.connector_info import ConnectorRuntimeInfo
 from airbyte_cdk.sql._util.hashing import one_way_hash
-from airbyte_cdk.sql._util.telemetry import (
-    EventState,
-    log_config_validation_result,
-    log_connector_check_result,
-)
+from airbyte_cdk.sql._util.telemetry import EventState, log_config_validation_result, log_connector_check_result
 from airbyte_cdk.sql._util.temp_files import as_temp_files
 from airbyte_cdk.sql.logs import new_passthrough_file_logger
-
+from rich.syntax import Syntax
 
 if TYPE_CHECKING:
     import logging

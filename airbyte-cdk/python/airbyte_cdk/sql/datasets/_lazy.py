@@ -3,10 +3,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from overrides import overrides
-
 from airbyte_cdk.sql.datasets import DatasetBase
-
+from overrides import overrides
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping

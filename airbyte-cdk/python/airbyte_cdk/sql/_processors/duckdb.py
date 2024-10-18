@@ -9,21 +9,18 @@ from pathlib import Path
 from textwrap import dedent, indent
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, cast
 
+import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql._writers.jsonl import JsonlWriter
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Executable, TextClause, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-
-from airbyte_cdk.sql._writers.jsonl import JsonlWriter
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase, SQLRuntimeError
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
-import pyarrow as pa
-
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine

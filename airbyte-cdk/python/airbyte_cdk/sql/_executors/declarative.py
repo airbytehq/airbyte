@@ -9,13 +9,10 @@ from typing import IO, TYPE_CHECKING, cast
 
 import pydantic
 import yaml
-
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._executors.base import Executor
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

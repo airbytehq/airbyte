@@ -11,20 +11,13 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Any, cast, final
 
-from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalog,
-)
-
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
 
-
 if TYPE_CHECKING:
-    from airbyte_cdk.models import (
-        ConfiguredAirbyteStream,
-    )
-
+    from airbyte_cdk.models import ConfiguredAirbyteStream
     from airbyte_cdk.sql.results import ReadResult
 
 

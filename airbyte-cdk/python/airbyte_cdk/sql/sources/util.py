@@ -11,7 +11,6 @@ from airbyte_cdk.sql._executors.util import get_connector_executor
 from airbyte_cdk.sql.exceptions import AirbyteInputError
 from airbyte_cdk.sql.sources.base import Source
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 

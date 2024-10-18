@@ -6,10 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import ulid
-
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql.caches.duckdb import DuckDBCache
-
 
 # Google drive constants:
 
