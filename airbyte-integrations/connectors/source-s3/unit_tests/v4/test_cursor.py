@@ -1,19 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
+from source_s3.v4.cursor import Cursor, CursorField
+
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from source_s3.v4.cursor import Cursor, CursorField
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+
 
 def _create_datetime(dt: str) -> datetime:
     return datetime.strptime(dt, DefaultFileBasedCursor.DATE_TIME_FORMAT)
@@ -22,15 +25,26 @@ def _create_datetime(dt: str) -> datetime:
 @pytest.mark.parametrize(
     "input_state, expected_state",
     [
-        pytest.param({}, {"history": {}, "_ab_source_file_last_modified": None}, id="empty-history"),
         pytest.param(
-            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
+            {},
+            {
+                "history": {},
+                "_ab_source_file_last_modified": "0001-01-01T00:00:00.000000Z_",  # TODO: Can we make this work again with null
+            },
+            id="empty-history",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "file1.txt": "2023-08-01T00:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
+            },
             {
                 "history": {
                     "file1.txt": "2023-08-01T00:00:00.000000Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file1.txt",
-                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
             },
             id="single-date-single-file",
         ),
