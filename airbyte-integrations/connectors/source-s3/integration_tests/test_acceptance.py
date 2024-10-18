@@ -30,7 +30,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.test import entrypoint_wrapper
 from pydantic import BaseModel
-from source_s3.v4.source import SourceS3
+from source_s3.source import SourceS3
 
 if TYPE_CHECKING:
     from airbyte_cdk import Source

@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from source_s3.v4.source import SourceS3
+from source_s3.source import SourceS3
 
 
 @patch("builtins.print")
@@ -42,7 +42,7 @@ def test_create_with_invalid_catalog(mock_read_text, mock_print):
 def test_launch_with_args():
     # Set up mock arguments and a valid catalog configuration
     with patch.object(SourceS3, "create", return_value=MagicMock()) as mock_create:
-        with patch("source_s3.v4.source.launch") as mock_launch:
+        with patch("source_s3.source.launch") as mock_launch:
             SourceS3.launch(
                 args=["check", "--config", "unit_tests/sample_files/v4_config.json"],
             )

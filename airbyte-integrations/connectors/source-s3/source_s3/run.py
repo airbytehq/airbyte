@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 
-from source_s3.v4 import SourceS3
+from source_s3 import SourceS3
 
 
 def run() -> None:
