@@ -1,0 +1,232 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - "entries"
+  selector_categories:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_public_apis.components.CustomExtractor
+  requester:
+    type: HttpRequester
+    url_base: "https://api.publicapis.org/"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "entries"
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://api.publicapis.org/"
+      http_method: "GET"
+      authenticator:
+        type: NoAuth
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "entries"
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.publicapis.org/"
+        http_method: "GET"
+        authenticator:
+          type: NoAuth
+  categories_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_public_apis.components.CustomExtractor
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.publicapis.org/"
+        http_method: "GET"
+        authenticator:
+          type: NoAuth
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+            - 'null'
+            - string
+  services_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "entries"
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.publicapis.org/"
+        http_method: "GET"
+        authenticator:
+          type: NoAuth
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          API:
+            type:
+            - 'null'
+            - string
+          Description:
+            type:
+            - 'null'
+            - string
+          Auth:
+            type:
+            - 'null'
+            - string
+          HTTPS:
+            type:
+            - 'null'
+            - boolean
+          Cors:
+            type:
+            - 'null'
+            - string
+          Link:
+            type:
+            - 'null'
+            - string
+          Category:
+            type:
+            - 'null'
+            - string
+streams:
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_public_apis.components.CustomExtractor
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://api.publicapis.org/"
+      http_method: "GET"
+      authenticator:
+        type: NoAuth
+      path: "/categories"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        name:
+          type:
+          - 'null'
+          - string
+  name: "categories"
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "entries"
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://api.publicapis.org/"
+      http_method: "GET"
+      authenticator:
+        type: NoAuth
+      path: "/entries"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        API:
+          type:
+          - 'null'
+          - string
+        Description:
+          type:
+          - 'null'
+          - string
+        Auth:
+          type:
+          - 'null'
+          - string
+        HTTPS:
+          type:
+          - 'null'
+          - boolean
+        Cors:
+          type:
+          - 'null'
+          - string
+        Link:
+          type:
+          - 'null'
+          - string
+        Category:
+          type:
+          - 'null'
+          - string
+  name: "services"
+check:
+  type: CheckStream
+  stream_names:
+  - "categories"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/public-apis
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Public Apis Spec
+    type: object
+    additionalProperties: true
+    properties: {}
+type: DeclarativeSource
