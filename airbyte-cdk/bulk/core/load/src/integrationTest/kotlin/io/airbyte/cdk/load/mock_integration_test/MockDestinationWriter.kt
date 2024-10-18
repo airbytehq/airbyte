@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.mock_integration_test.MockStreamLoader.Companion.getFilename
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -19,6 +20,10 @@ import javax.inject.Singleton
 @Singleton
 class MockDestinationWriter : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
+        MockDestinationBackend.deleteOldRecords(
+            getFilename(stream.descriptor),
+            stream.minimumGenerationId
+        )
         return MockStreamLoader(stream)
     }
 }
