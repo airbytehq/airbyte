@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.ObjectStorageDataDumper
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
@@ -14,12 +15,11 @@ import java.nio.file.Path
 
 object S3V2DataDumper : DestinationDataDumper {
     override fun dumpRecords(
-        configPath: Path,
+        spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val spec = S3V2TestUtils.getConfig(configPath.toString())
         val config =
-            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec)
+            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as S3V2Specification)
         val s3Client = S3ClientFactory.make(config)
         val pathFactory = ObjectStoragePathFactory.from(config)
         return ObjectStorageDataDumper(

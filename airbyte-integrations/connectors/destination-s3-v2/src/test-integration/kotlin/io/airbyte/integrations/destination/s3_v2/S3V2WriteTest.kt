@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test
 
 class S3V2WriteTestJsonUncompressed :
     BasicFunctionalityIntegrationTest(
-        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        S3V2TestUtils.readConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
+        S3V2Specification::class.java,
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
@@ -24,7 +25,8 @@ class S3V2WriteTestJsonUncompressed :
 
 class S3V2WriteTestJsonGzip :
     BasicFunctionalityIntegrationTest(
-        S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
+        S3V2TestUtils.readConfig(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
+        S3V2Specification::class.java,
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
