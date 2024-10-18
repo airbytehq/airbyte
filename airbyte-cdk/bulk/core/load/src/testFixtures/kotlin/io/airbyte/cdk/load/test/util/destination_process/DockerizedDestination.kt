@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import com.google.common.collect.Lists
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -36,8 +36,8 @@ class DockerizedDestination(
     command: String,
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
-    testDeploymentMode: TestDeploymentMode,
     private val testName: String,
+    vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
@@ -85,35 +85,38 @@ class DockerizedDestination(
         logger.info { "Creating docker container $containerName" }
 
         val cmd: MutableList<String> =
-            Lists.newArrayList(
-                "docker",
-                "run",
-                "--rm",
-                "--init",
-                "-i",
-                "-w",
-                "/data/job",
-                "--log-driver",
-                "none",
-                "--name",
-                containerName,
-                "--network",
-                "host",
-                "-v",
-                String.format("%s:%s", workspaceRoot, "/data"),
-                "-v",
-                String.format("%s:%s", localRoot, "/local"),
-                "-e",
-                "DEPLOYMENT_MODE=$testDeploymentMode",
-                // Yes, we hardcode the job ID to 0.
-                // Also yes, this is available in the configured catalog
-                // via the syncId property.
-                // Also also yes, we're relying on this env var >.>
-                "-e",
-                "WORKER_JOB_ID=0",
-                imageTag,
-                command,
-            )
+            (listOf(
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--init",
+                    "-i",
+                    "-w",
+                    "/data/job",
+                    "--log-driver",
+                    "none",
+                    "--name",
+                    containerName,
+                    "--network",
+                    "host",
+                    "-v",
+                    String.format("%s:%s", workspaceRoot, "/data"),
+                    "-v",
+                    String.format("%s:%s", localRoot, "/local"),
+                ) +
+                    featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
+                    listOf(
+
+                        // Yes, we hardcode the job ID to 0.
+                        // Also yes, this is available in the configured catalog
+                        // via the syncId property.
+                        // Also also yes, we're relying on this env var >.>
+                        "-e",
+                        "WORKER_JOB_ID=0",
+                        imageTag,
+                        command,
+                    ))
+                .toMutableList()
 
         fun addInput(paramName: String, fileContents: Any) {
             Files.write(
@@ -230,15 +233,15 @@ class DockerizedDestinationFactory(
         command: String,
         config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
-        deploymentMode: TestDeploymentMode,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
             config,
             catalog,
-            deploymentMode,
             testName,
+            *featureFlags,
         )
     }
 }

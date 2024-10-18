@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import org.junit.jupiter.api.Test
 
 class S3V2CheckTest :
@@ -15,8 +15,8 @@ class S3V2CheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    "secrets/s3_dest_v2_minimal_required_config.json",
-                    TestDeploymentMode.CLOUD
+                    S3V2TestUtils.MINIMAL_CONFIG_PATH,
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 )
             ),
         failConfigFilenamesAndFailureReasons = emptyMap()
