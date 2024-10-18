@@ -101,6 +101,7 @@ abstract class DestinationAcceptanceTest(
     protected var testSchemas: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
+        private set
     protected open val isCloudTest: Boolean = true
     protected val featureFlags: FeatureFlags =
         if (isCloudTest) {
@@ -2082,7 +2083,7 @@ abstract class DestinationAcceptanceTest(
             val stateToCount = mutableMapOf<JsonNode, Int>()
             messages.fold(0) { acc, message ->
                 if (message.type == Type.STATE) {
-                    stateToCount[message.state.data] = acc
+                    stateToCount[message.state.global.sharedState] = acc
                     0
                 } else {
                     acc + 1
@@ -2092,7 +2093,8 @@ abstract class DestinationAcceptanceTest(
             expected.forEach { message ->
                 val clone = message.state
                 clone.destinationStats =
-                    AirbyteStateStats().withRecordCount(stateToCount[clone.data]!!.toDouble())
+                    AirbyteStateStats()
+                        .withRecordCount(stateToCount[clone.global.sharedState]!!.toDouble())
                 message.state = clone
             }
         } else {
