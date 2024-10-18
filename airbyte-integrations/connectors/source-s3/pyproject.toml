@@ -22,6 +22,7 @@ wcmatch = "==8.4"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
+numpy = "<2.0.0"  # TODO: Remove after CDK is published
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = ["file-based",]
