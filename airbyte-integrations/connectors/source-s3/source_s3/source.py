@@ -1,73 +1,229 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
-from typing import Optional
+import sys
+import traceback
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Mapping, Optional
 
-from pydantic.v1 import BaseModel, Field
+import orjson
 
-from .source_files_abstract.spec import SourceFilesAbstractSpec
+from airbyte_cdk import (
+    AirbyteEntrypoint,
+    ConnectorSpecification,
+    emit_configuration_as_airbyte_control_message,
+    is_cloud_environment,
+    launch,
+)
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+    TraceType,
+    Type,
+)
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
+from source_s3.config import Config
+from source_s3.cursor import Cursor
+from source_s3.legacy_config_transformer import LegacyConfigTransformer
+from source_s3.source_spec import SourceS3Spec
+from source_s3.stream_reader import SourceS3StreamReader
+from source_s3.utils import airbyte_message_to_json
 
 
-class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
-    class Config:
-        title = "S3 Source Spec"
+DEFAULT_CONCURRENCY = 4
+"""How many files/streams to download from concurrently."""
 
-    class S3Provider(BaseModel):
-        class Config:
-            title = "S3: Amazon Web Services"
-            # SourceFilesAbstractSpec field are ordered 10 apart to allow subclasses to insert their own spec's fields interspersed
-            schema_extra = {"order": 11, "description": "Use this to load files from S3 or S3-compatible services"}
+_V3_DEPRECATION_FIELD_MAPPING = {
+    "dataset": "streams.name",
+    "format": "streams.format",
+    "path_pattern": "streams.globs",
+    "provider": "bucket, aws_access_key_id, aws_secret_access_key and endpoint",
+    "schema": "streams.input_schema",
+}
+"""Mapping of V3 fields to their V4 counterparts."""
 
-        bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.", order=0)
-        aws_access_key_id: Optional[str] = Field(
-            title="AWS Access Key ID",
-            default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-            "permissions. If accessing publicly available data, this field is not necessary.",
-            airbyte_secret=True,
-            always_show=True,
-            order=1,
+class SourceS3(FileBasedSource):
+    _concurrency_level = 4
+
+    @classmethod
+    def read_config(cls, config_path: str) -> Mapping[str, Any]:
+        """
+        Used to override the default read_config so that when the new file-based S3 connector processes a config
+        in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
+        validate the config against the new spec.
+        """
+        config = super().read_config(config_path)
+        if not SourceS3._is_v4_config(config):
+            parsed_legacy_config = SourceS3Spec(**config)
+            converted_config = LegacyConfigTransformer.convert(parsed_legacy_config)
+            emit_configuration_as_airbyte_control_message(converted_config)
+            return converted_config
+        return config
+
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        s3_spec = SourceS3Spec.schema()
+        s4_spec = self.spec_class.schema()
+
+        if s3_spec["properties"].keys() & s4_spec["properties"].keys():
+            raise ValueError("Overlapping properties between V3 and V4")  # pragma: no cover
+
+        for v3_property_key, v3_property_value in s3_spec["properties"].items():
+            s4_spec["properties"][v3_property_key] = v3_property_value
+            s4_spec["properties"][v3_property_key]["airbyte_hidden"] = True
+            s4_spec["properties"][v3_property_key]["order"] += 100
+            s4_spec["properties"][v3_property_key]["description"] = (
+                SourceS3._create_description_with_deprecation_prefix(_V3_DEPRECATION_FIELD_MAPPING.get(v3_property_key, None))
+                + s4_spec["properties"][v3_property_key]["description"]
+            )
+            self._clean_required_fields(s4_spec["properties"][v3_property_key])
+
+        if is_cloud_environment():
+            s4_spec["properties"]["endpoint"].update(
+                {
+                    "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. "
+                    "The custom endpoint must be secure, but the 'https' prefix is not required.",
+                    "pattern": "^(?!http://).*$",  # ignore-https-check
+                }
+            )
+
+        return ConnectorSpecification(
+            documentationUrl=self.spec_class.documentation_url(),
+            connectionSpecification=s4_spec,
         )
-        aws_secret_access_key: Optional[str] = Field(
-            title="AWS Secret Access Key",
-            default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-            "permissions. If accessing publicly available data, this field is not necessary.",
-            airbyte_secret=True,
-            always_show=True,
-            order=2,
+
+    @staticmethod
+    def _is_v4_config(config: Mapping[str, Any]) -> bool:
+        return "streams" in config
+
+    @staticmethod
+    def _clean_required_fields(v3_field: Dict[str, Any]) -> None:
+        """
+        Not having V3 fields root level as part of the `required` field is not enough as the platform will create empty objects for those.
+        For example, filling all non-hidden fields from the form will create a config like:
+        ```
+        {
+          <...>
+          "provider": {},
+          <...>
+        }
+        ```
+
+        As the field `provider` exists, the JSON validation will be applied and as `provider.bucket` is needed, the validation will fail
+        with the following error:
+        ```
+          "errors": {
+            "connectionConfiguration": {
+              "provider": {
+                "bucket": {
+                  "message": "form.empty.error",
+                  "type": "required"
+                }
+              }
+            }
+          }
+        ```
+
+        Hence, we need to make any V3 nested fields not required.
+        """
+        if "properties" not in v3_field:
+            return
+
+        v3_field["required"] = []
+        for neste_field in v3_field["properties"]:
+            SourceS3._clean_required_fields(neste_field)
+
+    @staticmethod
+    def _create_description_with_deprecation_prefix(new_fields: Optional[str]) -> str:  # pragma: no cover
+        if new_fields:
+            return f"Deprecated and will be removed soon. Please do not use this field anymore and use {new_fields} instead. "
+
+        return "Deprecated and will be removed soon. Please do not use this field anymore. "
+
+    @classmethod
+    def launch(cls, args: list[str] | None = None) -> None:
+        """Launch the source using the provided CLI args.
+
+        If no args are provided, the launch args will be inferred automatically.
+
+        In the future, we should consider moving this method to the Connector base class,
+        so that all sources and destinations can launch themselves and so none of this
+        code needs to live in the connector itself.
+        """
+        args = args or sys.argv[1:]
+        catalog_path = AirbyteEntrypoint.extract_catalog(args)
+        # TODO: Delete if not needed:
+        # config_path = AirbyteEntrypoint.extract_config(args)
+        # state_path = AirbyteEntrypoint.extract_state(args)
+
+        source = cls.create(
+            configured_catalog_path=Path(catalog_path) if catalog_path else None,
         )
-        role_arn: Optional[str] = Field(
-            title=f"AWS Role ARN",
-            default=None,
-            description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations "
-            f"requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
-            always_show=True,
-            order=7,
-        )
-        path_prefix: str = Field(
-            default="",
-            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "
-            "we can optimize finding these in S3. This is optional but recommended if your bucket contains many "
-            "folders/files which you don't need to replicate.",
-            order=3,
+        # The following function will wrap the execution in proper error handling.
+        # Failures prior to here may not emit proper Airbyte TRACE or CONNECTION_STATUS messages.
+        launch(
+            source=source,
+            args=args,
         )
 
-        endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
-        region_name: Optional[str] = Field(
-            title="AWS Region",
-            default=None,
-            description="AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
-            order=5,
-        )
-        start_date: Optional[str] = Field(
-            title="Start Date",
-            description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-            examples=["2021-01-01T00:00:00Z"],
-            format="date-time",
-            pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-            order=6,
-        )
+    @classmethod
+    def create(
+        cls,
+        *,
+        configured_catalog_path: Path | str | None = None,
+    ) -> SourceS3:
+        """Create a new instance of the source.
 
-    provider: S3Provider
+        This is a bit of a hack because (1) the source needs the catalog early, and (2), the
+        constructor asks for things that the caller won't know about, specifically: the stream
+        reader class, the spec class, and the cursor class.
+
+        We should consider refactoring the constructor so that these inputs don't need to be
+        provided by the caller. This probably requires changes to the base class in the CDK.
+
+        We prefer to fail in the `launch` method, where proper error handling is in place.
+        """
+        try:
+            configured_catalog: ConfiguredAirbyteCatalog | None = (
+                ConfiguredAirbyteCatalogSerializer.load(orjson.loads(Path(configured_catalog_path).read_text()))
+                if configured_catalog_path
+                else None
+            )
+        except Exception as ex:
+            print(
+                airbyte_message_to_json(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
+                                internal_message=str(ex),
+                            ),
+                        ),
+                    ),
+                    newline=True,
+                )
+            )
+            # Ideally we'd call `raise` here, but sometimes the stack trace bleeds into
+            # the Airbyte logs, which is not ideal. So we'll just exit with an error code instead.
+            sys.exit(1)
+
+        return cls(
+            # These are the defaults for the source. No need for a caller to change them:
+            stream_reader=SourceS3StreamReader(),
+            spec_class=Config,
+            cursor_cls=Cursor,
+            # This is needed early. (We also will provide it again later.)
+            catalog=configured_catalog,
+            # These will be provided later, after we have wrapped proper error handling.
+            config=None,
+            state=None,
+        )
