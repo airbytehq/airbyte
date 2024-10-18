@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
@@ -20,6 +19,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -34,11 +34,7 @@ import kotlinx.coroutines.sync.withLock
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
     suspend fun handleStreamStarted(stream: DestinationStream)
-    suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
-    )
+    suspend fun handleNewSpilledFile(stream: DestinationStream, file: SpilledRawMessagesLocalFile)
     suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
@@ -168,13 +164,12 @@ class DefaultDestinationTaskLauncher(
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
         stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+        file: SpilledRawMessagesLocalFile
     ) {
-        log.info { "Starting process records task for ${stream.descriptor}, file ${wrapped.batch}" }
-        val task = processRecordsTaskFactory.make(this, stream, wrapped)
+        log.info { "Starting process records task for ${stream.descriptor}, file $file" }
+        val task = processRecordsTaskFactory.make(this, stream, file)
         enqueue(task)
-        if (!endOfStream) {
+        if (!file.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
             enqueue(spillTask)
