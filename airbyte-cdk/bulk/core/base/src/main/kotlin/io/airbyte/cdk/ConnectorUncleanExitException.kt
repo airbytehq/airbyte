@@ -4,5 +4,6 @@
 
 package io.airbyte.cdk
 
+/** This is used only in tests. */
 class ConnectorUncleanExitException(val exitCode: Int) :
     Exception("Destination process exited uncleanly: $exitCode")
