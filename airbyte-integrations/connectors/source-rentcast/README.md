@@ -3,6 +3,7 @@ This directory contains the manifest-only connector for `source-rentcast`.
 
 RentCast is the leading rental property analytics, estimation and reporting software .
 This connector enables you to extract data from endpoints like Value Estimate , Rent Estimate , Property Records , Sale Listings and Rental Listings
+Docs : https://developers.rentcast.io/reference/introduction
 
 ## Usage
 There are multiple ways to use this connector:

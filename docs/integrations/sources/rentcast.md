@@ -1,6 +1,7 @@
 # RentCast
 RentCast is the leading rental property analytics, estimation and reporting software .
 This connector enables you to extract data from endpoints like Value Estimate , Rent Estimate , Property Records , Sale Listings and Rental Listings
+Docs : https://developers.rentcast.io/reference/introduction
 
 ## Configuration
 
@@ -18,7 +19,7 @@ This connector enables you to extract data from endpoints like Value Estimate , 
 | `bedrooms` | `number` | Bedrooms. The number of bedrooms, used to search for listings matching this criteria. Use 0 to indicate a studio layout |  |
 | `bath_rooms` | `integer` | Bath Rooms. The number of bathrooms, used to search for listings matching this criteria. Supports fractions to indicate partial bathrooms |  |
 | `status` | `string` | Status. The current listing status, used to search for listings matching this criteria : Active or Inactive |  |
-| `days_old` | `string` | Days Old. The maximum number of days since a property was listed on the market, with a minimum of 1 |  |
+| `days_old` | `string` | Days Old. The maximum number of days since a property was listed on the market, with a minimum of 1 or The maximum number of days since a property was last sold, with a minimum of 1. Used to search for properties that were sold within the specified date range |  |
 | `data_type_` | `string` | Data Type . The type of aggregate market data to return. Defaults to &quot;All&quot; if not provided : All , Sale , Rental |  |
 | `history_range` | `string` | History Range. The time range for historical record entries, in months. Defaults to 12 if not provided |  |
 
@@ -26,11 +27,8 @@ This connector enables you to extract data from endpoints like Value Estimate , 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Property Records | id | DefaultPaginator | ✅ |  ❌  |
-| Property Record | id | No pagination | ✅ |  ❌  |
 | Sale Listings | id | DefaultPaginator | ✅ |  ❌  |
-| Sale Listing | id | No pagination | ✅ |  ❌  |
-| Rental Listings | id | DefaultPaginator | ✅ |  ❌  |
-| Rental Listing | id | No pagination | ✅ |  ❌  |
+| Rental Listings | id | No pagination | ✅ |  ❌  |
 | Statistics |  | No pagination | ✅ |  ❌  |
 | Value Estimate |  | No pagination | ✅ |  ❌  |
 | Rent Estimate |  | No pagination | ✅ |  ❌  |
@@ -42,6 +40,6 @@ This connector enables you to extract data from endpoints like Value Estimate , 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-14 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-18 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

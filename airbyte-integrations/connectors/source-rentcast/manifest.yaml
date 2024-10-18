@@ -9,6 +9,8 @@ description: >-
   This connector enables you to extract data from endpoints like Value Estimate
   , Rent Estimate , Property Records , Sale Listings and Rental Listings
 
+  Docs : https://developers.rentcast.io/reference/introduction
+
 check:
   type: CheckStream
   stream_names:
@@ -28,7 +30,19 @@ definitions:
           path: properties
           http_method: GET
           request_parameters:
-            address: "{{ config['address'] }}"
+            city: "{{ config['city'] }}"
+            state: "{{ config['state'] }}"
+            radius: "{{ config['radius'] }}"
+            status: "{{ config['status'] }}"
+            address: "{{ config[\"address\"] }}"
+            daysOld: "{{ config['days_old'] }}"
+            zipCode: "{{ config['zipcode'] }}"
+            bedrooms: "{{ config['bedrooms'] }}"
+            latitude: "{{ config['latitude'] }}"
+            bathrooms: "{{ config['bath_rooms'] }}"
+            longitude: "{{ config['longitude'] }}"
+            propertyType: "{{ config['property_type'] }}"
+            saleDateRange: "{{ config[\"days_old\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -42,8 +56,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
@@ -52,34 +66,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Property Records"
-    Property Record:
-      type: DeclarativeStream
-      name: Property Record
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: properties/{{ stream_partition.property_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: property_id
-              stream:
-                $ref: "#/definitions/streams/Property Records"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Property Record"
     Sale Listings:
       type: DeclarativeStream
       name: Sale Listings
@@ -92,18 +78,18 @@ definitions:
           path: listings/sale
           http_method: GET
           request_parameters:
-            address: "{{ config[\"address\"] }}"
             city: "{{ config['city'] }}"
             state: "{{ config['state'] }}"
-            zipCode: "{{ config['zipcode'] }}"
-            latitude: "{{ config['latitude'] }}"
-            longitude: "{{ config['longitude'] }}"
             radius: "{{ config['radius'] }}"
-            propertyType: "{{ config['property_type'] }}"
-            bedrooms: "{{ config['bedrooms'] }}"
-            bathrooms: "{{ config['bath_rooms'] }}"
             status: "{{ config['status'] }}"
+            address: "{{ config[\"address\"] }}"
             daysOld: "{{ config['days_old'] }}"
+            zipCode: "{{ config['zipcode'] }}"
+            bedrooms: "{{ config['bedrooms'] }}"
+            latitude: "{{ config['latitude'] }}"
+            bathrooms: "{{ config['bath_rooms'] }}"
+            longitude: "{{ config['longitude'] }}"
+            propertyType: "{{ config['property_type'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -117,8 +103,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
@@ -127,34 +113,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Sale Listings"
-    Sale Listing:
-      type: DeclarativeStream
-      name: Sale Listing
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: listings/sale/{{ stream_partition.sale_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sale_id
-              stream:
-                $ref: "#/definitions/streams/Sale Listings"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Sale Listing"
     Rental Listings:
       type: DeclarativeStream
       name: Rental Listings
@@ -167,69 +125,40 @@ definitions:
           path: listings/rental/long-term
           http_method: GET
           request_parameters:
-            address: "{{ config[\"address\"] }}"
             city: "{{ config['city'] }}"
             state: "{{ config['state'] }}"
-            zipCode: "{{ config['zipcode'] }}"
-            latitude: "{{ config['latitude'] }}"
-            longitude: "{{ config['longitude'] }}"
             radius: "{{ config['radius'] }}"
-            propertyType: "{{ config['property_type'] }}"
-            bedrooms: "{{ config['bedrooms'] }}"
-            bathrooms: "{{ config['bath_rooms'] }}"
             status: "{{ config['status'] }}"
+            address: "{{ config[\"address\"] }}"
             daysOld: "{{ config['days_old'] }}"
+            zipCode: "{{ config['zipcode'] }}"
+            bedrooms: "{{ config['bedrooms'] }}"
+            latitude: "{{ config['latitude'] }}"
+            bathrooms: "{{ config['bath_rooms'] }}"
+            longitude: "{{ config['longitude'] }}"
+            propertyType: "{{ config['property_type'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: >-
+                      The required query parameters 'address' or
+                      'latitude'/'longitude' were not provided
+                    http_codes:
+                      - 400
+                    error_message: Please provide a zipcode
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Rental Listings"
-    Rental Listing:
-      type: DeclarativeStream
-      name: Rental Listing
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /listings/rental/long-term/{{ stream_partition.listing_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: listing_id
-              stream:
-                $ref: "#/definitions/streams/Rental Listings"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Rental Listing"
     Statistics:
       type: DeclarativeStream
       name: Statistics
@@ -243,6 +172,19 @@ definitions:
             zipCode: "{{ config[\"zipcode\"] }}"
             dataType: "{{ config['data_type_'] }}"
             historyRange: "{{ config['history_range'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: >-
+                      The required query parameters 'address' or
+                      'latitude'/'longitude' were not provided
+                    http_codes:
+                      - 400
+                    error_message: Please provide a zipcode
         record_selector:
           type: RecordSelector
           extractor:
@@ -265,6 +207,21 @@ definitions:
             address: "{{ config[\"address\"] }}"
             latitude: "{{ config[\"latitude\"] }}"
             longitude: "{{ config[\"longitude\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: >-
+                      The required query parameters 'address' or
+                      'latitude'/'longitude' were not provided
+                    http_codes:
+                      - 400
+                    error_message: >-
+                      Please provide either an address or a latitude and
+                      longitude.
         record_selector:
           type: RecordSelector
           extractor:
@@ -287,6 +244,21 @@ definitions:
             address: "{{ config[\"address\"] }}"
             latitude: "{{ config[\"latitude\"] }}"
             longitude: "{{ config[\"longitude\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: >-
+                      The required query parameters 'address' or
+                      'latitude'/'longitude' were not provided
+                    http_codes:
+                      - 400
+                    error_message: >-
+                      Please provide either an address or a latitude and
+                      longitude.
         record_selector:
           type: RecordSelector
           extractor:
@@ -301,19 +273,16 @@ definitions:
     url_base: https://api.rentcast.io/v1/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: X-Api-Key
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/Property Records"
-  - $ref: "#/definitions/streams/Property Record"
   - $ref: "#/definitions/streams/Sale Listings"
-  - $ref: "#/definitions/streams/Sale Listing"
   - $ref: "#/definitions/streams/Rental Listings"
-  - $ref: "#/definitions/streams/Rental Listing"
   - $ref: "#/definitions/streams/Statistics"
   - $ref: "#/definitions/streams/Value Estimate"
   - $ref: "#/definitions/streams/Rent Estimate"
@@ -328,182 +297,160 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       address:
         type: string
         description: >-
           The full address of the property, in the format of Street, City,
           State, Zip. Used to retrieve data for a specific property, or together
           with the radius parameter to search for listings in a specific area
-        title: Address
         order: 1
+        title: Address
       city:
         type: string
         description: >-
           The name of the city, used to search for listings in a specific city.
           This parameter is case-sensitive
-        title: City
         order: 2
+        title: City
       state:
         type: string
         description: >-
           The 2-character state abbreviation, used to search for listings in a
           specific state. This parameter is case-sensitive
-        title: State
         order: 3
+        title: State
       zipcode:
         type: string
         description: >-
           The 5-digit zip code, used to search for listings in a specific zip
           code
-        title: Zip Code
         order: 4
+        title: Zip Code
       latitude:
         type: string
         description: >-
           The latitude of the search area. Use the latitude/longitude and radius
           parameters to search for listings in a specific area
-        title: Latitude
         order: 5
+        title: Latitude
       longitude:
         type: string
         description: >-
           The longitude of the search area. Use the latitude/longitude and
           radius parameters to search for listings in a specific area
-        title: Longitude
         order: 6
+        title: Longitude
       radius:
         type: string
         description: >-
           The radius of the search area in miles, with a maximum of 100. Use in
           combination with the latitude/longitude or address parameters to
           search for listings in a specific area
-        title: Radius
         order: 7
+        title: Radius
       property_type:
         type: string
         description: >-
           The type of the property, used to search for listings matching this
           criteria : Single Family , Condo , Townhouse , Manufactured , 
           Multi-Family , Apartment , Land ,
-        title: Property Type
         order: 8
+        title: Property Type
       bedrooms:
         type: number
         description: >-
           The number of bedrooms, used to search for listings matching this
           criteria. Use 0 to indicate a studio layout
-        title: Bedrooms
         order: 9
+        title: Bedrooms
       bath_rooms:
         type: integer
         description: >-
           The number of bathrooms, used to search for listings matching this
           criteria. Supports fractions to indicate partial bathrooms
-        title: Bath Rooms
         order: 10
+        title: Bath Rooms
       status:
         type: string
         description: >-
           The current listing status, used to search for listings matching this
           criteria : Active or Inactive
-        title: Status
         order: 11
+        title: Status
       days_old:
         type: string
         description: >-
           The maximum number of days since a property was listed on the market,
-          with a minimum of 1
-        title: Days Old
+          with a minimum of 1 or The maximum number of days since a property was
+          last sold, with a minimum of 1. Used to search for properties that
+          were sold within the specified date range
         order: 12
+        title: Days Old
       data_type_:
         type: string
         description: >-
           The type of aggregate market data to return. Defaults to "All" if not
           provided : All , Sale , Rental
-        title: "Data Type "
         order: 13
+        title: "Data Type "
       history_range:
         type: string
         description: >-
           The time range for historical record entries, in months. Defaults to
           12 if not provided
-        title: History Range
         order: 14
+        title: History Range
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     Property Records: true
-    Property Record: true
     Sale Listings: true
-    Sale Listing: true
     Rental Listings: true
-    Rental Listing: true
     Statistics: true
     Value Estimate: true
     Rent Estimate: true
   testedStreams:
     Property Records:
-      streamHash: 672d9a787dcf741876044f96b850c9d8110def4a
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Property Record:
-      streamHash: 03666a34a2ef2902e595b17ce8aae973a61623ad
+      streamHash: e1298090831492085ac8f43485189f209221452b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Sale Listings:
-      streamHash: e8543f0de0a434a867490d9d275682142cca9859
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Sale Listing:
-      streamHash: a669b278bf7a124674ee0a2045cd9a071e9cbb02
+      streamHash: 76ae0f53d8e81cb915d98f47b0b83fba538c9cfe
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Rental Listings:
-      streamHash: 9495a0b058a8a73defee3a229917b99266a7647b
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Rental Listing:
-      streamHash: de05565efddf21d4a16465b7c4d2ce79f856384f
+      streamHash: 58c16e2c77ec533828ea7bcb6c488669cae737ce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Statistics:
-      streamHash: 07bf5886dcb79ad4940e8ed9870a35645f9adc66
+      streamHash: c27bb70bcd4b3c8aad3ec6bce3d2f8ade6d2f313
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Value Estimate:
-      streamHash: 6b6a351d89f4ce5c58cec077e49466438356006e
+      streamHash: 9420ded5120dcadb56850bf225754f8174fb734d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Rent Estimate:
-      streamHash: 328e8b7ce48e95d93d91565d64b24a41b7e85504
+      streamHash: c7b7c969af485d657dc6ae58c5ce5ef819c968d1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -622,4288 +569,16 @@ schemas:
             type:
               - number
               - "null"
+          viewType:
+            type:
+              - string
+              - "null"
       formattedAddress:
         type:
           - string
           - "null"
-      history:
-        type:
-          - object
-          - "null"
-        properties:
-          "1973-03-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1985-05-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1988-09-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1988-09-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1990-09-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1990-12-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1991-04-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1991-08-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1992-02-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1992-09-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1992-12-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1993-03-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1993-05-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-04-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-04-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-04-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-04-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-05-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-05-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-10-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1994-10-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1995-08-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1996-02-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1996-03-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1996-03-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1996-05-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1997-03-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1997-03-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1997-03-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1997-07-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "1997-11-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1998-03-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1998-03-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1998-09-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1998-10-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1998-12-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1999-04-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1999-06-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1999-07-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "1999-08-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "1999-10-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2000-06-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2000-06-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2000-08-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2000-09-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2000-11-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2001-01-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2001-03-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2001-03-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2001-05-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2001-07-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-03-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-04-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-05-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-06-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-06-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-10-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2002-10-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-01-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-02-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-02-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-05-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-06-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-07-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-08-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-10-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-11-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2003-12-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-02-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-02-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-04-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-04-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-05-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-05-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-06-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-08-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-10-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2004-12-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-01-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-03-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-04-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-04-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-05-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-05-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-06-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-06-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-06-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-07-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-08-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-09-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-11-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2005-12-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-03-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-03-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-04-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-04-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-05-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-06-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-06-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-07-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-07-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-07-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-09-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-12-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2006-12-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-02-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-05-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-05-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-05-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-06-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-06-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-07-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-07-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-09-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-09-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-10-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-10-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-12-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-12-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-12-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2007-12-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-01-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-02-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-02-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-03-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-03-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-05-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-06-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-07-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-08-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-08-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-09-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-10-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-10-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-11-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-11-25":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-12-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-12-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2008-12-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-01-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-02-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-03-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-08-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-10-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-11-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2009-12-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-07-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-08-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-09-10":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-11-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-11-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-12-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-12-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-12-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2010-12-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-02-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-02-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-03-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-03-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-06-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-06-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-09-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-09-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2011-09-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-10-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-10-12":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-10-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-12-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-12-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2011-12-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-03-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-03-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-04-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-06-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-06-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-07-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-08-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-08-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-12-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2012-12-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-05-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-08-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-09-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-10-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-11-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-12-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-12-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2013-12-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2014-07-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2014-09-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2014-09-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2014-09-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2014-11-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2014-12-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2015-01-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-01-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-03-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-04-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-10-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-11-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-11-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-12-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2015-12-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2016-01-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-03-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-05-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-06-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-06-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-07-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-08-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-09-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-09-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2016-12-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-03-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-03-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-05-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2017-11-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-11-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-11-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2017-12-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2018-01-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-01-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-02-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-03-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-04-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-04-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2018-05-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-06-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-07-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-07-12":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-07-26":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-07-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-08-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2018-09-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-09-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-10-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-11-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-11-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2018-11-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-12-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-12-04":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-12-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-12-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-01-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-03-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-03-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-04-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-05-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-05-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-05-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-06-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-07-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-07-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-08-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2019-09-11":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2019-09-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-09-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2019-10-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-10-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-11-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2019-12-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-12-06":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-12-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-12-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-12-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2019-12-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-03-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-07-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-07-10":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-07-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-08-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-08-21":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-09-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-10-16":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-10-23":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-10-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-12-07":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2020-12-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-03-15":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2021-03-24":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-04-05":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-04-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-05-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-06-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-06-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-06-28":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-07-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-08-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-09-10":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-10-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2021-11-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-01-13":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-01-19":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-02-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-02-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-03-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-04-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-05-09":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-06-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-08-12":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-08-17":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-11-02":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-11-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2022-12-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-01-27":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-02-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-03-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-03-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-04-14":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-05-03":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-05-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-07-18":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-09-01":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-09-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-09-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2023-12-12":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2024-01-30":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2024-05-08":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2024-05-20":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2024-05-29":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2024-06-10":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2024-06-12":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-      hoa:
-        type:
-          - object
-          - "null"
-        properties:
-          fee:
-            type:
-              - number
-              - "null"
       id:
         type: string
-      lastSaleDate:
-        type:
-          - string
-          - "null"
-      lastSalePrice:
-        type:
-          - number
-          - "null"
       latitude:
         type:
           - number
@@ -4979,45 +654,6 @@ schemas:
           - object
           - "null"
         properties:
-          "2013":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2014":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2015":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
           "2016":
             type:
               - object
@@ -5143,74 +779,11 @@ schemas:
           - object
           - "null"
         properties:
-          "0":
+          "2010":
             type:
               - object
               - "null"
             properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2013":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2014":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2015":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
               value:
                 type:
                   - number
@@ -5396,347 +969,6 @@ schemas:
           - string
           - "null"
       zoning:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Property Record:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      addressLine1:
-        type:
-          - string
-          - "null"
-      assessorID:
-        type:
-          - string
-          - "null"
-      bathrooms:
-        type:
-          - number
-          - "null"
-      bedrooms:
-        type:
-          - number
-          - "null"
-      city:
-        type:
-          - string
-          - "null"
-      county:
-        type:
-          - string
-          - "null"
-      features:
-        type:
-          - object
-          - "null"
-        properties:
-          architectureType:
-            type:
-              - string
-              - "null"
-          exteriorType:
-            type:
-              - string
-              - "null"
-          fireplace:
-            type:
-              - boolean
-              - "null"
-          floorCount:
-            type:
-              - number
-              - "null"
-          foundationType:
-            type:
-              - string
-              - "null"
-          roofType:
-            type:
-              - string
-              - "null"
-          unitCount:
-            type:
-              - number
-              - "null"
-      formattedAddress:
-        type:
-          - string
-          - "null"
-      history:
-        type:
-          - object
-          - "null"
-        properties:
-          "2015-12-22":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-          "2018-12-31":
-            type:
-              - object
-              - "null"
-            properties:
-              date:
-                type:
-                  - string
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-      id:
-        type: string
-      lastSaleDate:
-        type:
-          - string
-          - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      legalDescription:
-        type:
-          - string
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      lotSize:
-        type:
-          - number
-          - "null"
-      owner:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          mailingAddress:
-            type:
-              - object
-              - "null"
-            properties:
-              addressLine1:
-                type:
-                  - string
-                  - "null"
-              city:
-                type:
-                  - string
-                  - "null"
-              formattedAddress:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              state:
-                type:
-                  - string
-                  - "null"
-              zipCode:
-                type:
-                  - string
-                  - "null"
-          names:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-      ownerOccupied:
-        type:
-          - boolean
-          - "null"
-      propertyTaxes:
-        type:
-          - object
-          - "null"
-        properties:
-          "2018":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2019":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2022":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2023":
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-      propertyType:
-        type:
-          - string
-          - "null"
-      squareFootage:
-        type:
-          - number
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      subdivision:
-        type:
-          - string
-          - "null"
-      taxAssessments:
-        type:
-          - object
-          - "null"
-        properties:
-          "2019":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2020":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2022":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-          "2023":
-            type:
-              - object
-              - "null"
-            properties:
-              improvements:
-                type:
-                  - number
-                  - "null"
-              land:
-                type:
-                  - number
-                  - "null"
-              value:
-                type:
-                  - number
-                  - "null"
-              year:
-                type:
-                  - number
-                  - "null"
-      yearBuilt:
-        type:
-          - number
-          - "null"
-      zipCode:
         type:
           - string
           - "null"
@@ -6187,6 +1419,10 @@ schemas:
               price:
                 type:
                   - number
+                  - "null"
+              removedDate:
+                type:
+                  - string
                   - "null"
           "2024-04-19":
             type:
@@ -7585,7 +2821,7 @@ schemas:
                 type:
                   - number
                   - "null"
-          "2024-09-07":
+          "2024-09-08":
             type:
               - object
               - "null"
@@ -7713,6 +2949,10 @@ schemas:
               price:
                 type:
                   - number
+                  - "null"
+              removedDate:
+                type:
+                  - string
                   - "null"
           "2024-09-13":
             type:
@@ -7921,10 +3161,6 @@ schemas:
               price:
                 type:
                   - number
-                  - "null"
-              removedDate:
-                type:
-                  - string
                   - "null"
           "2024-09-23":
             type:
@@ -8196,31 +3432,6 @@ schemas:
                 type:
                   - number
                   - "null"
-          "2024-10-09":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
           "2024-10-10":
             type:
               - object
@@ -8297,6 +3508,131 @@ schemas:
                   - number
                   - "null"
           "2024-10-13":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+          "2024-10-14":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+          "2024-10-15":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+          "2024-10-16":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+          "2024-10-17":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+          "2024-10-18":
             type:
               - object
               - "null"
@@ -8440,283 +3776,6 @@ schemas:
           - "null"
     required:
       - id
-  Sale Listing:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      addressLine1:
-        type:
-          - string
-          - "null"
-      addressLine2:
-        type:
-          - string
-          - "null"
-      bathrooms:
-        type:
-          - number
-          - "null"
-      bedrooms:
-        type:
-          - number
-          - "null"
-      city:
-        type:
-          - string
-          - "null"
-      county:
-        type:
-          - string
-          - "null"
-      createdDate:
-        type:
-          - string
-          - "null"
-      daysOnMarket:
-        type:
-          - number
-          - "null"
-      formattedAddress:
-        type:
-          - string
-          - "null"
-      history:
-        type:
-          - object
-          - "null"
-        properties:
-          "2021-06-21":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2023-10-09":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2023-11-02":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2023-12-05":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-          "2024-01-09":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-      id:
-        type: string
-      lastSeenDate:
-        type:
-          - string
-          - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      listedDate:
-        type:
-          - string
-          - "null"
-      listingAgent:
-        type:
-          - object
-          - "null"
-        properties:
-          email:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          website:
-            type:
-              - string
-              - "null"
-      listingOffice:
-        type:
-          - object
-          - "null"
-        properties:
-          email:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          website:
-            type:
-              - string
-              - "null"
-      listingType:
-        type:
-          - string
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      lotSize:
-        type:
-          - number
-          - "null"
-      mlsName:
-        type:
-          - string
-          - "null"
-      mlsNumber:
-        type:
-          - string
-          - "null"
-      price:
-        type:
-          - number
-          - "null"
-      propertyType:
-        type:
-          - string
-          - "null"
-      squareFootage:
-        type:
-          - number
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      yearBuilt:
-        type:
-          - number
-          - "null"
-      zipCode:
-        type:
-          - string
-          - "null"
-    required:
-      - id
   Rental Listings:
     type: object
     $schema: http://json-schema.org/schema#
@@ -8813,6 +3872,31 @@ schemas:
                 type:
                   - number
                   - "null"
+          "2023-09-13":
+            type:
+              - object
+              - "null"
+            properties:
+              daysOnMarket:
+                type:
+                  - number
+                  - "null"
+              event:
+                type:
+                  - string
+                  - "null"
+              listedDate:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
           "2023-12-16":
             type:
               - object
@@ -8837,6 +3921,10 @@ schemas:
               price:
                 type:
                   - number
+                  - "null"
+              removedDate:
+                type:
+                  - string
                   - "null"
           "2024-05-02":
             type:
@@ -9303,7 +4391,11 @@ schemas:
                 type:
                   - number
                   - "null"
-          "2024-10-13":
+              removedDate:
+                type:
+                  - string
+                  - "null"
+          "2024-10-17":
             type:
               - object
               - "null"
@@ -9328,7 +4420,7 @@ schemas:
                 type:
                   - number
                   - "null"
-          "2024-10-14":
+          "2024-10-18":
             type:
               - object
               - "null"
@@ -9417,10 +4509,6 @@ schemas:
         type:
           - number
           - "null"
-      lotSize:
-        type:
-          - number
-          - "null"
       mlsName:
         type:
           - string
@@ -9456,154 +4544,6 @@ schemas:
       yearBuilt:
         type:
           - number
-          - "null"
-      zipCode:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Rental Listing:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      addressLine1:
-        type:
-          - string
-          - "null"
-      addressLine2:
-        type:
-          - string
-          - "null"
-      bathrooms:
-        type:
-          - number
-          - "null"
-      bedrooms:
-        type:
-          - number
-          - "null"
-      city:
-        type:
-          - string
-          - "null"
-      county:
-        type:
-          - string
-          - "null"
-      createdDate:
-        type:
-          - string
-          - "null"
-      daysOnMarket:
-        type:
-          - number
-          - "null"
-      formattedAddress:
-        type:
-          - string
-          - "null"
-      history:
-        type:
-          - object
-          - "null"
-        properties:
-          "2024-10-03":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-              removedDate:
-                type:
-                  - string
-                  - "null"
-          "2024-10-14":
-            type:
-              - object
-              - "null"
-            properties:
-              daysOnMarket:
-                type:
-                  - number
-                  - "null"
-              event:
-                type:
-                  - string
-                  - "null"
-              listedDate:
-                type:
-                  - string
-                  - "null"
-              listingType:
-                type:
-                  - string
-                  - "null"
-              price:
-                type:
-                  - number
-                  - "null"
-      id:
-        type: string
-      lastSeenDate:
-        type:
-          - string
-          - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      listedDate:
-        type:
-          - string
-          - "null"
-      listingType:
-        type:
-          - string
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      price:
-        type:
-          - number
-          - "null"
-      propertyType:
-        type:
-          - string
-          - "null"
-      squareFootage:
-        type:
-          - number
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
           - "null"
       zipCode:
         type:
