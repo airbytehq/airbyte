@@ -728,13 +728,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.135"
+version = "0.1.136"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.135-py3-none-any.whl", hash = "sha256:b1d1ca3bad483a4239745c57e9b9157b4d099fbf3149be21e3d112c94ede06ac"},
-    {file = "langsmith-0.1.135.tar.gz", hash = "sha256:7abed7e141386af99a2177f0b3600b124ae3ad1b482879ba0724ce92ef998a11"},
+    {file = "langsmith-0.1.136-py3-none-any.whl", hash = "sha256:cad2215eb7a754ee259878e19c558f4f8d3795aa1b699f087d4500e640f80d0a"},
+    {file = "langsmith-0.1.136.tar.gz", hash = "sha256:5c0de01a313db70dd9a85845c0f416a69b5b653b3e98ba413d7d41e8851315b1"},
 ]
 
 [package.dependencies]

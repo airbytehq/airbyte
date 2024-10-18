@@ -247,7 +247,7 @@ def mock_datetime_now(monkeypatch):
             "test_with_lookback_window_from_start_date",
             NO_STATE,
             MinMaxDatetime(datetime="2021-01-05", datetime_format="%Y-%m-%d", parameters={}),
-            MinMaxDatetime(datetime="2021-01-05", datetime_format="%Y-%m-%d", parameters={}),
+            MinMaxDatetime(datetime="2021-01-08", datetime_format="%Y-%m-%d", parameters={}),
             "P1D",
             cursor_field,
             "P3D",
@@ -255,10 +255,10 @@ def mock_datetime_now(monkeypatch):
             cursor_granularity,
             None,
             [
-                {"start_time": "2021-01-02T00:00:00.000000+0000", "end_time": "2021-01-02T23:59:59.999999+0000"},
-                {"start_time": "2021-01-03T00:00:00.000000+0000", "end_time": "2021-01-03T23:59:59.999999+0000"},
-                {"start_time": "2021-01-04T00:00:00.000000+0000", "end_time": "2021-01-04T23:59:59.999999+0000"},
-                {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T00:00:00.000000+0000"},
+                {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T23:59:59.999999+0000"},
+                {"start_time": "2021-01-06T00:00:00.000000+0000", "end_time": "2021-01-06T23:59:59.999999+0000"},
+                {"start_time": "2021-01-07T00:00:00.000000+0000", "end_time": "2021-01-07T23:59:59.999999+0000"},
+                {"start_time": "2021-01-08T00:00:00.000000+0000", "end_time": "2021-01-08T00:00:00.000000+0000"},
             ],
         ),
         (
