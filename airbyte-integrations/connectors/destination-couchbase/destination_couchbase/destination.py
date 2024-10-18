@@ -1,53 +1,96 @@
-#
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-#
 
 import logging
-
 from typing import Any, Iterable, Mapping
+from uuid import uuid4
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from couchbase.cluster import Cluster
+from couchbase.auth import PasswordAuthenticator
+from couchbase.options import ClusterOptions
 
+logger = logging.getLogger("airbyte")
 
 class DestinationCouchbase(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
-        TODO
-        Reads the input stream of messages, config, and catalog to write data to the destination.
-
-        This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
-        in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
-        successfully persisted to the destination. This is used to ensure fault tolerance in the case that a sync fails before fully completing,
-        then the source is given the last state message output from this method as the starting point of the next sync.
-
-        :param config: dict of JSON configuration matching the configuration declared in spec.json
-        :param configured_catalog: The Configured Catalog describing the schema of the data being received and how it should be persisted in the
-                                    destination
-        :param input_messages: The stream of input messages received from the source
-        :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
+        Reads the input stream of messages, config, and catalog to write data to Couchbase.
         """
+        streams = {s.stream.name for s in configured_catalog.streams}
+        logger.info(f"Starting write to Couchbase with {len(streams)} streams")
 
-        pass
+        cluster = self._get_cluster(config)
+        bucket = cluster.bucket(config["bucket"])
+        collection = bucket.default_collection()
+
+        buffer = {}
+        buffer_size = 1000  # Adjust as needed
+
+        for configured_stream in configured_catalog.streams:
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                self._clear_collection(bucket, configured_stream.stream.name)
+                logger.info(f"Stream {configured_stream.stream.name} is wiped.")
+
+        for message in input_messages:
+            if message.type == Type.STATE:
+                self._flush_buffer(collection, buffer)
+                yield message
+            elif message.type == Type.RECORD:
+                data = message.record.data
+                stream = message.record.stream
+                if stream not in streams:
+                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                    continue
+                
+                if stream not in buffer:
+                    buffer[stream] = []
+                
+                buffer[stream].append(self._prepare_document(stream, data))
+
+                if len(buffer[stream]) >= buffer_size:
+                    self._flush_buffer(collection, {stream: buffer[stream]})
+                    buffer[stream] = []
+
+        # Flush any remaining messages
+        self._flush_buffer(collection, buffer)
+
+    @staticmethod
+    def _get_cluster(config: Mapping[str, Any]) -> Cluster:
+        auth = PasswordAuthenticator(config["username"], config["password"])
+        return Cluster(config["connection_string"], ClusterOptions(auth))
+
+    @staticmethod
+    def _clear_collection(bucket, stream_name: str):
+        query = f"DELETE FROM `{bucket.name}` WHERE META().id LIKE $1"
+        bucket.cluster.query(query, f"{stream_name}::%")
+
+    @staticmethod
+    def _prepare_document(stream: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "_id": f"{stream}::{str(uuid4())}",
+            "_airbyte_ab_id": str(uuid4()),
+            "_airbyte_emitted_at": data.get("_airbyte_emitted_at"),
+            "_airbyte_data": data
+        }
+
+    @staticmethod
+    def _flush_buffer(collection, buffer: Mapping[str, list]):
+        for stream, documents in buffer.items():
+            if documents:
+                try:
+                    collection.insert_multi(documents)
+                except Exception as e:
+                    logger.error(f"Error writing to Couchbase for stream {stream}: {str(e)}")
+        buffer.clear()  # Clear the buffer after flushing
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
-            e.g: if a provided API token or password can be used to connect and write to the destination.
-
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this destination, content of this json is as specified in
-        the properties of the spec.json file
-
-        :return: AirbyteConnectionStatus indicating a Success or Failure
-        """
         try:
-            # TODO
-
+            cluster = self._get_cluster(config)
+            bucket = cluster.bucket(config["bucket"])
+            bucket.ping()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

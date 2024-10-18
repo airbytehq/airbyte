@@ -1,20 +1,50 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/couchbase",
-  "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
-  ],
-  "supportsIncremental": true,
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/couchbase",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Couchbase",
     "type": "object",
-    "required": ["TODO -- fix me!"],
-    "additionalProperties": false,
+    "required": ["connection_string", "username", "password", "bucket"],
+    "additionalProperties": true,
     "properties": {
-      "TODO": {
+      "connection_string": {
+        "title": "Connection String",
         "type": "string",
-        "description": "FIX ME"
+        "description": "Couchbase connection string. For more information, check out our <a href=\"https://docs.airbyte.io/integrations/destinations/couchbase\">docs</a>",
+        "examples": ["couchbase://localhost", "couchbases://cb.example.com"]
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "description": "Username to use for authentication to Couchbase."
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Password to use for authentication to Couchbase.",
+        "airbyte_secret": true
+      },
+      "bucket": {
+        "title": "Bucket Name",
+        "type": "string",
+        "description": "Name of the Couchbase bucket to use as the destination."
+      },
+      "scope": {
+        "title": "Scope Name",
+        "type": "string",
+        "description": "Name of the scope within the bucket. If not specified, the default scope will be used.",
+        "default": "_default"
+      },
+      "collection": {
+        "title": "Collection Name",
+        "type": "string",
+        "description": "Name of the collection within the scope. If not specified, the default collection will be used.",
+        "default": "_default"
       }
     }
-  }
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"]
 }
