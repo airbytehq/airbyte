@@ -41,7 +41,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    config = config,
+                    configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
                 )
             runBlocking { process.run() }
@@ -69,7 +69,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    config = config,
+                    configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
                 )
             runBlocking { process.run() }

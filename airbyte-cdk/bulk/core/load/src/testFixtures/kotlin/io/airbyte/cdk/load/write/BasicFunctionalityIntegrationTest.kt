@@ -37,7 +37,7 @@ import org.junit.jupiter.api.assertAll
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val config: String,
+    val configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
@@ -49,7 +49,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val verifyDataWriting: Boolean = true,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
-    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, config)
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
     @Test
     open fun testBasicWrite() {
@@ -64,7 +64,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val messages =
             runSync(
-                config,
+                configContents,
                 stream,
                 listOf(
                     DestinationRecord(
@@ -115,7 +115,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        parsedConfig,
+                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -163,7 +163,7 @@ abstract class BasicFunctionalityIntegrationTest(
             val destination =
                 destinationProcessFactory.createDestinationProcess(
                     "write",
-                    config,
+                    configContents,
                     DestinationCatalog(
                             listOf(
                                 makeStream("test_stream1"),

@@ -20,7 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 
 class NonDockerizedDestination(
     command: String,
-    config: String?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
@@ -41,7 +41,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                configContents = config,
+                configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
@@ -77,11 +77,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: String?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, *featureFlags)
+        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
     }
 }

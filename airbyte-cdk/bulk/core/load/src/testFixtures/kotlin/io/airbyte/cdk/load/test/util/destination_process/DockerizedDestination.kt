@@ -4,9 +4,7 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
-import com.google.common.collect.Lists
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -35,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 class DockerizedDestination(
     imageTag: String,
     command: String,
-    config: String?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
     vararg featureFlags: FeatureFlag,
@@ -127,7 +125,7 @@ class DockerizedDestination(
             cmd.add("--$paramName")
             cmd.add("destination_$paramName.json")
         }
-        config?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
+        configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let {
             addInput("catalog", Jsons.writeValueAsBytes(catalog))
         }
@@ -234,14 +232,14 @@ class DockerizedDestinationFactory(
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: String?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
-            config,
+            configContents,
             catalog,
             testName,
             *featureFlags,
