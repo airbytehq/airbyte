@@ -22,9 +22,12 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
+import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -105,12 +108,17 @@ class DefaultDestinationTaskLauncher(
     private val log = KotlinLogging.logger {}
 
     private val batchUpdateLock = Mutex()
+    private val succeeded = Channel<Boolean>(Channel.UNLIMITED)
+
+    private val teardownIsEnqueued = AtomicBoolean(false)
 
     private suspend fun enqueue(task: LeveledTask) {
         taskScopeProvider.launch(exceptionHandler.withExceptionHandling(task))
     }
 
-    override suspend fun start() {
+    override suspend fun run() {
+        exceptionHandler.setCallback { succeeded.send(false) }
+
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
         enqueue(inputConsumerTask)
@@ -127,11 +135,19 @@ class DefaultDestinationTaskLauncher(
             enqueue(spillTask)
         }
 
+        // Start the checkpoint management tasks
         log.info { "Starting timed flush task" }
         enqueue(timedFlushTask)
 
         log.info { "Starting checkpoint update task" }
         enqueue(updateCheckpointsTask)
+
+        // Await completion
+        if (succeeded.receive()) {
+            taskScopeProvider.close()
+        } else {
+            taskScopeProvider.kill()
+        }
     }
 
     /** Called when the initial destination setup completes. */
@@ -202,11 +218,15 @@ class DefaultDestinationTaskLauncher(
 
     /** Called when a stream is closed. */
     override suspend fun handleStreamClosed(stream: DestinationStream) {
-        enqueue(teardownTaskFactory.make(this))
+        if (teardownIsEnqueued.setOnce()) {
+            enqueue(teardownTaskFactory.make(this))
+        } else {
+            log.info { "Teardown task already enqueued, not enqueuing another one" }
+        }
     }
 
     /** Called exactly once when all streams are closed. */
     override suspend fun handleTeardownComplete() {
-        taskScopeProvider.close()
+        succeeded.send(true)
     }
 }
