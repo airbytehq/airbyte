@@ -6,9 +6,10 @@ package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
+import java.nio.file.Path
 
 fun interface DestinationDataDumper {
-    fun dumpRecords(spec: ConfigurationSpecification, stream: DestinationStream): List<OutputRecord>
+    fun dumpRecords(configPath: Path, stream: DestinationStream): List<OutputRecord>
 }
 
 /**
@@ -17,7 +18,7 @@ fun interface DestinationDataDumper {
  */
 object FakeDataDumper : DestinationDataDumper {
     override fun dumpRecords(
-        spec: ConfigurationSpecification,
+        configPath: Path,
         stream: DestinationStream
     ): List<OutputRecord> {
         throw NotImplementedError()

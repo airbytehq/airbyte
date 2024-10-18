@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -104,7 +105,7 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
-        config: ConfigurationSpecification,
+        config: Path,
         canonicalExpectedRecords: List<OutputRecord>,
         stream: DestinationStream,
         primaryKey: List<List<String>>,

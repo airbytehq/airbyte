@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test

@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 object MockDestinationBackend {
@@ -28,7 +29,7 @@ object MockDestinationBackend {
 
 object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
-        spec: ConfigurationSpecification,
+        configPath: Path,
         stream: DestinationStream
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
