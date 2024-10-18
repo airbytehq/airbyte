@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-    - api2.myhours.com
+      - api2.myhours.com
   remoteRegistries:
     pypi:
       enabled: false
@@ -15,8 +15,7 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorSubtype: api
   connectorType: source
   definitionId: 722ba4bf-06ec-45a4-8dd5-72e4a5cf3903
@@ -31,21 +30,21 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/my-hours
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: my-hours_config_dev_null
-      id: 617930a1-8717-49cc-890d-99da6e745bf9
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-MY-HOURS_CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: my-hours_config_dev_null
+          id: 617930a1-8717-49cc-890d-99da6e745bf9
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MY-HOURS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
