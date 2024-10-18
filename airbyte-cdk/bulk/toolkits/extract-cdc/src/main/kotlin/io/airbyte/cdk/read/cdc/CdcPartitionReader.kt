@@ -93,8 +93,8 @@ class CdcPartitionReader<T : Comparable<T>>(
         val summary: Map<String, Any?> =
             mapOf(
                     "debezium-version" to debeziumVersion,
-                    "emitted records" to numEmittedRecords.get(),
-                    "discarded records" to numDiscardedRecords.get(),
+                    "records-emitted" to numEmittedRecords.get(),
+                    "records-discarded" to numDiscardedRecords.get(),
                     "heartbeats" to numHeartbeats.get(),
                     "tombstones" to numTombstones.get(),
                     "events" to numEvents.get(),
