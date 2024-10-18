@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.file.StreamProcessor
 import java.io.InputStream
+import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
 
 interface ObjectStorageClient<T : RemoteObject<*>, U : ObjectStorageStreamingUploadWriter> {
@@ -13,7 +16,13 @@ interface ObjectStorageClient<T : RemoteObject<*>, U : ObjectStorageStreamingUpl
     suspend fun <U> get(key: String, block: (InputStream) -> U): U
     suspend fun put(key: String, bytes: ByteArray): T
     suspend fun delete(remoteObject: T)
-    suspend fun streamingUpload(key: String, collector: suspend U.() -> Unit): T
+    suspend fun streamingUpload(key: String, block: suspend (U) -> Unit): T =
+        streamingUpload(key, NoopProcessor, block)
+    suspend fun <V : OutputStream> streamingUpload(
+        key: String,
+        streamProcessor: StreamProcessor<V>,
+        block: suspend (U) -> Unit
+    ): T
 }
 
 interface ObjectStorageStreamingUploadWriter {

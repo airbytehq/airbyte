@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong
 class S3V2Writer(
     private val s3Client: S3Client,
     private val pathFactory: ObjectStoragePathFactory,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
+    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta,
 ) : DestinationWriter {
     sealed interface S3V2Batch : Batch
     data class StagedObject(
@@ -51,11 +51,11 @@ class S3V2Writer(
             val partNumber = partNumber.getAndIncrement()
             val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
             val s3Object =
-                s3Client.streamingUpload(key) {
+                s3Client.streamingUpload(key) { writer ->
                     records.forEach {
                         val serialized = recordDecorator.decorate(it).toJson().serializeToString()
-                        write(serialized)
-                        write("\n")
+                        writer.write(serialized)
+                        writer.write("\n")
                     }
                 }
             return StagedObject(s3Object = s3Object, partNumber = partNumber)
