@@ -12,14 +12,13 @@ import aws.sdk.kotlin.services.s3.model.UploadPartRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.io.Writer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -37,35 +36,49 @@ class S3MultipartUpload<T : OutputStream>(
         uploadConfig?.streamingUploadPartSize
             ?: throw IllegalStateException("Streaming upload part size is not configured")
     private val wrappingBuffer = streamProcessor.wrapper(underlyingBuffer)
+    private val workQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+    private val closeOnce = AtomicBoolean(false)
 
-    private val work = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-
-    suspend fun start(): Job =
-        CoroutineScope(Dispatchers.IO).launch {
-            for (unit in work) {
-                uploadPart()
+    suspend fun run(block: suspend (OutputStream) -> Unit) = coroutineScope {
+        log.info {
+            "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
+        }
+        launch {
+            for (item in workQueue) {
+                item()
             }
-            completeInner()
+            complete()
         }
+        UploadStream().use { block(it) }
+    }
 
-    inner class UploadWriter : Writer() {
-        override fun close() {
-            log.warn { "Close called on UploadWriter, ignoring." }
-        }
-
-        override fun flush() {
-            throw NotImplementedError("flush() is not supported on S3MultipartUpload.UploadWriter")
-        }
-
-        override fun write(str: String) {
-            wrappingBuffer.write(str.toByteArray(Charsets.UTF_8))
-            if (underlyingBuffer.size() >= partSize) {
-                runBlocking { work.send { uploadPart() } }
+    inner class UploadStream : OutputStream() {
+        override fun close() = runBlocking {
+            workQueue.send {
+                if (closeOnce.setOnce()) {
+                    workQueue.close()
+                }
             }
         }
 
-        override fun write(cbuf: CharArray, off: Int, len: Int) {
-            write(String(cbuf, off, len))
+        override fun flush() = runBlocking { workQueue.send { wrappingBuffer.flush() } }
+
+        override fun write(b: Int) = runBlocking {
+            workQueue.send {
+                wrappingBuffer.write(b)
+                if (underlyingBuffer.size() >= partSize) {
+                    uploadPart()
+                }
+            }
+        }
+
+        override fun write(b: ByteArray) = runBlocking {
+            workQueue.send {
+                wrappingBuffer.write(b)
+                if (underlyingBuffer.size() >= partSize) {
+                    uploadPart()
+                }
+            }
         }
     }
 
@@ -89,11 +102,7 @@ class S3MultipartUpload<T : OutputStream>(
         underlyingBuffer.reset()
     }
 
-    suspend fun complete() {
-        work.close()
-    }
-
-    private suspend fun completeInner() {
+    private suspend fun complete() {
         if (underlyingBuffer.size() > 0) {
             uploadPart()
         }

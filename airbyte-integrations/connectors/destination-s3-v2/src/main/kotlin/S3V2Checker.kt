@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import io.airbyte.cdk.load.file.s3.S3Object
+import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.exceptions.ConfigurationException
 import jakarta.inject.Singleton
