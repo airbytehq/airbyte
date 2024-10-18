@@ -17,6 +17,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -51,6 +52,11 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
+  }
+
+  @Override
+  protected NamingConventionTransformer getNameTransformer() {
+      return new PostgresSQLNameTransformer();
   }
 
   @Override
