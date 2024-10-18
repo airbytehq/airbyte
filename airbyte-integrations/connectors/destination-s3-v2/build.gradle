@@ -5,12 +5,13 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = []
+    toolkits = ['load-s3']
     cdk = 'local'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.destination.s3_v2.S3V2Destination'
+
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 
     // Uncomment and replace to run locally
