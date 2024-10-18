@@ -7,12 +7,11 @@ package io.airbyte.cdk.load.task.internal
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.LocalFile
 import io.airbyte.cdk.load.file.TempFileProvider
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.message.StreamCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
@@ -98,9 +97,8 @@ class DefaultSpillToDiskTask(
             return
         }
 
-        val batch = SpilledRawMessagesLocalFile(tmpFile, sizeBytes)
-        val wrapped = BatchEnvelope(batch, range)
-        launcher.handleNewSpilledFile(stream, wrapped, endOfStream)
+        val file = SpilledRawMessagesLocalFile(tmpFile, sizeBytes, range, endOfStream)
+        launcher.handleNewSpilledFile(stream, file)
     }
 }
 
@@ -130,3 +128,10 @@ class DefaultSpillToDiskTaskFactory(
         )
     }
 }
+
+data class SpilledRawMessagesLocalFile(
+    val localFile: LocalFile,
+    val totalSizeBytes: Long,
+    val indexRange: Range<Long>,
+    val endOfStream: Boolean = false
+)
