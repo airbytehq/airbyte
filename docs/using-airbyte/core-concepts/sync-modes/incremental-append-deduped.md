@@ -6,12 +6,13 @@ products: all
 
 ## High-Level Context
 
-This connector syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. Simply put, if you've synced a row before and it has since been updated, this mode will combine the two rows
-in the destination and use the most recent data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
+This sync mode syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. 
+
+If you've synced a row before and it has since been updated, this sync mode will combine the two rows in the destination and use the most recent data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
 
 ## Overview
 
-Airbyte supports syncing data in **Incremental Append Deduped** mode i.e:
+Airbyte supports syncing data in **Incremental | Append + Deduped** mode:
 
 1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
 2. **Append** means that this incremental data is added to existing tables in your data warehouse.
@@ -73,33 +74,23 @@ In the final de-duplicated table:
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [Exchange Rates source](../../../integrations/sources/exchange-rates.md), the source already knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental sync mode in the UI by navigating to the `Schema` tab for a connection.
 
-![](../../../.gitbook/assets/incremental_source_defined.png)
-
-\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
+You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the [postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
+Some sources are unable to define the cursor without user input. For example, in the [Postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor`. In these cases, simply select the `cursor` for each stream in the UI by navigating to the `Schema` tab for a connection.
 
-![](../../../.gitbook/assets/incremental_user_defined.png)
-
-\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
+You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog).
 
 ## Source-Defined Primary key
 
-Some sources are able to determine the primary key that they use without any user input. For example, in the \(JDBC\) Database sources, primary key can be defined in the table's metadata.
+Some sources are able to determine the primary key that they use without any user input. For example, in JDBC database sources, the primary key can be defined in the table's metadata. Most APIs also have pre-determined primary keys.
 
 ## User-Defined Primary key
 
-Some sources cannot define the cursor without user input or the user may want to specify their own primary key on the destination that is different from the source definitions. In these cases, select the column in the sync settings dropdown that should be used as the `primary key` or `composite primary keys`.
-
-![](../../../.gitbook/assets/primary_key_user_defined.png)
-
-In this example, we selected both the `campaigns.id` and `campaigns.name` as the composite primary key of our `campaigns` table.
-
-Note that in **Incremental Deduped History**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination history table rather than updated in-place as it is done with the final table. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record in the history tables.
+Some sources cannot define the primary key without user input or the user may want to specify their own primary key on the destination that is different from the source definition. In these cases, select the field in the stream that should be used as the `primary key`. Multiple primary keys can also be selected to form a `composite primary key`.
 
 ## Inclusive Cursors
 
