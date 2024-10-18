@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 from pydantic import BaseModel
-from source_s3.run import get_source
+from source_s3 import SourceS3
 
 from airbyte_cdk import launch
 
@@ -75,6 +75,6 @@ def test_performance(instance: AcceptanceTestFullRefreshInstance) -> None:
         "--catalog",
         instance.configured_catalog_path,
     ]
-    source = get_source(args=args)
+    source = SourceS3.launch(args=args)
     assert source
     launch(source, args=args)
