@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
@@ -141,7 +141,7 @@ abstract class IntegrationTest(
                 catalog.asProtocolObject(),
             )
         return runBlocking {
-            val destinationCompletion = async { destination.run() }
+            launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
@@ -166,7 +166,6 @@ abstract class IntegrationTest(
                 }
             }
             destination.shutdown()
-            destinationCompletion.await()
             destination.readMessages()
         }
     }
