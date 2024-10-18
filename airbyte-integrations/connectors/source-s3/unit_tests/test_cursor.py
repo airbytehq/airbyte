@@ -8,7 +8,7 @@ from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
-from source_s3.v4.cursor import Cursor, CursorField
+from source_s3.cursor import Cursor, CursorField
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat

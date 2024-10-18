@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from __future__ import annotations
 
 import io
 import logging
@@ -11,15 +11,17 @@ from typing import Any, Dict, List, Optional, Set
 from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.stub import Stubber
+from moto import mock_sts
+from pydantic.v1 import AnyUrl
+from source_s3.config import Config
+from source_s3.stream_reader import SourceS3StreamReader
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from botocore.stub import Stubber
-from moto import mock_sts
-from pydantic.v1 import AnyUrl
-from source_s3.v4.config import Config
-from source_s3.v4.stream_reader import SourceS3StreamReader
+
 
 logger = logging.Logger("")
 
@@ -260,7 +262,7 @@ def test_cannot_set_wrong_config_type():
 
 
 @mock_sts
-@patch("source_s3.v4.stream_reader.boto3.client")
+@patch("source_s3.stream_reader.boto3.client")
 def test_get_iam_s3_client(boto3_client_mock):
     # Mock the STS client assume_role method
     boto3_client_mock.return_value.assume_role.return_value = {

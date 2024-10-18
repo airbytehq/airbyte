@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import datetime
 import io
@@ -7,7 +8,7 @@ import zipfile
 from unittest.mock import MagicMock, patch
 
 import pytest
-from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+from source_s3.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 # Mocking the S3 client and config for testing

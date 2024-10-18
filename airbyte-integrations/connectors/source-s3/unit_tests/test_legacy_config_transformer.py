@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import pytest
-from source_s3.source import SourceS3Spec
-from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
+from source_s3.legacy_config_transformer import LegacyConfigTransformer
+from source_s3.source_spec import SourceS3Spec
 
 
 @pytest.mark.parametrize(
