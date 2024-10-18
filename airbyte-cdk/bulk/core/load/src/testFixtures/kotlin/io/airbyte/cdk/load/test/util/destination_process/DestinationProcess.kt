@@ -10,6 +10,9 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.micronaut.context.env.yaml.YamlPropertySourceLoader
+import java.nio.file.Files
+import java.nio.file.Path
 
 const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
 
@@ -56,4 +59,28 @@ abstract class DestinationProcessFactory {
         catalog: ConfiguredAirbyteCatalog? = null,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
+
+    companion object {
+        fun get(): DestinationProcessFactory =
+            when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
+                null,
+                "non-docker" -> NonDockerizedDestinationFactory()
+                "docker" -> {
+                    val rawProperties: Map<String, Any?> =
+                        YamlPropertySourceLoader()
+                            .read(
+                                "irrelevant",
+                                Files.readAllBytes(Path.of("metadata.yaml")),
+                            )
+                    DockerizedDestinationFactory(
+                        rawProperties["data.dockerRepository"] as String,
+                        "dev"
+                    )
+                }
+                else ->
+                    throw IllegalArgumentException(
+                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner"
+                    )
+            }
+    }
 }

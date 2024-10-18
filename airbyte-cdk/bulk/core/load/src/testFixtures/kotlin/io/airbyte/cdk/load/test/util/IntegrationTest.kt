@@ -15,13 +15,11 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlin.test.fail
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -36,13 +34,6 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import uk.org.webcompere.systemstubs.jupiter.SystemStub
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 
-@MicronautTest(
-    // Manually add metadata.yaml as a property source so that we can use its
-    // values as injectable properties.
-    // This is _infinitely_ easier than trying to wire up
-    // MetadataYamlPropertySource to be available at test time.
-    propertySources = ["classpath:metadata.yaml"]
-)
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
@@ -70,7 +61,7 @@ abstract class IntegrationTest(
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    @Inject lateinit var destinationProcessFactory: DestinationProcessFactory
+    val destinationProcessFactory = DestinationProcessFactory.get()
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
