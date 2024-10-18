@@ -115,12 +115,12 @@ abstract class IntegrationTest(
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        config: ConfigurationSpecification,
+        configContents: String,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> =
-        runSync(config, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -129,7 +129,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        config: ConfigurationSpecification,
+        configContents: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -137,7 +137,7 @@ abstract class IntegrationTest(
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
-                config,
+                configContents,
                 catalog.asProtocolObject(),
             )
         return runBlocking {

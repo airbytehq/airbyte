@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -34,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 class DockerizedDestination(
     imageTag: String,
     command: String,
-    config: ConfigurationSpecification?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
     vararg featureFlags: FeatureFlag,
@@ -118,16 +117,16 @@ class DockerizedDestination(
                     ))
                 .toMutableList()
 
-        fun addInput(paramName: String, fileContents: Any) {
+        fun addInput(paramName: String, fileContents: ByteArray) {
             Files.write(
                 jobRoot.resolve("destination_$paramName.json"),
-                Jsons.writeValueAsBytes(fileContents),
+                fileContents,
             )
             cmd.add("--$paramName")
             cmd.add("destination_$paramName.json")
         }
-        config?.let { addInput("config", it) }
-        catalog?.let { addInput("catalog", it) }
+        configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
+        catalog?.let { addInput("catalog", Jsons.writeValueAsBytes(catalog)) }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
@@ -231,14 +230,14 @@ class DockerizedDestinationFactory(
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
-            config,
+            configContents,
             catalog,
             testName,
             *featureFlags,
