@@ -21,12 +21,13 @@ data:
       packageName: airbyte-source-quickbooks
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   releases:
-    isReleaseCandidate: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
         message:
