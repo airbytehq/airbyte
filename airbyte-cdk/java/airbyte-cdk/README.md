@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.0     | 2024-10-23 | [\#46302](https://github.com/airbytehq/airbyte/pull/46302)  | Add support for file transfer |
 | 0.47.3     | 2024-10-23 | [\#46689](https://github.com/airbytehq/airbyte/pull/46689)  | Split DestinationAcceptanceTest|
 | 0.47.2     | 2024-10-21 | [\#47216](https://github.com/airbytehq/airbyte/pull/47216)  | improve java compatibiilty|
 | 0.47.1     | 2024-09-27 | [\#45397](https://github.com/airbytehq/airbyte/pull/45397)  | Allow logical replication from Postgres 16 read-replicas|
