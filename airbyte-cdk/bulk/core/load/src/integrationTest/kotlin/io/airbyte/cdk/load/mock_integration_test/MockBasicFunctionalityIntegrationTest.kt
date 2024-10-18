@@ -27,4 +27,14 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
+
+    @Test
+    override fun testNamespaces() {
+        super.testNamespaces()
+    }
+
+    @Test
+    override fun testFunkyStreamAndColumnNames() {
+        super.testFunkyStreamAndColumnNames()
+    }
 }
