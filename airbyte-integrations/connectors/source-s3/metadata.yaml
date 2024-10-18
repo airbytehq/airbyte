@@ -30,7 +30,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message: UX improvement, multi-stream support and deprecation of some parsing features
@@ -38,6 +38,15 @@ data:
       4.0.4:
         message: Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`
         upgradeDeadline: "2023-10-18"
+      5.0.0:
+        # Technically, this may not actually be a breaking change because the
+        # upgrade deadline to 4.0.0 has already passed and we should not have
+        # any users still on v3.
+        message: >
+          Removed support for migrating from "V3" state artifacts. Please
+          migrate to "v4" before upgrading to this version. Users who are
+          already using "v4" will not be affected by this change.
+        upgradeDeadline: "2024-12-05"
   supportLevel: certified
   tags:
     - language:python
