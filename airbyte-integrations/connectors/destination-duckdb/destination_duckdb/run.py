@@ -5,7 +5,7 @@ import sys
 from destination_duckdb import DestinationDuckdb
 
 
-def run():
+def run() -> None:
     DestinationDuckdb().run(sys.argv[1:])
 
 
