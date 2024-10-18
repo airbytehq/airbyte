@@ -18,9 +18,8 @@ include = "source_bing_ads"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 bingads = "==13.0.18.1"
-pandas = "==2.2.0"
 urllib3 = "==1.26.18"
-airbyte-cdk = "^4"
+airbyte-cdk = "^5"
 cached-property = "==1.5.2"
 
 [tool.poetry.scripts]
