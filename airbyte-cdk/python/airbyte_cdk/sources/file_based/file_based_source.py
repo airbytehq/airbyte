@@ -6,7 +6,18 @@ import logging
 import traceback
 from abc import ABC
 from collections import Counter
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import (
@@ -202,8 +213,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     self._concurrency_level = None
 
                 if not hasattr(self, "_concurrency_level") or self._concurrency_level is None:
-                    # Concurrency not supported for this stream.
-                    cursor = self.cursor_cls(stream_config)
+                    # Concurrency not supported for this source.
+                    # Expect a non-concurrent cursor class.
+                    cursor = cast(
+                        AbstractFileBasedCursor, self.cursor_cls(stream_config)
+                    )
                     stream = self._make_default_stream(stream_config, cursor)
                     streams.append(stream)
                     continue
@@ -239,8 +253,6 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
                 )
                 streams.append(stream)
-                continue
-
             return streams
 
         except ValidationError as exc:
