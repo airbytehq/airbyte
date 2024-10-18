@@ -11,7 +11,7 @@ from source_s3 import Config, SourceS3, SourceS3StreamReader
 
 
 _V3_FIELDS = ["dataset", "format", "path_pattern", "provider", "schema"]
-TEST_FILES_FOLDER = Path(__file__).resolve().parent.parent.joinpath("sample_files")
+TEST_FILES_FOLDER = Path(__file__).resolve().parent.joinpath("sample_files")
 
 
 class SourceTest(unittest.TestCase):

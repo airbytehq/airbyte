@@ -49,67 +49,28 @@ def _create_datetime(dt: str) -> datetime:
             id="single-date-single-file",
         ),
         pytest.param(
-            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T02:03:04Z"},
+            {"history": {"file1.txt": "2023-08-01T02:03:04.000000Z"}, "_ab_source_file_last_modified": "2023-08-01T02:03:04Z"},
             {
                 "history": {
                     "file1.txt": "2023-08-01T02:03:04.000000Z",
                 },
                 "_ab_source_file_last_modified": "2023-08-01T02:03:04.000000Z_file1.txt",
-                "v3_min_sync_date": "2023-08-01T01:03:04.000000Z",
             },
             id="single-date-not-at-midnight-single-file",
         ),
         pytest.param(
-            {"history": {"2023-08-01": ["file1.txt", "file2.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
             {
-                "history": {
-                    "file1.txt": "2023-08-01T00:00:00.000000Z",
-                    "file2.txt": "2023-08-01T00:00:00.000000Z",
-                },
-                "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file2.txt",
-                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
-            },
-            id="single-date-multiple-files",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt", "file2.txt"],
-                    "2023-07-31": ["file1.txt", "file3.txt"],
-                    "2023-07-30": ["file3.txt"],
-                },
+                "history": {"file1.txt": "2023-08-01T00:00:00.000000Z", "file2.txt": "2023-08-01T00:00:00.000000Z"},
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
             },
             {
                 "history": {
                     "file1.txt": "2023-08-01T00:00:00.000000Z",
                     "file2.txt": "2023-08-01T00:00:00.000000Z",
-                    "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
-                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
                 "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file2.txt",
             },
-            id="multiple-dates-multiple-files",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt", "file2.txt"],
-                    "2023-07-31": ["file1.txt", "file3.txt"],
-                    "2023-07-30": ["file3.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-01T10:11:12Z",
-            },
-            {
-                "history": {
-                    "file1.txt": "2023-08-01T10:11:12.000000Z",
-                    "file2.txt": "2023-08-01T10:11:12.000000Z",
-                    "file3.txt": "2023-07-31T23:59:59.999999Z",
-                },
-                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
-                "v3_min_sync_date": "2023-08-01T09:11:12.000000Z",
-            },
-            id="multiple-dates-multiple-files-not-at-midnight",
+            id="single-date-multiple-files",
         ),
         pytest.param(
             {
@@ -146,17 +107,19 @@ def _create_datetime(dt: str) -> datetime:
                     "file2.txt": "2023-08-01T10:11:12.000000Z",
                     "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
-                "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
                 "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
             },
             id="v4-migrated-from-v3",
         ),
         pytest.param(
-            {"history": {}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
             {
                 "history": {},
-                "_ab_source_file_last_modified": None,
+                "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
                 "v3_min_sync_date": "2023-07-31T23:00:00.000000Z",
+            },
+            {
+                "history": {},
+                "_ab_source_file_last_modified": "0001-01-01T00:00:00.000000Z_",
             },
             id="empty-history-with-cursor",
         ),
@@ -170,90 +133,6 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
 @pytest.mark.parametrize(
     "input_state, all_files, expected_files_to_sync, max_history_size",
     [
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
-            },
-            [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
-            [RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z"))],
-            None,
-            id="only_one_file_that_was_synced_exactly_at_midnight",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt"],
-                    "2023-08-02": ["file2.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-02T00:06:00Z",
-            },
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T00:00:00.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T06:00:00.000000Z")),
-            ],
-            [
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T06:00:00.000000Z")),
-            ],
-            None,
-            id="do_not_sync_files_last_updated_on_a_previous_date",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt"],
-                    "2023-08-02": ["file2.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
-            },
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T23:00:01.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
-            ],
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T23:00:01.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-02T00:00:00.000000Z")),
-            ],
-            None,
-            id="sync_files_last_updated_within_one_hour_of_cursor",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt", "file2.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-01T02:00:00Z",
-            },
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T02:00:00.000000Z")),
-            ],
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T02:00:00.000000Z")),
-            ],
-            None,
-            id="sync_files_last_updated_within_one_hour_of_cursor_on_same_day",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "2023-08-01": ["file1.txt", "file2.txt"],
-                },
-                "_ab_source_file_last_modified": "2023-08-01T06:00:00Z",
-            },
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T01:30:00.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
-            ],
-            [
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T06:00:00.000000Z")),
-            ],
-            None,
-            id="do_not_sync_files_last_modified_earlier_than_one_hour_before_cursor_on_same_day",
-        ),
         pytest.param(
             {},
             [
@@ -330,26 +209,6 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
                     "file2.txt": "2023-08-01T10:11:12.000000Z",
                     "file3.txt": "2023-07-31T23:59:59.999999Z",
                 },
-                "v3_min_sync_date": "2023-07-16T00:00:00.000000Z",
-                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
-            },
-            [
-                RemoteFile(uri="file1.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
-                RemoteFile(uri="file2.txt", last_modified=_create_datetime("2023-08-01T10:11:12.000000Z")),
-                RemoteFile(uri="file3.txt", last_modified=_create_datetime("2023-07-31T23:59:59.999999Z")),
-                RemoteFile(uri="file0.txt", last_modified=_create_datetime("2023-07-15T00:00:00.000000Z")),
-            ],
-            [],
-            None,
-            id="input_state_is_v4_with_a_new_file_earlier_than_migration_start_datetime",
-        ),
-        pytest.param(
-            {
-                "history": {
-                    "file1.txt": "2023-08-01T10:11:12.000000Z",
-                    "file2.txt": "2023-08-01T10:11:12.000000Z",
-                    "file3.txt": "2023-07-31T23:59:59.999999Z",
-                },
                 "v3_min_sync_date": "2023-07-01T00:00:00.000000Z",
                 "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
             },
@@ -406,7 +265,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
         ),
     ],
 )
-def test_list_files_v4_migration(
+def test_list_files(
     input_state: MutableMapping[str, Any],
     all_files: list[RemoteFile],
     expected_files_to_sync: list[RemoteFile],
@@ -415,46 +274,6 @@ def test_list_files_v4_migration(
     cursor = _init_cursor_with_state(input_state, max_history_size)
     files_to_sync = list(cursor.get_files_to_sync(all_files, Mock()))
     assert files_to_sync == expected_files_to_sync
-
-
-@pytest.mark.parametrize(
-    "input_state, expected",
-    [
-        pytest.param({}, False, id="empty_state_is_not_legacy_state"),
-        pytest.param(
-            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
-            True,
-            id="legacy_state_with_history_and_last_modified_cursor_is_legacy_state",
-        ),
-        pytest.param(
-            {"history": {"2023-08-01T00:00:00Z": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01T00:00:00Z"},
-            False,
-            id="legacy_state_with_invalid_history_date_format_is_not_legacy",
-        ),
-        pytest.param(
-            {"history": {"2023-08-01": ["file1.txt"]}, "_ab_source_file_last_modified": "2023-08-01"},
-            False,
-            id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
-        ),
-        pytest.param({"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"),
-        pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
-        pytest.param(
-            {
-                "history": {
-                    "file1.txt": "2023-08-01T10:11:12.000000Z",
-                    "file2.txt": "2023-08-01T10:11:12.000000Z",
-                    "file3.txt": "2023-07-31T23:59:59.999999Z",
-                },
-                "_ab_source_file_last_modified": "2023-08-01T10:11:12.000000Z_file2.txt",
-            },
-            False,
-            id="v4_state_format_is_not_legacy",
-        ),
-    ],
-)
-def test_is_legacy_state(input_state, expected):
-    is_legacy_state = Cursor._is_legacy_state(input_state)
-    assert is_legacy_state is expected
 
 
 @pytest.mark.parametrize(
