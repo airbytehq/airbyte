@@ -15,13 +15,10 @@ cache = MotherDuckCache(
 """
 
 from __future__ import annotations
-
 import warnings
-
 from pydantic import Field
 from overrides import overrides
 from duckdb_engine import DuckDBEngineWarning
-
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 
@@ -54,7 +51,8 @@ class MotherDuckConfig(DuckDBConfig):
         )
 
         return SecretString(
-            f"duckdb:///md:{self.database}?motherduck_token={self.api_key}&custom_user_agent=={self.custom_user_agent}"
+            f"duckdb:///md:{self.database}?motherduck_token={self.api_key}"
+            f"&custom_user_agent=={self.custom_user_agent}"
             # Not sure why this doesn't work. We have to override later in the flow.
             # f"&schema={self.schema_name}"
         )
@@ -79,9 +77,3 @@ class MotherDuckSqlProcessor(DuckDBSqlProcessor):
         """
         # No setup to do and no need to pre-create local file storage.
         pass
-
-
-__all__ = [
-    "MotherDuckSqlProcessor",
-    "MotherDuckConfig",
-]

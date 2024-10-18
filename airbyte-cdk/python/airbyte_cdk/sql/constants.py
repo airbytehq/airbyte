@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-
 DEBUG_MODE = False  # Set to True to enable additional debug logging.
-
 
 AB_EXTRACTED_AT_COLUMN = "_airbyte_extracted_at"
 """A column that stores the timestamp when the record was extracted."""
