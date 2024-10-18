@@ -107,7 +107,16 @@ class MessageGrouper:
                 log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
             elif isinstance(message_group, AirbyteTraceMessage):
                 if message_group.type == TraceType.ERROR:
-                    log_messages.append(LogMessage(**{"message": message_group.error.message, "level": "ERROR", "internal_message": message_group.error.internal_message, "stacktrace": message_group.error.stack_trace}))
+                    log_messages.append(
+                        LogMessage(
+                            **{
+                                "message": message_group.error.message,
+                                "level": "ERROR",
+                                "internal_message": message_group.error.internal_message,
+                                "stacktrace": message_group.error.stack_trace,
+                            }
+                        )
+                    )
             elif isinstance(message_group, AirbyteControlMessage):
                 if not latest_config_update or latest_config_update.emitted_at <= message_group.emitted_at:
                     latest_config_update = message_group
