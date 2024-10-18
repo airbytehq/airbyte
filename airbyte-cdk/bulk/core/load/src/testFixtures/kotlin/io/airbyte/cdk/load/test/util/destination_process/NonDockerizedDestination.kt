@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -16,15 +17,17 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import javax.inject.Singleton
+import kotlinx.coroutines.CompletableDeferred
 
 class NonDockerizedDestination(
     command: String,
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
-    testDeploymentMode: TestDeploymentMode,
+    vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
+    private val destinationComplete = CompletableDeferred<Unit>()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -36,20 +39,13 @@ class NonDockerizedDestination(
             // from PrintWriter(outputStream) ).
             // Thanks, spotbugs.
             PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
-        val testEnvironments =
-            when (testDeploymentMode) {
-                // the env var is DEPLOYMENT_MODE, which micronaut parses to
-                // a property called deployment.mode.
-                TestDeploymentMode.CLOUD -> mapOf("deployment.mode" to "CLOUD")
-                TestDeploymentMode.OSS -> mapOf("deployment.mode" to "OSS")
-            }
         destination =
             CliRunner.destination(
                 command,
                 config = config,
                 catalog = catalog,
-                testProperties = testEnvironments,
                 inputStream = destinationStdin,
+                featureFlags = featureFlags,
             )
     }
 
@@ -59,6 +55,7 @@ class NonDockerizedDestination(
         } catch (e: ConnectorUncleanExitException) {
             throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
         }
+        destinationComplete.complete(Unit)
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -69,6 +66,7 @@ class NonDockerizedDestination(
 
     override suspend fun shutdown() {
         destinationStdinPipe.close()
+        destinationComplete.join()
     }
 }
 
@@ -82,9 +80,9 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         command: String,
         config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
-        deploymentMode: TestDeploymentMode,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, deploymentMode)
+        return NonDockerizedDestination(command, config, catalog, *featureFlags)
     }
 }
