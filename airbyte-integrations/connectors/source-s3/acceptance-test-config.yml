@@ -268,13 +268,6 @@ acceptance_tests:
           disable_for_version: "4.0.5" # new compression type added - zip
   full_refresh:
     tests:
-      - config_path: secrets/bulk_jsonl_perf_test_singlefile_config.json
-        configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
-      # TODO: Delete or update before merging:
-      # - config_path: secrets/bulk_jsonl_perf_test_config.json
-      #   configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
-      # - config_path: secrets/bulk_jsonl_perf_test_bigglob_config.json
-      #   configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalogs/csv.json
         timeout_seconds: 1800
