@@ -24,6 +24,10 @@ def run() -> None:
     """Generate docs for all public modules in the Airbyte CDK and save them to docs/generated."""
     public_modules = [
         "airbyte_cdk",
+        "airbyte_cdk.sources",
+        "airbyte_cdk.sources.abstract_source",
+        "airbyte_cdk.sources.config",
+        "airbyte_cdk.sources.source",
     ]
 
     # recursively delete the docs/generated folder if it exists

@@ -24,7 +24,7 @@ jobs:
   publish_docs:
     runs-on: ubuntu-latest
     environment:
-      name: "github-pages"
+      name: "docs-preview"
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
