@@ -82,7 +82,7 @@ class H2SourceOperations :
     MetaFieldDecorator {
 
     data object H2GlobalCursor : MetaField {
-        override val id: String = "fake_h2_global_cursor"
+        override val id: String = "_ab_cdc_fake_cursor"
         override val type: FieldType = CdcStringMetaFieldType
     }
 
