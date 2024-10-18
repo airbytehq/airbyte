@@ -9,7 +9,7 @@ Currently Time Series stream has not been implemented due to some problem with r
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `base` | `string` | base. The base currency symbol (e.g., USD, EUR) | USD |
-| `currencies` | `string` | currencies. A comma-separated list of currency symbols to retrieve rates for(to  limit output currencies) | EUR,JPY,GBP,AUD,CAD,CHF,CNH,HKD,NZD,INR |
+| `currencies` | `string` | currencies. A comma-separated list of currency symbols to retrieve rates for(to  limit output currencies) | AED,AFN,ALL,AMD,ANG,AOA,ARS,AUD,AWG,AZN,BAM,BBD,BDT,BGN,BHD,BIF,BMD,BND,BOB,BOV,BRL,BSD,BTN,BWP,BYN,BZD,CAD,CDF,CHF,CLF,CLP,CNY,COP,CRC,CUC,CUP,CVE,CZK,DJF,DKK,DOP,DZD,EGP,ERN,ETB,EUR,FJD,FKP,GBP,GEL,GHS,GIP,GMD,GNF,GTQ,GYD,HKD,HNL,HRK,HTG,HUF,IDR,ILS,INR,IQD,IRR,ISK,JMD,JOD,JPY,KES,KGS,KHR,KMF,KPW,KRW,KWD,KYD,KZT,LAK,LBP,LKR,LRD,LSL,LTL,LVL,LYD,MAD,MDL,MGA,MKD,MMK,MNT,MOP,MRO,MUR,MVR,MWK,MXN,MYR,MZN,NAD,NGN,NIO,NOK,NPR,NZD,OMR,PAB,PEN,PGK,PHP,PKR,PLN,PYG,QAR,RON,RSD,RUB,RWF,SAR,SBD,SCR,SDG,SEK,SGD,SHP,SLL,SOS,SRD,SSP,STD,SVC,SYP,SZL,THB,TJS,TMT,TND,TOP,TRY,TTD,TWD,TZS,UAH,UGX,USD,UYU,UZS,VEF,VND,VUV,WST,XAF,XCD,XOF,XPF,YER,ZAR,ZMW,ZWL |
 | `date` | `string` | date. The date for historical data in ISO format (YYYY-MM-DD) |  |
 | `from` | `string` | From. The three-letter currency code to convert from | USD |
 | `to` | `string` | To. The three-letter currency code to convert to | EUR |

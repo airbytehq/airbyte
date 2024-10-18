@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
-  definitionId: 880e5dbd-90e9-441b-8d3f-e00fdc14ca4a
+  definitionId: f922fdbc-4457-4f67-a03b-4642d452e1b0
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-fxfeed
   githubIssueLabel: source-fxfeed
