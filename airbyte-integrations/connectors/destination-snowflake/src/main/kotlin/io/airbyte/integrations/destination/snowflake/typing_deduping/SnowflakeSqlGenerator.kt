@@ -696,15 +696,17 @@ class SnowflakeSqlGenerator(
         }
 
         private fun wrapInSnowflakeTransaction(sql: Sql): Sql {
-            return Sql(sql.transactions.map { transaction ->
-                listOf(
-                    "BEGIN",
-                    *transaction.toTypedArray(),
-                    "EXCEPTION",
-                    "WHEN OTHER THEN ROLLBACK;",
-                    "END;"
-                )
-            })
+            return Sql(
+                sql.transactions.map { transaction ->
+                    listOf(
+                        "BEGIN",
+                        *transaction.toTypedArray(),
+                        "EXCEPTION",
+                        "WHEN OTHER THEN ROLLBACK;",
+                        "END;"
+                    )
+                }
+            )
         }
     }
 }
