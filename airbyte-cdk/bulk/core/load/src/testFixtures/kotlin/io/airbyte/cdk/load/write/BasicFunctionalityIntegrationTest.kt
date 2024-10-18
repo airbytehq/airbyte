@@ -38,17 +38,19 @@ abstract class BasicFunctionalityIntegrationTest(
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
     @Test
     open fun testBasicWrite() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectTypeWithoutSchema,
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
         val messages =
             runSync(
                 config,
-                DestinationStream(
-                    DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                    Append,
-                    ObjectTypeWithoutSchema,
-                    generationId = 0,
-                    minimumGenerationId = 0,
-                    syncId = 42,
-                ),
+                stream,
                 listOf(
                     DestinationRecord(
                         namespace = randomizedNamespace,
@@ -98,6 +100,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
+                        config,
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -121,8 +124,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     )
                             )
                         ),
-                        "test_stream",
-                        randomizedNamespace,
+                        stream,
                         primaryKey = listOf(listOf("id")),
                         cursor = null,
                     )

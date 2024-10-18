@@ -15,7 +15,7 @@ class S3V2CheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    "secrets/s3_dest_v2_minimal_required_config.json",
+                    S3V2TestUtils.MINIMAL_CONFIG_PATH,
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 )
             ),
