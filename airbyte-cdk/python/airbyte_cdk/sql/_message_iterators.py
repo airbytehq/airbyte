@@ -133,7 +133,7 @@ class AirbyteMessageIterator:
                     break
                 try:
                     # Let Pydantic handle the JSON decoding from the raw string
-                    yield AirbyteMessage.model_validate_json(next_line)
+                    yield AirbyteMessage(**json.loads(next_line))
                 except pydantic.ValidationError:
                     # Handle JSON decoding errors (optional)
                     raise ValueError("Invalid JSON format")  # noqa: B904, TRY003
@@ -148,7 +148,7 @@ class AirbyteMessageIterator:
             for line in buffer:
                 try:
                     # Let Pydantic handle the JSON decoding from the raw string
-                    yield AirbyteMessage.model_validate_json(line)
+                    yield AirbyteMessage(**json.loads(line))
                 except pydantic.ValidationError:
                     # Handle JSON decoding errors (optional)
                     raise ValueError(f"Invalid JSON format in input string: {line}")  # noqa: B904, TRY003
@@ -187,10 +187,7 @@ class AirbyteMessageIterator:
 
                 try:
                     # Let Pydantic handle the JSON decoding from the raw string
-                    yield (
-                        AirbyteMessage.model_validate_json(next_line),
-                        current_file,
-                    )
+                    yield AirbyteMessage(**json.loads(next_line))
                 except pydantic.ValidationError:
                     # Handle JSON decoding errors
                     current_file_buffer.close()

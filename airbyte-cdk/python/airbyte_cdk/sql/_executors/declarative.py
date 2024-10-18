@@ -54,7 +54,7 @@ class DeclarativeExecutor(Executor):
         self.name = name
         self._manifest_dict: dict[str, str]
         if isinstance(manifest, Path):
-            self._manifest_dict = cast(dict, yaml.safe_load(manifest.read_text()))
+            self._manifest_dict = cast(dict[str, str], yaml.safe_load(manifest.read_text()))
 
         elif isinstance(manifest, dict):
             self._manifest_dict = manifest

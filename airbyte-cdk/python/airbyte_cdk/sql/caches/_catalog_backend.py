@@ -122,7 +122,7 @@ class SqlCatalogBackend(CatalogBackendBase):
                 table_prefix=self._table_prefix,
             )
         )
-        self._source_catalogs: dict[str, ConfiguredAirbyteCatalog] = {}
+        self._source_catalogs: dict[str, CatalogProvider] = {}
 
     def _ensure_internal_tables(self) -> None:
         engine = self._engine
@@ -160,7 +160,7 @@ class SqlCatalogBackend(CatalogBackendBase):
 
         # Repeat the process for the source-specific catalog cache
         if source_name in self._source_catalogs:
-            source_streams = self._source_catalogs[source_name].streams
+            source_streams = self._source_catalogs[source_name].configured_catalog.streams
             # Now use the same process to update the source-specific catalog if it exists
             unchanged_streams = [
                 stream
@@ -172,7 +172,7 @@ class SqlCatalogBackend(CatalogBackendBase):
                 for stream in incoming_source_catalog.streams
                 if stream.stream.name in incoming_stream_names
             ]
-            self._source_catalogs[source_name].streams = new_streams + unchanged_streams
+            self._source_catalogs[source_name].configured_catalog.streams = new_streams + unchanged_streams
 
     def _save_catalog_info(
         self,

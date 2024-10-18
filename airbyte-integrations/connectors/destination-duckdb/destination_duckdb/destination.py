@@ -6,12 +6,12 @@ import json
 import os
 from pathlib import Path
 import re
+from urllib.parse import urlparse
 import uuid
 from collections import defaultdict
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping
 
-from airbyte_cdk import ConfiguredAirbyteStream
 import duckdb
 import pyarrow as pa
 
@@ -38,7 +38,11 @@ from airbyte_cdk.sql.caches.motherduck import MotherDuckConfig
 from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
 from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-import sqlalchemy
+from airbyte_cdk.sql.secrets import SecretString
+
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase
 
 
 logger = getLogger("airbyte")
@@ -62,47 +66,45 @@ class DestinationDuckdb(Destination):
     normalizer = LowerCaseNormalizer
 
     @staticmethod
-    def _is_motherduck(path: str):
-        return "md:" in str(path)
+    def _is_motherduck(path: str | None) -> bool:
+        return path is not None and "md:" in str(path)
 
     def _get_sql_processor(
         self,
         configured_catalog: ConfiguredAirbyteCatalog,
         schema_name: str,
-        table_prefix: str | None = "",
-        db_path: str | None = ":memory:",
-        motherduck_token: str | None = None,
-    ):
+        table_prefix: str = "",
+        db_path: str = ":memory:",
+        motherduck_token: str = "",
+    ) -> DuckDBSqlProcessor | MotherDuckSqlProcessor:
         """
         Get sql processor for processing queries
         """
         catalog_provider = CatalogProvider(configured_catalog)
         if self._is_motherduck(db_path):
-            config = MotherDuckConfig(
-                schema_name=schema_name,
-                table_prefix=table_prefix,
-                db_path=db_path,
-                api_key=motherduck_token,
-            )
-            processor = MotherDuckSqlProcessor(
-                sql_config=config,
+            return MotherDuckSqlProcessor(
+                sql_config=MotherDuckConfig(
+                    schema_name=schema_name,
+                    table_prefix=table_prefix,
+                    db_path=db_path,
+                    database=urlparse(db_path).path,
+                    api_key=SecretString(motherduck_token),
+                ),
                 catalog_provider=catalog_provider,
                 state_writer=StdOutStateWriter(),
                 temp_dir=Path(DEFAULT_CACHE_ROOT),
                 temp_file_cleanup=True,
             )
         else:
-            config = DuckDBConfig(
-                schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
-            )
-            processor = DuckDBSqlProcessor(
-                sql_config=config,
+            return DuckDBSqlProcessor(
+                sql_config=DuckDBConfig(
+                    schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
+                ),
                 catalog_provider=catalog_provider,
                 state_writer=StdOutStateWriter(),
                 temp_dir=Path(DEFAULT_CACHE_ROOT),
                 temp_file_cleanup=True,
             )
-        return processor
 
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
@@ -201,7 +203,7 @@ class DestinationDuckdb(Destination):
                 stream_name=stream_name, table_name=table_name
             )
 
-        buffer = defaultdict(lambda: defaultdict(list))
+        buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
@@ -209,7 +211,7 @@ class DestinationDuckdb(Destination):
                 buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
-            elif message.type == Type.RECORD:
+            elif message.type == Type.RECORD and message.record is not None:
                 data = message.record.data
                 stream_name = message.record.stream
                 if stream_name not in streams:
@@ -218,7 +220,7 @@ class DestinationDuckdb(Destination):
                     )
                     continue
                 # add to buffer
-                record_meta = {}
+                record_meta: dict[str, str] = {}
                 for column_name in sql_columns:
                     if column_name in data:
                         buffer[stream_name][column_name].append(data[column_name])
@@ -232,7 +234,7 @@ class DestinationDuckdb(Destination):
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(
                     datetime.datetime.now().isoformat()
                 )
-                buffer[stream_name][AB_META_COLUMN].append({json.dumps(record_meta)})
+                buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
@@ -246,7 +248,7 @@ class DestinationDuckdb(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         db_path: str,
         schema_name: str,
-    ):
+    ) -> None:
         """
         Flush the buffer to the destination
         """
@@ -277,7 +279,7 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            path = config.get("destination_path")
+            path = config.get("destination_path", "")
             path = self._get_destination_path(path)
 
             if path.startswith("/local"):

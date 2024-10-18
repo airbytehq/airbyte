@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import yaml
 from rich import print  # noqa: A004  # Allow shadowing the built-in
@@ -258,7 +258,7 @@ class Source(ConnectorBase):
         Returns:
             dict: The JSON Schema configuration spec as a dictionary.
         """
-        return self._get_spec(force_refresh=True).connectionSpecification
+        return cast(dict[str, Any], self._get_spec(force_refresh=True).connectionSpecification)
 
     def print_config_spec(
         self,
@@ -403,7 +403,7 @@ class Source(ConnectorBase):
                 },
             )
 
-        return found[0].json_schema
+        return cast(dict[str, Any], found[0].json_schema)
 
     def get_records(
         self,

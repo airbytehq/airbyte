@@ -128,7 +128,7 @@ class SQLDataset(DatasetBase):
             text(expression) if isinstance(expression, str) else expression
             for expression in filter_expressions
         ]
-        filtered_select = self._query_statement.where(and_(*filters))
+        filtered_select = self._query_statement.where(and_(*filters)) # type: ignore
         return SQLDataset(
             cache=self._cache,
             stream_name=self._stream_name,

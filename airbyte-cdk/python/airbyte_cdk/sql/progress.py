@@ -313,6 +313,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         update_period = 1  # Reset the update period to 1 before start.
 
         for count, message in enumerate(messages, start=1):
+            message = cast(AirbyteMessage, message)
             yield message  # Yield the message immediately.
             if isinstance(message, str):
                 # This is a string message, not an AirbyteMessage.
@@ -410,7 +411,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
     def _log_sync_start(self) -> None:
         """Log the start of a sync operation."""
         self._print_info_message(
-            f"Started `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`..."
+            f"Started `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
         )
         # We access a non-public API here (noqa: SLF001) to get the runtime info for participants.
         self._send_telemetry(
@@ -423,20 +424,20 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         if stream_name not in self.stream_read_start_times:
             self._print_info_message(
                 f"Read started on stream `{stream_name}` at "
-                f"`{pendulum.now().format('HH:mm:ss')}`..."
+                f"`{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
             )
             self.stream_read_start_times[stream_name] = time.time()
 
     def _log_stream_read_end(self, stream_name: str) -> None:
         self._print_info_message(
-            f"Read completed on stream `{stream_name}` at `{pendulum.now().format('HH:mm:ss')}`..."
+            f"Read completed on stream `{stream_name}` at `{pendulum.now().format('HH:mm:ss')}`..." # type: ignore
         )
         self.stream_read_end_times[stream_name] = time.time()
 
     @property
     def _job_info(self) -> dict[str, Any]:
         """Return a dictionary of job information."""
-        job_info: dict[str, str | dict] = {
+        job_info: dict[str, str | dict[str, Any]] = {
             "description": self.job_description,
         }
         if self._source:
@@ -535,7 +536,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         self._update_display(force_refresh=True)
         self._stop_rich_view()
         self._print_info_message(
-            f"Completed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`."
+            f"Completed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`." # type: ignore
         )
         self._log_read_metrics()
         self._send_telemetry(
@@ -552,7 +553,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         self._update_display(force_refresh=True)
         self._stop_rich_view()
         self._print_info_message(
-            f"Failed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`."
+            f"Failed `{self.job_description}` sync at `{pendulum.now().format('HH:mm:ss')}`." # type: ignore
         )
         self._send_telemetry(
             state=EventState.FAILED,
@@ -703,7 +704,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         We want to update the display more often when the count is low, and less
         often when the count is high.
         """
-        return min(MAX_UPDATE_FREQUENCY, 10 ** math.floor(math.log10(max(current_count, 1)) / 4))
+        return int(min(MAX_UPDATE_FREQUENCY, 10 ** math.floor(math.log10(max(current_count, 1)) / 4)))
 
     def log_batch_written(self, stream_name: str, batch_size: int) -> None:
         """Log that a batch has been written.

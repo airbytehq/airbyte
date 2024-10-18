@@ -9,7 +9,7 @@ streams as they are discovered, providing a thin layer of abstraction over the c
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Any, final
+from typing import TYPE_CHECKING, Any, cast, final
 
 from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
@@ -117,14 +117,14 @@ class CatalogProvider:
         stream_name: str,
     ) -> dict[str, Any]:
         """Return the column definitions for the given stream."""
-        return self.get_configured_stream_info(stream_name).stream.json_schema
+        return cast(dict[str, Any], self.get_configured_stream_info(stream_name).stream.json_schema)
 
     def get_stream_properties(
         self,
         stream_name: str,
     ) -> dict[str, dict[str, Any]]:
         """Return the names of the top-level properties for the given stream."""
-        return self.get_stream_json_schema(stream_name)["properties"]
+        return cast(dict[str, Any], self.get_stream_json_schema(stream_name)["properties"])
 
     @classmethod
     def from_read_result(
@@ -174,7 +174,8 @@ class CatalogProvider:
         stream_name: str,
     ) -> list[str] | None:
         """Return the cursor key for the given stream."""
-        return self.get_configured_stream_info(stream_name).cursor_field
+        ret = self.get_configured_stream_info(stream_name).cursor_field
+        return ret if ret is None else cast(list[str], ret)
 
     def resolve_write_method(
         self,

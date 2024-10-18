@@ -42,7 +42,7 @@ class StateProviderBase(abc.ABC):
     @property
     def stream_state_artifacts(
         self,
-    ) -> list[AirbyteStreamState] | None:
+    ) -> list[AirbyteStreamState]:
         """Return all state artifacts.
 
         This is just a type guard around the private variable `_stream_state_artifacts` and the
@@ -55,6 +55,7 @@ class StateProviderBase(abc.ABC):
             state_msg.stream
             for state_msg in self._state_message_artifacts
             if state_msg.type == AirbyteStateType.STREAM
+            and state_msg.stream is not None
         ]
 
     @property
@@ -102,10 +103,10 @@ class StateProviderBase(abc.ABC):
     ) -> AirbyteStateMessage:
         """Return the state message for the specified stream name."""
         for state_message in self.state_message_artifacts:
-            if state_message.stream.stream_descriptor.name == stream_name:
+            if state_message.stream is not None and state_message.stream.stream_descriptor.name == stream_name:
                 return state_message
 
-        if not_found != "raise":
+        if not_found != "raise" and not_found is not None:
             return not_found
 
         raise exc.AirbyteStateNotFoundError(

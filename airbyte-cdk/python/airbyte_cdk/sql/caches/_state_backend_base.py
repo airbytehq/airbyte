@@ -15,8 +15,8 @@ if TYPE_CHECKING:
         AirbyteStreamState,
     )
 
-    from airbyte_cdk.sql.state_providers import StateProviderBase
-    from airbyte_cdk.sql.state_writers import StateWriterBase
+    from airbyte_cdk.sql.shared.state_providers import StateProviderBase
+    from airbyte_cdk.sql.shared.state_writers import StateWriterBase
 
 
 class StateBackendBase(abc.ABC):

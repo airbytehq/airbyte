@@ -7,14 +7,13 @@ import logging
 import warnings
 from pathlib import Path
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Any, Dict, List, Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, cast
 
 from airbyte_cdk import DestinationSyncMode
-from duckdb import DuckDBPyConnection
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import text
+from sqlalchemy import Executable, TextClause, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 from airbyte_cdk.sql._writers.jsonl import JsonlWriter
@@ -148,7 +147,9 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             stream_name=stream_name,
             batch_id=batch_id,
         )
-        columns_list = list(self._get_sql_column_definitions(stream_name=stream_name).keys())
+        columns_list = list(
+            self._get_sql_column_definitions(stream_name=stream_name).keys()
+        )
         columns_list_str = indent(
             "\n, ".join([self._quote_identifier(col) for col in columns_list]),
             "    ",
@@ -209,15 +210,15 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         with self.get_sql_connection() as new_conn:
             new_conn.execute(text("CHECKPOINT"))
 
-    def _executemany(self, sql: str | TextClause | Executable, params: object):
+    def _executemany(self, sql: str | TextClause | Executable, params: list[list[Any]]) -> None:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
             sql = text(sql)
 
         with self.get_sql_connection() as conn:
-            conn: DuckDBPyConnection
             try:
-                conn.executemany(sql, params)
+                entries = list(params)
+                conn.engine.pool.connect().executemany(str(sql), entries) # type: ignore
             except (
                 ProgrammingError,
                 SQLAlchemyError,
@@ -225,9 +226,11 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-    def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str):
-        column_names_list = buffer[stream_name].keys()
-        column_names = ", ".join(column_names_list.keys())
+    def _write_with_executemany(
+        self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str
+    ) -> None:
+        column_names_list = list(buffer[stream_name].keys())
+        column_names = ", ".join(column_names_list)
         params = ", ".join(["?"] * len(column_names_list))
         sql = f"""
         -- Write with executemany
@@ -236,11 +239,14 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]
-        self._executemany(
-            sql, zip(entries_to_write[column_name] for column_name in column_names_list)
-        )
+        num_entries = len(entries_to_write[column_names_list[0]])
+        parameters = [
+            [entries_to_write[column_name][n] for column_name in column_names_list]
+            for n in range(num_entries)
+        ]
+        self._executemany(sql, parameters)
 
-    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table)-> None:
+    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table) -> None:
         full_table_name = self._fully_qualified(table_name)
         sql = f"""
         -- Write from PyArrow table
@@ -322,7 +328,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             return new_table_name
         return table_name
 
-    def write_stream_data_from_buffer(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, sync_mode: DestinationSyncMode) -> None:
+    def write_stream_data_from_buffer(
+        self,
+        buffer: Dict[str, Dict[str, List[Any]]],
+        stream_name: str,
+        sync_mode: DestinationSyncMode,
+    ) -> None:
         table_name = f"_airbyte_raw_{stream_name}"
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:

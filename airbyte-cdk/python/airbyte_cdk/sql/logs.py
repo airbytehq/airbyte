@@ -140,7 +140,7 @@ def get_global_file_logger() -> Any:
     for handler in logger.handlers:
         logger.removeHandler(handler)
 
-    yyyy_mm_dd: str = pendulum.now().format("YYYY-MM-DD")
+    yyyy_mm_dd: str = pendulum.now().format("YYYY-MM-DD") # type: ignore
     folder = AIRBYTE_LOGGING_ROOT / yyyy_mm_dd
     try:
         folder.mkdir(parents=True, exist_ok=True)

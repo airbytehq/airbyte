@@ -6,7 +6,7 @@ from __future__ import annotations
 import abc
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import jsonschema
 import rich
@@ -225,7 +225,7 @@ class ConnectorBase(abc.ABC):
         Returns:
             dict: The JSON Schema configuration spec as a dictionary.
         """
-        return self._get_spec(force_refresh=True).connectionSpecification
+        return cast(dict[str, Any], self._get_spec(force_refresh=True).connectionSpecification)
 
     def print_config_spec(
         self,
@@ -366,11 +366,11 @@ class ConnectorBase(abc.ABC):
         Raises:
             AirbyteConnectorFailedError: If a TRACE message of type ERROR is emitted.
         """
-        if message.type == Type.LOG:
+        if message.type == Type.LOG and message.log is not None:
             self._print_info_message(message.log.message)
             return
 
-        if message.type == Type.TRACE and message.trace.type == TraceType.ERROR:
+        if message.type == Type.TRACE and message.trace is not None and message.trace.type == TraceType.ERROR:
             self._print_error_message(message.trace.error.message)
             if raise_on_error:
                 raise exc.AirbyteConnectorFailedError(
@@ -421,7 +421,7 @@ class ConnectorBase(abc.ABC):
         try:
             for line in self.executor.execute(args, stdin=stdin):
                 try:
-                    message: AirbyteMessage = AirbyteMessage.model_validate_json(json_data=line)
+                    message: AirbyteMessage = AirbyteMessage(json.loads(line))
                     if progress_tracker and message.record:
                         stream_name = message.record.stream
                         progress_tracker.tally_bytes_read(

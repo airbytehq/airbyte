@@ -29,7 +29,7 @@ from sqlalchemy import (
     update,
 )
 
-from airbyte_cdk.models.airbyte_protocol import (
+from airbyte_protocol_dataclasses.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
