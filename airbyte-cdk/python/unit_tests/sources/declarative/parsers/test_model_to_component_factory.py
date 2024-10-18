@@ -25,7 +25,13 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    PerPartitionCursor,
+    PerPartitionWithGlobalCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -702,9 +708,9 @@ list_stream:
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+    assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
 
-    datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
+    datetime_stream_slicer = stream.retriever.stream_slicer._per_partition_cursor._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
     assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
     assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
@@ -1047,7 +1053,7 @@ list_stream:
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
-    assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
+    assert isinstance(stream.retriever.record_selector.record_filter._substream_cursor, PerPartitionWithGlobalCursor)
 
 
 def test_given_data_feed_and_client_side_incremental_then_raise_error():
@@ -2056,7 +2062,7 @@ class TestCreateTransformations:
                 "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_incremental_and_partition_router",
         ),
         pytest.param(
@@ -2081,7 +2087,7 @@ class TestCreateTransformations:
                     "cursor_field": "b_key",
                 },
             ],
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
         pytest.param(None, None, SinglePartitionRouter, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
@@ -2118,15 +2124,16 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
+    print(stream.retriever.stream_slicer)
     assert isinstance(stream.retriever.stream_slicer, expected_type)
 
     if incremental and partition_router:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         if isinstance(partition_router, list) and len(partition_router) > 1:
             assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
     elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
 
