@@ -1141,6 +1141,8 @@ Table "invoice_line_items" {
     "discounts" array
     "tax_rates" array
     "tax_amounts" array
+    "created" integer
+    "updated" integer
 }
 
 Table "subscription_items" {
@@ -1167,6 +1169,7 @@ Table "subscription_items" {
     "billing_thresholds" object
     "tax_rates" array
     "price" object
+    "updated" integer
 }
 
 Table "transfer_reversals" {
