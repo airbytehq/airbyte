@@ -61,7 +61,7 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 class SourceFacebookMarketing(AbstractSource):
     # Skip exceptions on missing streams
-    raise_exception_on_missing_stream = False
+    raise_exception_on_missing_stream = True
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         config.setdefault("action_breakdowns_allow_empty", False)
