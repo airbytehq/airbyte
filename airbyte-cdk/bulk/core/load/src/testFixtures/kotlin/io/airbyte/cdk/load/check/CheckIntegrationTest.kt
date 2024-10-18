@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
 import kotlin.test.assertEquals
@@ -35,10 +37,11 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     @Test
     open fun testSuccessConfigs() {
         for ((path, deploymentMode) in successConfigFilenames) {
+            val fileContents = Files.readString(path, StandardCharsets.UTF_8)
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    configPath = path,
+                    config = fileContents,
                     deploymentMode = deploymentMode,
                 )
             runBlocking { process.run() }
@@ -62,10 +65,11 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     open fun testFailConfigs() {
         for ((checkTestConfig, failurePattern) in failConfigFilenamesAndFailureReasons) {
             val (path, deploymentMode) = checkTestConfig
+            val fileContents = Files.readString(path, StandardCharsets.UTF_8)
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    configPath = path,
+                    config = fileContents,
                     deploymentMode = deploymentMode,
                 )
             runBlocking { process.run() }

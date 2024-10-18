@@ -105,7 +105,7 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
-        config: Path,
+        config: ConfigurationSpecification,
         canonicalExpectedRecords: List<OutputRecord>,
         stream: DestinationStream,
         primaryKey: List<List<String>>,
@@ -125,12 +125,12 @@ abstract class IntegrationTest(
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        configPath: Path,
+        config: String,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> =
-        runSync(configPath, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(config, DestinationCatalog(listOf(stream)), messages, streamStatus)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -139,7 +139,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        configPath: Path,
+        config: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -147,7 +147,7 @@ abstract class IntegrationTest(
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
-                configPath,
+                config,
                 catalog.asProtocolObject(),
             )
         return runBlocking {

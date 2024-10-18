@@ -19,7 +19,7 @@ import javax.inject.Singleton
 
 class NonDockerizedDestination(
     command: String,
-    configPath: Path?,
+    config: String?,
     catalog: ConfiguredAirbyteCatalog?,
     testDeploymentMode: TestDeploymentMode,
 ) : DestinationProcess {
@@ -46,7 +46,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                configPath = configPath,
+                configContents = config,
                 catalog = catalog,
                 testProperties = testEnvironments,
                 inputStream = destinationStdin,
@@ -80,11 +80,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        configPath: Path?,
+        config: String?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, configPath, catalog, deploymentMode)
+        return NonDockerizedDestination(command, config, catalog, deploymentMode)
     }
 }

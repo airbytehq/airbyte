@@ -29,7 +29,7 @@ object MockDestinationBackend {
 
 object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
-        configPath: Path,
+        spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(

@@ -48,7 +48,7 @@ data object CliRunner {
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
-        configPath: Path? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
@@ -59,6 +59,7 @@ data object CliRunner {
                 .singleton(true)
                 .build()
         val out = CliRunnerOutputStream()
+        val configPath: Path? = inputFileFromString(configContents)
         val runnable: Runnable =
             makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
@@ -74,7 +75,7 @@ data object CliRunner {
     /** Same as the other [destination] but with [AirbyteMessage] input. */
     fun destination(
         op: String,
-        configPath: Path? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         vararg input: AirbyteMessage,
@@ -88,7 +89,7 @@ data object CliRunner {
                 baos.toByteArray()
             }
         val inputStream: InputStream = ByteArrayInputStream(inputJsonBytes)
-        return destination(op, configPath, catalog, state, inputStream)
+        return destination(op, configContents, catalog, state, inputStream)
     }
 
     private fun makeRunnable(
@@ -132,8 +133,13 @@ data object CliRunner {
 
     private fun inputFile(contents: Any?): Path? =
         contents?.let {
+            inputFileFromString(Jsons.writeValueAsString(contents))
+        }
+
+    private fun inputFileFromString(contents: String?): Path? =
+        contents?.let {
             Files.createTempFile(null, null).also { file ->
-                Files.writeString(file, Jsons.writeValueAsString(contents))
+                Files.writeString(file, contents)
             }
         }
 }

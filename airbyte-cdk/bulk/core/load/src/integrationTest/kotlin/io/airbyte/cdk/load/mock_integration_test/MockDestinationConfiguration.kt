@@ -17,16 +17,7 @@ class MockDestinationConfiguration : DestinationConfiguration()
 @Singleton
 class MockDestinationSpecification : ConfigurationSpecification() {
     companion object {
-        val configPath: Path
-
-        init {
-            Files.createDirectories(Path.of("/tmp/airbyte_tests/"))
-            val tmpDir = Files.createTempDirectory(Path.of("/tmp/airbyte_tests/"), "test")
-            tmpDir.toFile().deleteOnExit()
-            val configFile =
-                Files.write(tmpDir.resolve("config.json"), "{}".toByteArray(Charsets.UTF_8))
-            configPath = configFile.toAbsolutePath()
-        }
+        const val CONFIG: String = "{}"
     }
 }
 

@@ -56,7 +56,7 @@ abstract class DestinationProcessFactory {
 
     abstract fun createDestinationProcess(
         command: String,
-        configPath: Path? = null,
+        config: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
     ): DestinationProcess

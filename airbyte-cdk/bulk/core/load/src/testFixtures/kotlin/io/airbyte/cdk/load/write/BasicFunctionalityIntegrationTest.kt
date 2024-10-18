@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
@@ -28,7 +29,8 @@ import org.junit.jupiter.api.assertAll
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val config: Path,
+    val config: String,
+    val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
@@ -104,7 +106,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        config,
+                        ValidatedJsonUtils.parseOne(configSpecClass, config),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,

@@ -34,7 +34,7 @@ private val logger = KotlinLogging.logger {}
 class DockerizedDestination(
     imageTag: String,
     command: String,
-    configPath: Path?,
+    config: String?,
     catalog: ConfiguredAirbyteCatalog?,
     testDeploymentMode: TestDeploymentMode,
     private val testName: String,
@@ -111,36 +111,21 @@ class DockerizedDestination(
                 // Also also yes, we're relying on this env var >.>
                 "-e",
                 "WORKER_JOB_ID=0",
+                imageTag,
+                command,
             )
 
-        // directly shove the config path into the container
-        // (this has to be before imageTag, otherwise we would run `write --mount ....`)
-        configPath?.let {
-            cmd.add("--mount")
-            cmd.add(
-                """type=bind,source=${configPath.absolute()},target=/destination_config.json,readonly"""
-            )
-        }
-
-        cmd.add(imageTag)
-        cmd.add(command)
-
-        configPath?.let {
-            cmd.add("--config")
-            cmd.add("/destination_config.json")
-        }
-        // for historical reasons, we write the catalog to
-        // workspaceRoot/job/destination_catalog.json.
-        // We can probably simplify the whole temp dir situation.
-        // (workspaceRoot is mounted to the container as /data, and we launch with workdir
-        // /data/job)
-        catalog?.let {
+        fun addInput(paramName: String, fileContents: ByteArray) {
             Files.write(
-                jobRoot.resolve("destination_catalog.json"),
-                Jsons.writeValueAsBytes(catalog),
+                jobRoot.resolve("destination_$paramName.json"),
+                fileContents,
             )
-            cmd.add("--catalog")
-            cmd.add("destination_catalog.json")
+            cmd.add("--$paramName")
+            cmd.add("destination_$paramName.json")
+        }
+        config?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
+        catalog?.let {
+            addInput("catalog", Jsons.writeValueAsBytes(catalog))
         }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
@@ -245,14 +230,14 @@ class DockerizedDestinationFactory(
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        configPath: Path?,
+        config: String?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
-            configPath,
+            config,
             catalog,
             deploymentMode,
             testName,
