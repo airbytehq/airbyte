@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -192,6 +193,51 @@ class RootReaderIntegrationTest {
                 it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL
             }
         Assertions.assertFalse(globalStateMessages.isEmpty())
+    }
+
+    @Test
+    fun testAllStreamsGlobalConfigError() {
+        val stateManager =
+            StateManager(
+                global = Global(testCases.map { it.stream }),
+                initialGlobalState = null,
+                initialStreamStates = testCases.associate { it.stream to null },
+            )
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
+        val rootReader =
+            RootReader(
+                stateManager,
+                slowHeartbeat,
+                excessiveTimeout,
+                testOutputConsumer,
+                listOf(
+                    ConfigErrorThrowingGlobalPartitionsCreatorFactory(
+                        Semaphore(CONSTRAINED),
+                        *testCases.toTypedArray()
+                    )
+                ),
+            )
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            runBlocking(Dispatchers.Default) { rootReader.read() }
+        }
+        val log = KotlinLogging.logger {}
+        for (msg in testOutputConsumer.messages()) {
+            log.info { Jsons.writeValueAsString(msg) }
+        }
+        for (testCase in testCases) {
+            log.info { "checking stream feed for ${testCase.name}" }
+            val streamStateMessages: List<AirbyteStateMessage> =
+                testOutputConsumer.states().filter {
+                    it.stream?.streamDescriptor?.name == testCase.name
+                }
+            Assertions.assertTrue(streamStateMessages.isEmpty())
+        }
+        log.info { "checking global feed" }
+        val globalStateMessages: List<AirbyteStateMessage> =
+            testOutputConsumer.states().filter {
+                it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL
+            }
+        Assertions.assertTrue(globalStateMessages.isEmpty())
     }
 
     companion object {
@@ -571,7 +617,7 @@ class TestPartitionReader(
         )
 }
 
-class TestPartitionsCreatorFactory(
+open class TestPartitionsCreatorFactory(
     val resource: Semaphore,
     vararg val testCases: TestCase,
 ) : PartitionsCreatorFactory {
@@ -582,18 +628,7 @@ class TestPartitionsCreatorFactory(
         feed: Feed,
     ): PartitionsCreator {
         if (feed is Global) {
-            return object : PartitionsCreator {
-                override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-                    return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
-                }
-
-                override suspend fun run(): List<PartitionReader> {
-                    // Do nothing.
-                    return emptyList()
-                }
-
-                override fun releaseResources() {}
-            }
+            return makeGlobalPartitionsCreator()
         }
         // For a stream feed, pick the CreatorCase in the corresponding TestCase
         // which is the successor of the one whose corresponding state is in the StateQuerier.
@@ -612,6 +647,40 @@ class TestPartitionsCreatorFactory(
             testCase.creatorCases[nextCreatorCaseIndex],
             resource,
         )
+    }
+
+    protected open fun makeGlobalPartitionsCreator(): PartitionsCreator {
+        return object : PartitionsCreator {
+            override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
+                return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
+            }
+
+            override suspend fun run(): List<PartitionReader> {
+                // Do nothing.
+                return emptyList()
+            }
+
+            override fun releaseResources() {}
+        }
+    }
+}
+
+class ConfigErrorThrowingGlobalPartitionsCreatorFactory(
+    resource: Semaphore,
+    vararg testCases: TestCase,
+) : TestPartitionsCreatorFactory(resource, *testCases) {
+    override fun makeGlobalPartitionsCreator(): PartitionsCreator {
+        return object : PartitionsCreator {
+            override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
+                return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
+            }
+
+            override suspend fun run(): List<PartitionReader> {
+                throw ConfigErrorException("some config error")
+            }
+
+            override fun releaseResources() {}
+        }
     }
 }
 

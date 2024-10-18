@@ -6,10 +6,6 @@ description: Contains information about different types of releases for a connec
 type: object
 additionalProperties: false
 properties:
-  isReleaseCandidate:
-    description: Whether the release is eligible to be a release candidate.
-    type: boolean
-    default: false
   rolloutConfiguration:
     $ref: RolloutConfiguration.yaml
   breakingChanges:

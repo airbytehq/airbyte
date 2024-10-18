@@ -187,3 +187,7 @@ class JsonToAirbyteValue {
         }
     }
 }
+
+fun JsonNode.toAirbyteValue(schema: AirbyteType): AirbyteValue {
+    return JsonToAirbyteValue().convert(this, schema)
+}
