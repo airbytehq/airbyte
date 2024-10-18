@@ -125,24 +125,20 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         filtered_catalog = self._remove_concurrent_streams_from_catalog(catalog=catalog, concurrent_stream_names=concurrent_stream_names)
         yield from super().read(logger, config, filtered_catalog, state)
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        return super().check(logger=logger, config=config)
-
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         return AirbyteCatalog(
-            streams=[stream.as_airbyte_stream() for stream in self.streams(config=config, include_concurrent_streams=True)]
+            streams=[stream.as_airbyte_stream() for stream in self._concurrent_streams + self._synchronous_streams]
         )
 
-    def streams(self, config: Mapping[str, Any], include_concurrent_streams: bool = False) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        Returns the list of streams that can be run synchronously in the Python CDK.
+        The `streams` method is used as part of the AbstractSource in the following cases:
+        * ConcurrentDeclarativeSource.check -> ManifestDeclarativeSource.check -> AbstractSource.check -> DeclarativeSource.check_connection -> CheckStream.check_connection -> streams
+        * ConcurrentDeclarativeSource.discover -> ManifestDeclarativeSource.discover -> streams
 
-        NOTE: For ConcurrentDeclarativeSource, this method only returns synchronous streams because it usage is invoked within the
-        existing Python CDK. Streams that support concurrency are started from read().
+        In both case, we will assume that calling the DeclarativeStream is perfectly fine as the result for these is the same regardless of if it is a DeclarativeStream or a DefaultStream (concurrent). This
         """
-        if include_concurrent_streams:
-            return self._synchronous_streams + self._concurrent_streams  # type: ignore  # Although AbstractStream doesn't inherit stream, they were designed to fit the same interface when called from streams()
-        return self._synchronous_streams
+        return super().streams(config)
 
     def _group_streams(self, config: Mapping[str, Any]) -> Tuple[List[AbstractStream], List[Stream]]:
         concurrent_streams: List[AbstractStream] = []

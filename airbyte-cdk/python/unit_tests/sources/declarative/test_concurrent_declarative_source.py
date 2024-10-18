@@ -2,8 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 import copy
+import json
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union, Dict
 
 import freezegun
 import isodate
@@ -21,16 +22,21 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     StreamDescriptor,
+    Status,
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import Record, StreamSlice
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.utils import AirbyteTracedException
+from deprecated.classic import deprecated
+
 
 _CONFIG = {
     "start_date": "2024-07-01T00:00:00.000Z"
@@ -60,6 +66,41 @@ _CATALOG = ConfiguredAirbyteCatalog(
         )
     ]
 )
+_LOCATIONS_RESPONSE = HttpResponse(json.dumps([
+    {"id": "444", "name": "Yongen-jaya", "updated_at": "2024-08-10"},
+    {"id": "scramble", "name": "Shibuya", "updated_at": "2024-08-10"},
+    {"id": "aoyama", "name": "Aoyama-itchome", "updated_at": "2024-08-10"},
+    {"id": "shin123", "name": "Shinjuku", "updated_at": "2024-08-10"},
+]))
+_PARTY_MEMBERS_RESPONSE = HttpResponse(json.dumps([
+    {"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"},
+    {"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"},
+    {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"},
+]))
+_PALACES_RESPONSE = HttpResponse(json.dumps([
+    {"id": "0", "world": "castle", "owner": "kamoshida"},
+    {"id": "1", "world": "museum", "owner": "madarame"},
+    {"id": "2", "world": "bank", "owner": "kaneshiro"},
+    {"id": "3", "world": "pyramid", "owner": "futaba"},
+    {"id": "4", "world": "spaceport", "owner": "okumura"},
+    {"id": "5", "world": "casino", "owner": "nijima"},
+    {"id": "6", "world": "cruiser", "owner": "shido"},
+]))
+_PARTY_MEMBERS_SKILLS_RESPONSE = HttpResponse(json.dumps([
+    {"id": "0", "name": "hassou tobi"},
+    {"id": "1", "name": "mafreidyne"},
+    {"id": "2", "name": "myriad truths"},
+]))
+_EMPTY_RESPONSE = HttpResponse(json.dumps([]))
+_NOW = "2024-09-10T00:00:00"
+_DECLARATIVE_CURSOR_PARTY_MEMBERS_SLICES = [
+    {"start": "2024-06-26", "end": "2024-07-10"},
+    {"start": "2024-07-11", "end": "2024-07-25"},
+    {"start": "2024-07-26", "end": "2024-08-09"},
+    {"start": "2024-08-10", "end": "2024-08-24"},
+    {"start": "2024-08-25", "end": "2024-09-08"},
+    {"start": "2024-09-09", "end": "2024-09-10"},
+]  # FIXME can be removed/updated once the declarative cursor is updated to match the concurrent cursor behavior on lookback windows
 
 _MANIFEST = {
   "version": "5.0.0",
@@ -68,7 +109,7 @@ _MANIFEST = {
       "type": "RecordSelector",
       "extractor": {
         "type": "DpathExtractor",
-        "field_path": ["{{ parameters.get('data_field') }}"]
+        "field_path": []
       }
     },
     "requester": {
@@ -95,7 +136,8 @@ _MANIFEST = {
             "error_message": "No data available for the time range requested."
           }
         ]
-      }
+      },
+      "use_cache": False,  # necessary to ensure all tests are independent and that HttpMocker can validate the HTTP requests
     },
     "retriever": {
       "type": "SimpleRetriever",
@@ -155,11 +197,7 @@ _MANIFEST = {
       "retriever": {
         "$ref": "#/definitions/base_incremental_stream/retriever",
         "record_selector": {
-          "type": "RecordSelector",
-          "extractor": {
-            "type": "DpathExtractor",
-            "field_path": []
-          }
+          "$ref": "#/definitions/selector"
         }
       },
       "$parameters": {
@@ -190,7 +228,7 @@ _MANIFEST = {
       "$parameters": {
         "name": "palaces",
         "primary_key": "id",
-        "path": "/party_members"
+        "path": "/palaces"
       },
       "schema_loader": {
         "type": "InlineSchemaLoader",
@@ -223,11 +261,7 @@ _MANIFEST = {
           }
         },
         "record_selector": {
-          "type": "RecordSelector",
-          "extractor": {
-            "type": "DpathExtractor",
-            "field_path": []
-          }
+          "$ref": "#/definitions/selector"
         }
       },
       "incremental_sync": {
@@ -263,11 +297,7 @@ _MANIFEST = {
       "retriever": {
         "$ref": "#/definitions/base_incremental_stream/retriever",
         "record_selector": {
-          "type": "RecordSelector",
-          "extractor": {
-            "type": "DpathExtractor",
-            "field_path": []
-          }
+          "$ref": "#/definitions/selector"
         },
         "partition_router": {
           "type": "SubstreamPartitionRouter",
@@ -284,7 +314,7 @@ _MANIFEST = {
       "$parameters": {
         "name": "party_members_skills",
         "primary_key": "id",
-        "path": "/party_members_skills"
+        "path": "/party_members/{{stream_slice.party_member_id}}/skills"
       },
       "schema_loader": {
         "type": "InlineSchemaLoader",
@@ -322,10 +352,18 @@ _MANIFEST = {
 }
 
 
+@deprecated("See note in docstring for more information")
 class DeclarativeStreamDecorator(Stream):
     """
     Helper class that wraps an existing DeclarativeStream but allows for overriding the output of read_records() to
     make it easier to mock behavior and test how low-code streams integrate with the Concurrent CDK.
+
+    NOTE: We are not using that for now but the intent was to scope the tests to only testing that streams were properly instantiated and
+    interacted together properly. However in practice, we had a couple surprises like `get_cursor` and `stream_slices` needed to be
+    re-implemented as well. Because of that, we've move away from that in favour of doing tests that integrate up until the HTTP request.
+    The drawback of that is that we are dependent on any change later (like if the DatetimeBasedCursor changes, this will affect those
+    tests) but it feels less flaky than this. If we have new information in the future to infirm that, feel free to re-use this class as
+    necessary.
     """
 
     def __init__(self, declarative_stream: DeclarativeStream, slice_to_records_mapping: Mapping[tuple[str, str], List[Mapping[str, Any]]]):
@@ -365,6 +403,9 @@ class DeclarativeStreamDecorator(Stream):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._declarative_stream.get_json_schema()
+
+    def get_cursor(self) -> Optional[Cursor]:
+        return self._declarative_stream.get_cursor()
 
 
 def test_group_streams():
@@ -486,13 +527,26 @@ def test_create_concurrent_cursor():
 
 def test_check():
     """
-    Verifies that the ConcurrentDeclarativeSource check command is run against concurrent and synchronous streams
+    Verifies that the ConcurrentDeclarativeSource check command is run against synchronous streams
     """
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=None, state=None)
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest("https://persona.metaverse.com/party_members?start=2024-06-26&end=2024-07-10"),
+            HttpResponse(json.dumps({"id": "party_member_1"})),
+        )
+        http_mocker.get(
+            HttpRequest("https://persona.metaverse.com/palaces"),
+            HttpResponse(json.dumps({"id": "palace_1"})),
+        )
+        http_mocker.get(
+            HttpRequest("https://persona.metaverse.com/locations?m=active&i=1&g=country&start=2024-06-26&end=2024-07-25"),
+            HttpResponse(json.dumps({"id": "location_1"})),
+        )
+        source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=None, state=None)
 
-    actual_connection_state = source.check(logger=source.logger, config=_CONFIG)
+        connection_status = source.check(logger=source.logger, config=_CONFIG)
 
-    assert actual_connection_state
+    assert connection_status.status == Status.SUCCEEDED
 
 
 def test_discover():
@@ -512,33 +566,77 @@ def test_discover():
     assert actual_catalog.streams[3].name in expected_stream_names
 
 
-@freezegun.freeze_time("2024-09-10T00:00:00")
+def _mock_requests(http_mocker: HttpMocker, url: str, query_params: List[Dict[str, str]], responses: List[HttpResponse]) -> None:
+    assert len(query_params) == len(responses), "Expecting as many slices as response"
+
+    for i in range(len(query_params)):
+        http_mocker.get(HttpRequest(url, query_params=query_params[i]), responses[i])
+
+
+def _mock_party_members_requests(http_mocker: HttpMocker, slices: List[Dict[str, str]]) -> None:
+    _mock_requests(
+        http_mocker,
+        "https://persona.metaverse.com/party_members",
+        slices,
+        [_PARTY_MEMBERS_RESPONSE] * len(slices),
+    )
+
+def _mock_locations_requests(http_mocker: HttpMocker, slices: List[Dict[str, str]]) -> None:
+    locations_query_params = list(map(lambda _slice: _slice | {"m": "active", "i": "1", "g": "country"}, slices))
+    _mock_requests(
+        http_mocker,
+        "https://persona.metaverse.com/locations",
+        locations_query_params,
+        [_LOCATIONS_RESPONSE] * len(slices),
+    )
+
+
+def _mock_party_members_skills_requests(http_mocker: HttpMocker) -> None:
+    _mock_requests(
+        http_mocker,
+        "https://persona.metaverse.com/party_members",
+        _DECLARATIVE_CURSOR_PARTY_MEMBERS_SLICES,
+        [
+            HttpResponse(json.dumps([{"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"}])),
+            _EMPTY_RESPONSE,
+            _EMPTY_RESPONSE,
+            HttpResponse(json.dumps([{"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"}, ])),
+            _EMPTY_RESPONSE,
+            HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}])),
+        ],
+    )
+    http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/amamiya/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
+    http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/nijima/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
+    http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/yoshizawa/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
+
+
+@freezegun.freeze_time(_NOW)
 def test_read_with_concurrent_and_synchronous_streams():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams followed by synchronous streams
     """
-
+    concurrent_cursor_party_members_slices = [
+        {"start": "2024-07-01", "end": "2024-07-15"},
+        {"start": "2024-07-16", "end": "2024-07-30"},
+        {"start": "2024-07-31", "end": "2024-08-14"},
+        {"start": "2024-08-15", "end": "2024-08-29"},
+        {"start": "2024-08-30", "end": "2024-09-09"},
+    ]
+    location_slices = [
+        {"start": "2024-07-01", "end": "2024-07-31"},
+        {"start": "2024-08-01", "end": "2024-08-31"},
+        {"start": "2024-09-01", "end": "2024-09-09"},
+    ]
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=None)
-
     disable_emitting_sequential_state_messages(source=source)
 
-    for i, _ in enumerate(source._concurrent_streams):
-        stream = source._concurrent_streams[i]._stream_partition_generator._stream
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    with HttpMocker() as http_mocker:
+        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_locations_requests(http_mocker, location_slices)
+        http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
+        _mock_party_members_skills_requests(http_mocker)
 
-    for i, _ in enumerate(source._synchronous_streams):
-        stream = source._synchronous_streams[i]
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._synchronous_streams[i] = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
-
-    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=[]))
+        messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=[]))
 
     # Expects 15 records, 5 slices, 3 records each slice
     party_members_records = get_records_for_stream("party_members", messages)
@@ -570,24 +668,40 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     palaces_states = get_states_for_stream(stream_name="palaces", messages=messages)
     assert len(palaces_states) == 1
-    assert palaces_states[0].stream.stream_state.__dict__ == AirbyteStateBlob(__ab_no_cursor_state_message=True).__dict__
+    assert palaces_states[0].stream.stream_state.__dict__ == AirbyteStateBlob(__ab_full_refresh_sync_complete=True).__dict__
 
-    # Expects 3 records, 1 empty slice, 3 records in slice
+    # Expects 3 records, 3 slices, 3 records in slice
     party_members_skills_records = get_records_for_stream("party_members_skills", messages)
-    assert len(party_members_skills_records) == 3
+    assert len(party_members_skills_records) == 9
 
     party_members_skills_states = get_states_for_stream(stream_name="party_members_skills", messages=messages)
-    assert len(party_members_skills_states) == 1
-    assert party_members_skills_states[0].stream.stream_state.__dict__ == AirbyteStateBlob(__ab_no_cursor_state_message=True).__dict__
+    assert len(party_members_skills_states) == 3
+    assert party_members_skills_states[0].stream.stream_state.__dict__ == {
+        "states": [
+            {"partition": {"parent_slice": {}, "party_member_id": "amamiya"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+        ]
+    }
+    assert party_members_skills_states[1].stream.stream_state.__dict__ == {
+        "states": [
+            {"partition": {"parent_slice": {}, "party_member_id": "amamiya"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "party_member_id": "nijima"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+        ]
+    }
+    assert party_members_skills_states[2].stream.stream_state.__dict__ == {
+        "states": [
+            {"partition": {"parent_slice": {}, "party_member_id": "amamiya"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "party_member_id": "nijima"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "party_member_id": "yoshizawa"}, "cursor": {"__ab_full_refresh_sync_complete": True}}
+        ]
+    }
 
 
-@freezegun.freeze_time("2024-09-10T00:00:00")
+@freezegun.freeze_time(_NOW)
 def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams correctly using the incoming
     concurrent state format
     """
-
     state = [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
@@ -615,27 +729,27 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
         ),
     ]
 
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
+    concurrent_cursor_party_members_slices = [
+        {"start": "2024-07-01", "end": "2024-07-15"},
+        {"start": "2024-07-30", "end": "2024-08-13"},  # FIXME this is an interesting case where we restart from that top boundary. I'm wondering if we need to change that because if this was within one sync, we would start from 2024-09-01 and not 2024-07-30
+        {"start": "2024-08-14", "end": "2024-08-14"},
+        {"start": "2024-09-04", "end": "2024-09-09"},  # considering lookback window
+    ]
+    location_slices = [
+        {"start": "2024-07-26", "end": "2024-08-25"},
+        {"start": "2024-08-26", "end": "2024-09-09"},
+    ]
 
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
     disable_emitting_sequential_state_messages(source=source)
 
-    for i, _ in enumerate(source._concurrent_streams):
-        stream = source._concurrent_streams[i]._stream_partition_generator._stream
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    with HttpMocker() as http_mocker:
+        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_locations_requests(http_mocker, location_slices)
+        http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
+        _mock_party_members_skills_requests(http_mocker)
 
-    for i, _ in enumerate(source._synchronous_streams):
-        stream = source._synchronous_streams[i]
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._synchronous_streams[i] = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
-
-    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
+        messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
 
     # Expects 8 records, skip successful intervals and are left with 2 slices, 4 records each slice
     locations_records = get_records_for_stream("locations", messages)
@@ -663,12 +777,12 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     palaces_records = get_records_for_stream("palaces", messages)
     assert len(palaces_records) == 7
 
-    # Expects 3 records, 1 empty slice, 3 records in slice
+    # Expects 3 records, 3 slices, 3 records in slice
     party_members_skills_records = get_records_for_stream("party_members_skills", messages)
-    assert len(party_members_skills_records) == 3
+    assert len(party_members_skills_records) == 9
 
 
-@freezegun.freeze_time("2024-09-10T00:00:00")
+@freezegun.freeze_time(_NOW)
 def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams correctly using the incoming
@@ -692,26 +806,24 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     ]
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
-
     disable_emitting_sequential_state_messages(source=source)
 
-    for i, _ in enumerate(source._concurrent_streams):
-        stream = source._concurrent_streams[i]._stream_partition_generator._stream
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    concurrent_cursor_party_members_slices = [
+        {"start": "2024-08-15", "end": "2024-08-29"},
+        {"start": "2024-08-30", "end": "2024-09-09"},
+    ]
+    location_slices = [
+        {"start": "2024-08-01", "end": "2024-08-31"},
+        {"start": "2024-09-01", "end": "2024-09-09"},
+    ]
 
-    for i, _ in enumerate(source._synchronous_streams):
-        stream = source._synchronous_streams[i]
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._synchronous_streams[i] = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    with HttpMocker() as http_mocker:
+        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_locations_requests(http_mocker, location_slices)
+        http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
+        _mock_party_members_skills_requests(http_mocker)
 
-    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
+        messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
 
     # Expects 8 records, skip successful intervals and are left with 2 slices, 4 records each slice
     locations_records = get_records_for_stream("locations", messages)
@@ -739,37 +851,29 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     palaces_records = get_records_for_stream("palaces", messages)
     assert len(palaces_records) == 7
 
-    # Expects 3 records, 1 empty slice, 3 records in slice
+    # Expects 3 records, 3 slices, 3 records in slice
     party_members_skills_records = get_records_for_stream("party_members_skills", messages)
-    assert len(party_members_skills_records) == 3
+    assert len(party_members_skills_records) == 9
 
 
-@freezegun.freeze_time("2024-09-10T00:00:00")
+@freezegun.freeze_time(_NOW)
 def test_read_concurrent_with_failing_partition_in_the_middle():
     """
     Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
     """
 
+    most_recent_cursor_value = datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc)  # based on _LOCATIONS_RESPONSE, this value might be outside of the actual start/end of the slice
+    # FIXME it seems like we yet don't consider `most_recent_cursor_value` as we ignore it during serialization [here](https://github.com/airbytehq/airbyte/blob/f07571f15f1bdbba86ad5e324e829a89b7d07cd6/airbyte-cdk/python/airbyte_cdk/sources/streams/concurrent/state_converters/abstract_stream_state_converter.py#L75-L78)
+    #  Once this is added, this test will probably have to change because the generated slices (represented by `location_slices` here) will no longer match the `expected_stream_state`
+    #  This is why `most_recent_cursor_value` is unused for now
+    location_slices = [
+        {"start": "2024-07-01", "end": "2024-07-31"},
+        # missing slice `{"start": "2024-08-01", "end": "2024-08-31"}` here
+        {"start": "2024-09-01", "end": "2024-09-09"},
+    ]
     expected_stream_state = {
         "state_type": "date-range",
-        "slices": [
-            {
-                "start": datetime(2024, 7, 5, 0, 0, tzinfo=timezone.utc),
-                "end": datetime(2024, 8, 4, 0, 0, 0, tzinfo=timezone.utc),
-                "most_recent_cursor_value": datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc),
-            },
-            {
-                "end": datetime(2024, 9, 9, 0, 0, 0, tzinfo=timezone.utc),
-                "start": datetime(2024, 9, 5, 0, 0, 0, tzinfo=timezone.utc),
-                "most_recent_cursor_value": datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc),
-            }
-        ],
-        "legacy": {},
-    }
-
-    # I swapped the config as a trick to get different intervals to get returned by the mocked read_records() method
-    config = {
-        "start_date": "2024-07-05T00:00:00.000Z"
+        "slices": location_slices,
     }
 
     catalog = ConfiguredAirbyteCatalog(
@@ -782,76 +886,68 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
         ]
     )
 
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=config, catalog=catalog, state=[])
-
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=[])
     disable_emitting_sequential_state_messages(source=source)
 
-    for i, _ in enumerate(source._concurrent_streams):
-        stream = source._concurrent_streams[i]._stream_partition_generator._stream
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    location_slices = [
+        {"start": "2024-07-01", "end": "2024-07-31"},
+        # missing slice `{"start": "2024-08-01", "end": "2024-08-31"}` here
+        {"start": "2024-09-01", "end": "2024-09-09"},
+    ]
 
-    for i, _ in enumerate(source._synchronous_streams):
-        stream = source._synchronous_streams[i]
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._synchronous_streams[i] = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+    with HttpMocker() as http_mocker:
+        _mock_locations_requests(http_mocker, location_slices)
 
-    try:
-        list(source.read(logger=source.logger, config=config, catalog=catalog, state=[]))
-    except AirbyteTracedException:
-        locations_stream = [stream for stream in source.streams(config=config, include_concurrent_streams=True) if stream.name == "locations"][0]
-        final_stream_state = locations_stream.cursor.state
-        assert final_stream_state == expected_stream_state
+        messages = []
+        try:
+            for message in source.read(logger=source.logger, config=_CONFIG, catalog=catalog, state=[]):
+                messages.append(message)
+        except AirbyteTracedException:
+            assert get_states_for_stream(stream_name="locations", messages=messages)[-1].stream.stream_state.__dict__ == expected_stream_state
 
 
-@freezegun.freeze_time("2024-09-10T00:00:00")
+@freezegun.freeze_time(_NOW)
 def test_read_concurrent_skip_streams_not_in_catalog():
     """
     Verifies that the ConcurrentDeclarativeSource only syncs streams that are specified in the incoming ConfiguredCatalog
     """
+    with HttpMocker() as http_mocker:
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.append,
+                ),
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
+                    sync_mode=SyncMode.incremental,
+                    destination_sync_mode=DestinationSyncMode.append,
+                ),
+            ]
+        )
 
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                destination_sync_mode=DestinationSyncMode.append,
-            ),
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.append,
-            ),
+        source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=None)
+        # locations requests
+        location_slices = [
+            {"start": "2024-07-01", "end": "2024-07-31"},
+            {"start": "2024-08-01", "end": "2024-08-31"},
+            {"start": "2024-09-01", "end": "2024-09-09"},
         ]
-    )
+        locations_query_params = list(map(lambda _slice: _slice | {"m": "active", "i": "1", "g": "country"}, location_slices))
+        _mock_requests(
+            http_mocker,
+            "https://persona.metaverse.com/locations",
+            locations_query_params,
+            [_LOCATIONS_RESPONSE] * len(location_slices),
+        )
 
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=None)
+        # palaces requests
+        http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
 
-    disable_emitting_sequential_state_messages(source=source)
+        disable_emitting_sequential_state_messages(source=source)
 
-    for i, _ in enumerate(source._concurrent_streams):
-        stream = source._concurrent_streams[i]._stream_partition_generator._stream
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
-
-    for i, _ in enumerate(source._synchronous_streams):
-        stream = source._synchronous_streams[i]
-        if isinstance(stream, DeclarativeStream):
-            decorated_stream = create_wrapped_stream(stream=stream)
-            source._synchronous_streams[i] = decorated_stream
-        else:
-            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
-
-    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=catalog, state=[]))
+        messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=catalog, state=[]))
 
     locations_records = get_records_for_stream(stream_name="locations", messages=messages)
     assert len(locations_records) == 12
@@ -997,6 +1093,7 @@ def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str],
                 {"id": "5", "world": "casino", "owner": "nijima"},
                 {"id": "6", "world": "cruiser", "owner": "shido"},
             ]
+
         case "party_members_skills":
             slices = [StreamSlice(cursor_slice={}, partition={})]
 
@@ -1021,5 +1118,4 @@ def get_states_for_stream(stream_name: str, messages: List[AirbyteMessage]) -> L
 
 def disable_emitting_sequential_state_messages(source: ConcurrentDeclarativeSource) -> None:
     for concurrent_streams in source._concurrent_streams:  # type: ignore  # This is the easiest way to disable behavior from the test
-        concurrent_streams.cursor._connector_state_converter._is_sequential_state = False  # type: ignore  # see above
         concurrent_streams.cursor._connector_state_converter._is_sequential_state = False  # type: ignore  # see above
