@@ -32,7 +32,6 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.Writer
 import kotlinx.coroutines.flow.flow
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
@@ -113,14 +112,17 @@ class S3Client(
         client.deleteObject(request)
     }
 
-    override suspend fun streamingUpload(key: String, block: suspend (Writer) -> Unit): S3Object {
+    override suspend fun streamingUpload(
+        key: String,
+        block: suspend (OutputStream) -> Unit
+    ): S3Object {
         return streamingUpload(key, compressionConfig?.compressor ?: NoopProcessor, block)
     }
 
     override suspend fun <U : OutputStream> streamingUpload(
         key: String,
         streamProcessor: StreamProcessor<U>,
-        block: suspend (Writer) -> Unit
+        block: suspend (OutputStream) -> Unit
     ): S3Object {
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
@@ -135,13 +137,7 @@ class S3Client(
                 streamProcessor,
                 uploadConfig
             )
-        log.info {
-            "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
-        }
-        val uploadJob = upload.start()
-        block(upload.UploadWriter())
-        upload.complete()
-        uploadJob.join()
+        upload.runUsing(block)
         return S3Object(key, bucketConfig)
     }
 }

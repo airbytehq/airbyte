@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
@@ -57,22 +58,26 @@ class S3V2Writer(
             val partNumber = partNumber.getAndIncrement()
             val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
             val s3Object =
-                s3Client.streamingUpload(key) { writer ->
+                s3Client.streamingUpload(key) { outputStream ->
                     when (formatConfig.objectStorageFormatConfiguration) {
                         is JsonFormatConfiguration -> {
                             records.forEach {
                                 val serialized =
                                     recordDecorator.decorate(it).toJson().serializeToString()
-                                writer.write(serialized)
-                                writer.write("\n")
+                                outputStream.write(serialized)
+                                outputStream.write("\n")
                             }
                         }
                         is CSVFormatConfiguration -> {
-                            stream.schemaWithMeta.toCsvPrinterWithHeader(writer).use { printer ->
-                                records.forEach {
-                                    printer.printRecord(*recordDecorator.decorate(it).toCsvRecord())
+                            stream.schemaWithMeta
+                                .toCsvPrinterWithHeader(outputStream.writer())
+                                .use { printer ->
+                                    records.forEach {
+                                        printer.printRecord(
+                                            *recordDecorator.decorate(it).toCsvRecord()
+                                        )
+                                    }
                                 }
-                            }
                         }
                         else -> throw IllegalStateException("Unsupported format")
                     }

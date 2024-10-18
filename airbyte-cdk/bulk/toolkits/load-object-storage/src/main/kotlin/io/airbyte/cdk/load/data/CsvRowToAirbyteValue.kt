@@ -29,7 +29,14 @@ class CsvRowToAirbyteValue {
 
     private fun convertInner(value: String, field: AirbyteType): AirbyteValue {
         return when (field) {
-            is ArrayType -> ArrayValue(value.split(",").map { convertInner(it, field.items.type) })
+            is ArrayType ->
+                value
+                    .deserializeToNode()
+                    .elements()
+                    .asSequence()
+                    .map { it.toAirbyteValue(field.items.type) }
+                    .toList()
+                    .let(::ArrayValue)
             is BooleanType -> BooleanValue(value.toBoolean())
             is IntegerType -> IntegerValue(value.toLong())
             is NumberType -> NumberValue(value.toBigDecimal())
