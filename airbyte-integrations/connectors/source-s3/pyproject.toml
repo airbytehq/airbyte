@@ -25,11 +25,11 @@ urllib3 = "<2"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = ["file-based",]
-version = "^5.7.4"
+# version = "^5.7.4"
 # Toggle on/off the following to switch between local CDK or the published version.
 # Use `path` and `develop` for local CDK dev, or `version` for release.
-# path = "../../../airbyte-cdk/python"
-# develop = true
+path = "../../../airbyte-cdk/python"
+develop = true
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
