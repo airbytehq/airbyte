@@ -1,0 +1,869 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Customer",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountnumber": {
+              "type": "string"
+            },
+            "acquisitionsource": {
+              "type": "integer"
+            },
+            "alcoholrecipienttype": {
+              "type": "string"
+            },
+            "altemail": {
+              "type": "string"
+            },
+            "altname": {
+              "type": "string"
+            },
+            "altphone": {
+              "type": "string"
+            },
+            "assignedwebsite": {
+              "type": "integer"
+            },
+            "balancesearch": {
+              "type": "number"
+            },
+            "billingratecard": {
+              "type": "integer"
+            },
+            "billingschedule": {
+              "type": "integer"
+            },
+            "billingtransactionform": {
+              "type": "integer"
+            },
+            "billingtransactiontype": {
+              "type": "integer"
+            },
+            "billpay": {
+              "type": "string"
+            },
+            "buyingreason": {
+              "type": "integer"
+            },
+            "buyingtimeframe": {
+              "type": "integer"
+            },
+            "campaignevent": {
+              "type": "integer"
+            },
+            "category": {
+              "type": "integer"
+            },
+            "clickstream": {
+              "type": "string"
+            },
+            "comments": {
+              "type": "string"
+            },
+            "companyname": {
+              "type": "string"
+            },
+            "consolbalancesearch": {
+              "type": "number"
+            },
+            "consoldaysoverduesearch": {
+              "type": "integer"
+            },
+            "consoloverduebalancesearch": {
+              "type": "number"
+            },
+            "consolunbilledorderssearch": {
+              "type": "number"
+            },
+            "contact": {
+              "type": "integer"
+            },
+            "contactlist": {
+              "type": "string"
+            },
+            "creditholdoverride": {
+              "type": "string"
+            },
+            "creditlimit": {
+              "type": "number"
+            },
+            "currency": {
+              "type": "integer"
+            },
+            "custentity_ava_exemptcertno": {
+              "type": "string"
+            },
+            "custentity_date_lsa": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "custentity_link_lsa": {
+              "type": "string"
+            },
+            "custentity_link_name_lsa": {
+              "type": "string"
+            },
+            "dateclosed": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "datecreated": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "defaultallocationstrategy": {
+              "type": "integer"
+            },
+            "defaultbankaccount": {
+              "type": "integer"
+            },
+            "defaultbillingaddress": {
+              "type": "integer"
+            },
+            "defaultorderpriority": {
+              "type": "number"
+            },
+            "defaultshippingaddress": {
+              "type": "integer"
+            },
+            "defaulttaxreg": {
+              "type": "integer"
+            },
+            "draccount": {
+              "type": "integer"
+            },
+            "duplicate": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "emailpreference": {
+              "type": "string"
+            },
+            "emailtransactions": {
+              "type": "string"
+            },
+            "enddate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "entityid": {
+              "type": "string"
+            },
+            "entitynumber": {
+              "type": "integer"
+            },
+            "entitystatus": {
+              "type": "integer"
+            },
+            "entitytitle": {
+              "type": "string"
+            },
+            "estimatedbudget": {
+              "type": "number"
+            },
+            "externalid": {
+              "type": "string"
+            },
+            "fax": {
+              "type": "string"
+            },
+            "faxtransactions": {
+              "type": "string"
+            },
+            "firstname": {
+              "type": "string"
+            },
+            "firstorderdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "firstsaledate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "firstvisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "fxaccount": {
+              "type": "integer"
+            },
+            "giveaccess": {
+              "type": "string"
+            },
+            "globalsubscriptionstatus": {
+              "type": "integer"
+            },
+            "groupinvoices": {
+              "type": "string"
+            },
+            "homephone": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "isautogeneratedrepresentingentity": {
+              "type": "string"
+            },
+            "isbudgetapproved": {
+              "type": "string"
+            },
+            "isinactive": {
+              "type": "string"
+            },
+            "isperson": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "string"
+            },
+            "language": {
+              "type": "integer"
+            },
+            "lastcustomervisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastmodifieddate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastname": {
+              "type": "string"
+            },
+            "lastorderdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastpagevisited": {
+              "type": "string"
+            },
+            "lastsaledate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastvisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "leadsource": {
+              "type": "integer"
+            },
+            "middlename": {
+              "type": "string"
+            },
+            "mobilephone": {
+              "type": "string"
+            },
+            "mostuseddevice": {
+              "type": "integer"
+            },
+            "negativenumberformat": {
+              "type": "integer"
+            },
+            "numberformat": {
+              "type": "integer"
+            },
+            "oncredithold": {
+              "type": "string"
+            },
+            "overduebalancesearch": {
+              "type": "number"
+            },
+            "parent": {
+              "type": "integer"
+            },
+            "partner": {
+              "type": "integer"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "phoneticname": {
+              "type": "string"
+            },
+            "prefccprocessor": {
+              "type": "integer"
+            },
+            "pricelevel": {
+              "type": "integer"
+            },
+            "printoncheckas": {
+              "type": "string"
+            },
+            "printtransactions": {
+              "type": "string"
+            },
+            "probability": {
+              "type": "number"
+            },
+            "receivablesaccount": {
+              "type": "integer"
+            },
+            "referrer": {
+              "type": "string"
+            },
+            "reminderdays": {
+              "type": "integer"
+            },
+            "representingsubsidiary": {
+              "type": "integer"
+            },
+            "resalenumber": {
+              "type": "string"
+            },
+            "salesreadiness": {
+              "type": "integer"
+            },
+            "salesrep": {
+              "type": "integer"
+            },
+            "salutation": {
+              "type": "string"
+            },
+            "searchstage": {
+              "type": "string"
+            },
+            "shipcomplete": {
+              "type": "string"
+            },
+            "shippingcarrier": {
+              "type": "string"
+            },
+            "shippingitem": {
+              "type": "integer"
+            },
+            "sourcewebsite": {
+              "type": "integer"
+            },
+            "startdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "terms": {
+              "type": "integer"
+            },
+            "territory": {
+              "type": "integer"
+            },
+            "thirdpartyacct": {
+              "type": "string"
+            },
+            "thirdpartycarrier": {
+              "type": "string"
+            },
+            "thirdpartycountry": {
+              "type": "string"
+            },
+            "thirdpartyzipcode": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "unbilledorderssearch": {
+              "type": "number"
+            },
+            "url": {
+              "type": "string"
+            },
+            "visits": {
+              "type": "integer"
+            },
+            "weblead": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "primary_key": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "consolidatedExchangeRate",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountingbook": { "type": ["integer", "null"] },
+            "averagerate": { "type": ["number", "null"] },
+            "currentrate": { "type": ["number", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fromcurrency": { "type": ["integer", "null"] },
+            "fromsubsidiary": { "type": ["integer", "null"] },
+            "historicalrate": { "type": ["number", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "postingperiod": { "type": ["integer", "null"] },
+            "tocurrency": { "type": ["integer", "null"] },
+            "tosubsidiary": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "Contact",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "altemail": { "type": ["string", "null"] },
+            "assistant": { "type": ["integer", "null"] },
+            "assistantphone": { "type": ["string", "null"] },
+            "category": { "type": ["string", "null"] },
+            "comments": { "type": ["string", "null"] },
+            "company": { "type": ["integer", "null"] },
+            "contactcampaignevent": { "type": ["integer", "null"] },
+            "contactsource": { "type": ["integer", "null"] },
+            "contactsourcecampaigncategory": { "type": ["integer", "null"] },
+            "custentity_date_lsa": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "custentity_link_lsa": { "type": ["string", "null"] },
+            "custentity_link_name_lsa": { "type": ["string", "null"] },
+            "datecreated": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "defaultbillingaddress": { "type": ["integer", "null"] },
+            "defaultshippingaddress": { "type": ["integer", "null"] },
+            "duplicate": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "entityid": { "type": ["string", "null"] },
+            "entitytitle": { "type": ["string", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "firstname": { "type": ["string", "null"] },
+            "globalsubscriptionstatus": { "type": ["integer", "null"] },
+            "homephone": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "isprivate": { "type": ["string", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastname": { "type": ["string", "null"] },
+            "middlename": { "type": ["string", "null"] },
+            "mobilephone": { "type": ["string", "null"] },
+            "officephone": { "type": ["string", "null"] },
+            "phone": { "type": ["string", "null"] },
+            "phoneticname": { "type": ["string", "null"] },
+            "salutation": { "type": ["string", "null"] },
+            "supervisor": { "type": ["integer", "null"] },
+            "supervisorphone": { "type": ["string", "null"] },
+            "title": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "employee",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountnumber": { "type": ["string", "null"] },
+            "aliennumber": { "type": ["string", "null"] },
+            "approvallimit": { "type": ["number", "null"] },
+            "approver": { "type": ["integer", "null"] },
+            "authworkdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "basewage": { "type": ["number", "null"] },
+            "basewagetype": { "type": ["integer", "null"] },
+            "billingclass": { "type": ["integer", "null"] },
+            "billpay": { "type": ["string", "null"] },
+            "birthdate": { "type": ["string", "null"], "format": "date-time" },
+            "bonustarget": { "type": ["number", "null"] },
+            "bonustargetcomment": { "type": ["string", "null"] },
+            "bonustargetpayfrequency": { "type": ["integer", "null"] },
+            "bonustargettype": { "type": ["integer", "null"] },
+            "btemplate": { "type": ["string", "null"] },
+            "class": { "type": ["integer", "null"] },
+            "comments": { "type": ["string", "null"] },
+            "commissionpaymentpreference": { "type": ["integer", "null"] },
+            "compensationcurrency": { "type": ["integer", "null"] },
+            "currency": { "type": ["integer", "null"] },
+            "custentity_jpmc_ven_pm": { "type": ["integer", "null"] },
+            "custentity_soap_je_approver": { "type": ["string", "null"] },
+            "datecreated": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "defaultacctcorpcardexp": { "type": ["integer", "null"] },
+            "defaultexpensereportcurrency": { "type": ["integer", "null"] },
+            "defaultjobresourcerole": { "type": ["integer", "null"] },
+            "department": { "type": ["integer", "null"] },
+            "directdeposit": { "type": ["string", "null"] },
+            "eligibleforcommission": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "employeeftestatus": { "type": ["integer", "null"] },
+            "employeestatus": { "type": ["integer", "null"] },
+            "employeetype": { "type": ["integer", "null"] },
+            "enabledeductionlimits": { "type": ["string", "null"] },
+            "entityid": { "type": ["string", "null"] },
+            "ethnicity": { "type": ["integer", "null"] },
+            "expenselimit": { "type": ["number", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "firstname": { "type": ["string", "null"] },
+            "gender": { "type": ["string", "null"] },
+            "giveaccess": { "type": ["string", "null"] },
+            "globalsubscriptionstatus": { "type": ["integer", "null"] },
+            "hiredate": { "type": ["string", "null"], "format": "date-time" },
+            "homephone": { "type": ["string", "null"] },
+            "i9verified": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "inheritiprules": { "type": ["string", "null"] },
+            "initials": { "type": ["string", "null"] },
+            "ipaddressrule": { "type": ["string", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "isjobmanager": { "type": ["string", "null"] },
+            "isjobresource": { "type": ["string", "null"] },
+            "issalesrep": { "type": ["string", "null"] },
+            "issupportrep": { "type": ["string", "null"] },
+            "job": { "type": ["integer", "null"] },
+            "jobdescription": { "type": ["string", "null"] },
+            "jobemploymentcategory": { "type": ["integer", "null"] },
+            "laborcategory": { "type": ["integer", "null"] },
+            "laborcost": { "type": ["number", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastname": { "type": ["string", "null"] },
+            "lastpaiddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastreviewdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "location": { "type": ["integer", "null"] },
+            "maritalstatus": { "type": ["integer", "null"] },
+            "middlename": { "type": ["string", "null"] },
+            "mobilephone": { "type": ["string", "null"] },
+            "nextreviewdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "officephone": { "type": ["string", "null"] },
+            "overtimepolicy": { "type": ["integer", "null"] },
+            "payfrequency": { "type": ["integer", "null"] },
+            "phone": { "type": ["string", "null"] },
+            "purchaseorderapprovallimit": { "type": ["number", "null"] },
+            "purchaseorderapprover": { "type": ["integer", "null"] },
+            "purchaseorderlimit": { "type": ["number", "null"] },
+            "rate": { "type": ["number", "null"] },
+            "releasedate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "residentstatus": { "type": ["integer", "null"] },
+            "rolesforsearch": { "type": ["string", "null"] },
+            "salesrole": { "type": ["integer", "null"] },
+            "salutation": { "type": ["string", "null"] },
+            "startdatetimeoffcalc": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "subsidiary": { "type": ["integer", "null"] },
+            "supervisor": { "type": ["integer", "null"] },
+            "targetutilization": { "type": ["number", "null"] },
+            "terminationcategory": { "type": ["integer", "null"] },
+            "terminationdetails": { "type": ["string", "null"] },
+            "terminationreason": { "type": ["integer", "null"] },
+            "terminationregretted": { "type": ["integer", "null"] },
+            "timeapprover": { "type": ["integer", "null"] },
+            "timeoffplan": { "type": ["integer", "null"] },
+            "title": { "type": ["string", "null"] },
+            "useperquest": { "type": ["string", "null"] },
+            "usetimedata": { "type": ["integer", "null"] },
+            "visaexpdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "visatype": { "type": ["integer", "null"] },
+            "workassignment": { "type": ["integer", "null"] },
+            "workcalendar": { "type": ["integer", "null"] },
+            "workplace": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "Partner",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "altemail": { "type": ["string", "null"] },
+            "altname": { "type": ["string", "null"] },
+            "category": { "type": ["string", "null"] },
+            "class": { "type": ["integer", "null"] },
+            "comments": { "type": ["string", "null"] },
+            "companyname": { "type": ["string", "null"] },
+            "contact": { "type": ["integer", "null"] },
+            "contactlist": { "type": ["string", "null"] },
+            "datecreated": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "defaultbillingaddress": { "type": ["integer", "null"] },
+            "defaultshippingaddress": { "type": ["integer", "null"] },
+            "defaulttaxreg": { "type": ["integer", "null"] },
+            "department": { "type": ["integer", "null"] },
+            "duplicate": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "emailpreference": { "type": ["string", "null"] },
+            "entityid": { "type": ["string", "null"] },
+            "entitynumber": { "type": ["integer", "null"] },
+            "entitytitle": { "type": ["string", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "firstname": { "type": ["string", "null"] },
+            "giveaccess": { "type": ["string", "null"] },
+            "globalsubscriptionstatus": { "type": ["integer", "null"] },
+            "homephone": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "isperson": { "type": ["string", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastname": { "type": ["string", "null"] },
+            "location": { "type": ["integer", "null"] },
+            "middlename": { "type": ["string", "null"] },
+            "mobilephone": { "type": ["string", "null"] },
+            "parent": { "type": ["integer", "null"] },
+            "partnercode": { "type": ["string", "null"] },
+            "phone": { "type": ["string", "null"] },
+            "phoneticname": { "type": ["string", "null"] },
+            "printoncheckas": { "type": ["string", "null"] },
+            "salutation": { "type": ["string", "null"] },
+            "subpartnerlogin": { "type": ["string", "null"] },
+            "title": { "type": ["string", "null"] },
+            "url": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "Subsidiary",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "country": { "type": ["string", "null"] },
+            "currency": { "type": ["integer", "null"] },
+            "custrecord_jpmc_sub_rc_cur": { "type": ["string", "null"] },
+            "custrecord_jpmc_sub_rc_en": { "type": ["string", "null"] },
+            "custrecord_stripe_account_id": { "type": ["string", "null"] },
+            "dropdownstate": { "type": ["string", "null"] },
+            "edition": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "federalidnumber": { "type": ["string", "null"] },
+            "fiscalcalendar": { "type": ["integer", "null"] },
+            "fullname": { "type": ["string", "null"] },
+            "glimpactlocking": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "intercoaccount": { "type": ["integer", "null"] },
+            "iselimination": { "type": ["string", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "languagelocale": { "type": ["integer", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "legalname": { "type": ["string", "null"] },
+            "mainaddress": { "type": ["integer", "null"] },
+            "name": { "type": ["string", "null"] },
+            "parent": { "type": ["integer", "null"] },
+            "purchaseorderamount": { "type": ["number", "null"] },
+            "purchaseorderquantity": { "type": ["number", "null"] },
+            "purchaseorderquantitydiff": { "type": ["number", "null"] },
+            "receiptamount": { "type": ["number", "null"] },
+            "receiptquantity": { "type": ["number", "null"] },
+            "receiptquantitydiff": { "type": ["number", "null"] },
+            "representingcustomer": { "type": ["integer", "null"] },
+            "representingvendor": { "type": ["integer", "null"] },
+            "returnaddress": { "type": ["integer", "null"] },
+            "shippingaddress": { "type": ["integer", "null"] },
+            "showsubsidiaryname": { "type": ["string", "null"] },
+            "ssnortin": { "type": ["string", "null"] },
+            "state": { "type": ["string", "null"] },
+            "state1taxnumber": { "type": ["string", "null"] },
+            "traninternalprefix": { "type": ["string", "null"] },
+            "tranprefix": { "type": ["string", "null"] },
+            "url": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "Vendor",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountnumber": { "type": ["string", "null"] },
+            "altemail": { "type": ["string", "null"] },
+            "altname": { "type": ["string", "null"] },
+            "altphone": { "type": ["string", "null"] },
+            "avgdayslateearly": { "type": ["number", "null"] },
+            "balance": { "type": ["number", "null"] },
+            "balanceprimary": { "type": ["number", "null"] },
+            "billingclass": { "type": ["integer", "null"] },
+            "billpay": { "type": ["string", "null"] },
+            "category": { "type": ["integer", "null"] },
+            "comments": { "type": ["string", "null"] },
+            "companyname": { "type": ["string", "null"] },
+            "contact": { "type": ["integer", "null"] },
+            "contactlist": { "type": ["string", "null"] },
+            "creditlimit": { "type": ["number", "null"] },
+            "currency": { "type": ["integer", "null"] },
+            "custentity_ava_usetaxassessment": { "type": ["string", "null"] },
+            "custentity_jpmc_ven_group": { "type": ["string", "null"] },
+            "custentity_jpmc_ven_payment_emails": {
+              "type": ["string", "null"]
+            },
+            "custentity_jpmc_ven_pm": { "type": ["integer", "null"] },
+            "datecreated": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "defaultbankaccount": { "type": ["integer", "null"] },
+            "defaultbillingaddress": { "type": ["integer", "null"] },
+            "defaultshippingaddress": { "type": ["integer", "null"] },
+            "defaulttaxreg": { "type": ["integer", "null"] },
+            "defaultvendorpaymentaccount": { "type": ["integer", "null"] },
+            "duplicate": { "type": ["string", "null"] },
+            "email": { "type": ["string", "null"] },
+            "emailpreference": { "type": ["string", "null"] },
+            "emailtransactions": { "type": ["string", "null"] },
+            "entityid": { "type": ["string", "null"] },
+            "entitynumber": { "type": ["integer", "null"] },
+            "entitytitle": { "type": ["string", "null"] },
+            "expenseaccount": { "type": ["integer", "null"] },
+            "externalid": { "type": ["string", "null"] },
+            "fax": { "type": ["string", "null"] },
+            "faxtransactions": { "type": ["string", "null"] },
+            "firstname": { "type": ["string", "null"] },
+            "giveaccess": { "type": ["string", "null"] },
+            "globalsubscriptionstatus": { "type": ["integer", "null"] },
+            "homephone": { "type": ["string", "null"] },
+            "id": { "type": ["integer", "null"] },
+            "incoterm": { "type": ["integer", "null"] },
+            "intransitbalance": { "type": ["number", "null"] },
+            "isautogeneratedrepresentingentity": { "type": ["string", "null"] },
+            "isinactive": { "type": ["string", "null"] },
+            "isjobresourcevend": { "type": ["string", "null"] },
+            "isperson": { "type": ["string", "null"] },
+            "laborcategory": { "type": ["integer", "null"] },
+            "laborcost": { "type": ["number", "null"] },
+            "lastcomputationdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastname": { "type": ["string", "null"] },
+            "legalname": { "type": ["string", "null"] },
+            "manufacturinglocations": { "type": ["string", "null"] },
+            "middlename": { "type": ["string", "null"] },
+            "mobilephone": { "type": ["string", "null"] },
+            "numberoforders": { "type": ["integer", "null"] },
+            "payablesaccount": { "type": ["integer", "null"] },
+            "phone": { "type": ["string", "null"] },
+            "phoneticname": { "type": ["string", "null"] },
+            "predconfidence": { "type": ["number", "null"] },
+            "predicteddays": { "type": ["integer", "null"] },
+            "prepaymentbalance": { "type": ["number", "null"] },
+            "printoncheckas": { "type": ["string", "null"] },
+            "printtransactions": { "type": ["string", "null"] },
+            "purchaseorderamount": { "type": ["number", "null"] },
+            "purchaseorderquantity": { "type": ["number", "null"] },
+            "purchaseorderquantitydiff": { "type": ["number", "null"] },
+            "rate": { "type": ["number", "null"] },
+            "receiptamount": { "type": ["number", "null"] },
+            "receiptquantity": { "type": ["number", "null"] },
+            "receiptquantitydiff": { "type": ["number", "null"] },
+            "representingsubsidiary": { "type": ["integer", "null"] },
+            "rolesforsearch": { "type": ["string", "null"] },
+            "salutation": { "type": ["string", "null"] },
+            "stddevdayslateearly": { "type": ["number", "null"] },
+            "subsidiaryedition": { "type": ["string", "null"] },
+            "terms": { "type": ["integer", "null"] },
+            "timeapprover": { "type": ["integer", "null"] },
+            "title": { "type": ["string", "null"] },
+            "unbilledorders": { "type": ["number", "null"] },
+            "unbilledordersprimary": { "type": ["number", "null"] },
+            "url": { "type": ["string", "null"] },
+            "workcalendar": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

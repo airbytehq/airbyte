@@ -1,0 +1,79 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Netsuite ODBC Spec
+  type: object
+  required:
+    - account_id
+    - consumer_key
+    - consumer_secret
+    - token_key
+    - token_secret
+    - service_host
+    - service_port
+  properties:
+    account_id:
+      type: string
+      title: Account ID (Realm)
+      description: Netsuite Account ID or Realm.  This will have SB appended to it if you're connecting to a sandbox instance.
+      examples:
+        - "2344535"
+        - "2344535_SB1"
+      order: 0
+      airbyte_secret: false
+    consumer_key:
+      type: string
+      title: Consumer Key
+      description: Consumer key associated with your netsuite integration record. This will typically be a 64 character string of alphanumerical characters.
+      order: 1
+      airbyte_secret: true
+    consumer_secret:
+      type: string
+      title: Consumer Secret
+      description: Consumer secret associated with your netsuite integration record. This will typically be a 64 character string of alphanumerical characters.
+      order: 2
+      airbyte_secret: true
+    token_key:
+      type: string
+      title: Token Key (Token Id)
+      description: Access token key created as part of token based auth. This will typically be a 64 character string of alphanumerical characters.
+      order: 3
+      airbyte_secret: false
+    token_secret:
+      type: string
+      title: Token Secret
+      description: Access token secret created as part of token based auth. This will typically be a 64 character string of alphanumerical characters.
+      order: 4
+      airbyte_secret: true
+    service_host:
+      type: string
+      title: Service Host
+      description: The host url for the SuiteAnalytics Connect service, eg. xxxxxxx-sb1.connect.api.netsuite.com where "x" is replaced by numbers and production urls will not have the sb appended
+      order: 5
+      airbyte_secret: false
+    service_port:
+      type: string
+      title: Service Port
+      description: The host post for the SuiteAnalytics Connect service
+      examples:
+        - "1404"
+      order: 6
+      airbyte_secret: false
+    role_id:
+      type: string
+      title: Role Id
+      description: The ID of the role used to access the ODBC connection
+      examples:
+        - "57"
+      order: 7
+      airbyte_secret: false
+      default: "57"
+    starting_year:
+      type: string
+      title: Starting Year
+      description: The year to start fetching data from
+      examples:
+        - "2020"
+      order: 8
+      airbyte_secret: false
+      default: "1980"
