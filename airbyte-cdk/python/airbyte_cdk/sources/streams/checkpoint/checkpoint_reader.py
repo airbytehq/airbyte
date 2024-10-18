@@ -95,7 +95,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
         self._read_state_from_cursor = read_state_from_cursor
         self._current_slice: Optional[StreamSlice] = None
         self._finished_sync = False
-        self._previous_state = None
+        self._previous_state: Optional[Mapping[str, Any]] = None
 
     def next(self) -> Optional[Mapping[str, Any]]:
         try:
