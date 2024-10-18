@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import time
 from socket import socket
 from typing import Any, Dict, List, Mapping
 
 import docker
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -82,12 +81,12 @@ def client_fixture(config, configured_catalog) -> SftpClient:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationSftpJson().check(AirbyteLogger(), config)
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config(config):
-    outcome = DestinationSftpJson().check(AirbyteLogger(), {**config, "destination_path": "/doesnotexist"})
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), {**config, "destination_path": "/doesnotexist"})
     assert outcome.status == Status.FAILED
 
 
