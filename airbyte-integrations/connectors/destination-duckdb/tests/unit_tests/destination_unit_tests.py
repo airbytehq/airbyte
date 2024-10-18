@@ -15,6 +15,7 @@ def test_validated_sql_name() -> None:
     with pytest.raises(ValueError):
         validated_sql_name("invalid-name")
 
+
 @patch("duckdb.connect")
 @patch("os.makedirs")
 def test_check(mock_connect, mock_makedirs) -> None:
@@ -27,6 +28,7 @@ def test_check(mock_connect, mock_makedirs) -> None:
     result = destination.check(logger, config)
     assert result.status == Status.SUCCEEDED
 
+
 @patch("duckdb.connect")
 @patch("os.makedirs")
 def test_check_failure(mock_connect, mock_makedirs) -> None:
@@ -37,6 +39,7 @@ def test_check_failure(mock_connect, mock_makedirs) -> None:
     result = destination.check(logger, config)
     assert result.status == Status.FAILED
     assert "Test exception" in result.message
+
 
 @patch("duckdb.connect")
 @patch("os.makedirs")
