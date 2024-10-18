@@ -20,6 +20,11 @@ class S3V2WriteTestJsonUncompressed :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
+    }
 }
 
 class S3V2WriteTestJsonGzip :

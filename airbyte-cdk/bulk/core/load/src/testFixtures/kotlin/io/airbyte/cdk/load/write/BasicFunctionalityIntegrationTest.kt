@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -223,6 +224,9 @@ abstract class BasicFunctionalityIntegrationTest(
                     break
                 }
                 i++
+                if (i % 100_000 == 0) {
+                    delay(1000)
+                }
             }
 
             // for each state message, verify that it's a valid state,

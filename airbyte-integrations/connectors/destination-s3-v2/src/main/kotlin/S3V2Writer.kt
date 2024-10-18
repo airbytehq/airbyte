@@ -16,8 +16,11 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicLong
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 class S3V2Writer(
@@ -50,6 +53,7 @@ class S3V2Writer(
         ): Batch {
             val partNumber = partNumber.getAndIncrement()
             val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
+            logger.info { "EDGAO DEBUG starting upload" }
             val s3Object =
                 s3Client.streamingUpload(key) { writer ->
                     records.forEach {
@@ -58,6 +62,7 @@ class S3V2Writer(
                         writer.write("\n")
                     }
                 }
+            logger.info { "EDGAO DEBUG finished upload, returning staged object batch" }
             return StagedObject(s3Object = s3Object, partNumber = partNumber)
         }
 
@@ -67,7 +72,9 @@ class S3V2Writer(
                 pathFactory
                     .getPathToFile(stream, stagedObject.partNumber, isStaging = false)
                     .toString()
+            logger.info { "EDGAO DEBUG moving file" }
             val newObject = s3Client.move(stagedObject.s3Object, finalKey)
+            logger.info { "EDGAO DEBUG moved file, returning finalized object batch" }
             val finalizedObject = FinalizedObject(s3Object = newObject)
             return finalizedObject
         }
