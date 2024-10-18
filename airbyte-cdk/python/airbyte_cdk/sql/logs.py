@@ -217,7 +217,7 @@ def get_global_stats_log_path() -> Path | None:
 
 
 @lru_cache
-def get_global_stats_logger() -> structlog.BoundLogger:
+def get_global_stats_logger() -> Any:
     """Create a stats logger for performance metrics."""
     logger = logging.getLogger("airbyte.stats")
     logger.setLevel(logging.INFO)

@@ -1,16 +1,14 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
-from gettext import Catalog
 import json
 import os
-from pathlib import Path
 import re
 from urllib.parse import urlparse
 import uuid
 from collections import defaultdict
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping
 
 import duckdb
 import pyarrow as pa
@@ -34,15 +32,9 @@ from airbyte_cdk.sql.constants import (
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql._processors.duckdb import DuckDBSqlProcessor, DuckDBConfig
 from airbyte_cdk.sql._processors.motherduck import MotherDuckSqlProcessor
-from airbyte_cdk.sql.caches.motherduck import MotherDuckConfig
-from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
-from airbyte_cdk.sql.constants import DEFAULT_CACHE_ROOT
+from airbyte_cdk.sql._processors.motherduck import MotherDuckConfig
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.secrets import SecretString
-
-
-if TYPE_CHECKING:
-    from airbyte_cdk.sql.shared.sql_processor import SqlProcessorBase
 
 
 logger = getLogger("airbyte")
@@ -91,9 +83,6 @@ class DestinationDuckdb(Destination):
                     api_key=SecretString(motherduck_token),
                 ),
                 catalog_provider=catalog_provider,
-                state_writer=StdOutStateWriter(),
-                temp_dir=Path(DEFAULT_CACHE_ROOT),
-                temp_file_cleanup=True,
             )
         else:
             return DuckDBSqlProcessor(
@@ -101,9 +90,6 @@ class DestinationDuckdb(Destination):
                     schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
                 ),
                 catalog_provider=catalog_provider,
-                state_writer=StdOutStateWriter(),
-                temp_dir=Path(DEFAULT_CACHE_ROOT),
-                temp_file_cleanup=True,
             )
 
     @staticmethod

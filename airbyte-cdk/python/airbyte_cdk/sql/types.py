@@ -106,24 +106,24 @@ class SQLTypeConverter:
         self.conversion_map = conversion_map or CONVERSION_MAP
 
     @classmethod
-    def get_string_type(cls) -> sqlalchemy.types.TypeEngine:
+    def get_string_type(cls) -> sqlalchemy.types.TypeEngine[str]:
         """Get the type to use for string data."""
         return sqlalchemy.types.VARCHAR()
 
     @classmethod
-    def get_failover_type(cls) -> sqlalchemy.types.TypeEngine:
+    def get_failover_type(cls) -> sqlalchemy.types.TypeEngine[str]:
         """Get the 'last resort' type to use if no other type is found."""
         return cls.get_string_type()
 
     @classmethod
-    def get_json_type(cls) -> sqlalchemy.types.TypeEngine:
+    def get_json_type(cls) -> sqlalchemy.types.TypeEngine[Any]:
         """Get the type to use for nested JSON data."""
         return sqlalchemy.types.JSON()
 
     def to_sql_type(  # noqa: PLR0911  # Too many return statements
         self,
         json_schema_property_def: dict[str, str | dict[str, Any] | list[Any]],
-    ) -> sqlalchemy.types.TypeEngine:
+    ) -> Any:
         """Convert a value to a SQL type."""
         try:
             airbyte_type, _ = _get_airbyte_type(json_schema_property_def)

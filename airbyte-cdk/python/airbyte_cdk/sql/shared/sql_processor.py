@@ -4,13 +4,12 @@
 from __future__ import annotations
 
 import abc
-import contextlib
 import enum
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, final
+from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
 import sqlalchemy
@@ -19,32 +18,17 @@ from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.hashing import one_way_hash
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte_cdk.sql.records import StreamRecordHandler
 from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.state_writers import StdOutStateWriter
-from airbyte_cdk.sql.strategies import WriteMethod, WriteStrategy
 from airbyte_cdk.sql.types import SQLTypeConverter
-from airbyte_protocol_dataclasses.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStreamState,
-    AirbyteTraceMessage,
-    Type,
-)
+from airbyte_protocol_dataclasses.models import AirbyteStateMessage
 from pandas import Index
 from pydantic import BaseModel, Field
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Generator
 
-    from airbyte_cdk.sql._batch_handles import BatchHandle
-    from airbyte_cdk.sql._writers.jsonl import FileWriterBase
-    from airbyte_cdk.sql.progress import ProgressTracker
     from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
-    from airbyte_cdk.sql.shared.state_writers import StateWriterBase
     from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
@@ -135,9 +119,6 @@ class SqlProcessorBase(abc.ABC):
     normalizer = LowerCaseNormalizer
     """The name normalizer to user for table and column name normalization."""
 
-    file_writer_class: type[FileWriterBase]
-    """The file writer class to use for writing files to the cache."""
-
     supports_merge_insert = False
     """True if the database supports the MERGE INTO syntax."""
 
@@ -146,23 +127,10 @@ class SqlProcessorBase(abc.ABC):
         *,
         sql_config: SqlConfig,
         catalog_provider: CatalogProvider,
-        state_writer: StateWriterBase | None = None,
-        file_writer: FileWriterBase | None = None,
-        temp_dir: Path | None = None,
-        temp_file_cleanup: bool,
     ) -> None:
         """Create a new SQL processor."""
-        if not temp_dir and not file_writer:
-            raise exc.AirbyteInternalError(
-                message="Either `temp_dir` or `file_writer` must be provided.",
-            )
-
-        state_writer = state_writer or StdOutStateWriter()
-
         self._sql_config: SqlConfig = sql_config
-
         self._catalog_provider: CatalogProvider | None = catalog_provider
-        self._state_writer: StateWriterBase | None = state_writer or StdOutStateWriter()
 
         self._pending_state_messages: dict[str, list[AirbyteStateMessage]] = defaultdict(list, {})
         self._finalized_state_messages: dict[
@@ -171,10 +139,6 @@ class SqlProcessorBase(abc.ABC):
         ] = defaultdict(list, {})
 
         self._setup()
-        self.file_writer = file_writer or self.file_writer_class(
-            cache_dir=cast(Path, temp_dir),
-            cleanup=temp_file_cleanup,
-        )
         self.type_converter = self.type_converter_class()
         self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
 
@@ -199,123 +163,6 @@ class SqlProcessorBase(abc.ABC):
             )
 
         return self._catalog_provider
-
-    @property
-    def state_writer(
-        self,
-    ) -> StateWriterBase:
-        """Return the state writer instance.
-
-        Subclasses should set this property to a valid state manager instance if one
-        is not explicitly passed to the constructor.
-
-        Raises:
-            AirbyteInternalError: If the state manager is not set.
-        """
-        if not self._state_writer:
-            raise exc.AirbyteInternalError(
-                message="State manager should exist but does not.",
-            )
-
-        return self._state_writer
-
-    @final
-    def process_airbyte_messages(
-        self,
-        messages: Iterable[AirbyteMessage],
-        *,
-        write_strategy: WriteStrategy = WriteStrategy.AUTO,
-        progress_tracker: ProgressTracker,
-    ) -> None:
-        """Process a stream of Airbyte messages.
-
-        This method assumes that the catalog is already registered with the processor.
-        """
-        if not isinstance(write_strategy, WriteStrategy):
-            raise exc.AirbyteInternalError(
-                message="Invalid `write_strategy` argument. Expected instance of WriteStrategy.",
-                context={"write_strategy": write_strategy},
-            )
-
-        stream_record_handlers: dict[str, StreamRecordHandler] = {}
-
-        # Process messages, writing to batches as we go
-        for message in messages:
-            if message.type is Type.RECORD:
-                record_msg = cast(AirbyteRecordMessage, message.record)
-                stream_name = record_msg.stream
-
-                if stream_name not in stream_record_handlers:
-                    stream_record_handlers[stream_name] = StreamRecordHandler(
-                        json_schema=self.catalog_provider.get_stream_json_schema(
-                            stream_name=stream_name,
-                        ),
-                        normalize_keys=True,
-                        prune_extra_fields=True,
-                    )
-
-                self.process_record_message(
-                    record_msg,
-                    stream_record_handler=stream_record_handlers[stream_name],
-                    progress_tracker=progress_tracker,
-                )
-
-            elif message.type is Type.STATE:
-                state_msg = cast(AirbyteStateMessage, message.state)
-                if state_msg.type in {AirbyteStateType.GLOBAL, AirbyteStateType.LEGACY}:
-                    self._pending_state_messages[f"_{state_msg.type}"].append(state_msg)
-                else:
-                    stream_state = cast(AirbyteStreamState, state_msg.stream)
-                    stream_name = stream_state.stream_descriptor.name
-                    self._pending_state_messages[stream_name].append(state_msg)
-
-            elif message.type is Type.TRACE:
-                trace_msg: AirbyteTraceMessage = cast(AirbyteTraceMessage, message.trace)
-                if trace_msg.stream_status and trace_msg.stream_status.status == "SUCCEEDED":
-                    # This stream has completed successfully, so go ahead and write the data.
-                    # This will also finalize any pending state messages.
-                    self.write_stream_data(
-                        stream_name=trace_msg.stream_status.stream_descriptor.name,
-                        write_strategy=write_strategy,
-                        progress_tracker=progress_tracker,
-                    )
-
-            else:
-                # Ignore unexpected or unhandled message types:
-                # Type.LOG, Type.CONTROL, etc.
-                pass
-
-        # We've finished processing input data.
-        # Finalize all received records and state messages:
-        self._write_all_stream_data(
-            write_strategy=write_strategy,
-            progress_tracker=progress_tracker,
-        )
-
-        self.cleanup_all()
-
-    def _write_all_stream_data(
-        self,
-        write_strategy: WriteStrategy,
-        progress_tracker: ProgressTracker,
-    ) -> None:
-        """Finalize any pending writes."""
-        for stream_name in self.catalog_provider.stream_names:
-            self.write_stream_data(
-                stream_name,
-                write_strategy=write_strategy,
-                progress_tracker=progress_tracker,
-            )
-
-    def _finalize_state_messages(
-        self,
-        state_messages: list[AirbyteStateMessage],
-    ) -> None:
-        """Handle state messages by passing them to the catalog manager."""
-        if state_messages:
-            self.state_writer.write_state(
-                state_message=state_messages[-1],
-            )
 
     def _setup(self) -> None:  # noqa: B027  # Intentionally empty, not abstract
         """Create the database.
@@ -392,28 +239,6 @@ class SqlProcessorBase(abc.ABC):
         return self._get_table_by_name(
             self.get_sql_table_name(stream_name),
         )
-
-    # Record processing:
-
-    def process_record_message(
-        self,
-        record_msg: AirbyteRecordMessage,
-        stream_record_handler: StreamRecordHandler,
-        progress_tracker: ProgressTracker,
-    ) -> None:
-        """Write a record to the cache.
-
-        This method is called for each record message, before the batch is written.
-
-        In most cases, the SQL processor will not perform any action, but will pass this along to to
-        the file processor.
-        """
-        self.file_writer.process_record_message(
-            record_msg,
-            stream_record_handler=stream_record_handler,
-            progress_tracker=progress_tracker,
-        )
-
     # Protected members (non-public interface):
 
     def _init_connection_settings(self, connection: Connection) -> None:  # noqa: B027  # Intentionally empty, not abstract
@@ -634,7 +459,7 @@ class SqlProcessorBase(abc.ABC):
     def _get_sql_column_definitions(
         self,
         stream_name: str,
-    ) -> dict[str, sqlalchemy.types.TypeEngine]:
+    ) -> dict[str, sqlalchemy.types.TypeEngine[Any]]:
         """Return the column definitions for the given stream."""
         columns: dict[str, sqlalchemy.types.TypeEngine] = {}
         properties = self.catalog_provider.get_stream_properties(stream_name)
@@ -649,113 +474,6 @@ class SqlProcessorBase(abc.ABC):
         columns[AB_META_COLUMN] = self.type_converter_class.get_json_type()
 
         return columns
-
-    @final
-    def write_stream_data(
-        self,
-        stream_name: str,
-        *,
-        write_method: WriteMethod | None = None,
-        write_strategy: WriteStrategy | None = None,
-        progress_tracker: ProgressTracker,
-    ) -> list[BatchHandle]:
-        """Finalize all uncommitted batches.
-
-        This is a generic 'final' SQL implementation, which should not be overridden.
-
-        Returns a mapping of batch IDs to batch handles, for those processed batches.
-
-        TODO: Add a dedupe step here to remove duplicates from the temp table.
-              Some sources will send us duplicate records within the same stream,
-              although this is a fairly rare edge case we can ignore in V1.
-        """
-        if write_method and write_strategy and write_strategy != WriteStrategy.AUTO:
-            raise exc.AirbyteInternalError(
-                message=("Both `write_method` and `write_strategy` were provided. " "Only one should be set."),
-            )
-        if not write_method:
-            write_method = self.catalog_provider.resolve_write_method(
-                stream_name=stream_name,
-                write_strategy=write_strategy or WriteStrategy.AUTO,
-            )
-        # Flush any pending writes
-        self.file_writer.flush_active_batches(
-            progress_tracker=progress_tracker,
-        )
-
-        with self.finalizing_batches(
-            stream_name=stream_name,
-            progress_tracker=progress_tracker,
-        ) as batches_to_finalize:
-            # Make sure the target schema and target table exist.
-            self._ensure_schema_exists()
-            final_table_name = self._ensure_final_table_exists(
-                stream_name,
-                create_if_missing=True,
-            )
-
-            if not batches_to_finalize:
-                # If there are no batches to finalize, return after ensuring the table exists.
-                return []
-
-            files: list[Path] = []
-            # Get a list of all files to finalize from all pending batches.
-            for batch_handle in batches_to_finalize:
-                files += batch_handle.files
-            # Use the max batch ID as the batch ID for table names.
-            max_batch_id = max(batch.batch_id for batch in batches_to_finalize)
-
-            temp_table_name = self._write_files_to_new_table(
-                files=files,
-                stream_name=stream_name,
-                batch_id=max_batch_id,
-            )
-            try:
-                self._write_temp_table_to_final_table(
-                    stream_name=stream_name,
-                    temp_table_name=temp_table_name,
-                    final_table_name=final_table_name,
-                    write_method=write_method,
-                )
-            finally:
-                self._drop_temp_table(temp_table_name, if_exists=True)
-
-        progress_tracker.log_stream_finalized(stream_name)
-
-        # Return the batch handles as measure of work completed.
-        return batches_to_finalize
-
-    @final
-    def cleanup_all(self) -> None:
-        """Clean resources."""
-        self.file_writer.cleanup_all()
-
-    # Finalizing context manager
-
-    @final
-    @contextlib.contextmanager
-    def finalizing_batches(
-        self,
-        stream_name: str,
-        progress_tracker: ProgressTracker,
-    ) -> Generator[list[BatchHandle], str, None]:
-        """Context manager to use for finalizing batches, if applicable.
-
-        Returns a mapping of batch IDs to batch handles, for those processed batches.
-        """
-        batches_to_finalize: list[BatchHandle] = self.file_writer.get_pending_batches(stream_name)
-        state_messages_to_finalize: list[AirbyteStateMessage] = self._pending_state_messages[stream_name].copy()
-        self._pending_state_messages[stream_name].clear()
-
-        progress_tracker.log_batches_finalizing(stream_name, len(batches_to_finalize))
-        yield batches_to_finalize
-        self._finalize_state_messages(state_messages_to_finalize)
-        progress_tracker.log_batches_finalized(stream_name, len(batches_to_finalize))
-
-        for batch_handle in batches_to_finalize:
-            batch_handle.finalized = True
-
-        self._finalized_state_messages[stream_name] += state_messages_to_finalize
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""
@@ -874,65 +592,6 @@ class SqlProcessorBase(abc.ABC):
             if columns_added:
                 # We've added columns, so invalidate the cache.
                 self._invalidate_table_cache(table_name)
-
-    @final
-    def _write_temp_table_to_final_table(
-        self,
-        stream_name: str,
-        temp_table_name: str,
-        final_table_name: str,
-        write_method: WriteMethod,
-    ) -> None:
-        """Write the temp table into the final table using the provided write strategy."""
-        if write_method == WriteMethod.REPLACE:
-            # Note: No need to check for schema compatibility
-            # here, because we are fully replacing the table.
-            self._swap_temp_table_with_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        if write_method == WriteMethod.APPEND:
-            self._ensure_compatible_table_schema(
-                stream_name=stream_name,
-                table_name=final_table_name,
-            )
-            self._append_temp_table_to_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        if write_method == WriteMethod.MERGE:
-            self._ensure_compatible_table_schema(
-                stream_name=stream_name,
-                table_name=final_table_name,
-            )
-            if not self.supports_merge_insert:
-                # Fallback to emulated merge if the database does not support merge natively.
-                self._emulated_merge_temp_table_to_final_table(
-                    stream_name=stream_name,
-                    temp_table_name=temp_table_name,
-                    final_table_name=final_table_name,
-                )
-                return
-
-            self._merge_temp_table_to_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        raise exc.AirbyteInternalError(
-            message="Write method is not supported.",
-            context={
-                "write_method": write_method,
-            },
-        )
 
     def _append_temp_table_to_final_table(
         self,

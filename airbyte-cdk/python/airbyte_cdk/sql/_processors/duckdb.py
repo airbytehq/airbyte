@@ -6,13 +6,11 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql._writers.jsonl import JsonlWriter
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
@@ -101,7 +99,6 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     """
 
     supports_merge_insert = False
-    file_writer_class = JsonlWriter
     sql_config: DuckDBConfig
 
     @overrides
@@ -128,58 +125,6 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         )
         """
         _ = self._execute_sql(cmd)
-
-    def _write_files_to_new_table(
-        self,
-        files: list[Path],
-        stream_name: str,
-        batch_id: str,
-    ) -> str:
-        """Write a file(s) to a new table.
-
-        We use DuckDB native SQL functions to efficiently read the files and insert
-        them into the table in a single operation.
-        """
-        temp_table_name = self._create_table_for_loading(
-            stream_name=stream_name,
-            batch_id=batch_id,
-        )
-        columns_list = list(self._get_sql_column_definitions(stream_name=stream_name).keys())
-        columns_list_str = indent(
-            "\n, ".join([self._quote_identifier(col) for col in columns_list]),
-            "    ",
-        )
-        files_list = ", ".join([f"'{f!s}'" for f in files])
-        columns_type_map = indent(
-            "\n, ".join(
-                [
-                    self._quote_identifier(self.normalizer.normalize(prop_name))
-                    + ': "'
-                    + str(self._get_sql_column_definitions(stream_name)[self.normalizer.normalize(prop_name)])
-                    + '"'
-                    for prop_name in columns_list
-                ]
-            ),
-            "    ",
-        )
-        insert_statement = dedent(
-            f"""
-            INSERT INTO {self.sql_config.schema_name}.{temp_table_name}
-            (
-                {columns_list_str}
-            )
-            SELECT
-                {columns_list_str}
-            FROM read_json_auto(
-                [{files_list}],
-                format = 'newline_delimited',
-                union_by_name = true,
-                columns = {{ { columns_type_map } }}
-            )
-            """
-        )
-        self._execute_sql(insert_statement)
-        return temp_table_name
 
     def _do_checkpoint(
         self,
