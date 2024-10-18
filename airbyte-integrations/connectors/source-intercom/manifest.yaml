@@ -19,7 +19,7 @@ definitions:
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
-      class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+      class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
       response_filters:
       - type: HttpResponseFilter
         error_message_contains: "Active subscription needed"
@@ -48,7 +48,7 @@ definitions:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -82,7 +82,7 @@ definitions:
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
-      class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+      class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
       response_filters:
       - type: HttpResponseFilter
         error_message_contains: "Active subscription needed"
@@ -123,7 +123,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -167,7 +167,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -307,7 +307,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -372,7 +372,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -444,7 +444,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -491,7 +491,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -630,7 +630,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -776,7 +776,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -800,7 +800,7 @@ definitions:
           type: RequestPath
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
   segments:
     retriever:
@@ -828,7 +828,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -852,7 +852,7 @@ definitions:
           type: RequestPath
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     description: "https://developers.intercom.com/intercom-api-reference/reference#list-segments"
     schema_loader:
@@ -966,7 +966,7 @@ definitions:
           inject_into: request_parameter
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
     schema_loader:
@@ -1148,7 +1148,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -1161,7 +1161,7 @@ definitions:
         type: "NoPagination"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
+      class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
       cursor_field: "updated_at"
   conversation_parts:
     retriever:
@@ -1197,7 +1197,7 @@ definitions:
         type: "NoPagination"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
+      class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
       cursor_field: "updated_at"
       parent_stream_configs:
       - type: ParentStreamConfig
@@ -1228,7 +1228,7 @@ definitions:
                 Accept: "application/json"
               error_handler:
                 type: CustomErrorHandler
-                class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+                class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
                 response_filters:
                 - type: HttpResponseFilter
                   error_message_contains: "Active subscription needed"
@@ -1260,7 +1260,7 @@ definitions:
           description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
           incremental_sync:
             type: CustomIncrementalSync
-            class_name: source_intercom.components.IncrementalSingleSliceCursor
+            class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
             cursor_field: "updated_at"
           schema_loader:
             type: InlineSchemaLoader
@@ -2126,7 +2126,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -2139,7 +2139,7 @@ definitions:
         type: "NoPagination"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
+      class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
       cursor_field: "updated_at"
       parent_complete_fetch: true
       parent_stream_configs:
@@ -2215,7 +2215,7 @@ definitions:
                 inject_into: request_parameter
           incremental_sync:
             type: CustomIncrementalSync
-            class_name: source_intercom.components.IncrementalSingleSliceCursor
+            class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
             cursor_field: "updated_at"
           description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
           schema_loader:
@@ -2441,7 +2441,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -2471,7 +2471,7 @@ definitions:
     description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
   contacts:
     retriever:
@@ -2500,7 +2500,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -2530,7 +2530,7 @@ definitions:
     description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     schema_loader:
       type: InlineSchemaLoader
@@ -3134,7 +3134,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -3164,7 +3164,7 @@ definitions:
     description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSliceCursor
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
       cursor_field: "updated_at"
     schema_loader:
       type: InlineSchemaLoader
@@ -3859,7 +3859,7 @@ definitions:
           Accept: "application/json"
         error_handler:
           type: CustomErrorHandler
-          class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+          class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
           response_filters:
           - type: HttpResponseFilter
             error_message_contains: "Active subscription needed"
@@ -3975,7 +3975,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4096,7 +4096,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4241,7 +4241,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4311,7 +4311,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4393,7 +4393,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4419,7 +4419,7 @@ streams:
     type: SimpleRetriever
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSingleSliceCursor
+    class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
     cursor_field: "updated_at"
   description: "https://developers.intercom.com/intercom-api-reference/reference#list-segments"
   schema_loader:
@@ -4542,7 +4542,7 @@ streams:
     type: SimpleRetriever
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSingleSliceCursor
+    class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
     cursor_field: "updated_at"
   description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
   schema_loader:
@@ -4724,7 +4724,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -4868,7 +4868,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -5021,7 +5021,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -5053,7 +5053,7 @@ streams:
   description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSingleSliceCursor
+    class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
     cursor_field: "updated_at"
   schema_loader:
     type: InlineSchemaLoader
@@ -5659,7 +5659,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -5691,7 +5691,7 @@ streams:
   description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSingleSliceCursor
+    class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
     cursor_field: "updated_at"
   schema_loader:
     type: InlineSchemaLoader
@@ -6405,7 +6405,7 @@ streams:
     type: SimpleRetriever
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
+    class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
     cursor_field: "updated_at"
     parent_stream_configs:
     - type: ParentStreamConfig
@@ -6438,7 +6438,7 @@ streams:
               Accept: "application/json"
             error_handler:
               type: CustomErrorHandler
-              class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+              class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
               response_filters:
               - type: HttpResponseFilter
                 error_message_contains: "Active subscription needed"
@@ -6472,7 +6472,7 @@ streams:
         description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
         incremental_sync:
           type: CustomIncrementalSync
-          class_name: source_intercom.components.IncrementalSingleSliceCursor
+          class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
           cursor_field: "updated_at"
         schema_loader:
           type: InlineSchemaLoader
@@ -7345,7 +7345,7 @@ streams:
         Accept: "application/json"
       error_handler:
         type: CustomErrorHandler
-        class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+        class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
         response_filters:
         - type: HttpResponseFilter
           error_message_contains: "Active subscription needed"
@@ -7359,7 +7359,7 @@ streams:
     type: SimpleRetriever
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_intercom.components.IncrementalSubstreamSlicerCursor
+    class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
     cursor_field: "updated_at"
     parent_complete_fetch: true
     parent_stream_configs:
@@ -7443,7 +7443,7 @@ streams:
           type: SimpleRetriever
         incremental_sync:
           type: CustomIncrementalSync
-          class_name: source_intercom.components.IncrementalSingleSliceCursor
+          class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
           cursor_field: "updated_at"
         description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
         schema_loader:
