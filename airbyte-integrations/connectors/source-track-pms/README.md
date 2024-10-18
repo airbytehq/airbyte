@@ -1,12 +1,12 @@
 # Track PMS
 This directory contains the manifest-only connector for `source-track-pms`.
 
-An Airbyte source for the Track Property Management System (PMS)
-Enterprise-class property management solutions for vacation rental companies
+An Airbyte source for the Track Property Management System (PMS)  
+Enterprise-class property management solutions for vacation rental companies  
 
-Website: https://tnsinc.com/
-API Docs: hhttps://developer.trackhs.com
-Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication
+Website: https://tnsinc.com  
+API Docs: https://developer.trackhs.com  
+Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
 
 ## Usage
 There are multiple ways to use this connector:
