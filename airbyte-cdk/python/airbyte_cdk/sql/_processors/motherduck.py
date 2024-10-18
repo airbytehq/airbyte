@@ -15,12 +15,14 @@ cache = MotherDuckCache(
 """
 
 from __future__ import annotations
+
 import warnings
-from pydantic import Field
-from overrides import overrides
-from duckdb_engine import DuckDBEngineWarning
-from airbyte_cdk.sql.secrets import SecretString
+
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
+from airbyte_cdk.sql.secrets import SecretString
+from duckdb_engine import DuckDBEngineWarning
+from overrides import overrides
+from pydantic import Field
 
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905
