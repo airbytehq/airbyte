@@ -579,7 +579,7 @@ class SqlProcessorBase(abc.ABC):
         """Return a list of all tables in the database."""
         with self.get_sql_connection() as conn:
             inspector: Inspector = sqlalchemy.inspect(conn)
-            return inspector.get_table_names(schema=self.sql_config.schema_name)
+            return cast(list[str], inspector.get_table_names(schema=self.sql_config.schema_name))
 
     def _get_schemas_list(
         self,
