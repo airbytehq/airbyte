@@ -73,12 +73,6 @@ abstract class StagedLocalFile() : Batch {
     override val state: Batch.State = Batch.State.LOCAL
 }
 
-/** Represents a remote object containing persisted records. */
-abstract class RemoteObject() : Batch {
-    override val state: Batch.State = Batch.State.PERSISTED
-    abstract val key: String
-}
-
 /**
  * Represents a file of raw records staged to disk for pre-processing. Used internally by the
  * framework
