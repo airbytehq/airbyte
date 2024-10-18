@@ -25,7 +25,8 @@ object S3V2DataDumper : DestinationDataDumper {
                 stream,
                 s3Client,
                 pathFactory,
-                config.objectStorageCompressionConfiguration
+                config.objectStorageFormatConfiguration,
+                config.objectStorageCompressionConfiguration,
             )
             .dump()
     }
