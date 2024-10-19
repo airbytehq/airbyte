@@ -9,7 +9,7 @@ import importlib
 import inspect
 import re
 from functools import partial
-from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -169,7 +169,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformation import KeysToLowerTransformation
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, GapType
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomOutputFormatConcurrentStreamStateConverter,
     DateTimeStreamStateConverter,
@@ -464,7 +464,6 @@ class ModelToComponentFactory:
             parameters={},
         )
 
-    # @staticmethod
     def create_concurrent_cursor_from_datetime_based_cursor(
         self,
         state_manager: ConnectorStateManager,
@@ -475,7 +474,7 @@ class ModelToComponentFactory:
         config: Config,
         stream_state: MutableMapping[str, Any],
         **kwargs: Any,
-    ) -> (ConcurrentCursor, DateTimeStreamStateConverter):
+    ) -> Tuple[ConcurrentCursor, DateTimeStreamStateConverter]:
 
         component_type = component_definition.get("type")
         if component_definition.get("type") != model_type.__name__:
@@ -555,14 +554,6 @@ class ModelToComponentFactory:
             partial(interpolated_end_date.get_datetime, config) if interpolated_end_date else connector_state_converter.get_end_provider()
         )
 
-        # DELETE LATER
-        # DatetimeBasedCursor returns an isodate.Duration if step uses month or year precision. This still works in our
-        # code, but mypy may complain when we actually implement this in the concurrent low-code source. To fix this, we
-        # may need to convert a Duration to timedelta by multiplying month by 30 (but could lose precision).
-        # step_length = declarative_cursor.get_step()
-
-        # clean this code up if we're not shackled to the old implementation
-
         if (datetime_based_cursor_model.step and not datetime_based_cursor_model.cursor_granularity) or (
             not datetime_based_cursor_model.step and datetime_based_cursor_model.cursor_granularity
         ):
@@ -571,6 +562,8 @@ class ModelToComponentFactory:
                 f"Right now, step is `{datetime_based_cursor_model.step}` and cursor_granularity is `{datetime_based_cursor_model.cursor_granularity}`"
             )
 
+        # When step is not defined, default to a step size from the starting date to the present moment
+        step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
         interpolated_step = (
             InterpolatedString.create(datetime_based_cursor_model.step, parameters=datetime_based_cursor_model.parameters)
             if datetime_based_cursor_model.step
@@ -580,12 +573,6 @@ class ModelToComponentFactory:
             evaluated_step = interpolated_step.eval(config)
             if evaluated_step:
                 step_length = parse_duration(evaluated_step)
-            else:
-                # When step is defined, default to a step size from the starting date to the present moment
-                step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
-        else:
-            # When step is defined, default to a step size from the starting date to the present moment
-            step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
 
         return (
             ConcurrentCursor(

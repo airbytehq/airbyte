@@ -2,11 +2,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 import logging
-from dataclasses import dataclass
-from functools import partial
-from typing import Any, Callable, Generic, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Generic, Iterator, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -14,7 +11,6 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors import RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
@@ -31,23 +27,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AlwaysAvailableAvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, GapType
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.helpers import get_primary_key_from_stream
-from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import DateTimeStreamStateConverter
-from isodate import parse_duration
-
-
-@dataclass
-class DeclarativeCursorAttributes:
-    cursor_field: CursorField
-    datetime_format: str
-    slice_boundary_fields: Optional[Tuple[str, str]]
-    start: Optional[CursorValueType]
-    end_provider: Optional[Callable[[], CursorValueType]]
-    lookback_window: Optional[GapType]
-    slice_range: Optional[GapType]
-    cursor_granularity: Optional[GapType]
 
 
 class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
@@ -163,19 +144,19 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 if (
                     datetime_based_cursor_component_definition
                     and datetime_based_cursor_component_definition.get("type", "") == DatetimeBasedCursorModel.__name__
-                    and self._stream_supports_concurrent_partition_processing(
-                        declarative_stream=declarative_stream, cursor_component_definition=datetime_based_cursor_component_definition
-                    )
+                    and self._stream_supports_concurrent_partition_processing(declarative_stream=declarative_stream)
                 ):
                     stream_state = state_manager.get_stream_state(
                         stream_name=declarative_stream.name, namespace=declarative_stream.namespace
                     )
 
-                    cursor, connector_state_converter = self._create_cursor_and_state_converter_for_stream(
-                        declarative_stream=declarative_stream,
-                        datetime_based_cursor_component_definition=datetime_based_cursor_component_definition,
+                    cursor, connector_state_converter = self._constructor.create_concurrent_cursor_from_datetime_based_cursor(
                         state_manager=state_manager,
-                        config=config,
+                        model_type=DatetimeBasedCursorModel,
+                        component_definition=datetime_based_cursor_component_definition,
+                        stream_name=declarative_stream.name,
+                        stream_namespace=declarative_stream.namespace,
+                        config=config or {},
                         stream_state=stream_state,
                     )
 
@@ -216,78 +197,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
         return concurrent_streams, synchronous_streams
 
-    def _create_cursor_and_state_converter_for_stream(
-        self,
-        declarative_stream: DeclarativeStream,
-        datetime_based_cursor_component_definition: Mapping[str, Any],
-        state_manager: ConnectorStateManager,
-        config: Mapping[str, Any],
-        stream_state: MutableMapping[str, Any],
-    ) -> (ConcurrentCursor, DateTimeStreamStateConverter):
-        # remap streams to mapping of name to stream component
-        # name_to_stream_mapping = {stream["name"]: stream for stream in self.resolved_manifest["streams"]}
-        # # make this safer to check messages
-        # datetime_based_cursor_model = name_to_stream_mapping[declarative_stream.name]["incremental_sync"]
-
-        return self._constructor.create_concurrent_cursor_from_datetime_based_cursor(
-            state_manager=state_manager,
-            model_type=DatetimeBasedCursorModel,
-            component_definition=datetime_based_cursor_component_definition,
-            stream_name=declarative_stream.name,
-            stream_namespace=declarative_stream.namespace,
-            config=config or {},
-            stream_state=stream_state,
-        )
-
-    def _get_cursor_attributes(
-        self, declarative_stream: DeclarativeStream, config: Mapping[str, Any]
-    ) -> Optional[DeclarativeCursorAttributes]:
-        declarative_cursor = declarative_stream.get_cursor()
-
-        if (
-            isinstance(declarative_cursor, DatetimeBasedCursor)
-            and type(declarative_cursor) is DatetimeBasedCursor
-            and self._stream_supports_concurrent_partition_processing(declarative_stream=declarative_stream, cursor=declarative_cursor)
-        ):
-            # Only incremental non-substreams are supported. Custom DatetimeBasedCursors are also not supported yet
-            # because their behavior can deviate from ConcurrentBehavior
-
-            slice_boundary_fields = (
-                declarative_cursor.get_partition_field_start().eval(config=config),
-                declarative_cursor.get_partition_field_end().eval(config=config),
-            )
-
-            interpolated_start_date = declarative_cursor.get_start_datetime()
-            start_date = interpolated_start_date.get_datetime(config=config)
-
-            interpolated_end_date = declarative_cursor.get_end_datetime()
-            end_date_provider = partial(interpolated_end_date.get_datetime, config) if interpolated_end_date else None
-
-            # DatetimeBasedCursor returns an isodate.Duration if step uses month or year precision. This still works in our
-            # code, but mypy may complain when we actually implement this in the concurrent low-code source. To fix this, we
-            # may need to convert a Duration to timedelta by multiplying month by 30 (but could lose precision).
-            step_length = declarative_cursor.get_step()
-
-            # The low-code DatetimeBasedCursor component uses the default max timedelta value which can lead to an
-            # OverflowError when building datetime intervals. We should proactively cap this to the current moment instead
-            if isinstance(step_length, datetime.timedelta) and step_length >= datetime.timedelta.max:
-                step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
-
-            return DeclarativeCursorAttributes(
-                cursor_field=CursorField(declarative_cursor.cursor_field.eval(config=config)),  # type: ignore # cursor_field is always cast to an interpolated string
-                datetime_format=declarative_cursor.datetime_format,
-                slice_boundary_fields=slice_boundary_fields,
-                start=start_date,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
-                end_provider=end_date_provider,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
-                slice_range=step_length,
-                lookback_window=parse_duration(declarative_cursor.lookback_window) if declarative_cursor.lookback_window else None,
-                cursor_granularity=parse_duration(declarative_cursor.cursor_granularity) if declarative_cursor.cursor_granularity else None,
-            )
-        return None
-
-    def _stream_supports_concurrent_partition_processing(
-        self, declarative_stream: DeclarativeStream, cursor_component_definition: Mapping[str, Any]
-    ) -> bool:
+    def _stream_supports_concurrent_partition_processing(self, declarative_stream: DeclarativeStream) -> bool:
         """
         Many connectors make use of stream_state during interpolation on a per-partition basis under the assumption that
         state is updated sequentially. Because the concurrent CDK engine processes different partitions in parallel,
@@ -298,77 +208,6 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         per-partition, but we need to gate this otherwise some connectors will be blocked from publishing. See the
         cdk-migrations.md for the full list of connectors.
         """
-
-        # Client side incremental streams require usage of the DatetimeBasedCursor and relies on the current stream_state which is no
-        # longer thread-safe. One note is that client_side_incremental might only operate on a single thread in which case it is safe.
-        if cursor_component_definition.get("is_client_side_incremental"):
-            self.logger.warning(
-                f"Low-code stream '{declarative_stream.name}' uses is_client_side_incremental which is not thread-safe. Defaulting to synchronous processing"
-            )
-            return False
-
-        if isinstance(declarative_stream.retriever, SimpleRetriever) and isinstance(declarative_stream.retriever.requester, HttpRequester):
-            http_requester = declarative_stream.retriever.requester
-            if "stream_state" in http_requester._path.string:
-                self.logger.warning(
-                    f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the HttpRequester which is not thread-safe. Defaulting to synchronous processing"
-                )
-                return False
-
-            request_options_provider = http_requester._request_options_provider
-            if request_options_provider.request_options_contain_stream_state():
-                self.logger.warning(
-                    f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the HttpRequester which is not thread-safe. Defaulting to synchronous processing"
-                )
-                return False
-
-            record_selector = declarative_stream.retriever.record_selector
-            if isinstance(record_selector, RecordSelector):
-                if record_selector.record_filter and "stream_state" in record_selector.record_filter.condition:
-                    self.logger.warning(
-                        f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the RecordFilter which is not thread-safe. Defaulting to synchronous processing"
-                    )
-                    return False
-
-                for add_fields in [
-                    transformation for transformation in record_selector.transformations if isinstance(transformation, AddFields)
-                ]:
-                    for field in add_fields.fields:
-                        if isinstance(field.value, str) and "stream_state" in field.value:
-                            self.logger.warning(
-                                f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the AddFields which is not thread-safe. Defaulting to synchronous processing"
-                            )
-                            return False
-                        if isinstance(field.value, InterpolatedString) and "stream_state" in field.value.string:
-                            self.logger.warning(
-                                f"Low-code stream '{declarative_stream.name}' uses interpolation of stream_state in the AddFields which is not thread-safe. Defaulting to synchronous processing"
-                            )
-                            return False
-
-            paginator = declarative_stream.retriever.paginator
-            if isinstance(paginator, DefaultPaginator):
-                if isinstance(paginator.pagination_strategy, StopConditionPaginationStrategyDecorator):
-                    return False
-        return True
-
-    def _old_stream_supports_concurrent_partition_processing(
-        self, declarative_stream: DeclarativeStream, cursor: DatetimeBasedCursor
-    ) -> bool:
-        """
-        Many connectors make use of stream_state during interpolation on a per-partition basis under the assumption that
-        state is updated sequentially. Because the concurrent CDK engine processes different partitions in parallel,
-        stream_state is no longer a thread-safe interpolation context. It would be a race condition because a cursor's
-        stream_state can be updated in any order depending on which stream partition's finish first.
-
-        We should start to move away from depending on the value of stream_state for low-code components that operate
-        per-partition, but we need to gate this otherwise some connectors will be blocked from publishing. See the
-        cdk-migrations.md for the full list of connectors.
-        """
-
-        # If a stream doesn't partition the sync time window into smaller intervals, then we can sync this concurrently because
-        # there is not a race condition on a single partition.
-        if not cursor.step:
-            return True
 
         if isinstance(declarative_stream.retriever, SimpleRetriever) and isinstance(declarative_stream.retriever.requester, HttpRequester):
             http_requester = declarative_stream.retriever.requester

@@ -522,6 +522,9 @@ def test_read_with_concurrent_and_synchronous_streams():
 
     disable_emitting_sequential_state_messages(source=source)
 
+    assert len(source._concurrent_streams) == 2
+    assert len(source._synchronous_streams) == 2
+
     for i, _ in enumerate(source._concurrent_streams):
         stream = source._concurrent_streams[i]._stream_partition_generator._stream
         if isinstance(stream, DeclarativeStream):
