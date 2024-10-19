@@ -13,7 +13,7 @@ definitions:
     url_base: "https://api.qualaroo.com/api/v1/"
     http_method: "GET"
     authenticator:
-      class_name: source_qualaroo.components.CustomAuthenticator
+      class_name: source_declarative_manifest.components.CustomAuthenticator
       username: "{{config['key']}}"
       password: "{{config['token']}}"
     request_parameters:
@@ -48,7 +48,7 @@ definitions:
       url_base: "https://api.qualaroo.com/api/v1/"
       http_method: "GET"
       authenticator:
-        class_name: source_qualaroo.components.CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
         username: "{{config['key']}}"
         password: "{{config['token']}}"
       request_parameters:
@@ -85,7 +85,7 @@ definitions:
         url_base: "https://api.qualaroo.com/api/v1/"
         http_method: "GET"
         authenticator:
-          class_name: source_qualaroo.components.CustomAuthenticator
+          class_name: source_declarative_manifest.components.CustomAuthenticator
           username: "{{config['key']}}"
           password: "{{config['token']}}"
         request_parameters:
@@ -122,7 +122,7 @@ definitions:
         url_base: "https://api.qualaroo.com/api/v1/"
         http_method: "GET"
         authenticator:
-          class_name: source_qualaroo.components.CustomAuthenticator
+          class_name: source_declarative_manifest.components.CustomAuthenticator
           username: "{{config['key']}}"
           password: "{{config['token']}}"
         request_parameters:
@@ -186,7 +186,7 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_qualaroo.components.CustomExtractor
+          class_name: source_declarative_manifest.components.CustomExtractor
       paginator:
         type: "DefaultPaginator"
         pagination_strategy:
@@ -201,7 +201,7 @@ definitions:
         url_base: "https://api.qualaroo.com/api/v1/"
         http_method: "GET"
         authenticator:
-          class_name: source_qualaroo.components.CustomAuthenticator
+          class_name: source_declarative_manifest.components.CustomAuthenticator
           username: "{{config['key']}}"
           password: "{{config['token']}}"
         request_parameters:
@@ -242,7 +242,7 @@ definitions:
                 url_base: "https://api.qualaroo.com/api/v1/"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_qualaroo.components.CustomAuthenticator
+                  class_name: source_declarative_manifest.components.CustomAuthenticator
                   username: "{{config['key']}}"
                   password: "{{config['token']}}"
                 request_parameters:
@@ -423,7 +423,7 @@ streams:
       url_base: "https://api.qualaroo.com/api/v1/"
       http_method: "GET"
       authenticator:
-        class_name: source_qualaroo.components.CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
         username: "{{config['key']}}"
         password: "{{config['token']}}"
         type: CustomAuthenticator
@@ -492,7 +492,7 @@ streams:
     record_selector:
       type: RecordSelector
       extractor:
-        class_name: source_qualaroo.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
         type: CustomRecordExtractor
     paginator:
       type: "DefaultPaginator"
@@ -508,7 +508,7 @@ streams:
       url_base: "https://api.qualaroo.com/api/v1/"
       http_method: "GET"
       authenticator:
-        class_name: source_qualaroo.components.CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
         username: "{{config['key']}}"
         password: "{{config['token']}}"
         type: CustomAuthenticator
@@ -553,7 +553,7 @@ streams:
               url_base: "https://api.qualaroo.com/api/v1/"
               http_method: "GET"
               authenticator:
-                class_name: source_qualaroo.components.CustomAuthenticator
+                class_name: source_declarative_manifest.components.CustomAuthenticator
                 username: "{{config['key']}}"
                 password: "{{config['token']}}"
                 type: CustomAuthenticator
