@@ -8,9 +8,6 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `zipcode` | `number` | Zipcode. 85001 |  |
-| `utility` | `string` | utility.  |  |
-| `all` | `boolean` | All. If true will return all the electricity_plans, Otherwise, will return only recommended plans |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorSubtype: api
   connectorType: source
-  definitionId: efa00f5e-a26b-411d-8d49-a3f19c54be6b
+  definitionId: 134328d2-3752-478a-ba57-d44a175f0d8e
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-openaq
   githubIssueLabel: source-openaq

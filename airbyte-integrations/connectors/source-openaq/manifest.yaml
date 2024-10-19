@@ -1164,22 +1164,6 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      zipcode:
-        type: number
-        description: "85001"
-        order: 1
-        title: Zipcode
-      utility:
-        type: string
-        order: 2
-        title: utility
-      all:
-        type: boolean
-        description: >-
-          If true will return all the electricity_plans, Otherwise, will return
-          only recommended plans
-        order: 3
-        title: All
     additionalProperties: true
 
 metadata:
