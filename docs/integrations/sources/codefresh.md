@@ -5,17 +5,16 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `type` | `string` | Type.  |  |
-| `api_key` | `string` | API Key.  |  |
-| `account_id` | `string` | Account Id.  |  |
-| `report_name` | `string` | Report Name.  |  |
-| `report_granularity` | `string` | Report Granularity.  |  |
-| `report_date_range` | `array` | Report Date Range.  |  |
-| `start_date` | `string` | Start date.  |  |
-| `from` | `string` | From.  |  |
 | `to` | `string` | To.  |  |
-| `startdate` | `string` | startDate.  |  |
+| `from` | `integer` | From.  |  |
+| `api_key` | `string` | API Key.  |  |
 | `enddate` | `string` | endDate.  |  |
+| `startdate` | `string` | startDate.  |  |
+| `account_id` | `string` | Account Id.  |  |
+| `start_date` | `string` | Start date.  |  |
+| `report_name` | `string` | Report Name.  |  |
+| `report_date_range` | `array` | Report Date Range.  |  |
+| `report_granularity` | `string` | Report Granularity.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -43,6 +42,6 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-17 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-19 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
