@@ -14,8 +14,7 @@ definitions:
   no_selector:
     type: RecordSelector
     extractor:
-      type: DpathExtractor
-      field_path: []
+      type: DpathExtractorF
   token_auth:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -44,7 +43,7 @@ definitions:
             waiting for too long for a response from Typeform API. Please try again
             later."
     authenticator:
-      class_name: source_typeform.components.TypeformAuthenticator
+      class_name: source_declarative_manifest.components.TypeformAuthenticator
       token_auth:
         type: BearerAuthenticator
         api_token: "{{ config['credentials']['access_token'] }}"
@@ -93,7 +92,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -149,7 +148,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -185,7 +184,7 @@ definitions:
     name: trim_forms
   form_id_partition_router:
   - type: CustomPartitionRouter
-    class_name: source_typeform.components.FormIdPartitionRouter
+    class_name: source_declarative_manifest.components.FormIdPartitionRouter
     parent_stream_configs:
     - type: ParentStreamConfig
       parent_key: id
@@ -213,7 +212,7 @@ definitions:
                     been waiting for too long for a response from Typeform API. Please
                     try again later."
             authenticator:
-              class_name: source_typeform.components.TypeformAuthenticator
+              class_name: source_declarative_manifest.components.TypeformAuthenticator
               token_auth:
                 type: BearerAuthenticator
                 api_token: "{{ config['credentials']['access_token'] }}"
@@ -271,7 +270,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -291,7 +290,7 @@ definitions:
           field_path: []
       partition_router:
       - type: CustomPartitionRouter
-        class_name: source_typeform.components.FormIdPartitionRouter
+        class_name: source_declarative_manifest.components.FormIdPartitionRouter
         parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
@@ -319,7 +318,7 @@ definitions:
                         has been waiting for too long for a response from Typeform
                         API. Please try again later."
                 authenticator:
-                  class_name: source_typeform.components.TypeformAuthenticator
+                  class_name: source_declarative_manifest.components.TypeformAuthenticator
                   token_auth:
                     type: BearerAuthenticator
                     api_token: "{{ config['credentials']['access_token'] }}"
@@ -1241,7 +1240,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -1277,7 +1276,7 @@ definitions:
           page_size: 1000
       partition_router:
       - type: CustomPartitionRouter
-        class_name: source_typeform.components.FormIdPartitionRouter
+        class_name: source_declarative_manifest.components.FormIdPartitionRouter
         parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
@@ -1305,7 +1304,7 @@ definitions:
                         has been waiting for too long for a response from Typeform
                         API. Please try again later."
                 authenticator:
-                  class_name: source_typeform.components.TypeformAuthenticator
+                  class_name: source_declarative_manifest.components.TypeformAuthenticator
                   token_auth:
                     type: BearerAuthenticator
                     api_token: "{{ config['credentials']['access_token'] }}"
@@ -1645,7 +1644,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -1666,7 +1665,7 @@ definitions:
           - items
       partition_router:
       - type: CustomPartitionRouter
-        class_name: source_typeform.components.FormIdPartitionRouter
+        class_name: source_declarative_manifest.components.FormIdPartitionRouter
         parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
@@ -1694,7 +1693,7 @@ definitions:
                         has been waiting for too long for a response from Typeform
                         API. Please try again later."
                 authenticator:
-                  class_name: source_typeform.components.TypeformAuthenticator
+                  class_name: source_declarative_manifest.components.TypeformAuthenticator
                   token_auth:
                     type: BearerAuthenticator
                     api_token: "{{ config['credentials']['access_token'] }}"
@@ -1798,7 +1797,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -1916,7 +1915,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -2002,7 +2001,7 @@ definitions:
                 waiting for too long for a response from Typeform API. Please try
                 again later."
         authenticator:
-          class_name: source_typeform.components.TypeformAuthenticator
+          class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
             type: BearerAuthenticator
             api_token: "{{ config['credentials']['access_token'] }}"
@@ -2188,7 +2187,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -2209,7 +2208,7 @@ streams:
         field_path: []
     partition_router:
     - type: CustomPartitionRouter
-      class_name: source_typeform.components.FormIdPartitionRouter
+      class_name: source_declarative_manifest.components.FormIdPartitionRouter
       parent_stream_configs:
       - type: ParentStreamConfig
         parent_key: id
@@ -2238,7 +2237,7 @@ streams:
                       Please try again later."
                     type: HttpResponseFilter
               authenticator:
-                class_name: source_typeform.components.TypeformAuthenticator
+                class_name: source_declarative_manifest.components.TypeformAuthenticator
                 token_auth:
                   type: BearerAuthenticator
                   api_token: "{{ config['credentials']['access_token'] }}"
@@ -3161,7 +3160,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -3198,7 +3197,7 @@ streams:
         page_size: 1000
     partition_router:
     - type: CustomPartitionRouter
-      class_name: source_typeform.components.FormIdPartitionRouter
+      class_name: source_declarative_manifest.components.FormIdPartitionRouter
       parent_stream_configs:
       - type: ParentStreamConfig
         parent_key: id
@@ -3227,7 +3226,7 @@ streams:
                       Please try again later."
                     type: HttpResponseFilter
               authenticator:
-                class_name: source_typeform.components.TypeformAuthenticator
+                class_name: source_declarative_manifest.components.TypeformAuthenticator
                 token_auth:
                   type: BearerAuthenticator
                   api_token: "{{ config['credentials']['access_token'] }}"
@@ -3569,7 +3568,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -3591,7 +3590,7 @@ streams:
         - items
     partition_router:
     - type: CustomPartitionRouter
-      class_name: source_typeform.components.FormIdPartitionRouter
+      class_name: source_declarative_manifest.components.FormIdPartitionRouter
       parent_stream_configs:
       - type: ParentStreamConfig
         parent_key: id
@@ -3620,7 +3619,7 @@ streams:
                       Please try again later."
                     type: HttpResponseFilter
               authenticator:
-                class_name: source_typeform.components.TypeformAuthenticator
+                class_name: source_declarative_manifest.components.TypeformAuthenticator
                 token_auth:
                   type: BearerAuthenticator
                   api_token: "{{ config['credentials']['access_token'] }}"
@@ -3725,7 +3724,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -3843,7 +3842,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
@@ -3931,7 +3930,7 @@ streams:
               later."
             type: HttpResponseFilter
       authenticator:
-        class_name: source_typeform.components.TypeformAuthenticator
+        class_name: source_declarative_manifest.components.TypeformAuthenticator
         token_auth:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
