@@ -2255,6 +2255,14 @@ class Goals(CRMObjectIncrementalStream):
     scopes = {"crm.objects.goals.read"}
 
 
+class Leads(CRMSearchStream):
+    entity = "leads"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies"]
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"}
+
+
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
