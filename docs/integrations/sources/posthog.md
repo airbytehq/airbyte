@@ -71,7 +71,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 1.2.0 | 2024-10-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to manifest-only format |
+| 1.2.0 | 2024-10-19 | [47020](https://github.com/airbytehq/airbyte/pull/47020) | Migrate to manifest-only format |
 | 1.1.15 | 2024-10-12 | [46769](https://github.com/airbytehq/airbyte/pull/46769) | Update dependencies |
 | 1.1.14 | 2024-10-05 | [46421](https://github.com/airbytehq/airbyte/pull/46421) | Update dependencies |
 | 1.1.13 | 2024-09-28 | [46108](https://github.com/airbytehq/airbyte/pull/46108) | Update dependencies |
