@@ -486,15 +486,15 @@ class ModelToComponentFactory:
             raise ValueError(f"Expected {model_type.__name__} component, but received {datetime_based_cursor_model.__class__.__name__}")
 
         interpolated_cursor_field = InterpolatedString.create(
-            datetime_based_cursor_model.cursor_field, parameters=datetime_based_cursor_model.parameters
+            datetime_based_cursor_model.cursor_field, parameters=datetime_based_cursor_model.parameters or {}
         )
         cursor_field = CursorField(interpolated_cursor_field.eval(config=config))
 
         interpolated_partition_field_start = InterpolatedString.create(
-            datetime_based_cursor_model.partition_field_start or "start_time", parameters=datetime_based_cursor_model.parameters
+            datetime_based_cursor_model.partition_field_start or "start_time", parameters=datetime_based_cursor_model.parameters or {}
         )
         interpolated_partition_field_end = InterpolatedString.create(
-            datetime_based_cursor_model.partition_field_end or "end_time", parameters=datetime_based_cursor_model.parameters
+            datetime_based_cursor_model.partition_field_end or "end_time", parameters=datetime_based_cursor_model.parameters or {}
         )
 
         slice_boundary_fields = (
@@ -510,7 +510,7 @@ class ModelToComponentFactory:
 
         lookback_window = None
         interpolated_lookback_window = (
-            InterpolatedString.create(datetime_based_cursor_model.lookback_window, parameters=datetime_based_cursor_model.parameters)
+            InterpolatedString.create(datetime_based_cursor_model.lookback_window, parameters=datetime_based_cursor_model.parameters or {})
             if datetime_based_cursor_model.lookback_window
             else None
         )
@@ -526,11 +526,13 @@ class ModelToComponentFactory:
             # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
         )
 
+        start_date_runtime_value: Union[InterpolatedString, str, MinMaxDatetime]
         if isinstance(datetime_based_cursor_model.start_datetime, MinMaxDatetimeModel):
             start_date_runtime_value = self.create_min_max_datetime(model=datetime_based_cursor_model.start_datetime, config=config)
         else:
             start_date_runtime_value = datetime_based_cursor_model.start_datetime
 
+        end_date_runtime_value: Optional[Union[InterpolatedString, str, MinMaxDatetime]]
         if isinstance(datetime_based_cursor_model.end_datetime, MinMaxDatetimeModel):
             end_date_runtime_value = self.create_min_max_datetime(model=datetime_based_cursor_model.end_datetime, config=config)
         else:
@@ -565,7 +567,7 @@ class ModelToComponentFactory:
         # When step is not defined, default to a step size from the starting date to the present moment
         step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
         interpolated_step = (
-            InterpolatedString.create(datetime_based_cursor_model.step, parameters=datetime_based_cursor_model.parameters)
+            InterpolatedString.create(datetime_based_cursor_model.step, parameters=datetime_based_cursor_model.parameters or {})
             if datetime_based_cursor_model.step
             else None
         )

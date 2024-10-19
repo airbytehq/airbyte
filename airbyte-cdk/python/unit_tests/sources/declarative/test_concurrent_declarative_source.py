@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, Optional, Union
