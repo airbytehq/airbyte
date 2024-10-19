@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "4.5.4"
+version = "5.14.0"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -22,9 +22,10 @@ classifiers = [
 ]
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
+
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-protocol-models-pdv2 = "^0.12.2"
+airbyte-protocol-models-dataclasses = "^0.13"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -34,6 +35,7 @@ isodate = "~0.6.1"
 Jinja2 = "~3.1.2"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
+pandas = "2.2.2"
 pendulum = "<3.0.0"
 pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
@@ -50,12 +52,12 @@ langchain = { version = "0.1.16", optional = true }
 langchain_core = { version = "0.1.42", optional = true }
 markdown = { version = "*", optional = true }
 openai = { version = "0.27.9", extras = ["embeddings"], optional = true }
-pandas = { version = "2.2.0", optional = true }
 pdf2image = { version = "1.16.3", optional = true }
 "pdfminer.six" = { version = "20221105", optional = true }
 pyarrow = { version = "~15.0.0", optional = true }
 pytesseract = { version = "0.3.10", optional = true }
 python-calamine = { version = "0.2.3", optional = true }
+python-snappy = { version = "0.7.3", optional = true }
 Sphinx = { version = "~4.2", optional = true }
 sphinx-rtd-theme = { version = "~1.0", optional = true }
 tiktoken = { version = "0.4.0", optional = true }
@@ -65,6 +67,9 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
+orjson = "^3.10.7"
+serpyco-rs = "^1.10.2"
+xmltodict = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
@@ -78,10 +83,9 @@ pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
 requests-mock = "*"
-codeflash = "*"
 
 [tool.poetry.extras]
-file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "pandas"]
+file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "python-snappy"]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
@@ -115,10 +119,3 @@ optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
 mount_docker_socket = true
-
-[tool.codeflash]
-# All paths are relative to this pyproject.toml's directory.
-module-root = "airbyte_cdk"
-tests-root = "unit_tests"
-test-framework = "pytest"
-ignore-paths = []

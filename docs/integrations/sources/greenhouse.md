@@ -74,6 +74,14 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.23 | 2024-10-12 | [46828](https://github.com/airbytehq/airbyte/pull/46828) | Update dependencies |
+| 0.5.22 | 2024-10-05 | [46506](https://github.com/airbytehq/airbyte/pull/46506) | Update dependencies |
+| 0.5.21 | 2024-09-28 | [46159](https://github.com/airbytehq/airbyte/pull/46159) | Update dependencies |
+| 0.5.20 | 2024-09-21 | [45834](https://github.com/airbytehq/airbyte/pull/45834) | Update dependencies |
+| 0.5.19 | 2024-09-17 | [45625](https://github.com/airbytehq/airbyte/pull/45625) | Change check stream |
+| 0.5.18 | 2024-09-14 | [45476](https://github.com/airbytehq/airbyte/pull/45476) | Update dependencies |
+| 0.5.17 | 2024-09-07 | [45229](https://github.com/airbytehq/airbyte/pull/45229) | Update dependencies |
+| 0.5.16 | 2024-08-31 | [44755](https://github.com/airbytehq/airbyte/pull/44755) | Update dependencies |
 | 0.5.15 | 2024-08-17 | [44246](https://github.com/airbytehq/airbyte/pull/44246) | Update dependencies |
 | 0.5.14 | 2024-08-10 | [43595](https://github.com/airbytehq/airbyte/pull/43595) | Update dependencies |
 | 0.5.13 | 2024-08-03 | [43160](https://github.com/airbytehq/airbyte/pull/43160) | Update dependencies |

@@ -60,6 +60,7 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 MANIFEST_FILE_NAME = "manifest.yaml"
+COMPONENTS_FILE_NAME = "components.py"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
@@ -301,6 +302,10 @@ class Connector:
         return f"./docs/{relative_documentation_path}"
 
     @property
+    def documentation_file_name(self) -> str:
+        return self.metadata.get("documentationUrl").split("/")[-1] + ".md"
+
+    @property
     def documentation_file_path(self) -> Optional[Path]:
         return Path(f"{self.relative_documentation_path_str}.md") if self.has_airbyte_docs else None
 
@@ -346,6 +351,11 @@ class Connector:
             return self._manifest_only_path
 
         return self._manifest_low_code_path
+
+    @property
+    def manifest_only_components_path(self) -> Path:
+        """Return the path to the components.py file of a manifest-only connector."""
+        return self.code_directory / COMPONENTS_FILE_NAME
 
     @property
     def has_dockerfile(self) -> bool:

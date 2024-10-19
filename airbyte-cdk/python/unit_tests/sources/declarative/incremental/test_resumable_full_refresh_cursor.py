@@ -32,7 +32,7 @@ from airbyte_cdk.sources.types import StreamSlice
             StreamSlice(cursor_slice={}, partition={}),
             id="test_empty_substream_resumable_full_refresh_stream_state",
         ),
-    ]
+    ],
 )
 def test_stream_slices(stream_state, cursor, expected_slice):
     cursor = cursor(parameters={})

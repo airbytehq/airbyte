@@ -9,58 +9,42 @@ This page contains the setup guide and reference information for the [Facebook M
 ## Prerequisites
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+<!-- env:cloud -->
+-  **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
+<!-- /env:cloud -->
+<!-- env:oss -->
+-  **For Airbyte Open Source**: 
+   - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled 
+   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r). 
+<!-- /env:oss -->
 
 ## Setup guide
 
 ### Set up Facebook Marketing
 
 <!-- env:cloud -->
-
-#### For Airbyte Cloud:
+#### For Airbyte Cloud: 
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
-
-If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
-
+5. To authenticate the connection, click **Authenticate your account** to authorize your Facebook account. Ensure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
+<FieldAnchor field="access_token">
+5. In the **Access Token** field, enter the Marketing API access token.
+   
+#### (For Airbyte Open Source) Generate an access token and request a rate limit increase
 
-A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled and the following permissions:
-
-- [ads_management](https://developers.facebook.com/docs/permissions#a)
-- [ads_read](https://developers.facebook.com/docs/permissions#a)
-- [business_management](https://developers.facebook.com/docs/permissions#b)
-- [read_insights](https://developers.facebook.com/docs/permissions#r)
-
-<!-- /env:oss -->
-
-5. To authenticate the connection:
-
-   <!-- env:cloud -->
-
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Facebook account. Make sure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
-   <!-- /env:cloud -->
-   <!-- env:oss -->
-
-   **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
-   <!-- /env:oss -->
-
-<!-- env:oss -->
-
-### (For Airbyte Open Source) Generate an access token and request a rate limit increase
-
-To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate limit increase from Facebook. The following steps will guide you through this process:
+To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate limit increase from Facebook to ensure your syncs are successful. 
 
 1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create a Facebook app.
 2. While creating the app, when you are prompted for "What do you want your app to do?", select **Other**. You will also need to set the app type to **Business** when prompted.
@@ -77,54 +61,110 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 :::tip
 You can use the [Access Token Tool](https://developers.facebook.com/tools/accesstoken) at any time to view your existing access tokens, including their assigned permissions and lifecycles.
 :::
-
+</FieldAnchor>
 <!-- /env:oss -->
 
 #### Facebook Marketing Source Settings
-
+<FieldAnchor field="account_ids">
 1. For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
-2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.
+</FieldAnchor>
 
-   :::warning
-   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
+<FieldAnchor field="start_date">
+2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If the start date is not set, then all data will be replicated except for `Insight` data, which only pulls data for the last 37 months.
+
+   :::info
+   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will not succeed for those streams.
    :::
 
+</FieldAnchor>
+
+<FieldAnchor field="end_date">
 3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+</FieldAnchor>
+
+<FieldAnchor field="campaign_statuses">
 4. (Optional) Multiselect the **Campaign Statuses** to include data from Campaigns for particular statuses.
+</FieldAnchor>
+
+<FieldAnchor field="adset_statuses">
 5. (Optional) Multiselect the **AdSet Statuses** to include data from AdSets for particular statuses.
+</FieldAnchor>
+
+<FieldAnchor field="ad_statuses">
 6. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
+</FieldAnchor>
+
+<FieldAnchor field="fetch_thumbnail_images">
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights">
 8. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
-   :::note
-   To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
+To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
+
+   :::info
+   Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also update the connections to sync these streams by refreshing the schema.
    :::
+</FieldAnchor>
 
    To configure Custom Insights:
-
+<FieldAnchor field="custom_insights.name">
    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.level">
    2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.fields">
    3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.breakdowns">
    4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.action_breakdowns">
    5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.action_report_time">
    6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
 
       - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
       - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
       - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+</FieldAnchor>
 
+<FieldAnchor field="custom_insights.time_increment">
    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.start_date">
    8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.end_date">
    9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.insights_lookback_window">
    10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+</FieldAnchor>
 
-   :::warning
-   Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also adjust the connections that sync to these streams. Specifically, you should either disable these connections or refresh the source schema associated with them to reflect the changes.
-   :::
-
+<FieldAnchor field="page_size">
 9. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
+</FieldAnchor>
+
+<FieldAnchor field="insights_lookback_window">
 10. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+</FieldAnchor>
+
+<FieldAnchor field="insights_job_timeout">
 11. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
+</FieldAnchor>
+
 12. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
@@ -149,8 +189,8 @@ The Facebook Marketing source connector supports the following [sync modes](http
 - [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 - [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 - [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
-  :::caution CustomAudiences
-  The `rule` field may not be synced for all records because it caused the error message `Please reduce the amount of data...`.
+  :::info Custom Audiences
+  The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data` See our Troubleshooting section for more information.
   :::
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
@@ -195,6 +235,9 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
 ::: -->
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Facebook Marketing Attribution Reporting
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
@@ -217,6 +260,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+</HideInUI>
 
 ## Changelog
 
@@ -225,44 +269,45 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.15 | 2024-07-15 | [42562](https://github.com/airbytehq/airbyte/pull/42562) | Add friendly messages for "reduce fields" and "start date" errors |
-| 3.3.14 | 2024-07-15 | [41958](https://github.com/airbytehq/airbyte/pull/41958) | Update cdk to filter invalid fields from configured catalog |
-| 3.3.13 | 2024-07-13 | [41732](https://github.com/airbytehq/airbyte/pull/41732) | Update dependencies |
-| 3.3.12 | 2024-07-11 | [41644](https://github.com/airbytehq/airbyte/pull/41644) | Remove discriminator with missing schemas |
-| 3.3.11 | 2024-07-10 | [41039](https://github.com/airbytehq/airbyte/pull/41039) | Pick request fields from configured json schema properties if present |
-| 3.3.10 | 2024-07-10 | [41458](https://github.com/airbytehq/airbyte/pull/41458) | Update dependencies |
-| 3.3.9 | 2024-07-09 | [41106](https://github.com/airbytehq/airbyte/pull/41106) | Update dependencies |
-| 3.3.8 | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies |
-| 3.3.7 | 2024-07-01 | [40645](https://github.com/airbytehq/airbyte/pull/40645) | Use latest `CDK` version possible |
-| 3.3.6 | 2024-06-24 | [40241](https://github.com/airbytehq/airbyte/pull/40241) | Update AdsInsights fields - removed `adset_start` |
-| 3.3.5 | 2024-06-26 | [40545](https://github.com/airbytehq/airbyte/pull/40545) | Fixed issue when the `STATE` is literal `None` (RFR) |
-| 3.3.4 | 2024-06-25 | [40485](https://github.com/airbytehq/airbyte/pull/40485) | Update dependencies |
-| 3.3.3 | 2024-06-22 | [40191](https://github.com/airbytehq/airbyte/pull/40191) | Update dependencies |
-| 3.3.2 | 2024-06-06 | [39174](https://github.com/airbytehq/airbyte/pull/39174) | [autopull] Upgrade base image to v1.2.2 |
-| 3.3.1 | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field |
-| 3.3.0 | 2024-06-30 | [33648](https://github.com/airbytehq/airbyte/pull/33648) | Add support to field `source_instagram_media_id` to `ad_creatives` report |
-| 3.2.0 | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth |
-| 3.1.0 | 2024-06-01 | [38845](https://github.com/airbytehq/airbyte/pull/38845) | Update AdsInsights fields - removed   `cost_per_conversion_lead` and `conversion_lead_rate` |
-| 3.0.0 | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema. |
-| 2.1.9 | 2024-05-17 | [38301](https://github.com/airbytehq/airbyte/pull/38301) | Fix data inaccuracies when `wish_bid` is requested |
-| 2.1.8 | 2024-05-07 | [37771](https://github.com/airbytehq/airbyte/pull/37771) | Handle errors without API error codes/messages |
-| 2.1.7 | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Update to CDK 0.80.0 |
-| 2.1.6 | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Schema descriptions |
-| 2.1.5 | 2024-04-17 | [37341](https://github.com/airbytehq/airbyte/pull/37341) | Move rate limit errors to transient errors. |
-| 2.1.4 | 2024-04-16 | [37367](https://github.com/airbytehq/airbyte/pull/37367) | Skip config migration when the legacy account_id field does not exist |
-| 2.1.3 | 2024-04-16 | [37320](https://github.com/airbytehq/airbyte/pull/37320) | Add retry for transient error |
-| 2.1.2 | 2024-03-29 | [36689](https://github.com/airbytehq/airbyte/pull/36689) | Fix key error `account_id` for custom reports. |
-| 2.1.1 | 2024-03-18 | [36025](https://github.com/airbytehq/airbyte/pull/36025) | Fix start_date selection behaviour |
-| 2.1.0 | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state |
-| 2.0.1 | 2024-03-08 | [35913](https://github.com/airbytehq/airbyte/pull/35913) | Fix lookback window |
-| 2.0.0 | 2024-03-01 | [35746](https://github.com/airbytehq/airbyte/pull/35746) | Update API to `v19.0` |
-| 1.4.2 | 2024-02-22 | [35539](https://github.com/airbytehq/airbyte/pull/35539) | Add missing config migration from `include_deleted` field |
-| 1.4.1 | 2024-02-21 | [35467](https://github.com/airbytehq/airbyte/pull/35467) | Fix error with incorrect state transforming in the 1.4.0 version |
-| 1.4.0 | 2024-02-20 | [32449](https://github.com/airbytehq/airbyte/pull/32449) | Replace "Include Deleted Campaigns, Ads, and AdSets" option in configuration with specific statuses selection per stream |
-| 1.3.3 | 2024-02-15 | [35061](https://github.com/airbytehq/airbyte/pull/35061) | Add integration tests |
-| 1.3.2 | 2024-02-12 | [35178](https://github.com/airbytehq/airbyte/pull/35178) | Manage dependencies with Poetry |
-| 1.3.1 | 2024-02-05 | [34845](https://github.com/airbytehq/airbyte/pull/34845) | Add missing fields to schemas |
-| 1.3.0 | 2024-01-09 | [33538](https://github.com/airbytehq/airbyte/pull/33538) | Updated the `Ad Account ID(s)` property to support multiple IDs |
+| 3.3.16  | 2024-07-15 | [46546](https://github.com/airbytehq/airbyte/pull/46546) | Raise exception on missing stream                                                                                                                                                                                                                                                                 |
+| 3.3.15  | 2024-07-15 | [42562](https://github.com/airbytehq/airbyte/pull/42562) | Add friendly messages for "reduce fields" and "start date" errors                                                                                                                                                                                                                                 |
+| 3.3.14  | 2024-07-15 | [41958](https://github.com/airbytehq/airbyte/pull/41958) | Update cdk to filter invalid fields from configured catalog                                                                                                                                                                                                                                       |
+| 3.3.13  | 2024-07-13 | [41732](https://github.com/airbytehq/airbyte/pull/41732) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.12  | 2024-07-11 | [41644](https://github.com/airbytehq/airbyte/pull/41644) | Remove discriminator with missing schemas                                                                                                                                                                                                                                                         |
+| 3.3.11  | 2024-07-10 | [41039](https://github.com/airbytehq/airbyte/pull/41039) | Pick request fields from configured json schema properties if present                                                                                                                                                                                                                             |
+| 3.3.10  | 2024-07-10 | [41458](https://github.com/airbytehq/airbyte/pull/41458) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.9   | 2024-07-09 | [41106](https://github.com/airbytehq/airbyte/pull/41106) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.8   | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.7   | 2024-07-01 | [40645](https://github.com/airbytehq/airbyte/pull/40645) | Use latest `CDK` version possible                                                                                                                                                                                                                                                                 |
+| 3.3.6   | 2024-06-24 | [40241](https://github.com/airbytehq/airbyte/pull/40241) | Update AdsInsights fields - removed `adset_start`                                                                                                                                                                                                                                                 |
+| 3.3.5   | 2024-06-26 | [40545](https://github.com/airbytehq/airbyte/pull/40545) | Fixed issue when the `STATE` is literal `None` (RFR)                                                                                                                                                                                                                                              |
+| 3.3.4   | 2024-06-25 | [40485](https://github.com/airbytehq/airbyte/pull/40485) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.3   | 2024-06-22 | [40191](https://github.com/airbytehq/airbyte/pull/40191) | Update dependencies                                                                                                                                                                                                                                                                               |
+| 3.3.2   | 2024-06-06 | [39174](https://github.com/airbytehq/airbyte/pull/39174) | [autopull] Upgrade base image to v1.2.2                                                                                                                                                                                                                                                           |
+| 3.3.1   | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field                                                                                                                                                                                                                                 |
+| 3.3.0   | 2024-06-30 | [33648](https://github.com/airbytehq/airbyte/pull/33648) | Add support to field `source_instagram_media_id` to `ad_creatives` report                                                                                                                                                                                                                         |
+| 3.2.0   | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth                                                                                                                                                                                                                                                    |
+| 3.1.0   | 2024-06-01 | [38845](https://github.com/airbytehq/airbyte/pull/38845) | Update AdsInsights fields - removed   `cost_per_conversion_lead` and `conversion_lead_rate`                                                                                                                                                                                                       |
+| 3.0.0   | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema.                                                                                                                                                            |
+| 2.1.9   | 2024-05-17 | [38301](https://github.com/airbytehq/airbyte/pull/38301) | Fix data inaccuracies when `wish_bid` is requested                                                                                                                                                                                                                                                |
+| 2.1.8   | 2024-05-07 | [37771](https://github.com/airbytehq/airbyte/pull/37771) | Handle errors without API error codes/messages                                                                                                                                                                                                                                                    |
+| 2.1.7   | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Update to CDK 0.80.0                                                                                                                                                                                                                                                                              |
+| 2.1.6   | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Schema descriptions                                                                                                                                                                                                                                                                               |
+| 2.1.5   | 2024-04-17 | [37341](https://github.com/airbytehq/airbyte/pull/37341) | Move rate limit errors to transient errors.                                                                                                                                                                                                                                                       |
+| 2.1.4   | 2024-04-16 | [37367](https://github.com/airbytehq/airbyte/pull/37367) | Skip config migration when the legacy account_id field does not exist                                                                                                                                                                                                                             |
+| 2.1.3   | 2024-04-16 | [37320](https://github.com/airbytehq/airbyte/pull/37320) | Add retry for transient error                                                                                                                                                                                                                                                                     |
+| 2.1.2   | 2024-03-29 | [36689](https://github.com/airbytehq/airbyte/pull/36689) | Fix key error `account_id` for custom reports.                                                                                                                                                                                                                                                    |
+| 2.1.1   | 2024-03-18 | [36025](https://github.com/airbytehq/airbyte/pull/36025) | Fix start_date selection behaviour                                                                                                                                                                                                                                                                |
+| 2.1.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                                                                                     |
+| 2.0.1   | 2024-03-08 | [35913](https://github.com/airbytehq/airbyte/pull/35913) | Fix lookback window                                                                                                                                                                                                                                                                               |
+| 2.0.0   | 2024-03-01 | [35746](https://github.com/airbytehq/airbyte/pull/35746) | Update API to `v19.0`                                                                                                                                                                                                                                                                             |
+| 1.4.2   | 2024-02-22 | [35539](https://github.com/airbytehq/airbyte/pull/35539) | Add missing config migration from `include_deleted` field                                                                                                                                                                                                                                         |
+| 1.4.1   | 2024-02-21 | [35467](https://github.com/airbytehq/airbyte/pull/35467) | Fix error with incorrect state transforming in the 1.4.0 version                                                                                                                                                                                                                                  |
+| 1.4.0   | 2024-02-20 | [32449](https://github.com/airbytehq/airbyte/pull/32449) | Replace "Include Deleted Campaigns, Ads, and AdSets" option in configuration with specific statuses selection per stream                                                                                                                                                                          |
+| 1.3.3   | 2024-02-15 | [35061](https://github.com/airbytehq/airbyte/pull/35061) | Add integration tests                                                                                                                                                                                                                                                                             |
+| 1.3.2   | 2024-02-12 | [35178](https://github.com/airbytehq/airbyte/pull/35178) | Manage dependencies with Poetry                                                                                                                                                                                                                                                                   |
+| 1.3.1   | 2024-02-05 | [34845](https://github.com/airbytehq/airbyte/pull/34845) | Add missing fields to schemas                                                                                                                                                                                                                                                                     |
+| 1.3.0   | 2024-01-09 | [33538](https://github.com/airbytehq/airbyte/pull/33538) | Updated the `Ad Account ID(s)` property to support multiple IDs                                                                                                                                                                                                                                   |
 | 1.2.3   | 2024-01-04 | [33934](https://github.com/airbytehq/airbyte/pull/33828) | Make ready for airbyte-lib                                                                                                                                                                                                                                                                        |
 | 1.2.2   | 2024-01-02 | [33828](https://github.com/airbytehq/airbyte/pull/33828) | Add insights job timeout to be an option, so a user can specify their own value                                                                                                                                                                                                                   |
 | 1.2.1   | 2023-11-22 | [32731](https://github.com/airbytehq/airbyte/pull/32731) | Removed validation that blocked personal ad accounts during `check`                                                                                                                                                                                                                               |
@@ -391,5 +436,3 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 | 0.1.1   | 2021-01-15 | [1552](https://github.com/airbytehq/airbyte/pull/1552)   | Release Native Facebook Marketing Connector                                                                                                                                                                                                                                                       |
 
 </details>
-
-</HideInUI>

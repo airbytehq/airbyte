@@ -73,6 +73,13 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
+| 0.1.16 | 2024-10-12 | [46774](https://github.com/airbytehq/airbyte/pull/46774) | Update dependencies |
+| 0.1.15 | 2024-10-05 | [46417](https://github.com/airbytehq/airbyte/pull/46417) | Update dependencies |
+| 0.1.14 | 2024-09-28 | [46137](https://github.com/airbytehq/airbyte/pull/46137) | Update dependencies |
+| 0.1.13 | 2024-09-21 | [45830](https://github.com/airbytehq/airbyte/pull/45830) | Update dependencies |
+| 0.1.12 | 2024-09-14 | [45526](https://github.com/airbytehq/airbyte/pull/45526) | Update dependencies |
+| 0.1.11 | 2024-09-07 | [45217](https://github.com/airbytehq/airbyte/pull/45217) | Update dependencies |
+| 0.1.10 | 2024-08-31 | [44678](https://github.com/airbytehq/airbyte/pull/44678) | Update dependencies |
 | 0.1.9 | 2024-08-17 | [44293](https://github.com/airbytehq/airbyte/pull/44293) | Update dependencies |
 | 0.1.8 | 2024-08-12 | [43744](https://github.com/airbytehq/airbyte/pull/43744) | Update dependencies |
 | 0.1.7 | 2024-08-10 | [43529](https://github.com/airbytehq/airbyte/pull/43529) | Update dependencies |

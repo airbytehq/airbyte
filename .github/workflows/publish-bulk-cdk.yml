@@ -76,6 +76,17 @@ jobs:
           gradle-distribution-sha-256-sum-warning: false
           arguments: --scan :airbyte-cdk:bulk:bulkCdkBuild
 
+      - name: Integration test Bulk CDK
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          read-only: true
+          job-id: bulk-cdk-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:bulkCdkIntegrationTest
+
       - name: Publish Poms and Jars to CloudRepo
         uses: burrunan/gradle-cache-action@v1
         env:
@@ -95,7 +106,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "Error while publishing Bulk CDK!",
@@ -124,7 +135,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "Bulk CDK version 0.${{ env.BUILD_NUMBER }} published successfully!",

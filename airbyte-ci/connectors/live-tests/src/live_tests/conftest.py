@@ -16,7 +16,7 @@ from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, Configu
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
 from live_tests import stash_keys
-from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
+from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
 from live_tests.commons.evaluation_modes import TestEvaluationMode
 from live_tests.commons.models import (
@@ -176,16 +176,14 @@ def pytest_configure(config: Config) -> None:
             connection_subset=config.stash[stash_keys.CONNECTION_SUBSET],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
-    except (ConnectionNotFoundError, NotPermittedError) as exc:
+    except (ConnectionNotFoundError, InvalidConnectionError) as exc:
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
+        LOGGER.error(
+            f"Failed to retrieve a valid a connection which is using the control version {config.stash[stash_keys.CONTROL_VERSION]}."
+        )
         pytest.exit(str(exc))
 
     config.stash[stash_keys.CONNECTION_ID] = config.stash[stash_keys.CONNECTION_OBJECTS].connection_id  # type: ignore
-
-    if config.stash[stash_keys.CONTROL_VERSION] != config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image.split(":")[-1]:
-        raise ValueError(
-            f"The control version fetched by the connection retriever ({config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image}) does not match the control version passed by live tests ({config.stash[stash_keys.CONTROL_VERSION]})"
-        )
 
     if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
         pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
@@ -318,7 +316,7 @@ def prompt_for_read_with_or_without_state() -> bool:
     📖 Do you want to run the read command with or without state?
     1. Run the read command with state
     2. Run the read command without state
-                              
+
     We recommend reading with state to properly test incremental sync.
     But if the target version introduces a breaking change in the state, you might want to run without state.
     """

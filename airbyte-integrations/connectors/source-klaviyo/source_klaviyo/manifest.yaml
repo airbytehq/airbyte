@@ -118,6 +118,29 @@ definitions:
         field_name: "{{ parameters.get('cursor_field', 'updated') }}"
         inject_into: request_parameter
 
+  base_incremental_checkpoint_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/base_retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoCheckpointDatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
+        inject_into: request_parameter
+      # Syncing historical data from events endpoint can take days to sync and cause memory issues.
+      # Checkpoint after each slice, which means the next sync will start from the last successful slice.
+      # This ensures that even if the sync runs out of memory or fails, it won’t start over from the beginning.
+      step: P1M
+      cursor_granularity: PT1S
+
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/semi_incremental_retriever"
@@ -135,7 +158,11 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/profiles_schema"
-    retriever: "#/definitions/profiles_retriever"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        schema_normalization: Default
     $parameters:
       path: "profiles"
 
@@ -157,7 +184,7 @@ definitions:
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
     name: "events"
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_incremental_checkpoint_stream"
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:

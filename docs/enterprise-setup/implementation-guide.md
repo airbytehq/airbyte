@@ -119,9 +119,16 @@ stringData:
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+  # Azure Blob Storage Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+
   # AWS Secret Manager
   aws-secret-manager-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  # Azure Secret Manager
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 
 ```
 
@@ -233,8 +240,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
-      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -265,8 +272,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
-        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -369,6 +376,23 @@ global:
 ```
 
 </TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
+</TabItem>
+
 </Tabs>
 </details>
 
@@ -419,6 +443,25 @@ secretsManager:
 ```
 
 </TabItem>
+
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>
 
 </details>

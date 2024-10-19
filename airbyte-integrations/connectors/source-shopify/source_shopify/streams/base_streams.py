@@ -12,11 +12,11 @@ from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
@@ -143,8 +143,8 @@ class ShopifyDeletedEventsStream(ShopifyStream):
             yield {
                 "id": event["subject_id"],
                 self.cursor_field: event["created_at"],
-                "deleted_message": event["message"],
-                "deleted_description": event["description"],
+                "deleted_message": event.get("message", None),
+                "deleted_description": event.get("description", None),
                 "shop_url": event["shop_url"],
             }
 
@@ -644,12 +644,14 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            query=self.bulk_query(config),
+            query=self.bulk_query(config, self.parent_stream_query_cursor_alias),
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
             job_size=config.get("bulk_window_in_days", 30.0),
             # provide the job checkpoint interval value, default value is 200k lines collected
             job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
+            parent_stream_name=self.parent_stream_name,
+            parent_stream_cursor=self.parent_stream_cursor,
         )
 
     @property
@@ -669,6 +671,25 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_name(self) -> Optional[str]:
+        """
+        Returns the parent stream name, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.name if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_cursor(self) -> Optional[str]:
+        """
+        Returns the parent stream cursor, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.cursor_field if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_query_cursor_alias(self) -> Optional[str]:
+        if self.parent_stream_name and self.parent_stream_cursor:
+            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
 
     @property
     @abstractmethod
@@ -699,7 +720,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         return None
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         """UPDATING THE STATE OBJECT:
         Stream: CustomerAddress
@@ -714,25 +737,52 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 }
             }
         """
+
         updated_state = super().get_updated_state(current_stream_state, latest_record)
+
         if self.parent_stream_class:
+            # the default way of getting the parent stream state is to use the value from the RecordProducer,
+            # since the parent record could be present but no substream's records are present to emit,
+            # the parent state is tracked for each parent record processed, thus updated regardless having substream records.
+            tracked_parent_state = self.job_manager.record_producer.get_parent_stream_state()
+            # fallback to the record level to search for the parent cursor or use the stream cursor value
+            parent_state = tracked_parent_state if tracked_parent_state else self._get_parent_state_from_record(latest_record)
             # add parent_stream_state to `updated_state`
-            updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
+            updated_state[self.parent_stream_name] = parent_state
+
         return updated_state
 
-    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
-        if self.parent_stream_class:
-            # get parent stream state from the stream_state object.
-            parent_state = stream_state.get(self.parent_stream.name, {})
-            if parent_state:
-                return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
-        else:
-            # get the stream state, if no `parent_stream_class` was assigned.
-            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+    def _get_parent_state_from_record(self, latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        parent_state = latest_record.get(self.parent_stream_name, {})
+        parent_state_value = parent_state.get(self.parent_stream_cursor) if parent_state else latest_record.get(self.parent_stream_cursor)
+        parent_state[self.parent_stream_cursor] = parent_state_value
+        return parent_state
 
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
+    def _get_stream_cursor_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
         if stream_state:
-            return self.get_stream_state_value(stream_state)
+            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+        else:
+            return self.config.get("start_date")
+
+    def _get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
+        if stream_state:
+            if self.parent_stream_class:
+                # get parent stream state from the stream_state object.
+                parent_state = stream_state.get(self.parent_stream_name, {})
+                if parent_state:
+                    return parent_state.get(self.parent_stream_cursor, self.default_state_comparison_value)
+                else:
+                    # use the streams cursor value, if no parent state available
+                    return self._get_stream_cursor_value(stream_state)
+            else:
+                # get the stream state, if no `parent_stream_class` was assigned.
+                return self._get_stream_cursor_value(stream_state)
+        else:
+            return self.config.get("start_date")
+
+    def _get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[Union[str, int]]:
+        if stream_state:
+            return self._get_stream_state_value(stream_state)
         else:
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
@@ -755,7 +805,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
-            state = self.get_state_value(stream_state)
+            state = self._get_state_value(stream_state)
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:

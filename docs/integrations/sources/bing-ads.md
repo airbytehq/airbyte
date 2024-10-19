@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Bing Ads source connector.
+This page contains the setup guide and reference information for the [Bing Ads](https://learn.microsoft.com/en-us/advertising/guides/?view=bingads-13) source connector.
 
 </HideInUI>
 
@@ -49,12 +49,12 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
-4. Enter a name for your source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Bing Ads from the Source type dropdown.
+4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
@@ -72,12 +72,12 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Log in to your Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
-4. Enter a name for your source.
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Bing Ads from the Source type dropdown.
+4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
@@ -96,7 +96,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 ## Supported sync modes
 
-The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -214,6 +214,9 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 
 :::
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Custom Reports
 
 You can build your own report by providing:
@@ -258,6 +261,12 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.9 | 2024-10-12 | [46847](https://github.com/airbytehq/airbyte/pull/46847) | Update dependencies |
+| 2.7.8 | 2024-10-05 | [46504](https://github.com/airbytehq/airbyte/pull/46504) | Update dependencies |
+| 2.7.7 | 2024-09-28 | [46151](https://github.com/airbytehq/airbyte/pull/46151) | Update dependencies |
+| 2.7.6 | 2024-09-21 | [45512](https://github.com/airbytehq/airbyte/pull/45512) | Update dependencies |
+| 2.7.5 | 2024-09-07 | [45246](https://github.com/airbytehq/airbyte/pull/45246) | Update dependencies |
+| 2.7.4 | 2024-08-31 | [44276](https://github.com/airbytehq/airbyte/pull/44276) | Update dependencies |
 | 2.7.3 | 2024-08-12 | [43742](https://github.com/airbytehq/airbyte/pull/43742) | Update dependencies |
 | 2.7.2 | 2024-08-10 | [43591](https://github.com/airbytehq/airbyte/pull/43591) | Update dependencies |
 | 2.7.1 | 2024-08-03 | [43245](https://github.com/airbytehq/airbyte/pull/43245) | Update dependencies |

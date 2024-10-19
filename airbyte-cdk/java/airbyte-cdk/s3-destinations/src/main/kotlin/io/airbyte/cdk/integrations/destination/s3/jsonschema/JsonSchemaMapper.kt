@@ -29,6 +29,7 @@ abstract class JsonSchemaMapper {
             AirbyteJsonSchemaType.NUMBER -> mapNumber(schema)
             AirbyteJsonSchemaType.COMBINED -> mapCombined(schema)
             AirbyteJsonSchemaType.UNION -> mapUnion(schema)
+            AirbyteJsonSchemaType.UNKNOWN -> mapUnknown(schema)
         }
     }
 
@@ -50,4 +51,5 @@ abstract class JsonSchemaMapper {
     abstract fun mapNumber(schema: ObjectNode): ObjectNode
     abstract fun mapCombined(schema: ObjectNode): ObjectNode
     abstract fun mapUnion(schema: ObjectNode): ObjectNode
+    abstract fun mapUnknown(schema: ObjectNode): ObjectNode
 }

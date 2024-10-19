@@ -51,6 +51,9 @@ definitions:
       authenticator:
         type: BearerAuthenticator
         api_token: "{{ config['token'] }}"
+      request_options_provider:
+        request_headers:
+          User-Agent: "Airbyte"
     paginator:
       type: "DefaultPaginator"
       page_size_option:

@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
 import itertools
 import json
 import logging
+import tempfile
 from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
@@ -14,10 +13,11 @@ import pytz
 import smart_open
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
 from google.oauth2 import service_account
 from source_gcs.config import Config
+from source_gcs.helpers import GCSRemoteFile
+from source_gcs.zip_helper import ZipHelper
 
 ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
@@ -34,6 +34,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         super().__init__()
         self._gcs_client = None
         self._config = None
+        self.tmp_dir = tempfile.TemporaryDirectory()
 
     @property
     def config(self) -> Config:
@@ -59,7 +60,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def gcs_client(self) -> storage.Client:
         return self._initialize_gcs_client()
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[GCSRemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in GCS.
         """
@@ -70,6 +71,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs or [])
             globs = globs or [None]
 
+            if not prefixes:
+                prefixes = [""]
+
             for prefix, glob in itertools.product(prefixes, globs):
                 bucket = self.gcs_client.get_bucket(self.config.bucket)
                 blobs = bucket.list_blobs(prefix=prefix, match_glob=glob)
@@ -77,12 +81,15 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
+                        remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
 
-                        yield RemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
-
+                        if file_extension == "zip":
+                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                        else:
+                            yield remote_file
         except Exception as exc:
             self._handle_file_listing_error(exc, prefix, logger)
 
@@ -95,7 +102,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefix=prefix,
         ) from exc
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(self, file: GCSRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Open and yield a remote file from GCS for reading.
         """
@@ -113,4 +120,5 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)
+            raise oe
         return result

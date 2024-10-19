@@ -30,7 +30,7 @@ const val CHECK_QUERIES_PREFIX = "airbyte.connector.check.jdbc"
 class JdbcCheckQueries {
 
     // Micronaut configuration objects work better with mutable properties.
-    lateinit var queries: List<String>
+    protected var queries: List<String> = emptyList()
 
     private val log = KotlinLogging.logger {}
 

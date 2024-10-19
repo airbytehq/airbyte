@@ -131,10 +131,8 @@ to role identifier($airbyte_role);
 commit;
 ```
 
-3.  Run the script using the
-    [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or
-    [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select
-    the **All Queries** checkbox.
+3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). 
+  Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
 ### Step 2: Set up a data loading method
 
@@ -267,7 +265,13 @@ desired namespace.
   <summary>Expand to review</summary>
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
-|:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437)   | upgrade all dependencies                                                                                                                                          |
+| 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                        |
+| 3.13.0          | 2024-09-17 | [\#45422](https://github.com/airbytehq/airbyte/pull/45422) | speed up metadata queries                                                                                                                                                        |
+| 3.12.0          | 2024-09-17 | [\#38585](https://github.com/airbytehq/airbyte/pull/38585) | force UTF8 collation when creating schemas and tables                                                                                                                            |
+| 3.11.12         | 2024-09-12 | [\#45370](https://github.com/airbytehq/airbyte/pull/45370) | fix a race condition in our orphanedThreadFilter                                                                                                                                 |
+| 3.11.11         | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb                                                                                                                                          |
 | 3.11.10         | 2024-08-22 | [\#44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix                                                                                                                                                   |
 | 3.11.9          | 2024-08-19 | [\#43367](https://github.com/airbytehq/airbyte/pull/43367) | Add opt in using MERGE statement for upserts and deletes                                                                                                                         |
 | 3.11.8          | 2024-08-16 | [\#42505](https://github.com/airbytehq/airbyte/pull/42505) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance)                                                                                      |
@@ -279,8 +283,8 @@ desired namespace.
 | 3.11.2          | 2024-07-12 | [\#41674](https://github.com/airbytehq/airbyte/pull/41674) | Upgrade to latest CDK                                                                                                                                                            |
 | 3.11.1          | 2024-07-08 | [\#41041](https://github.com/airbytehq/airbyte/pull/41041) | Fix resume logic in truncate refreshes to prevent data loss                                                                                                                      |
 | 3.11.0          | 2024-06-25 | [\#39473](https://github.com/airbytehq/airbyte/pull/39473) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
-| 3.10.1          | 2024-06-11 | [\#39399](https://github.com/airbytehq/airbyte/pull/39399) | Bug fix for _airbyte_meta not migrated in OVERWRITE mode                                                                                                                         |
-| 3.10.0          | 2024-06-10 | [\#39107](https://github.com/airbytehq/airbyte/pull/39107) | _airbyte_meta and _airbyte_generation_id in Raw tables and final tables                                                                                                          |
+| 3.10.1          | 2024-06-11 | [\#39399](https://github.com/airbytehq/airbyte/pull/39399) | Bug fix for \_airbyte_meta not migrated in OVERWRITE mode                                                                                                                        |
+| 3.10.0          | 2024-06-10 | [\#39107](https://github.com/airbytehq/airbyte/pull/39107) | \_airbyte_meta and \_airbyte_generation_id in Raw tables and final tables                                                                                                        |
 | 3.9.1           | 2024-06-05 | [\#39135](https://github.com/airbytehq/airbyte/pull/39135) | Improved error handling for Staging files                                                                                                                                        |
 | 3.9.0           | 2024-05-23 | [\#38658](https://github.com/airbytehq/airbyte/pull/38658) | Adapting to newer interfaces from #38107                                                                                                                                         |
 | 3.8.4           | 2024-05-23 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | convert all tests to kotlin                                                                                                                                                      |
