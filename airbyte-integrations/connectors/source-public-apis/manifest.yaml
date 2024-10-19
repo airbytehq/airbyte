@@ -10,7 +10,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: CustomRecordExtractor
-      class_name: source_public_apis.components.CustomExtractor
+      class_name: source_declarative_manifest.components.CustomExtractor
   requester:
     type: HttpRequester
     url_base: "https://api.publicapis.org/"
@@ -59,7 +59,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_public_apis.components.CustomExtractor
+          class_name: source_declarative_manifest.components.CustomExtractor
       paginator:
         type: NoPagination
       requester:
@@ -140,7 +140,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_public_apis.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: NoPagination
     requester:
