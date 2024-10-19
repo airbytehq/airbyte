@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 # State and Logging Storage
 
 Airbyte recommends using an object storage solution for such as S3 and GCS for storing [State](../../understanding-airbyte/airbyte-protocol/#state--checkpointing) and [Logging information](../../operator-guides/browsing-output-logs).
-You must select which type of blob store that you wish to use. Currently, S3 and GCS are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
+You must select which type of blob store that you wish to use. Currently, S3, GCS, and Azure are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
 
 Adding external storage details to your `values.yaml` disables the default internal Minio instance (`airbyte/minio`). While there are three separate buckets presented in the Values section below, Airbyte recommends that you use a single bucket across all three values.
 
