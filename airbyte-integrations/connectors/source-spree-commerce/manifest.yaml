@@ -1,0 +1,1094 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: A coonecor for spree commerce Platform API
+
+check:
+  type: CheckStream
+  stream_names:
+    - List Users
+
+definitions:
+  streams:
+    List Users:
+      type: DeclarativeStream
+      name: List Users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Users"
+    Variants:
+      type: DeclarativeStream
+      name: Variants
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /variants
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Variants"
+    List Products:
+      type: DeclarativeStream
+      name: List Products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Products"
+    Payments:
+      type: DeclarativeStream
+      name: Payments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /payments
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Payments"
+    Payment Methods:
+      type: DeclarativeStream
+      name: Payment Methods
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /payment_methods
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Payment Methods"
+    List Orders:
+      type: DeclarativeStream
+      name: List Orders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Orders"
+    Menus:
+      type: DeclarativeStream
+      name: Menus
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /menus
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Menus"
+    Addresses:
+      type: DeclarativeStream
+      name: Addresses
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /addresses
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Addresses"
+    Classifications:
+      type: DeclarativeStream
+      name: Classifications
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /classifications
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Classifications"
+    Adjustments:
+      type: DeclarativeStream
+      name: Adjustments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /adjustments
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Adjustments"
+    CMS Pages:
+      type: DeclarativeStream
+      name: CMS Pages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cms_pages
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/CMS Pages"
+    CMS Sections:
+      type: DeclarativeStream
+      name: CMS Sections
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cms_sections
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/CMS Sections"
+    Shipments:
+      type: DeclarativeStream
+      name: Shipments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipments
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Shipments"
+    Shipping Categories:
+      type: DeclarativeStream
+      name: Shipping Categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipping_categories
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Shipping Categories"
+    States:
+      type: DeclarativeStream
+      name: States
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /states
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/States"
+    Stock Items:
+      type: DeclarativeStream
+      name: Stock Items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock_items
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Items"
+    Stock Locations:
+      type: DeclarativeStream
+      name: Stock Locations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock_locations
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Locations"
+    Stock Credit Categories:
+      type: DeclarativeStream
+      name: Stock Credit Categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /store_credit_categories
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Credit Categories"
+    Store Credit Types:
+      type: DeclarativeStream
+      name: Store Credit Types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /store_credit_types
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Store Credit Types"
+    Store Credits:
+      type: DeclarativeStream
+      name: Store Credits
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /store_credits
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Store Credits"
+    Tax Categories:
+      type: DeclarativeStream
+      name: Tax Categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tax_categories
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tax Categories"
+    Tax Rates:
+      type: DeclarativeStream
+      name: Tax Rates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tax_rates
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tax Rates"
+    Wished Items:
+      type: DeclarativeStream
+      name: Wished Items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /wished_items
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Wished Items"
+    Wishlists:
+      type: DeclarativeStream
+      name: Wishlists
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /wishlists
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Wishlists"
+    Zones:
+      type: DeclarativeStream
+      name: Zones
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /zones
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Zones"
+    Webhook Subscribers:
+      type: DeclarativeStream
+      name: Webhook Subscribers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks/subscribers
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Webhook Subscribers"
+    Taxonomies:
+      type: DeclarativeStream
+      name: Taxonomies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /taxonomies
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Taxonomies"
+    Taxons:
+      type: DeclarativeStream
+      name: Taxons
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /taxons
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Taxons"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}/api/v2/platform"
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: /spree_oauth/token
+
+streams:
+  - $ref: "#/definitions/streams/List Users"
+  - $ref: "#/definitions/streams/Variants"
+  - $ref: "#/definitions/streams/List Products"
+  - $ref: "#/definitions/streams/Payments"
+  - $ref: "#/definitions/streams/Payment Methods"
+  - $ref: "#/definitions/streams/List Orders"
+  - $ref: "#/definitions/streams/Menus"
+  - $ref: "#/definitions/streams/Addresses"
+  - $ref: "#/definitions/streams/Classifications"
+  - $ref: "#/definitions/streams/Adjustments"
+  - $ref: "#/definitions/streams/CMS Pages"
+  - $ref: "#/definitions/streams/CMS Sections"
+  - $ref: "#/definitions/streams/Shipments"
+  - $ref: "#/definitions/streams/Shipping Categories"
+  - $ref: "#/definitions/streams/States"
+  - $ref: "#/definitions/streams/Stock Items"
+  - $ref: "#/definitions/streams/Stock Locations"
+  - $ref: "#/definitions/streams/Stock Credit Categories"
+  - $ref: "#/definitions/streams/Store Credit Types"
+  - $ref: "#/definitions/streams/Store Credits"
+  - $ref: "#/definitions/streams/Tax Categories"
+  - $ref: "#/definitions/streams/Tax Rates"
+  - $ref: "#/definitions/streams/Wished Items"
+  - $ref: "#/definitions/streams/Wishlists"
+  - $ref: "#/definitions/streams/Zones"
+  - $ref: "#/definitions/streams/Webhook Subscribers"
+  - $ref: "#/definitions/streams/Taxonomies"
+  - $ref: "#/definitions/streams/Taxons"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - client_id
+      - client_secret
+    properties:
+      base_url:
+        type: string
+        order: 0
+        title: Base_URL
+      client_id:
+        type: string
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 2
+        title: Client secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    List Users: true
+    Variants: true
+    List Products: true
+    Payments: true
+    Payment Methods: true
+    List Orders: true
+    Menus: true
+    Addresses: true
+    Classifications: true
+    Adjustments: true
+    CMS Pages: true
+    CMS Sections: true
+    Shipments: true
+    Shipping Categories: true
+    States: true
+    Stock Items: true
+    Stock Locations: true
+    Stock Credit Categories: true
+    Store Credit Types: true
+    Store Credits: true
+    Tax Categories: true
+    Tax Rates: true
+    Wished Items: true
+    Wishlists: true
+    Zones: true
+    Webhook Subscribers: true
+    Taxonomies: true
+    Taxons: true
+  testedStreams:
+    List Users:
+      streamHash: 81c15fe0f62280c1681ea8b538bacef3f52b115c
+    Variants:
+      streamHash: c0811212eeee3dc33e2e4d99a6af0342eb18650f
+    List Products:
+      streamHash: 594aa6731fc7f20e93a2a6910b3b11ad5b48514d
+    Payments:
+      streamHash: cf0c04061a5ad0dfe7ca1b1e0a893ec11152c1a5
+    Payment Methods:
+      streamHash: 36eba590e1e6370e40e8772128cb47e9f1792678
+    List Orders:
+      streamHash: 99ffad58e0e09e16f867abe0a3dc2f943ad9e9cd
+    Menus:
+      streamHash: 4560cdbd47a35de614efa09636468ca83521b07c
+    Addresses:
+      streamHash: 58909f3a3f27c5f8baa5415f210dfe1ad4ab2212
+    Classifications:
+      streamHash: 9a9474bea87ab0df6302048868d92b6d7ec88810
+    Adjustments:
+      streamHash: fcdcb9910b3720e8ae486083c41cb2a2bccff4aa
+    CMS Pages:
+      streamHash: 9e2bc2a530716d8836af1d904b998a22b848d30a
+    CMS Sections:
+      streamHash: 8808764199d0b9e3537f0eca67f2bb2fd76def16
+    Shipments:
+      streamHash: 2b053e4daf34151024bb0f592f65a26927db052d
+    Shipping Categories:
+      streamHash: dfbd384780e4b56f54bc0dbb4794c4c5b44f62bb
+    States:
+      streamHash: 29841ca34f311daa8dbf834cc3d5824b07a4a558
+    Stock Items:
+      streamHash: 8977f852f2519eff83e813c866fbbbc3cfa6752e
+    Stock Locations:
+      streamHash: b1b426f086bb63a11b6085bf8b43ae80aced7260
+    Stock Credit Categories:
+      streamHash: 07bc248697dea7fb63408314fc1a2c1b6c330885
+    Store Credit Types:
+      streamHash: 0d8438c1e6adce056b5950b871d81a51af60f968
+    Store Credits:
+      streamHash: 9d39d294f884dac8e4e995c71f26d9f1496225d0
+    Tax Categories:
+      streamHash: 81a09547399db61aeaf8bbd7aa5057b63ff4976b
+    Tax Rates:
+      streamHash: bf1b754937ef1bc7ef4079fd00ed7acfc4b8d1f3
+    Wished Items:
+      streamHash: f197b23357b93e8a9a15b606980d74f9dd445dd4
+    Wishlists:
+      streamHash: 3713c29a399540828e2b2283b8aff4f2800cb86e
+    Zones:
+      streamHash: a91ae5f6b69e991637666aa3b56f5b09b30ce38e
+    Webhook Subscribers:
+      streamHash: 1d05a95b7a07ec16d78efbcb76f76e6f77992ebf
+    Taxonomies:
+      streamHash: 5c31e292a9920c48d8b7778d5b5270630bb20604
+    Taxons:
+      streamHash: 9eb79452e5877d839ff57b6e31b5aae6c8ef54c5
+  assist: {}
+
+schemas:
+  List Users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Variants:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  List Products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Payments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Payment Methods:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  List Orders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Menus:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Addresses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Classifications:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Adjustments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  CMS Pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  CMS Sections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Shipments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Shipping Categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  States:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Stock Items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Stock Locations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Stock Credit Categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Store Credit Types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Store Credits:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Tax Categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Tax Rates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Wished Items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Wishlists:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Zones:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Webhook Subscribers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Taxonomies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  Taxons:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
