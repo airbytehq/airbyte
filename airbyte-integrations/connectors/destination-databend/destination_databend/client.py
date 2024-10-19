@@ -16,7 +16,11 @@ class DatabendClient:
         self.ssl = ssl or False
 
     def open(self):
-        handle = connector.connect(
-            f"databend://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?secure={self.ssl}").cursor()
+        if self.ssl:
+            handle = connector.connect(
+                f"databend://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}").cursor()
+        else:
+            handle = connector.connect(
+                f"databend://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?sslmode=disable").cursor()
 
         return handle
