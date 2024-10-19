@@ -1,7 +1,5 @@
 version: "4.3.2"
 definitions:
-  schema_loader:
-    file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -37,8 +35,6 @@ definitions:
         inject_into: "request_parameter"
   base_stream:
     primary_key: "id"
-    schema_loader:
-      file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
     retriever:
       type: SimpleRetriever
       record_selector:
@@ -124,8 +120,6 @@ definitions:
           api_token: "{{ config['api_key'] }}"
   base_slicing_stream:
     primary_key: "id"
-    schema_loader:
-      file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
     retriever:
       type: SimpleRetriever
       record_selector:
@@ -1054,7 +1048,7 @@ definitions:
     primary_key: "id"
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+      class_name: source_declarative_manifest.components.EventsCartesianProductStreamSlicer
       cursor_field: timestamp
       stream_slicers:
       - type: SubstreamPartitionRouter
@@ -1174,7 +1168,7 @@ definitions:
             type: string
     retriever:
       transformations:
-      - class_name: "source_posthog.components.EventsSimpleRetriever"
+      - class_name: "source_declarative_manifest.components.EventsSimpleRetriever"
         fields:
         - path:
           - "name"
@@ -1698,7 +1692,7 @@ streams:
 - primary_key: "id"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+    class_name: source_declarative_manifest.components.EventsCartesianProductStreamSlicer
     cursor_field: timestamp
     stream_slicers:
     - type: SubstreamPartitionRouter
@@ -1827,7 +1821,7 @@ streams:
           type: string
   retriever:
     transformations:
-    - class_name: "source_posthog.components.EventsSimpleRetriever"
+    - class_name: "source_declarative_manifest.components.EventsSimpleRetriever"
       fields:
       - path:
         - "name"
