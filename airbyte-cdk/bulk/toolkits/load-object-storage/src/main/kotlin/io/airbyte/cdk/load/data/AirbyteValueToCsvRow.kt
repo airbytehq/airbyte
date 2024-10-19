@@ -7,10 +7,7 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.util.serializeToString
 
 class AirbyteValueToCsvRow {
-    fun convert(value: AirbyteValue): Array<String> {
-        if (value !is ObjectValue) {
-            throw IllegalArgumentException("Only object values are supported")
-        }
+    fun convert(value: ObjectValue): Array<String> {
         return value.values.map { convertInner(it.value) }.toTypedArray()
     }
 
@@ -26,6 +23,6 @@ class AirbyteValueToCsvRow {
     }
 }
 
-fun AirbyteValue.toCsvRecord(): Array<String> {
+fun ObjectValue.toCsvRecord(): Array<String> {
     return AirbyteValueToCsvRow().convert(this)
 }

@@ -5,20 +5,23 @@
 package io.airbyte.cdk.load
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
+import io.airbyte.cdk.load.data.avro.toAirbyteValue
+import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.toAirbyteValue
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.file.avro.toAvroReader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
-import java.io.BufferedReader
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
@@ -44,14 +47,14 @@ class ObjectStorageDataDumper(
                     .list(prefix)
                     .map { listedObject: RemoteObject<*> ->
                         client.get(listedObject.key) { objectData: InputStream ->
-                            val reader =
+                            val decompressed =
                                 when (compressionConfig?.compressor) {
                                     is GZIPProcessor -> GZIPInputStream(objectData)
                                     is NoopProcessor,
                                     null -> objectData
                                     else -> error("Unsupported compressor")
-                                }.bufferedReader()
-                            readLines(reader)
+                                }
+                            readLines(decompressed)
                         }
                     }
                     .toList()
@@ -61,10 +64,11 @@ class ObjectStorageDataDumper(
     }
 
     @Suppress("DEPRECATION")
-    private fun readLines(reader: BufferedReader): List<OutputRecord> =
+    private fun readLines(inputStream: InputStream): List<OutputRecord> =
         when (formatConfig) {
             is JsonFormatConfiguration -> {
-                reader
+                inputStream
+                    .bufferedReader()
                     .lineSequence()
                     .map { line ->
                         line
@@ -75,11 +79,21 @@ class ObjectStorageDataDumper(
                     .toList()
             }
             is CSVFormatConfiguration -> {
-                CSVParser(reader, CSVFormat.DEFAULT.withHeader()).use {
+                CSVParser(inputStream.bufferedReader(), CSVFormat.DEFAULT.withHeader()).use {
                     it.records.map { record ->
                         record.toAirbyteValue(stream.schemaWithMeta).toOutputRecord()
                     }
                 }
+            }
+            is AvroFormatConfiguration -> {
+                inputStream
+                    .toAvroReader(stream.schemaWithMeta.toAvroSchema(stream.descriptor))
+                    .use { reader ->
+                        reader
+                            .recordSequence()
+                            .map { it.toAirbyteValue(stream.schemaWithMeta).toOutputRecord() }
+                            .toList()
+                    }
             }
             else -> error("Unsupported format")
         }

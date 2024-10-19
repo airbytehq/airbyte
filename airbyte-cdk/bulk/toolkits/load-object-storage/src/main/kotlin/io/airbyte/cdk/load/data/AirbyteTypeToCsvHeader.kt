@@ -9,17 +9,14 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 class AirbyteTypeToCsvHeader {
-    fun convert(schema: AirbyteType): Array<String> {
-        if (schema !is ObjectType) {
-            throw IllegalArgumentException("Only object types are supported")
-        }
+    fun convert(schema: ObjectType): Array<String> {
         return schema.properties.map { it.key }.toTypedArray()
     }
 }
 
-fun AirbyteType.toCsvHeader(): Array<String> {
+fun ObjectType.toCsvHeader(): Array<String> {
     return AirbyteTypeToCsvHeader().convert(this)
 }
 
-fun AirbyteType.toCsvPrinterWithHeader(writer: Writer): CSVPrinter =
-    CSVFormat.Builder.create().setHeader(*toCsvHeader()).build().print(writer)
+fun ObjectType.toCsvPrinterWithHeader(writer: Writer): CSVPrinter =
+    CSVFormat.Builder.create().setHeader(*toCsvHeader()).setAutoFlush(true).build().print(writer)
