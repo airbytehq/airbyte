@@ -1,31 +1,38 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
-import logging
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import Iterable, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set
 
 import boto3.session
 import pendulum
 import pytz
 import smart_open
-from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
-from source_s3.v4.config import Config
-from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
+from airbyte_cdk import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from source_s3.config import Config
+from source_s3.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
+
+if TYPE_CHECKING:
+    import logging
+    from collections.abc import Iterable
+
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
-
+DEFAULT_BUFFER_SIZE = 1024 * 1024 * 40  # 40MB buffer
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
@@ -158,21 +165,37 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             endpoint=self.config.endpoint,
         ) from exc
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(
+        self,
+        file: RemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
         try:
             params = {"client": self.s3_client}
         except Exception as exc:
             raise exc
 
+        fully_qualified_uri = self.get_fully_qualified_uri(file.uri)
         logger.debug(f"try to open {file.uri}")
         try:
             if isinstance(file, RemoteFileInsideArchive):
-                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                s3_file_object = smart_open.open(
+                    fully_qualified_uri,
+                    transport_params=params,
+                    mode="rb",
+                    buffering=DEFAULT_BUFFER_SIZE,
+                )
                 decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
+                    fully_qualified_uri,
+                    transport_params=params,
+                    mode=mode.value,
+                    encoding=encoding,
+                    buffering=DEFAULT_BUFFER_SIZE,
                 )
         except OSError:
             logger.warning(
@@ -253,6 +276,16 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def _handle_regular_file(self, file):
         remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
         return remote_file
+
+    def get_fully_qualified_uri(
+        self,
+        file_uri: str,
+    ) -> str:
+        """Returns the fully qualified URI for the given file URI."""
+        if "://" in file_uri:
+            return file_uri
+
+        return f"s3://{self.config.bucket}/{file_uri.split('#')[0]}"
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:

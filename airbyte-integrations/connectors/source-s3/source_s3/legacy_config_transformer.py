@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from source_s3.source import SourceS3Spec
+from source_s3.source_spec import SourceS3Spec
 from source_s3.source_files_abstract.formats.avro_spec import AvroFormat
 from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 from source_s3.source_files_abstract.formats.jsonl_spec import JsonlFormat
