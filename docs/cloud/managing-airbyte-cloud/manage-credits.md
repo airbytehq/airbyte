@@ -4,7 +4,9 @@ products: cloud
 
 # Manage credits
 
-Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. Credits are purchased on Airbyte Cloud to keep your data flowing without interruption.
+Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. 
+
+Airbyte Cloud plans start at just $10 per month, with additional charges based on usage.
 
 ## What are credits?
 
@@ -17,7 +19,7 @@ Airbyte uses credits to unify pricing across multiple types of sources. You can 
 |Files| GB | $10 per GB| 4 credits|
 |Custom sources| Rows | $15 per million rows| 6 credits|
 
-The standard price for a credit is $2.50. 
+Airbyte Cloud plans start at $10 per month, which includes 4 credits. Additional credits are available at $2.50 each.
 
 For APIs and custom sources, most syncs will sync incrementally, so the row amount will typically be those rows added, edited, or deleted. For Full Refresh syncs, every row synced will be charged. 
 
