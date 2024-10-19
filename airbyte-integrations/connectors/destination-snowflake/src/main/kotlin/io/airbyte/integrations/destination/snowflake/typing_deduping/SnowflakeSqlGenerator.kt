@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
+import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.transactionally
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -681,32 +682,6 @@ class SnowflakeSqlGenerator(
 
         fun escapeSingleQuotedString(str: String): String {
             return str.replace("\\", "\\\\").replace("'", "\\'")
-        }
-
-        @JvmStatic
-        fun transactionally(vararg statements: String): Sql {
-            val originalSql = Sql.transactionally(*statements)
-            return wrapInSnowflakeTransaction(originalSql)
-        }
-
-        @JvmStatic
-        fun transactionally(statements: List<String>): Sql {
-            val originalSql = Sql.transactionally(statements)
-            return wrapInSnowflakeTransaction(originalSql)
-        }
-
-        private fun wrapInSnowflakeTransaction(sql: Sql): Sql {
-            return Sql(
-                sql.transactions.map { transaction ->
-                    listOf(
-                        "BEGIN",
-                        *transaction.toTypedArray(),
-                        "EXCEPTION",
-                        "WHEN OTHER THEN ROLLBACK;",
-                        "END;"
-                    )
-                }
-            )
         }
     }
 }
