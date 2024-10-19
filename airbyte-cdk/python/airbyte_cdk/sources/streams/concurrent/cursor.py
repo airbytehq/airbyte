@@ -174,6 +174,14 @@ class ConcurrentCursor(Cursor):
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
 
+    @property
+    def cursor_field(self) -> CursorField:
+        return self._cursor_field
+
+    @property
+    def slice_boundary_fields(self) -> Optional[Tuple[str, str]]:
+        return self._slice_boundary_fields
+
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
             return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
