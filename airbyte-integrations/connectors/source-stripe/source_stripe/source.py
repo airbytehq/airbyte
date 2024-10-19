@@ -24,7 +24,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
-    CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStipeSubStream,
@@ -271,7 +270,6 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         streams = [
             checkout_sessions,
-            CustomerBalanceTransactions(**args),
             Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
@@ -299,7 +297,19 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+            UpdatedCursorIncrementalStripeStream(
+                name="accounts",
+                path="accounts",
+                legacy_cursor_field="created",
+                event_types=[
+                    "account.updated",
+                    "account.external_account.created",
+                    "account.external_account.updated",
+                    "account.external_account.deleted",
+                ],
+                use_cache=USE_CACHE,
+                **args,
+            ),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -471,6 +481,14 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="top_ups",
                 path="topups",
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
+                **args,
+            ),
+            UpdatedCursorIncrementalStripeLazySubStream(
+                name="customer_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+                parent=self.customers(**args),
+                legacy_cursor_field="created",
+                event_types=["customer_cash_balance_transaction.*"],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
