@@ -42,6 +42,22 @@ Once you have entered payment details, additional billing information will be sh
 2. **Upcoming Invoice Amount**: The amount of the upcoming invoice
 3. **Invoice Date**: The date of the upcoming invoice
 
+## Billing Notifications
+Customers can enroll in billing notifications for their organization. The billing notifications available are:
+- Notify me when a sync consumes over $__
+- Notify me when my upcoming invoice has increased __%
+- Notify me when my upcoming invoice is over $___
+
+To enroll in billing notifications:
+1. Click on **Settings** in the navigation bar
+2. Under **Organization**, click **Billing**
+3. Click on **Set up billing alerts**
+4. Submit the form with custom thresholds for the alerts you are interested in receiving.
+
+To change your existing notification thresholds, submit the form again.
+
+To unenroll, [email us](mailto:billing@airbyte.io) with your request.
+
 ## Automatic reload of credits
 
 You can enroll in automatic top-ups of your credit balance. 
