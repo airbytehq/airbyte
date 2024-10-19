@@ -60,7 +60,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
   base_incremental_stream:
     retriever:
       record_selector:
@@ -90,7 +90,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -131,7 +131,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -291,7 +291,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -437,7 +437,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -669,7 +669,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -851,7 +851,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -991,7 +991,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1154,7 +1154,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -1235,7 +1235,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1291,7 +1291,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1378,7 +1378,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1474,7 +1474,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1577,7 +1577,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -1683,7 +1683,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -1915,7 +1915,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -2034,7 +2034,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2106,7 +2106,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2278,7 +2278,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -2357,7 +2357,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2469,7 +2469,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2545,7 +2545,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2626,7 +2626,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -2745,7 +2745,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -2833,7 +2833,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -2921,7 +2921,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3192,7 +3192,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -3267,7 +3267,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -3411,7 +3411,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -3519,7 +3519,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -3876,7 +3876,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -3995,7 +3995,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4106,7 +4106,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4158,7 +4158,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4229,7 +4229,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4275,7 +4275,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4326,7 +4326,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4403,7 +4403,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4466,7 +4466,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -4909,7 +4909,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4976,7 +4976,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5044,7 +5044,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5110,7 +5110,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5181,7 +5181,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5279,7 +5279,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5402,7 +5402,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5463,7 +5463,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5546,7 +5546,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -5627,7 +5627,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -5785,7 +5785,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -5924,7 +5924,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -6019,7 +6019,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6065,7 +6065,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6126,7 +6126,7 @@ definitions:
             }},{{ stream_slice['end_time'] }}]"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -6201,7 +6201,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6278,7 +6278,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6347,7 +6347,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6398,7 +6398,7 @@ definitions:
           limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
     transformations:
     - type: CustomTransformation
-      class_name: source_prestashop.components.CustomFieldTransformation
+      class_name: source_declarative_manifest.components.CustomFieldTransformation
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6454,7 +6454,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -6624,7 +6624,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -6777,7 +6777,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -7016,7 +7016,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -7208,7 +7208,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -7358,7 +7358,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -7528,7 +7528,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -7619,7 +7619,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -7682,7 +7682,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -7776,7 +7776,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -7879,7 +7879,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -7988,7 +7988,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -8104,7 +8104,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -8346,7 +8346,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -8475,7 +8475,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -8554,7 +8554,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -8733,7 +8733,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -8822,7 +8822,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -8941,7 +8941,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -9024,7 +9024,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -9112,7 +9112,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -9241,7 +9241,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -9339,7 +9339,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -9437,7 +9437,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -9715,7 +9715,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -9798,7 +9798,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -9952,7 +9952,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -10070,7 +10070,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -10437,7 +10437,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -10566,7 +10566,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10684,7 +10684,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10743,7 +10743,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10821,7 +10821,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10874,7 +10874,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10932,7 +10932,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11016,7 +11016,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11086,7 +11086,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -11538,7 +11538,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11611,7 +11611,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11685,7 +11685,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11758,7 +11758,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11836,7 +11836,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -11939,7 +11939,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12069,7 +12069,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12137,7 +12137,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12226,7 +12226,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -12316,7 +12316,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -12484,7 +12484,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -12633,7 +12633,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -12738,7 +12738,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12791,7 +12791,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -12859,7 +12859,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -12944,7 +12944,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -13028,7 +13028,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -13104,7 +13104,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -13162,7 +13162,7 @@ streams:
     type: SimpleRetriever
   transformations:
   - type: CustomTransformation
-    class_name: source_prestashop.components.CustomFieldTransformation
+    class_name: source_declarative_manifest.components.CustomFieldTransformation
   schema_loader:
     type: InlineSchemaLoader
     schema:
