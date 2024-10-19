@@ -160,7 +160,7 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
-        self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._slice_boundary_fields = slice_boundary_fields
         self._start = start
         self._end_provider = end_provider
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
