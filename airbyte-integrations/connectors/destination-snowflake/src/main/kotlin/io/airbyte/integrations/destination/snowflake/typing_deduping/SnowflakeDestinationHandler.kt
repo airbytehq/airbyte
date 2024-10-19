@@ -252,9 +252,10 @@ class SnowflakeDestinationHandler(
             val transactionId = UUID.randomUUID()
             LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction)
             val startTime = System.currentTimeMillis()
+            val wrappedTransaction = wrapInSnowflakeTransaction(transaction)
 
             try {
-                database.execute(transaction)
+                database.execute(wrappedTransaction)
             } catch (e: SnowflakeSQLException) {
                 LOGGER.error("Sql {} failed", queryId, e)
                 // Snowflake SQL exceptions by default may not be super helpful, so we try to
@@ -279,6 +280,17 @@ class SnowflakeDestinationHandler(
                 System.currentTimeMillis() - startTime
             )
         }
+    }
+
+    private fun wrapInSnowflakeTransaction(sql: String): String {
+        return """
+            BEGIN
+            $sql
+            EXCEPTION
+            WHEN OTHER THEN
+                ROLLBACK;
+            END;
+        """.trimIndent()
     }
 
     private fun getPks(stream: StreamConfig?): Set<String> {
