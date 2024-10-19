@@ -5,16 +5,16 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `to` | `string` | To.  |  |
-| `from` | `integer` | From.  |  |
 | `api_key` | `string` | API Key.  |  |
-| `enddate` | `string` | endDate.  |  |
-| `startdate` | `string` | startDate.  |  |
 | `account_id` | `string` | Account Id.  |  |
-| `start_date` | `string` | Start date.  |  |
 | `report_name` | `string` | Report Name.  |  |
-| `report_date_range` | `array` | Report Date Range.  |  |
 | `report_granularity` | `string` | Report Granularity.  |  |
+| `report_date_range` | `array` | Report Date Range.  |  |
+| `start_date` | `string` | Start date.  |  |
+| `from` | `integer` | From.  |  |
+| `to` | `string` | To.  |  |
+| `startdate` | `string` | startDate.  |  |
+| `enddate` | `string` | endDate.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -31,7 +31,7 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 | views |  | DefaultPaginator | ✅ |  ❌  |
 | projects | id | DefaultPaginator | ✅ |  ❌  |
 | pipelines | metadata | DefaultPaginator | ✅ |  ❌  |
-| step_types | metadata | No pagination | ✅ |  ❌  |
+| step_types | metadata | DefaultPaginator | ✅ |  ❌  |
 | environments |  | DefaultPaginator | ✅ |  ❌  |
 | helm_repos |  | No pagination | ✅ |  ❌  |
 
