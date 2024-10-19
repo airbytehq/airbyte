@@ -5,34 +5,35 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "manifest.yaml"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.3.0"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.3.0"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.3.0"
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.3.0"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      empty_streams:
-      - name: webhooks
-        bypass_reason: "no data"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: webhooks
+            bypass_reason: "no data"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
-    bypass_reason: "Last record is duplicated for test_two_sequential_reads since
+    bypass_reason:
+      "Last record is duplicated for test_two_sequential_reads since
       greater or equal is used"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
