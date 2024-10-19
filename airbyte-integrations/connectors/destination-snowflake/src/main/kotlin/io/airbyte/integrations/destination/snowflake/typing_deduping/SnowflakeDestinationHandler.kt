@@ -289,6 +289,9 @@ class SnowflakeDestinationHandler(
             EXCEPTION
             WHEN OTHER THEN
                 ROLLBACK;
+                BEGIN
+                    RAISE;
+                END;
             END;
         """.trimIndent()
     }
