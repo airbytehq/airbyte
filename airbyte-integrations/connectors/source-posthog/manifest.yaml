@@ -1,0 +1,2365 @@
+version: "4.3.2"
+definitions:
+  schema_loader:
+    file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - "results"
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+  base_stream:
+    primary_key: "id"
+    schema_loader:
+      file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+  projects_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: number
+          uuid:
+            type: string
+          organization:
+            type: string
+          api_token:
+            type: string
+          name:
+            type: string
+          completed_snippet_onboarding:
+            type: boolean
+          ingested_event:
+            type: boolean
+          is_demo:
+            type: boolean
+          timezone:
+            type: string
+          access_control:
+            type: boolean
+          effective_membership_level:
+            type: number
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+  base_slicing_stream:
+    primary_key: "id"
+    schema_loader:
+      file_path: "./source_posthog/schemas/{{ parameters['name'] }}.json"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  cohorts_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          groups:
+            type:
+            - array
+            - object
+            items:
+              type: object
+              properties:
+                days:
+                  type:
+                  - string
+                  - 'null'
+                action_id:
+                  type:
+                  - string
+                  - 'null'
+                properties:
+                  type:
+                  - array
+                  items:
+                    type: object
+          deleted:
+            type: boolean
+          is_calculating:
+            type: boolean
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              uuid:
+                type: string
+              distinct_id:
+                type: string
+              first_name:
+                type:
+                - string
+                - 'null'
+              email:
+                type:
+                - string
+                - 'null'
+          created_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+          last_calculation:
+            type:
+            - string
+            - 'null'
+          errors_calculating:
+            type: integer
+          count:
+            type:
+            - integer
+            - 'null'
+          is_static:
+            type: boolean
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  feature_flags_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          key:
+            type: string
+          rollout_percentage:
+            type:
+            - integer
+            - 'null'
+          filters:
+            type: object
+            properties:
+              properties:
+                type: array
+                items:
+                  type: object
+          deleted:
+            type: boolean
+          active:
+            type: boolean
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              distinct_id:
+                type: string
+              first_name:
+                type: string
+              email:
+                type: string
+          created_at:
+            type: string
+            format: date-time
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  persons_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          distinct_ids:
+            type: array
+            items:
+              type: string
+          properties:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties: {}
+          created_at:
+            type: string
+            format: date-time
+          uuid:
+            type: string
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  annotations_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          content:
+            type:
+            - string
+            - 'null'
+          date_marker:
+            type:
+            - string
+            - 'null'
+            format: date-time
+          creation_type:
+            type:
+            - string
+            - 'null'
+          dashboard_item:
+            type:
+            - string
+            - 'null'
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              uuid:
+                type: string
+              distinct_id:
+                type: string
+              first_name:
+                type: string
+              email:
+                type: string
+          created_at:
+            type: string
+            format: date-time
+          updated_at:
+            type: string
+            format: date-time
+          deleted:
+            type: boolean
+          scope:
+            type: string
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  insights_stream:
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+        - object
+        - 'null'
+        properties:
+          id:
+            type:
+            - number
+          short_id:
+            type:
+            - string
+            - 'null'
+          name:
+            derived_name:
+            - string
+            - 'null'
+          filters:
+            type:
+            - object
+            - 'null'
+            properties:
+              display:
+                type:
+                - string
+                - 'null'
+              insight:
+                type:
+                - string
+                - 'null'
+              interval:
+                type:
+                - string
+                - 'null'
+              date_from:
+                type:
+                - string
+                - 'null'
+          filters_hash:
+            type:
+            - string
+            - 'null'
+          order:
+            type:
+            - string
+            - 'null'
+          deleted:
+            type:
+            - boolean
+            - 'null'
+          last_refresh:
+            type:
+            - string
+            - 'null'
+          refreshing:
+            type:
+            - boolean
+            - 'null'
+          result:
+            type:
+            - array
+            - 'null'
+            items:
+              type:
+              - object
+              - 'null'
+              properties:
+                action_id:
+                  type:
+                  - string
+                  - 'null'
+                average_conversion_time:
+                  type:
+                  - string
+                  - 'null'
+                converted_people_url:
+                  type:
+                  - string
+                  - 'null'
+                count:
+                  type:
+                  - number
+                  - 'null'
+                custom_name:
+                  type:
+                  - string
+                  - 'null'
+                name:
+                  type:
+                  - string
+                  - 'null'
+                median_conversion_time:
+                  type:
+                  - string
+                  - 'null'
+                order:
+                  type:
+                  - number
+                  - 'null'
+                type:
+                  type:
+                  - string
+                  - 'null'
+          created_at:
+            type:
+            - string
+            - 'null'
+          created_by:
+            type:
+            - object
+            - 'null'
+            properties:
+              id:
+                type:
+                - number
+                - 'null'
+              uuid:
+                type:
+                - string
+                - 'null'
+              distinct_id:
+                type:
+                - string
+                - 'null'
+              first_name:
+                type:
+                - string
+                - 'null'
+              email:
+                type:
+                - string
+                - 'null'
+          description:
+            type:
+            - string
+            - 'null'
+          updated_at:
+            type:
+            - string
+            - 'null'
+          favorited:
+            type:
+            - boolean
+            - 'null'
+          saved:
+            type:
+            - boolean
+            - 'null'
+          last_modified_at:
+            type:
+            - string
+            - 'null'
+          last_modified_by:
+            type:
+            - object
+            - 'null'
+            properties:
+              distinct_id:
+                type:
+                - string
+                - 'null'
+              email:
+                type:
+                - string
+                - 'null'
+              first_name:
+                type:
+                - string
+                - 'null'
+              id:
+                type:
+                - number
+                - 'null'
+              uuid:
+                type:
+                - string
+                - 'null'
+          is_sample:
+            type:
+            - boolean
+            - 'null'
+          effective_restriction_level:
+            type:
+            - number
+            - 'null'
+          effective_privilege_level:
+            type:
+            - number
+            - 'null'
+          timezone:
+            type:
+            - string
+            - 'null'
+          tags:
+            type:
+            - array
+            - 'null'
+            items:
+              type:
+              - string
+              - 'null'
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: id
+          partition_field: id
+  events_stream:
+    primary_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+      cursor_field: timestamp
+      stream_slicers:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            primary_key: "id"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  uuid:
+                    type: string
+                  organization:
+                    type: string
+                  api_token:
+                    type: string
+                  name:
+                    type: string
+                  completed_snippet_onboarding:
+                    type: boolean
+                  ingested_event:
+                    type: boolean
+                  is_demo:
+                    type: boolean
+                  timezone:
+                    type: string
+                  access_control:
+                    type: boolean
+                  effective_membership_level:
+                    type: number
+            retriever:
+              type: SimpleRetriever
+              record_selector:
+                type: RecordSelector
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - "results"
+              paginator:
+                type: "DefaultPaginator"
+                page_size_option:
+                  inject_into: "request_parameter"
+                  field_name: "limit"
+                pagination_strategy:
+                  type: "OffsetIncrement"
+                  page_size: 100
+                page_token_option:
+                  type: RequestOption
+                  field_name: "offset"
+                  inject_into: "request_parameter"
+              requester:
+                type: HttpRequester
+                url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+          parent_key: "id"
+          partition_field: "project_id"
+      - type: DatetimeBasedCursor
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S+00:00"
+        cursor_granularity: "PT0.000001S"
+        step: "P{{ config.get('events_time_step', 30) }}D"
+        cursor_field: timestamp
+        start_time_option:
+          field_name: after
+          inject_into: request_parameter
+        end_time_option:
+          field_name: before
+          inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          distinct_id:
+            type: string
+          properties:
+            type: object
+          event:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          person:
+            type: object
+            properties:
+              is_identified:
+                type: boolean
+              distinct_ids:
+                type: array
+                items:
+                  type: string
+              properties:
+                type: object
+          elements:
+            type: array
+            items:
+              type:
+              - string
+              - object
+          elements_chain:
+            type: string
+    retriever:
+      transformations:
+      - class_name: "source_posthog.components.EventsSimpleRetriever"
+        fields:
+        - path:
+          - "name"
+          value: "{{ parameters['name'] }}"
+        - path:
+          - "primary_key"
+          value: "{{ parameters['primary_key'] }}"
+      name: "{{ parameters['name'] }}"
+      primary_key: "{{ parameters['primary_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "results"
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 10000
+        page_token_option:
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
+streams:
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: number
+        uuid:
+          type: string
+        organization:
+          type: string
+        api_token:
+          type: string
+        name:
+          type: string
+        completed_snippet_onboarding:
+          type: boolean
+        ingested_event:
+          type: boolean
+        is_demo:
+          type: boolean
+        timezone:
+          type: string
+        access_control:
+          type: boolean
+        effective_membership_level:
+          type: number
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "projects"
+  type: DeclarativeStream
+  name: "projects"
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        groups:
+          type:
+          - array
+          - object
+          items:
+            type: object
+            properties:
+              days:
+                type:
+                - string
+                - 'null'
+              action_id:
+                type:
+                - string
+                - 'null'
+              properties:
+                type:
+                - array
+                items:
+                  type: object
+        deleted:
+          type: boolean
+        is_calculating:
+          type: boolean
+        created_by:
+          type: object
+          properties:
+            id:
+              type: integer
+            uuid:
+              type: string
+            distinct_id:
+              type: string
+            first_name:
+              type:
+              - string
+              - 'null'
+            email:
+              type:
+              - string
+              - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        last_calculation:
+          type:
+          - string
+          - 'null'
+        errors_calculating:
+          type: integer
+        count:
+          type:
+          - integer
+          - 'null'
+        is_static:
+          type: boolean
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: id
+        partition_field: id
+        type: ParentStreamConfig
+  type: DeclarativeStream
+  name: "cohorts"
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        key:
+          type: string
+        rollout_percentage:
+          type:
+          - integer
+          - 'null'
+        filters:
+          type: object
+          properties:
+            properties:
+              type: array
+              items:
+                type: object
+        deleted:
+          type: boolean
+        active:
+          type: boolean
+        created_by:
+          type: object
+          properties:
+            id:
+              type: integer
+            distinct_id:
+              type: string
+            first_name:
+              type: string
+            email:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: id
+        partition_field: id
+        type: ParentStreamConfig
+  type: DeclarativeStream
+  name: "feature_flags"
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        distinct_ids:
+          type: array
+          items:
+            type: string
+        properties:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties: {}
+        created_at:
+          type: string
+          format: date-time
+        uuid:
+          type: string
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: id
+        partition_field: id
+        type: ParentStreamConfig
+  type: DeclarativeStream
+  name: "persons"
+- primary_key: "id"
+  incremental_sync:
+    type: CustomIncrementalSync
+    class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+    cursor_field: timestamp
+    stream_slicers:
+    - type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: "id"
+        partition_field: "project_id"
+        type: ParentStreamConfig
+    - type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        type: MinMaxDatetime
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S+00:00"
+      cursor_granularity: "PT0.000001S"
+      step: "P{{ config.get('events_time_step', 30) }}D"
+      cursor_field: timestamp
+      start_time_option:
+        field_name: after
+        inject_into: request_parameter
+        type: RequestOption
+      end_time_option:
+        field_name: before
+        inject_into: request_parameter
+        type: RequestOption
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: string
+        distinct_id:
+          type: string
+        properties:
+          type: object
+        event:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        person:
+          type: object
+          properties:
+            is_identified:
+              type: boolean
+            distinct_ids:
+              type: array
+              items:
+                type: string
+            properties:
+              type: object
+        elements:
+          type: array
+          items:
+            type:
+            - string
+            - object
+        elements_chain:
+          type: string
+  retriever:
+    transformations:
+    - class_name: "source_posthog.components.EventsSimpleRetriever"
+      fields:
+      - path:
+        - "name"
+        value: "{{ parameters['name'] }}"
+      - path:
+        - "primary_key"
+        value: "{{ parameters['primary_key'] }}"
+    name: "{{ parameters['name'] }}"
+    primary_key: "{{ parameters['primary_key'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 10000
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    type: SimpleRetriever
+  type: DeclarativeStream
+  name: "events"
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type:
+          - string
+          - 'null'
+        date_marker:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        creation_type:
+          type:
+          - string
+          - 'null'
+        dashboard_item:
+          type:
+          - string
+          - 'null'
+        created_by:
+          type: object
+          properties:
+            id:
+              type: integer
+            uuid:
+              type: string
+            distinct_id:
+              type: string
+            first_name:
+              type: string
+            email:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted:
+          type: boolean
+        scope:
+          type: string
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: id
+        partition_field: id
+        type: ParentStreamConfig
+  type: DeclarativeStream
+  name: "annotations"
+- primary_key: "id"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - object
+      - 'null'
+      properties:
+        id:
+          type:
+          - number
+        short_id:
+          type:
+          - string
+          - 'null'
+        name:
+          derived_name:
+          - string
+          - 'null'
+        filters:
+          type:
+          - object
+          - 'null'
+          properties:
+            display:
+              type:
+              - string
+              - 'null'
+            insight:
+              type:
+              - string
+              - 'null'
+            interval:
+              type:
+              - string
+              - 'null'
+            date_from:
+              type:
+              - string
+              - 'null'
+        filters_hash:
+          type:
+          - string
+          - 'null'
+        order:
+          type:
+          - string
+          - 'null'
+        deleted:
+          type:
+          - boolean
+          - 'null'
+        last_refresh:
+          type:
+          - string
+          - 'null'
+        refreshing:
+          type:
+          - boolean
+          - 'null'
+        result:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - object
+            - 'null'
+            properties:
+              action_id:
+                type:
+                - string
+                - 'null'
+              average_conversion_time:
+                type:
+                - string
+                - 'null'
+              converted_people_url:
+                type:
+                - string
+                - 'null'
+              count:
+                type:
+                - number
+                - 'null'
+              custom_name:
+                type:
+                - string
+                - 'null'
+              name:
+                type:
+                - string
+                - 'null'
+              median_conversion_time:
+                type:
+                - string
+                - 'null'
+              order:
+                type:
+                - number
+                - 'null'
+              type:
+                type:
+                - string
+                - 'null'
+        created_at:
+          type:
+          - string
+          - 'null'
+        created_by:
+          type:
+          - object
+          - 'null'
+          properties:
+            id:
+              type:
+              - number
+              - 'null'
+            uuid:
+              type:
+              - string
+              - 'null'
+            distinct_id:
+              type:
+              - string
+              - 'null'
+            first_name:
+              type:
+              - string
+              - 'null'
+            email:
+              type:
+              - string
+              - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type:
+          - string
+          - 'null'
+        favorited:
+          type:
+          - boolean
+          - 'null'
+        saved:
+          type:
+          - boolean
+          - 'null'
+        last_modified_at:
+          type:
+          - string
+          - 'null'
+        last_modified_by:
+          type:
+          - object
+          - 'null'
+          properties:
+            distinct_id:
+              type:
+              - string
+              - 'null'
+            email:
+              type:
+              - string
+              - 'null'
+            first_name:
+              type:
+              - string
+              - 'null'
+            id:
+              type:
+              - number
+              - 'null'
+            uuid:
+              type:
+              - string
+              - 'null'
+        is_sample:
+          type:
+          - boolean
+          - 'null'
+        effective_restriction_level:
+          type:
+          - number
+          - 'null'
+        effective_privilege_level:
+          type:
+          - number
+          - 'null'
+        timezone:
+          type:
+          - string
+          - 'null'
+        tags:
+          type:
+          - array
+          - 'null'
+          items:
+            type:
+            - string
+            - 'null'
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "results"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        field_name: "offset"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          primary_key: "id"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                uuid:
+                  type: string
+                organization:
+                  type: string
+                api_token:
+                  type: string
+                name:
+                  type: string
+                completed_snippet_onboarding:
+                  type: boolean
+                ingested_event:
+                  type: boolean
+                is_demo:
+                  type: boolean
+                timezone:
+                  type: string
+                access_control:
+                  type: boolean
+                effective_membership_level:
+                  type: number
+          retriever:
+            type: SimpleRetriever
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "results"
+            paginator:
+              type: "DefaultPaginator"
+              page_size_option:
+                inject_into: "request_parameter"
+                field_name: "limit"
+                type: RequestOption
+              pagination_strategy:
+                type: "OffsetIncrement"
+                page_size: 100
+              page_token_option:
+                type: RequestOption
+                field_name: "offset"
+                inject_into: "request_parameter"
+            requester:
+              type: HttpRequester
+              url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              path: "projects"
+          type: DeclarativeStream
+          name: "projects"
+        parent_key: id
+        partition_field: id
+        type: ParentStreamConfig
+  type: DeclarativeStream
+  name: "insights"
+check:
+  type: CheckStream
+  stream_names:
+  - "projects"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/posthog
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: PostHog Spec
+    type: object
+    required:
+    - api_key
+    - start_date
+    properties:
+      start_date:
+        title: Start Date
+        type: string
+        description: The date from which you'd like to replicate the data. Any data
+          before this date will not be replicated.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+        - '2021-01-01T00:00:00Z'
+        format: date-time
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: API Key. See the <a href="https://docs.airbyte.com/integrations/sources/posthog">docs</a>
+          for information on how to generate this key.
+      base_url:
+        type: string
+        default: https://app.posthog.com
+        title: Base URL
+        description: Base PostHog url. Defaults to PostHog Cloud (https://app.posthog.com).
+        examples:
+        - https://posthog.example.com
+      events_time_step:
+        type: integer
+        order: 3
+        default: 30
+        minimum: 1
+        maximum: 91
+        title: Events stream slice step size (in days)
+        description: Set lower value in case of failing long running sync of events
+          stream.
+        examples:
+        - 30
+        - 10
+        - 5
+type: DeclarativeSource
