@@ -36,11 +36,12 @@ data object CliRunner {
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
+        vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteSourceRunner(args, out.beanDefinition)
+                AirbyteSourceRunner(args, featureFlags.systemEnv, out.beanDefinition)
             }
         return CliRunnable(runnable, out.results)
     }
@@ -52,7 +53,7 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
-        testProperties: Map<String, String> = emptyMap(),
+        vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
             RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
@@ -63,9 +64,9 @@ data object CliRunner {
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
                     args,
-                    testProperties,
+                    featureFlags.systemEnv,
                     inputBeanDefinition,
-                    out.beanDefinition
+                    out.beanDefinition,
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -77,6 +78,7 @@ data object CliRunner {
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
+        featureFlags: Set<FeatureFlag> = setOf(),
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -88,7 +90,7 @@ data object CliRunner {
                 baos.toByteArray()
             }
         val inputStream: InputStream = ByteArrayInputStream(inputJsonBytes)
-        return destination(op, config, catalog, state, inputStream)
+        return destination(op, config, catalog, state, inputStream, *featureFlags.toTypedArray())
     }
 
     private fun makeRunnable(
@@ -119,6 +121,9 @@ data object CliRunner {
             }
         }
     }
+
+    private val Array<out FeatureFlag>.systemEnv: Map<String, String>
+        get() = toSet().map { it.envVar.name to it.requiredEnvVarValue }.toMap()
 
     private fun inputFile(contents: Any?): Path? =
         contents?.let {
