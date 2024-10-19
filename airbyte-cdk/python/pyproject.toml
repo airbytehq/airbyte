@@ -77,6 +77,7 @@ mypy = "*"
 asyncio = "3.4.3"
 poethepoet = "^0.24.2"
 pyproject-flake8 = "^6.1.0"
+deadcode = "2.4.1"
 pytest = "^7"
 pytest-memray = "^1.6.0"
 pytest-cov = "*"
@@ -103,12 +104,13 @@ build = {sequence = ["assemble", "build-package"], help = "Run all tasks to buil
 
 # Check tasks
 lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
+check-deadcode = {cmd = "sh -c 'deadcode . | grep -E \"(DC03|DC09)\"'",  help = "Check for deadcode, no error will be raised, only list of unused code, see https://pypi.org/project/deadcode/ for Rule codes."}
 type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
 unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
 # TODO: find a version of the modified mypy check that works both locally and in CI.
 check-lockfile = {cmd = "poetry check", help = "Check the poetry lock file."}
 check-local = {sequence = ["lint", "type-check", "check-lockfile", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
-check-ci = {sequence = ["check-lockfile", "build", "lint", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
+check-ci = {sequence = ["check-lockfile", "build", "lint", "check-deadcode", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}

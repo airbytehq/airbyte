@@ -38,7 +38,7 @@ from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -89,33 +89,6 @@ class MockSourceWithStopSyncFalseOverride(MockSource):
     @property
     def stop_sync_on_stream_failure(self) -> bool:
         return False
-
-
-class StreamNoStateMethod(Stream):
-    name = "managers"
-    primary_key = None
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-
-class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
-    name = "teams"
-    primary_key = None
-    cursor_field = "updated_at"
-    _cursor_value = ""
-    start_date = "1984-12-12"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
 class StreamRaisesException(Stream):
