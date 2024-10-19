@@ -17,7 +17,7 @@ include = "destination_databend"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-databend-sqlalchemy = "==0.3.2"
+databend-sqlalchemy = "==0.4.7"
 airbyte-cdk = "==0.68.1"
 requests = "==2.31.0"
 
