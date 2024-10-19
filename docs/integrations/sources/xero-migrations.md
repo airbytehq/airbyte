@@ -1,5 +1,17 @@
 # Xero Migration Guide
 
+## Upgrading to 3.0.0
+
+Due to limitations on the number of OAuth users permitted for the Airbyte application, OAuth support has been disabled. 
+Consequently, the bearer authentication method has been adopted as the primary authentication type.
+Visit the Xero documentation - https://developer.xero.com/documentation/guides/oauth2/pkce-flow for more detailed information about how to get access token.
+
+Then authorize your source with `access_token`.
+1. Go to set up `The Source` page.
+2. Enter your Xero application's access token.
+3. Click `Reset saved source` button. 
+
+
 ## Upgrading to 2.0.0
 
 You can now choose your preferred xero authentication method. You can choose between `client_credentials` and `bearer_token` authentication methods.
