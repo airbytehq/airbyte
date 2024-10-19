@@ -53,7 +53,7 @@ def build_container(
 
     # Install any dependencies of the formatter
     if install_commands:
-        container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
+        container = container.with_exec(sh_dash_c(install_commands))
 
     # Mount the relevant parts of the repository: the code to format and the formatting config
     # Exclude the default ignore list to keep things as small as possible.

@@ -82,7 +82,7 @@ class InputConsumerTaskTest {
             messages.send(Pair(size, memoryManager.reserveBlocking(1, message)))
         }
 
-        suspend fun stop() {
+        fun stop() {
             messages.close()
         }
     }
@@ -141,6 +141,8 @@ class InputConsumerTaskTest {
                 it * 2L
             )
         }
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1))
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream2))
         launch { task.execute() }
 
         val messages1 =
@@ -160,14 +162,19 @@ class InputConsumerTaskTest {
                     makeRecord(MockDestinationCatalogFactory.stream1, "test${it}")
                 )
             }
+        val streamComplete1: Reserved<DestinationRecordWrapped> =
+            queue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<DestinationRecordWrapped> =
+            queue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
+        Assertions.assertEquals(StreamCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(1, streamComplete1.bytesReserved)
         Assertions.assertEquals(10L, manager1.recordCount())
-        queue1.close()
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
 
-        queue2.close()
+        Assertions.assertEquals(StreamCompleteWrapped(0), streamComplete2.value)
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
@@ -192,6 +199,7 @@ class InputConsumerTaskTest {
 
         mockInputFlow.addMessage(makeRecord(MockDestinationCatalogFactory.stream2, "test"), 1L)
         mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1), 0L)
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream2), 0L)
         val job = launch { task.execute() }
         mockInputFlow.stop()
         job.join()
@@ -202,13 +210,14 @@ class InputConsumerTaskTest {
                     0,
                     1L,
                     makeRecord(MockDestinationCatalogFactory.stream2, "test")
-                )
+                ),
+                StreamCompleteWrapped(1)
             ),
             queue2.consume().toList().map { it.value }
         )
         Assertions.assertEquals(1L, manager2.recordCount())
 
-        Assertions.assertEquals(manager2.endOfStreamRead(), false)
+        Assertions.assertEquals(manager2.endOfStreamRead(), true)
         Assertions.assertEquals(manager1.endOfStreamRead(), true)
 
         queue1.close()
@@ -247,6 +256,8 @@ class InputConsumerTaskTest {
             Assertions.assertEquals(expectedCount, state.index)
             Assertions.assertEquals(count.toLong(), state.checkpoint.destinationStats?.recordCount)
         }
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1))
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream2))
         mockInputFlow.stop()
     }
 
@@ -302,6 +313,8 @@ class InputConsumerTaskTest {
                 }
             }
         }
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1))
+        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream2))
         mockInputFlow.stop()
     }
 

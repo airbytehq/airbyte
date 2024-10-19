@@ -341,14 +341,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
 
 Note:
 
@@ -851,7 +851,10 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.39.0  | [#46696](https://github.com/airbytehq/airbyte/pull/46696)  | Bump PyAirbyte dependency and replace `airbyte-lib-validate-source` CLI command with new `validate` command                                                               |
+| 4.41.1   | [#46914](https://github.com/airbytehq/airbyte/pull/46914)  | Upgrade to Dagger 0.13.3                                                                                                     |
+| 4.41.0  | [#46914](https://github.com/airbytehq/airbyte/pull/46914)  | Rework the connector rollback pipeline for progressive rollout                                                               |
+| 4.40.0  | [#46380](https://github.com/airbytehq/airbyte/pull/46380)  | The `bump-version` command now allows the `rc` bump type.                                                                    |
+| 4.39.0  | [#46696](https://github.com/airbytehq/airbyte/pull/46696)  | Bump PyAirbyte dependency and replace `airbyte-lib-validate-source` CLI command with new `validate` command                  |
 | 4.38.0  | [#46380](https://github.com/airbytehq/airbyte/pull/46380)  | `connectors up-to-date` now supports manifest-only connectors!                                                               |
 | 4.37.0  | [#46380](https://github.com/airbytehq/airbyte/pull/46380)  | Include custom components file handling in manifest-only migrations                                                          |
 | 4.36.2  | [#46278](https://github.com/airbytehq/airbyte/pull/46278)  | Fixed a bug in RC rollout and promote not taking `semaphore`                                                                 |

@@ -48,7 +48,7 @@ class CheckConnectorImageDoesNotExist(Step):
                 self.context,
             )
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["ls", docker_repository])
+            .with_exec(["ls", docker_repository], use_entrypoint=True)
         )
         try:
             crane_ls_stdout = await crane_ls.stdout()
@@ -107,7 +107,7 @@ class UploadDependenciesToMetadataService(Step):
             ConnectorLanguage.LOW_CODE,
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
-        pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await built_container.with_exec(["pip", "freeze"]).stdout()
         dependencies = [
             {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
         ]
@@ -155,9 +155,9 @@ class PushConnectorImageToRegistry(Step):
         Returns:
             bool: True if the latest tag should be pushed, False otherwise.
         """
-        is_release_candidate = self.context.connector.metadata.get("releases", {}).get("isReleaseCandidate", False)
+        is_release_candidate = "-rc" in self.context.connector.version
         is_pre_release = self.context.pre_release
-        return not is_release_candidate and not is_pre_release
+        return not (is_release_candidate or is_pre_release)
 
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
@@ -226,7 +226,7 @@ class PullConnectorImageFromRegistry(Step):
         has_only_gzip_layers = True
         for platform in consts.BUILD_PLATFORMS:
             inspect = docker.with_crane(self.context).with_exec(
-                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"], use_entrypoint=True
             )
             try:
                 inspect_stdout = await inspect.stdout()
@@ -244,7 +244,9 @@ class PullConnectorImageFromRegistry(Step):
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"])
+                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(
+                    ["spec"], use_entrypoint=True
+                )
             except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
@@ -308,7 +310,9 @@ class UploadSpecToCache(Step):
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
-        spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
+        spec_output = (
+            await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
+        )
         return self._parse_spec_output(spec_output)
 
     async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
@@ -366,7 +370,7 @@ class UploadSbom(Step):
         try:
             syft_container = self.get_syft_container()
             sbom_file = await syft_container.with_exec(
-                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"]
+                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"], use_entrypoint=True
             ).file(self.IN_CONTAINER_SBOM_PATH)
         except ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
@@ -416,24 +420,26 @@ class SetPromotedVersion(SetConnectorVersion):
         return await super()._run()
 
 
-class ResetReleaseCandidate(StepModifyingFiles):
+class DisableProgressiveRollout(StepModifyingFiles):
     context: PublishConnectorContext
-    title = "Reset release candidate flag"
+    title = "Disable progressive rollout in metadata file"
 
     async def _run(self) -> StepResult:
         raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=METADATA_FILE_NAME), METADATA_FILE_NAME)
         current_metadata = yaml.safe_load(raw_metadata)
-        is_release_candidate = current_metadata.get("data", {}).get("releases", {}).get("isReleaseCandidate", False)
-        if not is_release_candidate:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="The connector is not a release candidate.")
+        enable_progressive_rollout = (
+            current_metadata.get("data", {}).get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)
+        )
+        if not enable_progressive_rollout:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Progressive rollout is already disabled.")
         # We do an in-place replacement instead of serializing back to yaml to preserve comments and formatting.
-        new_raw_metadata = raw_metadata.replace("isReleaseCandidate: true", "isReleaseCandidate: false")
+        new_raw_metadata = raw_metadata.replace("enableProgressiveRollout: true", "enableProgressiveRollout: false")
         self.modified_directory = dagger_write_file(self.modified_directory, METADATA_FILE_NAME, new_raw_metadata)
         self.modified_files.append(METADATA_FILE_NAME)
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
-            stdout="Set the isReleaseCandidate flag to false in the metadata file.",
+            stdout="Set enableProgressiveRollout to false in connector metadata.",
             output=self.modified_directory,
         )
 
@@ -608,30 +614,57 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     return results, False
 
 
+def get_rollback_pr_creation_arguments(
+    modified_files: Iterable[Path],
+    context: PublishConnectorContext,
+    step_results: Iterable[StepResult],
+    release_candidate_version: str,
+) -> Tuple[Tuple, Dict]:
+    return (modified_files,), {
+        "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
+        "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
+        "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout.",
+    }
+
+
 async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a rollback pipeline for a single connector.
 
-    1. Check if the current metadata is a release candidate
-    2. Delete the metadata files for the release candidate and its version from the metadata service bucket.
+    1. Disable progressive rollout in metadata file.
+    2. Open a PR with the updated metadata, set the auto-merge label.
 
     Returns:
-        ConnectorReport: The reports holding rollback results.
+        ConnectorReport: The reports holding promote results.
     """
 
     results = []
+    current_version = context.connector.version
+    all_modified_files = set()
     async with semaphore:
         async with context:
             assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
-            assert context.connector.metadata.get("releases", {}).get(
-                "isReleaseCandidate", True
-            ), "This pipeline can only run for release candidates."
-            results.append(
-                await MetadataRollbackReleaseCandidate(
-                    context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
-                ).run()
-            )
-            connector_report = create_connector_report(results, context)
+            original_connector_directory = await context.get_connector_dir()
 
+            # Disable progressive rollout in metadata file
+            reset_release_candidate = DisableProgressiveRollout(context, original_connector_directory)
+            reset_release_candidate_results = await reset_release_candidate.run()
+            results.append(reset_release_candidate_results)
+            if reset_release_candidate_results.success:
+                all_modified_files.update(await reset_release_candidate.export_modified_files(context.connector.code_directory))
+
+            if not all([result.success for result in results]):
+                context.logger.error("The metadata update failed. Skipping PR creation.")
+                connector_report = create_connector_report(results, context)
+                return connector_report
+
+            # Open PR when all previous steps are successful
+            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+            pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
+            initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
+            results.append(initial_pr_creation_result)
+
+            connector_report = create_connector_report(results, context)
     return connector_report
 
 
@@ -653,8 +686,12 @@ def get_promotion_pr_creation_arguments(
 async def run_connector_promote_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a promote pipeline for a single connector.
 
-    1. Publish the release candidate version docker image with the latest tag.
-    2. Copy the release candidate metadata files to the latest release metadata files.
+    1. Update connector metadata to:
+        * Remove the RC suffix from the version.
+        * Disable progressive rollout.
+    2. Open a PR with the updated metadata.
+    3. Add a changelog entry to the documentation.
+    4. Update the PR with the updated changelog, set the auto-merge label.
 
     Returns:
         ConnectorReport: The reports holding promote results.
@@ -674,8 +711,8 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
             if set_promoted_version_results.success:
                 all_modified_files.update(await set_promoted_version.export_modified_files(context.connector.code_directory))
 
-            # Set isReleaseCandidate to False
-            reset_release_candidate = ResetReleaseCandidate(context, set_promoted_version_results.output)
+            # Disable progressive rollout in metadata file
+            reset_release_candidate = DisableProgressiveRollout(context, set_promoted_version_results.output)
             reset_release_candidate_results = await reset_release_candidate.run()
             results.append(reset_release_candidate_results)
             if reset_release_candidate_results.success:
