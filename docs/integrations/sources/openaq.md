@@ -1,6 +1,7 @@
 # OpenAQ
 The OpenAQ API provides open access to global air quality data.
 This connector enables you to fetch data from all the streams listed on their website such as Locations , Sensors , Measurements and much more.
+
 Docs : https://docs.openaq.org/using-the-api/quick-start
 
 ## Configuration
@@ -8,6 +9,7 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
+| `countriesids` | `string` | CountriesIds. The list of IDs of countries (comma separated) you need the data for | 79,155,9 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -17,7 +19,7 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | Manufacturers | id | DefaultPaginator | ✅ |  ❌  |
 | Manufacturer | id | No pagination | ✅ |  ❌  |
 | Manufacturer Instruments | id | No pagination | ✅ |  ❌  |
-| Locations | id | No pagination | ✅ |  ❌  |
+| Locations | id | DefaultPaginator | ✅ |  ❌  |
 | Location | id | No pagination | ✅ |  ❌  |
 | Licenses |  | DefaultPaginator | ✅ |  ❌  |
 | License Instrument | id | No pagination | ✅ |  ❌  |

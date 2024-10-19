@@ -3,6 +3,7 @@ This directory contains the manifest-only connector for `source-openaq`.
 
 The OpenAQ API provides open access to global air quality data.
 This connector enables you to fetch data from all the streams listed on their website such as Locations , Sensors , Measurements and much more.
+
 Docs : https://docs.openaq.org/using-the-api/quick-start
 
 ## Usage

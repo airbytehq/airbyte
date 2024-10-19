@@ -8,6 +8,7 @@ description: >-
   This connector enables you to fetch data from all the streams listed on their
   website such as Locations , Sensors , Measurements and much more.
 
+
   Docs : https://docs.openaq.org/using-the-api/quick-start
 
 check:
@@ -184,12 +185,29 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: locations
           http_method: GET
+          request_parameters:
+            countries_id: "{{ config['countriesids'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1164,6 +1182,12 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      countriesids:
+        type: string
+        description: The list of IDs of countries (comma separated) you need the data for
+        title: CountriesIds
+        default: 79,155,9
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -1242,14 +1266,14 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     Locations:
-      streamHash: 449dae1af930ff5801f15fa7c0b3a1ec44ddb96d
+      streamHash: 2cbf6f20136f3fcb6113e1ddb023795d0d49a6f0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Location:
-      streamHash: 4ca73bfe2075cc739f111f68f5b09a5955d4a718
+      streamHash: b1eeb0601420b0b597669b865ebffbe07cce419a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1306,13 +1330,13 @@ metadata:
       responsesAreSuccessful: true
     Sensors:
       hasRecords: true
-      streamHash: 2e789f42f1fcb5d49964ba53d17e009587e1e993
+      streamHash: be9cc78cfe1fba19a5e26ce05e0dea41dcfd4d21
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     Sensor:
-      streamHash: 00b066498d2058b80076de22386463604d3500ea
+      streamHash: 5abc8a2217e1d29aabd1293fe6dc16ec1fb01fe2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1347,119 +1371,119 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     Location’s Latest Measurement:
-      streamHash: d306e3decf51b18eb7f39b0166e12090de680044
+      streamHash: 11f396292d182f57af7ecac06a0690bf7019fb1b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements:
-      streamHash: ade1f2b73d8165aa42ff6e5237c44b84008f95fe
+      streamHash: 07fcc6121dd93b438cf2fe8891efad4a1ae3b59a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated To Day:
-      streamHash: 018114235192f20b3c94eb8a86969fddc7d36fe0
+      streamHash: 9be260f3dd3bf62d351a671256b556fe0628a220
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated To Year:
-      streamHash: 214f1962e17fa4de5ee720851061cdf53984b1f6
+      streamHash: da3e1fc5829723c194c50c41adfc6c38e5c52d5d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Day to Year:
-      streamHash: e4d1728e7d935b82de5d10230cfa7e2d6b7b04e9
+      streamHash: 8794a9815683bb0bf74215c507fd787104a02c6f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Days to Month:
-      streamHash: d993aa247b77089b8b39116f5b528525cf64f6b5
+      streamHash: ff971f09b0327ca5d1c5c5d9f2c3a134b68512e9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Day to Month of Year:
-      streamHash: 843b6445ccab42e752f63fd3fd019301e64a0d57
+      streamHash: 9304434f274bc6deeb6b60ba2539e87a21ff8466
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Day to Day Of Week:
-      streamHash: 47149305d7bd643dea239e5c847b051b85f7c3d9
+      streamHash: 996a700dbf482907228b33553ad2bb7a5fbc7d91
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hour To Month of Year:
-      streamHash: 2b0f91cca3fa3d759f81c9b7affef5ba30dc3797
+      streamHash: e5bf86ceb2b76bc5f087dd0c66b9f8562d0d1e44
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hour To Day Of Week:
-      streamHash: fc31aef8a880e0499f624cb5ee7012742d0a7ffc
+      streamHash: 7e8c25993bb66ee8b3558f5e8a194def88553824
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hour To Hour of Day:
-      streamHash: b73cdeb649e00665c313f8b18ef4ce984a398c0e
+      streamHash: c7a7cd74983e0aaeab07a06482b1d7e6ab3a22b4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hour To Year:
-      streamHash: e33eee35a542473650651a3cf48088fdd1d8b4c6
+      streamHash: 773bcd42717f518420e2d42e111ab19fc2b6f7e5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hours to Monthly:
-      streamHash: 28c4e28205bcf3e991c5dd171381308f0db5a51f
+      streamHash: 0cf4c08c41320252b35eea6ba03abd70d4597f6a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated From Hours to Daily:
-      streamHash: 5e3ad4d11808f158e65edae298a082e5fb249abe
+      streamHash: 12cfc4ca444ba3c376c7e9add69a174d5f933a74
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated To Hour:
-      streamHash: 01c92b5fbfc042efc349d7bc32e1400b10018554
+      streamHash: 0d092d864d0db73cd5039f99731ae3b4b3f60ea4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated To Daily:
-      streamHash: c9caf8f44a5de019b3e24f76682aea13adc7f573
+      streamHash: a7112da5bd2b3293273d16eddf6a68fa2a9f3093
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Measurements Aggregated To Hourly:
-      streamHash: 436b34d37c1c688e98f768217fffc2e4a142ca8d
+      streamHash: 309def4859c23cb0bacb413e7971f178b431089b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1952,6 +1976,36 @@ schemas:
         type:
           - boolean
           - "null"
+      licenses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            attribution:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+            dateFrom:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       locality:
         type:
           - string
