@@ -9,6 +9,7 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -17,18 +18,18 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 | banking | account_id | DefaultPaginator | ✅ |  ❌  |
 | organizations | organization_id | DefaultPaginator | ✅ |  ❌  |
 | contacts | contact_id | DefaultPaginator | ✅ |  ❌  |
-| bills | bill_id | DefaultPaginator | ✅ |  ❌  |
-| estimates | estimate_id | DefaultPaginator | ✅ |  ❌  |
+| bills | bill_id | DefaultPaginator | ✅ |  ✅  |
+| estimates | estimate_id | DefaultPaginator | ✅ |  ✅  |
 | items | item_id | DefaultPaginator | ✅ |  ❌  |
-| invoices | invoice_id | DefaultPaginator | ✅ |  ❌  |
-| expenses | expense_id | DefaultPaginator | ✅ |  ❌  |
-| creditnotes | creditnote_id | DefaultPaginator | ✅ |  ❌  |
-| customerpayments | payment_id | DefaultPaginator | ✅ |  ❌  |
-| purchaseorders | purchaseorder_id | DefaultPaginator | ✅ |  ❌  |
-| salesorders | salesorder_id | DefaultPaginator | ✅ |  ❌  |
-| journals | journal_id | DefaultPaginator | ✅ |  ❌  |
+| invoices | invoice_id | DefaultPaginator | ✅ |  ✅  |
+| expenses | expense_id | DefaultPaginator | ✅ |  ✅  |
+| creditnotes | creditnote_id | DefaultPaginator | ✅ |  ✅  |
+| customerpayments | payment_id | DefaultPaginator | ✅ |  ✅  |
+| purchaseorders | purchaseorder_id | DefaultPaginator | ✅ |  ✅  |
+| salesorders | salesorder_id | DefaultPaginator | ✅ |  ✅  |
+| journals | journal_id | DefaultPaginator | ✅ |  ✅  |
 | taxes | tax_id | DefaultPaginator | ✅ |  ❌  |
-| transactions |  | DefaultPaginator | ✅ |  ❌  |
+| transactions |  | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
@@ -37,6 +38,6 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-15 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-19 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

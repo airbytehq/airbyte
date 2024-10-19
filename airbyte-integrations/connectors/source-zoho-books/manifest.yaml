@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -39,6 +39,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -71,6 +75,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -103,6 +111,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -135,6 +147,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -167,11 +183,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -199,11 +241,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -231,6 +299,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -263,11 +335,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -295,11 +393,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -327,11 +451,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -359,11 +509,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -391,11 +567,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -423,11 +625,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -455,11 +683,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: journal_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -487,6 +741,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
@@ -517,11 +775,37 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -568,6 +852,7 @@ spec:
       - client_id
       - client_secret
       - refresh_token
+      - start_date
     properties:
       region:
         type: string
@@ -577,6 +862,15 @@ spec:
         name: region
         order: 0
         title: Region
+        enum:
+          - com
+          - eu
+          - in
+          - com.cn
+          - com.au
+          - jp
+          - sa
+          - ca
       client_id:
         type: string
         name: client_id
@@ -595,6 +889,12 @@ spec:
         order: 3
         title: OAuth Refresh Token
         airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 4
     additionalProperties: true
 
 metadata:
@@ -617,112 +917,112 @@ metadata:
     transactions: true
   testedStreams:
     users:
-      hasRecords: true
-      streamHash: e2a8a8693a4890c432fa75307f875712be833c3f
+      streamHash: aaf51364b4432e24085649631ecadc8c86af5f7b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     banking:
-      streamHash: 1658592b91efeb38d756477730b07e6b1086963b
+      streamHash: 20bfe11215d8ad51e7d34210d1fa2b85d061d5ca
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     organizations:
-      hasRecords: true
-      streamHash: ada54fc9735166ae142a242d71729dc86c14c6ee
+      streamHash: 815f94ce16b374e8bf9cd9762747dc92c83e0915
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contacts:
-      streamHash: 22c4f177f5dc122e43ac4b4595341dfc07d6f2d4
+      streamHash: 25de9515764be51d124d01d25cbd1166c7f4f45e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     bills:
-      streamHash: 1e6e18b915c4929966a5411ddb43a8de4afc8457
+      streamHash: 55406d468bfcc13bc246d7e9c433f654864feba4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     estimates:
-      streamHash: 8f34c76c426e25ab528a813a87bcf0b0f88b3236
+      streamHash: 7491ccf01f4c21ee95b96d1d44ca1db5d3ce3dcc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     items:
-      streamHash: 047edb526f170e418214483411aa2c573b04af5b
+      streamHash: 2bbb893851ac3e1102fd5a10b3a7ab1adba92185
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     invoices:
-      streamHash: 7fd99ea9fa5d613c136f0a4f82f33372917af0f3
+      streamHash: c7b53d63f74fff24ecb52dc5e21edca7b5a9ec43
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     expenses:
-      streamHash: 054dc8de00813ed71f31ce394ad1dd611b2d2f2b
+      streamHash: 5aec3d88da44d2a7b0b63781a33a922c1eeb00be
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     creditnotes:
-      streamHash: 66e9e3d8dd9ac7e5f45deb28bcc6ddd10d62f2ea
+      streamHash: e356efd15605eb1928c38e5371a22701bf3ebeb0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customerpayments:
-      streamHash: f996bdd5df9575b60f0d1dceda1623b1ea09222c
+      streamHash: 7c0586eef0cf2027f79778b0b1e4742a6c91d360
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     purchaseorders:
-      streamHash: 04816ace0ba966370cc6672c14df5a87b938dc73
+      streamHash: 9f78f86ce14d3a0beed5fe81c0b36827e4c0b952
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     salesorders:
-      streamHash: fdb46d4f0667c1e678b6e560f0be8fdce08649f8
+      streamHash: 0a180fdb8454f40af026b219f43fa8eb91256857
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     journals:
-      streamHash: 8605b65b0e1838de10ad05b1fa6f9d9d94509760
+      streamHash: f3d29a39c6c7b3ac3e957377956ee5cbe885c798
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     taxes:
-      streamHash: 33e047b7e23975b418630ad2835423733acb8bb1
+      streamHash: 03400ffd24119641df67f723ed0cfab3ae533bb9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     transactions:
-      streamHash: 3be8e440dabde3924dd7e36aa1833564b5572ac2
+      streamHash: a1d1a53548470258884121ee2e377455fe041bee
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -812,6 +1112,10 @@ schemas:
         type:
           - string
           - "null"
+      account_number:
+        type:
+          - string
+          - "null"
       account_type:
         type:
           - string
@@ -832,11 +1136,28 @@ schemas:
         type:
           - number
           - "null"
+      consent_info:
+        type:
+          - object
+          - "null"
+        properties:
+          consent_remaining_days:
+            type:
+              - string
+              - "null"
+          is_consent_expired:
+            type:
+              - string
+              - "null"
       currency_code:
         type:
           - string
           - "null"
       currency_id:
+        type:
+          - string
+          - "null"
+      feed_status:
         type:
           - string
           - "null"
@@ -848,9 +1169,37 @@ schemas:
         type:
           - boolean
           - "null"
+      is_beta_feed:
+        type:
+          - boolean
+          - "null"
       is_direct_paypal:
         type:
           - boolean
+          - "null"
+      is_paypal_account:
+        type:
+          - boolean
+          - "null"
+      is_primary_account:
+        type:
+          - boolean
+          - "null"
+      partner_bank_source:
+        type:
+          - string
+          - "null"
+      partner_bank_source_formatted:
+        type:
+          - string
+          - "null"
+      routing_number:
+        type:
+          - string
+          - "null"
+      statement_suggestion_count:
+        type:
+          - number
           - "null"
       total_unprinted_checks:
         type:
@@ -976,10 +1325,6 @@ schemas:
         type:
           - boolean
           - "null"
-      is_bill_of_supply_enabled:
-        type:
-          - boolean
-          - "null"
       is_default_org:
         type:
           - boolean
@@ -1012,27 +1357,11 @@ schemas:
         type:
           - boolean
           - "null"
-      is_inventory_enabled:
-        type:
-          - boolean
-          - "null"
       is_invoice_pmt_tds_allowed:
         type:
           - boolean
           - "null"
-      is_new_customer_custom_fields:
-        type:
-          - boolean
-          - "null"
       is_org_active:
-        type:
-          - boolean
-          - "null"
-      is_po_enabled:
-        type:
-          - boolean
-          - "null"
-      is_portal_enabled:
         type:
           - boolean
           - "null"
@@ -1052,19 +1381,11 @@ schemas:
         type:
           - boolean
           - "null"
-      is_retainerinvoice_enabled:
-        type:
-          - boolean
-          - "null"
       is_sales_inclusive_tax_enabled:
         type:
           - boolean
           - "null"
       is_sales_reverse_charge_enabled:
-        type:
-          - boolean
-          - "null"
-      is_salesorder_enabled:
         type:
           - boolean
           - "null"
@@ -1089,10 +1410,6 @@ schemas:
           - boolean
           - "null"
       is_trial_expired:
-        type:
-          - boolean
-          - "null"
-      is_trial_extended:
         type:
           - boolean
           - "null"
@@ -1174,10 +1491,6 @@ schemas:
         type:
           - number
           - "null"
-      portal_name:
-        type:
-          - string
-          - "null"
       price_precision:
         type:
           - number
@@ -1221,10 +1534,6 @@ schemas:
       version_formatted:
         type:
           - string
-          - "null"
-      zi_migration_status:
-        type:
-          - number
           - "null"
       zi_zb_client:
         type:
@@ -1469,9 +1778,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       due_date:
         type:
           - string
@@ -1546,6 +1853,7 @@ schemas:
           - "null"
     required:
       - bill_id
+      - date
   estimates:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1596,9 +1904,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       declined_date:
         type:
           - string
@@ -1667,6 +1973,7 @@ schemas:
           - "null"
     required:
       - estimate_id
+      - date
   items:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1923,9 +2230,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       documents:
         type:
           - string
@@ -2111,6 +2416,7 @@ schemas:
           - "null"
     required:
       - invoice_id
+      - date
   expenses:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2157,9 +2463,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       distance:
         type:
           - number
@@ -2260,6 +2564,7 @@ schemas:
           - "null"
     required:
       - expense_id
+      - date
   creditnotes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2316,9 +2621,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       exchange_rate:
         type:
           - number
@@ -2335,9 +2638,33 @@ schemas:
         type:
           - boolean
           - "null"
+      item_price:
+        type:
+          - number
+          - "null"
+      item_quantity:
+        type:
+          - number
+          - "null"
+      item_total:
+        type:
+          - number
+          - "null"
+      item_total_price:
+        type:
+          - number
+          - "null"
+      item_total_without_tax:
+        type:
+          - number
+          - "null"
       last_modified_time:
         type:
           - string
+          - "null"
+      price_precision:
+        type:
+          - number
           - "null"
       reference_number:
         type:
@@ -2369,6 +2696,7 @@ schemas:
           - "null"
     required:
       - creditnote_id
+      - date
   customerpayments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2423,9 +2751,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       documents:
         type:
           - string
@@ -2506,6 +2832,7 @@ schemas:
           - "null"
     required:
       - payment_id
+      - date
   purchaseorders:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2548,9 +2875,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       delivery_date:
         type:
           - string
@@ -2627,6 +2952,7 @@ schemas:
           - "null"
     required:
       - purchaseorder_id
+      - date
   salesorders:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2677,9 +3003,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       delivery_date:
         type:
           - string
@@ -2788,6 +3112,7 @@ schemas:
           - "null"
     required:
       - salesorder_id
+      - date
   journals:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2818,9 +3143,7 @@ schemas:
           - string
           - "null"
       journal_date:
-        type:
-          - string
-          - "null"
+        type: string
       journal_id:
         type: string
       journal_type:
@@ -2845,6 +3168,7 @@ schemas:
           - "null"
     required:
       - journal_id
+      - journal_date
   taxes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2956,9 +3280,7 @@ schemas:
           - string
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       debit_or_credit:
         type:
           - string
@@ -3055,3 +3377,5 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - date
