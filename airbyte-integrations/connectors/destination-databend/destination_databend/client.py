@@ -13,7 +13,7 @@ class DatabendClient:
         self.table = table
         self.username = username
         self.password = password
-        self.ssl = ssl
+        self.ssl = ssl or False
 
     def open(self):
         handle = connector.connect(
