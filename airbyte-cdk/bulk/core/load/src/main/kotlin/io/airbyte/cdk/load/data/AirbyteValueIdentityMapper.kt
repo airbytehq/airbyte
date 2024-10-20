@@ -73,6 +73,7 @@ open class AirbyteValueIdentityMapper(
         path: List<String>
     ): AirbyteValue = value
 
+
     open fun mapArray(value: ArrayValue, schema: ArrayType, path: List<String>): AirbyteValue {
         return ArrayValue(
             value.values.mapIndexed { index, element ->
@@ -80,6 +81,7 @@ open class AirbyteValueIdentityMapper(
             }
         )
     }
+
 
     open fun mapArrayWithoutSchema(
         value: ArrayValue,
@@ -111,6 +113,4 @@ open class AirbyteValueIdentityMapper(
         value
 
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
-
-    open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
 }
