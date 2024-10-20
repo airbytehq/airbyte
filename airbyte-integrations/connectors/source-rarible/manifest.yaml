@@ -1,4 +1,4 @@
-version: 5.11.1
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -18,8 +18,6 @@ definitions:
     nfts:
       type: DeclarativeStream
       name: nfts
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -32,6 +30,38 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuation') }}"
+            stop_condition: "{{ response.get('continuation') is not defined }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastUpdatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "{{ config['lastUpdatedFrom'] }}"
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: "{{ config['lastUpdatedTo'] }}"
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -57,15 +87,17 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/collections"
-    statistics:
+    collection_stats:
       type: DeclarativeStream
-      name: statistics
+      name: collection_stats
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: v0.1/data/collections/{{ stream_partition.collection}}/stats
           http_method: GET
+          request_parameters:
+            currency: "{{ config['currency'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -82,7 +114,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/statistics"
+          $ref: "#/schemas/collection_stats"
     orders:
       type: DeclarativeStream
       name: orders
@@ -94,12 +126,24 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v0.1/orders/all
           http_method: GET
+          request_parameters:
+            sort: LAST_UPDATE_ASC
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuation') }}"
+            stop_condition: "{{ response.get('continuation') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -116,6 +160,7 @@ definitions:
           path: /v0.1/activities/sync
           http_method: GET
           request_parameters:
+            sort: DB_UPDATE_ASC
             blockchain: "{{ config['blockchain'] }}"
         record_selector:
           type: RecordSelector
@@ -123,6 +168,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - activities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuation') }}"
+            stop_condition: "{{ response.get('continuation') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -147,6 +202,16 @@ definitions:
             field_path:
               - items
               - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuation') }}"
+            stop_condition: "{{ response.get('continuation') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -170,6 +235,18 @@ definitions:
             type: DpathExtractor
             field_path:
               - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('continuation') }}"
+            stop_condition: >-
+              {{ response.get('continuation') is not defined or
+              response.get('continuation') is none }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -188,7 +265,7 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/nfts"
   - $ref: "#/definitions/streams/collections"
-  - $ref: "#/definitions/streams/statistics"
+  - $ref: "#/definitions/streams/collection_stats"
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/activities"
   - $ref: "#/definitions/streams/user_owned_nfts"
@@ -205,6 +282,10 @@ spec:
       - blockchain
       - owner
       - maker
+      - start_date
+      - lastUpdatedFrom
+      - lastUpdatedTo
+      - currency
     properties:
       api_key:
         type: string
@@ -231,13 +312,52 @@ spec:
         description: ETHEREUM OR POLYGON or leave empty to get orders from all blockchains
         order: 4
         title: Maker
+      start_date:
+        type: string
+        order: 5
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      lastUpdatedFrom:
+        type: integer
+        order: 6
+        title: lastUpdatedFrom
+      lastUpdatedTo:
+        type: number
+        order: 7
+        title: lastUpdatedTo
+      currency:
+        type: string
+        enum:
+          - USD
+          - ETH
+          - XTZ
+          - FLOW
+          - MATIC
+          - SOL
+          - MNT
+          - CHZ
+          - CELO
+          - FIEF
+          - XAI
+          - APT
+          - OAS
+          - QUAI
+          - ROSE
+          - MAT
+          - PALM
+          - FIVIRE
+          - GLMR
+        order: 8
+        title: Currency
+        default: USD
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     nfts: true
     collections: true
-    statistics: true
+    collection_stats: true
     orders: true
     activities: true
     user_owned_nfts: true
@@ -245,7 +365,7 @@ metadata:
   testedStreams:
     nfts:
       hasRecords: true
-      streamHash: c7ac3c8dc07d136ee3bf7fb5cfa4843e76fe1354
+      streamHash: 18e4544dce0d4db9cc2dcc3553f983d4575574b6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -257,41 +377,41 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    statistics:
-      streamHash: 2ff25b6995934d5c8486df110a4491bc5e6e529c
+    collection_stats:
+      streamHash: 42aa72a7c5aebcfbeb5db399138d7ea1b827138c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     orders:
-      streamHash: 44e5b61631147bc21540d3fc8c4440bc337a0506
+      streamHash: 5c01b785374fa334473dfd2d9cd2f23d1dc6b45a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     activities:
-      streamHash: 274c9fd02285aa82287d3b29146a6e3895f689bb
+      streamHash: 0cef27e43b91b4721ed7cb7ac9c03618963cd373
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     user_owned_nfts:
-      streamHash: 97ebb33b7c128eb5d081fc3c271deb84570a711a
+      streamHash: 9ea0542f1d74689bdaf528fdd9c9cee988d8de68
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users_bid_orders:
-      hasRecords: true
-      streamHash: d11eaf99120c9e5f8923830e1ec532f97cdae745
+      streamHash: 1720c1be3e117fd0dcf4bebeb09fa54235b09552
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://docs.rarible.org/reference/getting-started
 
@@ -318,6 +438,270 @@ schemas:
         type:
           - array
           - "null"
+      bestBidOrdersByCurrency:
+        type:
+          - array
+          - "null"
+      bestSellOrder:
+        type:
+          - object
+          - "null"
+        properties:
+          cancelled:
+            type:
+              - boolean
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              "@type":
+                type:
+                  - string
+                  - "null"
+              conduitKey:
+                type:
+                  - string
+                  - "null"
+              consideration:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endAmount:
+                      type:
+                        - string
+                        - "null"
+                    identifierOrCriteria:
+                      type:
+                        - string
+                        - "null"
+                    itemType:
+                      type:
+                        - string
+                        - "null"
+                    recipient:
+                      type:
+                        - string
+                        - "null"
+                    startAmount:
+                      type:
+                        - string
+                        - "null"
+                    token:
+                      type:
+                        - string
+                        - "null"
+              counter:
+                type:
+                  - number
+                  - "null"
+              data:
+                type:
+                  - object
+                  - "null"
+              isBundle:
+                type:
+                  - boolean
+                  - "null"
+              isCollectionOffer:
+                type:
+                  - boolean
+                  - "null"
+              itemHash:
+                type:
+                  - string
+                  - "null"
+              nonce:
+                type:
+                  - string
+                  - "null"
+              offer:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endAmount:
+                      type:
+                        - string
+                        - "null"
+                    identifierOrCriteria:
+                      type:
+                        - string
+                        - "null"
+                    itemType:
+                      type:
+                        - string
+                        - "null"
+                    startAmount:
+                      type:
+                        - string
+                        - "null"
+                    token:
+                      type:
+                        - string
+                        - "null"
+              orderId:
+                type:
+                  - string
+                  - "null"
+              orderType:
+                type:
+                  - string
+                  - "null"
+              protocol:
+                type:
+                  - string
+                  - "null"
+              side:
+                type:
+                  - number
+                  - "null"
+              zone:
+                type:
+                  - string
+                  - "null"
+              zoneHash:
+                type:
+                  - string
+                  - "null"
+          endedAt:
+            type:
+              - string
+              - "null"
+          feeTakers:
+            type:
+              - array
+              - "null"
+          fill:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastUpdatedAt:
+            type:
+              - string
+              - "null"
+          make:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  "@type":
+                    type:
+                      - string
+                      - "null"
+                  collection:
+                    type:
+                      - string
+                      - "null"
+                  collectionId:
+                    type:
+                      - string
+                      - "null"
+                  contract:
+                    type:
+                      - string
+                      - "null"
+                  itemId:
+                    type:
+                      - string
+                      - "null"
+                  standard:
+                    type:
+                      - string
+                      - "null"
+                  tokenId:
+                    type:
+                      - string
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          makePrice:
+            type:
+              - string
+              - "null"
+          makePriceUsd:
+            type:
+              - string
+              - "null"
+          makeStock:
+            type:
+              - string
+              - "null"
+          maker:
+            type:
+              - string
+              - "null"
+          optionalRoyalties:
+            type:
+              - boolean
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          salt:
+            type:
+              - string
+              - "null"
+          signature:
+            type:
+              - string
+              - "null"
+          startedAt:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          take:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  "@type":
+                    type:
+                      - string
+                      - "null"
+                  blockchain:
+                    type:
+                      - string
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
       blockchain:
         type:
           - string
@@ -373,7 +757,9 @@ schemas:
           - array
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       itemCollection:
         type:
           - object
@@ -387,10 +773,50 @@ schemas:
             type:
               - string
               - "null"
-      lastUpdatedAt:
+      lastSale:
         type:
-          - string
+          - object
           - "null"
+        properties:
+          buyer:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - object
+              - "null"
+            properties:
+              "@type":
+                type:
+                  - string
+                  - "null"
+              blockchain:
+                type:
+                  - string
+                  - "null"
+              contract:
+                type:
+                  - string
+                  - "null"
+          date:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - string
+              - "null"
+          seller:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      lastUpdatedAt:
+        type: string
       lazySupply:
         type:
           - string
@@ -413,6 +839,14 @@ schemas:
                 - object
                 - "null"
               properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                format:
+                  type:
+                    - string
+                    - "null"
                 key:
                   type:
                     - string
@@ -462,6 +896,10 @@ schemas:
                   type:
                     - number
                     - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
           externalUri:
             type:
               - string
@@ -479,13 +917,33 @@ schemas:
                   type:
                     - string
                     - "null"
+                available:
+                  type:
+                    - boolean
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                mimeType:
+                  type:
+                    - string
+                    - "null"
                 representation:
                   type:
                     - string
                     - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
                 url:
                   type:
                     - string
+                    - "null"
+                width:
+                  type:
+                    - number
                     - "null"
           genres:
             type:
@@ -536,7 +994,7 @@ schemas:
           - string
           - "null"
     required:
-      - id
+      - lastUpdatedAt
   collections:
     type: object
     $schema: http://json-schema.org/schema#
@@ -696,15 +1154,11 @@ schemas:
           - "null"
     required:
       - id
-  statistics:
+  collection_stats:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      floorPrice:
-        type:
-          - number
-          - "null"
       highestSale:
         type:
           - number
@@ -714,10 +1168,6 @@ schemas:
           - number
           - "null"
       listed:
-        type:
-          - number
-          - "null"
-      marketCap:
         type:
           - number
           - "null"
@@ -751,137 +1201,67 @@ schemas:
             type:
               - string
               - "null"
-          additionalParameters:
+          callData:
             type:
               - string
               - "null"
-          conduitKey:
+          exchange:
             type:
               - string
               - "null"
-          consideration:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                endAmount:
-                  type:
-                    - string
-                    - "null"
-                identifierOrCriteria:
-                  type:
-                    - string
-                    - "null"
-                itemType:
-                  type:
-                    - string
-                    - "null"
-                recipient:
-                  type:
-                    - string
-                    - "null"
-                startAmount:
-                  type:
-                    - string
-                    - "null"
-                token:
-                  type:
-                    - string
-                    - "null"
-          counter:
-            type:
-              - number
-              - "null"
-          globalNonce:
+          extra:
             type:
               - string
               - "null"
-          isBundle:
-            type:
-              - boolean
-              - "null"
-          isCollectionOffer:
-            type:
-              - boolean
-              - "null"
-          itemHash:
+          fee:
             type:
               - string
               - "null"
-          nonce:
+          feeMethod:
             type:
               - string
               - "null"
-          offer:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                endAmount:
-                  type:
-                    - string
-                    - "null"
-                identifierOrCriteria:
-                  type:
-                    - string
-                    - "null"
-                itemType:
-                  type:
-                    - string
-                    - "null"
-                startAmount:
-                  type:
-                    - string
-                    - "null"
-                token:
-                  type:
-                    - string
-                    - "null"
-          orderId:
+          feeRecipient:
             type:
               - string
               - "null"
-          orderNonce:
+          howToCall:
             type:
               - string
               - "null"
-          orderType:
+          makerProtocolFee:
             type:
               - string
               - "null"
-          protocol:
+          makerRelayerFee:
             type:
               - string
               - "null"
-          quoteType:
+          replacementPattern:
+            type:
+              - string
+              - "null"
+          saleKind:
             type:
               - string
               - "null"
           side:
             type:
-              - number
+              - string
               - "null"
-          strategyId:
+          staticExtraData:
             type:
               - string
               - "null"
-          subsetNonce:
+          staticTarget:
             type:
               - string
               - "null"
-          zone:
+          takerProtocolFee:
             type:
               - string
               - "null"
-          zoneHash:
+          takerRelayerFee:
             type:
               - string
               - "null"
@@ -893,6 +1273,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       fill:
         type:
           - string
@@ -999,6 +1383,10 @@ schemas:
             type:
               - string
               - "null"
+      taker:
+        type:
+          - string
+          - "null"
     required:
       - id
   activities:
@@ -1150,9 +1538,87 @@ schemas:
                 type:
                   - string
                   - "null"
+              conduitKey:
+                type:
+                  - string
+                  - "null"
+              consideration:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endAmount:
+                      type:
+                        - string
+                        - "null"
+                    identifierOrCriteria:
+                      type:
+                        - string
+                        - "null"
+                    itemType:
+                      type:
+                        - string
+                        - "null"
+                    recipient:
+                      type:
+                        - string
+                        - "null"
+                    startAmount:
+                      type:
+                        - string
+                        - "null"
+                    token:
+                      type:
+                        - string
+                        - "null"
+              counter:
+                type:
+                  - number
+                  - "null"
               isMakeFill:
                 type:
                   - boolean
+                  - "null"
+              nonce:
+                type:
+                  - string
+                  - "null"
+              offer:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endAmount:
+                      type:
+                        - string
+                        - "null"
+                    identifierOrCriteria:
+                      type:
+                        - string
+                        - "null"
+                    itemType:
+                      type:
+                        - string
+                        - "null"
+                    startAmount:
+                      type:
+                        - string
+                        - "null"
+                    token:
+                      type:
+                        - string
+                        - "null"
+              orderType:
+                type:
+                  - string
                   - "null"
               originFees:
                 type:
@@ -1175,6 +1641,22 @@ schemas:
                 type:
                   - array
                   - "null"
+              protocol:
+                type:
+                  - string
+                  - "null"
+              zone:
+                type:
+                  - string
+                  - "null"
+              zoneHash:
+                type:
+                  - string
+                  - "null"
+          endedAt:
+            type:
+              - string
+              - "null"
           feeTakers:
             type:
               - array
@@ -1257,6 +1739,10 @@ schemas:
             type:
               - string
               - "null"
+          startedAt:
+            type:
+              - string
+              - "null"
           status:
             type:
               - string
@@ -1276,6 +1762,10 @@ schemas:
                       - string
                       - "null"
                   blockchain:
+                    type:
+                      - string
+                      - "null"
+                  contract:
                     type:
                       - string
                       - "null"
@@ -1357,6 +1847,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              contract:
+                type:
+                  - string
+                  - "null"
           date:
             type:
               - string
@@ -1399,6 +1893,14 @@ schemas:
                 - object
                 - "null"
               properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                format:
+                  type:
+                    - string
+                    - "null"
                 key:
                   type:
                     - string
@@ -1448,6 +1950,10 @@ schemas:
                   type:
                     - number
                     - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
           externalUri:
             type:
               - string

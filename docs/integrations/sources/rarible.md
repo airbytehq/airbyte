@@ -10,17 +10,21 @@ This connector integrates Rarible&#39;s API with Airbyte, enabling seamless data
 | `blockchain` | `string` | Blockchain.  |  |
 | `owner` | `string` | Owner.  |  |
 | `maker` | `string` | Maker. ETHEREUM OR POLYGON or leave empty to get orders from all blockchains |  |
+| `start_date` | `string` | Start date.  |  |
+| `lastUpdatedFrom` | `integer` | lastUpdatedFrom.  |  |
+| `lastUpdatedTo` | `number` | lastUpdatedTo.  |  |
+| `currency` | `string` | Currency.  | USD |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| nfts | id | No pagination | ✅ |  ❌  |
+| nfts |  | DefaultPaginator | ✅ |  ✅  |
 | collections | id | No pagination | ✅ |  ❌  |
-| statistics |  | No pagination | ✅ |  ❌  |
-| orders | id | No pagination | ✅ |  ❌  |
-| activities | id | No pagination | ✅ |  ❌  |
-| user_owned_nfts | id | No pagination | ✅ |  ❌  |
-| users_bid_orders | id | No pagination | ✅ |  ❌  |
+| collection_stats |  | No pagination | ✅ |  ❌  |
+| orders | id | DefaultPaginator | ✅ |  ❌  |
+| activities | id | DefaultPaginator | ✅ |  ❌  |
+| user_owned_nfts | id | DefaultPaginator | ✅ |  ❌  |
+| users_bid_orders | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -29,6 +33,6 @@ This connector integrates Rarible&#39;s API with Airbyte, enabling seamless data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-09 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-20 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
