@@ -8,7 +8,6 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.file.MockTempFileProvider
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -18,11 +17,13 @@ import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.MockTaskLauncher
+import io.airbyte.cdk.load.util.lineSequence
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlin.io.path.inputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -40,7 +41,6 @@ import org.junit.jupiter.api.Test
 class SpillToDiskTaskTest {
     @Inject lateinit var memoryManager: MemoryManager
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
-    @Inject lateinit var mockTempFileProvider: MockTempFileProvider
     @Inject
     lateinit var queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
@@ -112,17 +112,18 @@ class SpillToDiskTaskTest {
         Assertions.assertEquals(1024, spilled1.totalSizeBytes)
         Assertions.assertEquals(512, spilled2.totalSizeBytes)
 
-        val file1 = spilled1.localFile as MockTempFileProvider.MockLocalFile
-        val file2 = spilled2.localFile as MockTempFileProvider.MockLocalFile
-        Assertions.assertTrue(file1.writersCreated[0].isClosed)
-        Assertions.assertTrue(file2.writersCreated[0].isClosed)
+        val file1 = spilled1.localFile
+        val file2 = spilled2.localFile
 
-        val expectedLinesFirst = (0 until 1024 / 8).flatMap { listOf("test$it", "\n") }
-        val expectedLinesSecond = (1024 / 8 until 1536 / 8).flatMap { listOf("test$it", "\n") }
+        val expectedLinesFirst = (0 until 1024 / 8).flatMap { listOf("test$it") }
+        val expectedLinesSecond = (1024 / 8 until 1536 / 8).flatMap { listOf("test$it") }
 
-        Assertions.assertEquals(expectedLinesFirst, file1.writtenLines)
-        Assertions.assertEquals(expectedLinesSecond, file2.writtenLines)
+        Assertions.assertEquals(expectedLinesFirst, file1.inputStream().lineSequence().toList())
+        Assertions.assertEquals(expectedLinesSecond, file2.inputStream().lineSequence().toList())
 
         Assertions.assertEquals(availableMemory, memoryManager.remainingMemoryBytes)
+
+        file1.toFile().delete()
+        file2.toFile().delete()
     }
 }

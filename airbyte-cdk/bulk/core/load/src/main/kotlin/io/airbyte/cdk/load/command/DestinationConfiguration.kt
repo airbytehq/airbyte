@@ -60,8 +60,6 @@ import java.nio.file.Path
 abstract class DestinationConfiguration : Configuration {
     open val recordBatchSizeBytes: Long = 200L * 1024L * 1024L
     open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")
-    open val firstStageTmpFilePrefix: String = "staged-raw-records"
-    open val firstStageTmpFileSuffix: String = ".jsonl"
 
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
