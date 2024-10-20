@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateTypeIntegral
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NumberType
@@ -17,8 +18,10 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeIntegral
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeIntegral
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
@@ -73,6 +76,18 @@ class AirbyteTypeToAvroSchema {
             }
             is UnionType -> Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
             is UnknownType -> throw IllegalArgumentException("Unknown type: ${airbyteSchema.what}")
+            is DateTypeIntegral -> {
+                val schema = SchemaBuilder.builder().intType()
+                LogicalTypes.date().addToSchema(schema)
+            }
+            is TimeTypeIntegral -> {
+                val schema = SchemaBuilder.builder().longType()
+                LogicalTypes.timeMicros().addToSchema(schema)
+            }
+            is TimestampTypeIntegral -> {
+                val schema = SchemaBuilder.builder().longType()
+                LogicalTypes.timestampMicros().addToSchema(schema)
+            }
         }
     }
 }

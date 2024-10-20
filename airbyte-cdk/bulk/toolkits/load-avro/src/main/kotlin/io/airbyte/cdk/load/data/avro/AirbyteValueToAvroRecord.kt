@@ -8,13 +8,16 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.DateValueIntegral
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimeValueIntegral
 import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampValueIntegral
 import io.airbyte.cdk.load.data.UnknownValue
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
@@ -54,6 +57,9 @@ class AirbyteValueToAvroRecord {
             is TimestampValue ->
                 throw IllegalArgumentException("String-based timestamp types are not supported")
             is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
+            is DateValueIntegral -> return airbyteValue.epochDay
+            is TimeValueIntegral -> return airbyteValue.microsOfDay
+            is TimestampValueIntegral -> return airbyteValue.epochMicros
         }
     }
 }

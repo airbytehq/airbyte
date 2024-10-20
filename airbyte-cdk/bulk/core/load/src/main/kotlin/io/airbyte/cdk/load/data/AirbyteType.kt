@@ -41,3 +41,11 @@ data class UnionType(val options: List<AirbyteType>) : AirbyteType
 data class UnknownType(val what: String) : AirbyteType
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
+
+// Extension types for schemas that support them
+
+data object DateTypeIntegral : AirbyteType
+
+data object TimestampTypeIntegral : AirbyteType
+
+data object TimeTypeIntegral : AirbyteType

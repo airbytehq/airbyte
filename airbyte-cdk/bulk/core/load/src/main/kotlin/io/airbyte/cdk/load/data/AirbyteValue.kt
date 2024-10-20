@@ -156,3 +156,9 @@ value class ObjectValue(val values: LinkedHashMap<String, AirbyteValue>) : Airby
 }
 
 @JvmInline value class UnknownValue(val what: String) : AirbyteValue
+
+@JvmInline value class DateValueIntegral(val epochDay: Int) : AirbyteValue
+
+@JvmInline value class TimestampValueIntegral(val epochMicros: Long) : AirbyteValue
+
+@JvmInline value class TimeValueIntegral(val microsOfDay: Long) : AirbyteValue
