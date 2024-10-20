@@ -16,6 +16,7 @@ object S3V2TestUtils {
     const val AVRO_UNCOMPRESSED_CONFIG_PATH = "secrets/s3_dest_v2_avro_config.json"
     const val AVRO_BZIP2_CONFIG_PATH = "secrets/s3_dest_v2_avro_bzip2_config.json"
     const val PARQUET_UNCOMPRESSED_CONFIG_PATH = "secrets/s3_dest_v2_parquet_config.json"
+    const val PARQUET_SNAPPY_CONFIG_PATH = "secrets/s3_dest_v2_parquet_snappy_config.json"
     fun getConfig(configPath: String): S3V2Specification =
         ValidatedJsonUtils.parseOne(
             S3V2Specification::class.java,
