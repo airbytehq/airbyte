@@ -14,21 +14,6 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 /**
- * In order to make sure test implementors are aware of the catalog they're using, force a failure
- * if nothing is either injected or opted-in.
- */
-@Factory
-class DefaultMockDestinationCatalogFactory {
-    @Singleton
-    @Requires(env = ["test"])
-    fun make(): DestinationCatalog {
-        throw RuntimeException(
-            "Test implementors should inject a destination catalog or include a mock (ie, @MicronautTest(environments = [ ..., \"MockDestinationCatalog\"]))"
-        )
-    }
-}
-
-/**
  * Basic two-stream catalog, good for most testing purposes. Inject with
  * `@MicronautTest(environments = [ ..., MockDestinationCatalog])`.
  */
