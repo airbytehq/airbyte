@@ -9,6 +9,9 @@ description: >-
   This connector has various streams including but not limited to Stocks , Forex
   Pairs , Crypto Currencies , Time Series and Techical Indicators
 
+
+  Docs : https://twelvedata.com/docs
+
 check:
   type: CheckStream
   stream_names:
@@ -956,24 +959,24 @@ spec:
         airbyte_secret: true
       country:
         type: string
-        description: Country where instrument is traded
+        description: Where instrument is traded
         order: 1
         title: Country
       exchange:
         type: string
-        description: Exchange where instrument is traded
+        description: Where instrument is traded
         order: 2
         title: Exchange
       symbol:
         type: string
-        description: Symbol ticker of the instrument
+        description: Ticker of the instrument
         order: 3
         title: Symbol
       interval:
         type: string
         description: >-
-          Interval between two consecutive points in time series Supports: 1min,
-          5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month
+          Between two consecutive points in time series Supports: 1min, 5min,
+          15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month
         order: 4
         title: Interval
     additionalProperties: true
@@ -1167,12 +1170,12 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     ETFs Type List:
-      hasRecords: true
       streamHash: f1c197d741b0dae5056a7ebcddc49d5c352c2666
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:

@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorSubtype: api
   connectorType: source
-  definitionId: 7fc06d3a-785d-4793-8c55-1980be3d4e87
+  definitionId: 162f084d-3a9f-42c0-8785-81aa18abf339
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-twelve-data
   githubIssueLabel: source-twelve-data

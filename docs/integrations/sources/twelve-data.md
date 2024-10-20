@@ -2,15 +2,17 @@
 Twelve data can be used to access the data of world financial markets including stocks, forex, ETFs, indices, and cryptocurrencies.
 This connector has various streams including but not limited to Stocks , Forex Pairs , Crypto Currencies , Time Series and Techical Indicators
 
+Docs : https://twelvedata.com/docs
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `country` | `string` | Country. Country where instrument is traded |  |
-| `exchange` | `string` | Exchange. Exchange where instrument is traded |  |
-| `symbol` | `string` | Symbol. Symbol ticker of the instrument |  |
-| `interval` | `string` | Interval. Interval between two consecutive points in time series Supports: 1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month |  |
+| `country` | `string` | Country. Where instrument is traded |  |
+| `exchange` | `string` | Exchange. Where instrument is traded |  |
+| `symbol` | `string` | Symbol. Ticker of the instrument |  |
+| `interval` | `string` | Interval. Between two consecutive points in time series Supports: 1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

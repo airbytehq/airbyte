@@ -4,6 +4,8 @@ This directory contains the manifest-only connector for `source-twelve-data`.
 Twelve data can be used to access the data of world financial markets including stocks, forex, ETFs, indices, and cryptocurrencies.
 This connector has various streams including but not limited to Stocks , Forex Pairs , Crypto Currencies , Time Series and Techical Indicators
 
+Docs : https://twelvedata.com/docs
+
 ## Usage
 There are multiple ways to use this connector:
 - You can use this connector as any other connector in Airbyte Marketplace.
