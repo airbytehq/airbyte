@@ -2,10 +2,11 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data
+package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import io.airbyte.cdk.load.data.*
 
 class AirbyteValueToJson {
     fun convert(value: AirbyteValue): JsonNode {
@@ -15,6 +16,7 @@ class AirbyteValueToJson {
             is BooleanValue -> JsonNodeFactory.instance.booleanNode(value.value)
             is DateValue -> JsonNodeFactory.instance.textNode(value.value)
             is IntegerValue -> JsonNodeFactory.instance.numberNode(value.value)
+            is IntValue -> JsonNodeFactory.instance.numberNode(value.value)
             is NullValue -> JsonNodeFactory.instance.nullNode()
             is NumberValue -> JsonNodeFactory.instance.numberNode(value.value)
             is ObjectValue -> {

@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.data.DestinationRecordToAirbyteValueWithMeta
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
-import io.airbyte.cdk.load.data.toJson
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
