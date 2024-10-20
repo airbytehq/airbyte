@@ -376,8 +376,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         if stream_state:
             state = stream_state.get(self.cursor_field)
             start_date = state and pendulum.parse(state) or start_date
-
         start_date = min(start_date, end_date)
+        # Adjust end_date to match the timezone of start_date
+        end_date = end_date.in_timezone(start_date.timezone)
         while start_date < end_date:
             end_date_slice = start_date.add(days=self.period_in_days)
             yield {
