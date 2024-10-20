@@ -37,7 +37,7 @@ interface SpillToDiskTask : StreamLevel, InternalScope
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
 class DefaultSpillToDiskTask(
-    private val tmpFileProvider: SpillFileProvider,
+    private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
@@ -53,7 +53,7 @@ class DefaultSpillToDiskTask(
     )
 
     override suspend fun execute() {
-        val tmpFile = tmpFileProvider.createTempFile()
+        val tmpFile = spillFileProvider.createTempFile()
         val result =
             tmpFile.outputStream().use { outputStream ->
                 queue
@@ -103,7 +103,7 @@ interface SpillToDiskTaskFactory {
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
-    private val tmpFileProvider: SpillFileProvider,
+    private val spillFileProvider: SpillFileProvider,
     private val queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
@@ -113,7 +113,7 @@ class DefaultSpillToDiskTaskFactory(
         stream: DestinationStream
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(
-            tmpFileProvider,
+            spillFileProvider,
             queueSupplier.get(stream.descriptor),
             flushStrategy,
             stream,
