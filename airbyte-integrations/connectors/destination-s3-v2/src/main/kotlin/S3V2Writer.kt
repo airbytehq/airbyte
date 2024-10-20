@@ -111,13 +111,18 @@ class S3V2Writer(
                                 }
                         }
                         is ParquetFormatConfiguration -> {
-                            outputStream.toParquetWriter(avroSchema!!).use { writer ->
-                                records.forEach {
-                                    writer.write(
-                                        recordDecorator.decorate(it).toAvroRecord(avroSchema)
-                                    )
+                            outputStream
+                                .toParquetWriter(
+                                    avroSchema!!,
+                                    formatConfig.parquetWriterConfiguration
+                                )
+                                .use { writer ->
+                                    records.forEach {
+                                        writer.write(
+                                            recordDecorator.decorate(it).toAvroRecord(avroSchema)
+                                        )
+                                    }
                                 }
-                            }
                         }
                         else -> throw IllegalStateException("Unsupported format")
                     }
