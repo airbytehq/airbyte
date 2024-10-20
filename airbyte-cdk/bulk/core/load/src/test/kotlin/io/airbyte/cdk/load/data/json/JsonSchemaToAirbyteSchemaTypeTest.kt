@@ -2,10 +2,27 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data
+package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NullType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

@@ -2,9 +2,34 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data
+package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullType
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.UnionType
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

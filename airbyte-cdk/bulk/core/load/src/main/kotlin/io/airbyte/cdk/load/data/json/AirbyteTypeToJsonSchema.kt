@@ -2,11 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data
+package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.data.*
 
 class AirbyteTypeToJsonSchema {
     private fun ofType(typeName: String): ObjectNode {
@@ -63,7 +64,7 @@ class AirbyteTypeToJsonSchema {
                 val timestampNode = ofType("string").put("format", "date-time")
                 timestampNode.put("airbyte_type", "timestamp_without_timezone")
             }
-            else -> throw IllegalArgumentException("Unknown type: $airbyteType")
+            is UnknownType -> throw IllegalArgumentException("Unknown type: $airbyteType")
         }
     }
 

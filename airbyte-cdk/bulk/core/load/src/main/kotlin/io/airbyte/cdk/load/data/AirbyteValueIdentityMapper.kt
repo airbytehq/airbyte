@@ -9,7 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
 open class AirbyteValueIdentityMapper(
-    open val meta: DestinationRecord.Meta,
+    val meta: DestinationRecord.Meta,
 ) {
     private fun collectFailure(
         path: List<String>,
