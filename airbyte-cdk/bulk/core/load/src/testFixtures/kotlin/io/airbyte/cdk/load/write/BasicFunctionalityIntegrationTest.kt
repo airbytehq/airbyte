@@ -78,7 +78,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         data = """{"id": 5678}""",
                         emittedAtMs = 1234,
                         changes =
-                            listOf(
+                            mutableListOf(
                                 DestinationRecord.Change(
                                     field = "foo",
                                     change = AirbyteRecordMessageMetaChange.Change.NULLED,
@@ -129,7 +129,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =
-                                            listOf(
+                                            mutableListOf(
                                                 DestinationRecord.Change(
                                                     field = "foo",
                                                     change =
@@ -297,7 +297,8 @@ abstract class BasicFunctionalityIntegrationTest(
                                 extractedAt = 1234,
                                 generationId = 0,
                                 data = mapOf("id" to expectedId),
-                                airbyteMeta = OutputRecord.Meta(changes = listOf(), syncId = 42)
+                                airbyteMeta =
+                                    OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
                             )
                         )
 
@@ -369,7 +370,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             extractedAt = 1234,
                             generationId = 0,
                             data = mapOf("id" to 1234),
-                            airbyteMeta = OutputRecord.Meta(changes = listOf(), syncId = 42)
+                            airbyteMeta = OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
                         )
                     ),
                     stream1,
@@ -385,7 +386,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             extractedAt = 1234,
                             generationId = 0,
                             data = mapOf("id" to 5678),
-                            airbyteMeta = OutputRecord.Meta(changes = listOf(), syncId = 42)
+                            airbyteMeta = OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
                         )
                     ),
                     stream2,
@@ -466,7 +467,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     (stream.schema as ObjectType).properties.mapValuesTo(
                                         linkedMapOf()
                                     ) { 42 },
-                                airbyteMeta = OutputRecord.Meta(changes = null, syncId = 42)
+                                airbyteMeta = OutputRecord.Meta(syncId = 42)
                             )
                         ),
                         stream,
