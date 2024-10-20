@@ -17,14 +17,13 @@ class DevNullBasicFunctionalityIntegrationTest :
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
     ) {
-
-    @Test
-    override fun testCheck() {
-        super.testCheck()
-    }
-
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
     }
 }

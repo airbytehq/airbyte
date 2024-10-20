@@ -1407,6 +1407,7 @@ definitions:
         description: Component used to decode the response.
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1739,6 +1740,16 @@ definitions:
       type:
         type: string
         enum: [IterableDecoder]
+  XmlDecoder:
+    title: XML Decoder
+    description: Use this if the response is XML.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [XmlDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2104,6 +2115,20 @@ definitions:
         description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
         type: boolean
         default: false
+      extra_fields:
+        title: Extra Fields
+        description: Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.
+        interpolation_context:
+          - config
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+          description: Defines a field path as an array of strings.
+          examples:
+            - ["field1"]
+            - ["nested", "field2"]
       $parameters:
         type: object
         additionalProperties: true
@@ -2382,6 +2407,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2414,7 +2440,7 @@ definitions:
         items:
           type: string
   AsyncRetriever:
-    description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+    description: "[Experimental - We expect the interface to change shortly and we reserve the right to not consider this a breaking change] Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router."
     type: object
     required:
       - type
@@ -2497,6 +2523,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true

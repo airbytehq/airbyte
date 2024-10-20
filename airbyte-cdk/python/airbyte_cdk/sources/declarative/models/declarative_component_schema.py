@@ -685,6 +685,10 @@ class IterableDecoder(BaseModel):
     type: Literal['IterableDecoder']
 
 
+class XmlDecoder(BaseModel):
+    type: Literal['XmlDecoder']
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -1458,8 +1462,8 @@ class SessionTokenAuthenticator(BaseModel):
         description='Authentication method to use for requests sent to the API, specifying how to inject the session token.',
         title='Data Request Authentication',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None, description='Component decoding the response', title='Decoder'
+    decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
+        None, description='Component used to decode the response.', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1588,6 +1592,11 @@ class ParentStreamConfig(BaseModel):
         description='Indicates whether the parent stream should be read incrementally based on updates in the child stream.',
         title='Incremental Dependency',
     )
+    extra_fields: Optional[List[List[str]]] = Field(
+        None,
+        description='Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.',
+        title='Extra Fields',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1625,10 +1634,12 @@ class SimpleRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder]] = (
+        Field(
+            None,
+            description='Component decoding the response so records can be extracted.',
+            title='Decoder',
+        )
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1689,10 +1700,12 @@ class AsyncRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder]] = (
+        Field(
+            None,
+            description='Component decoding the response so records can be extracted.',
+            title='Decoder',
+        )
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

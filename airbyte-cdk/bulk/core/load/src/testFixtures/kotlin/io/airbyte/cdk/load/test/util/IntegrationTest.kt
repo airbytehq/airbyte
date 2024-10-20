@@ -15,37 +15,53 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlin.test.fail
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import uk.org.webcompere.systemstubs.jupiter.SystemStub
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 
-@MicronautTest
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
 // Thanks, spotbugs.
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
+@ExtendWith(SystemStubsExtension::class)
 abstract class IntegrationTest(
     val dataDumper: DestinationDataDumper,
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
 ) {
+    // Connectors are calling System.getenv rather than using micronaut-y properties,
+    // so we have to mock it out, instead of just setting more properties
+    // inside NonDockerizedDestination.
+    // This field has no effect on DockerizedDestination, which explicitly
+    // sets env vars when invoking `docker run`.
+    @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+
+    @BeforeEach
+    fun setEnvVars() {
+        nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
+    }
+
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    @Inject lateinit var destinationProcessFactory: DestinationProcessFactory
+    val destinationProcessFactory = DestinationProcessFactory.get()
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
@@ -53,6 +69,23 @@ abstract class IntegrationTest(
             .format(DateTimeFormatter.ofPattern("YYYYMMDD"))
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
+
+    // junit is a bit wonky with injecting TestInfo.
+    // You can declare it as a constructor param, but you get a TestInfo instance
+    // that doesn't know what test method it's running in.
+    // You can also declare it as a param on the test function, but that's just
+    // less convenient.
+    // This is the only way to avoid copying the TestInfo stuff everywhere :/
+    // (I don't think micronaut can inject this object, unfortunately)
+    protected lateinit var testInfo: TestInfo
+    protected lateinit var testPrettyName: String
+
+    @BeforeEach
+    fun getTestInfo(testInfo: TestInfo) {
+        this.testInfo = testInfo
+        testPrettyName = "${testInfo.testClass.get().simpleName}.${testInfo.displayName}"
+        destinationProcessFactory.testName = testPrettyName
+    }
 
     @AfterEach
     fun teardown() {
@@ -62,13 +95,13 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
+        config: ConfigurationSpecification,
         canonicalExpectedRecords: List<OutputRecord>,
-        streamName: String,
-        streamNamespace: String?,
+        stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
     ) {
-        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(streamName, streamNamespace)
+        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
 
@@ -108,7 +141,7 @@ abstract class IntegrationTest(
                 catalog.asProtocolObject(),
             )
         return runBlocking {
-            val destinationCompletion = async { destination.run() }
+            launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
@@ -124,16 +157,15 @@ abstract class IntegrationTest(
                                             .withStreamDescriptor(
                                                 StreamDescriptor()
                                                     .withName(it.descriptor.name)
-                                                    .withNamespace(it.descriptor.namespace)
+                                                    .withNamespace(it.descriptor.namespace),
                                             )
-                                            .withStatus(streamStatus)
-                                    )
-                            )
+                                            .withStatus(streamStatus),
+                                    ),
+                            ),
                     )
                 }
             }
             destination.shutdown()
-            destinationCompletion.await()
             destination.readMessages()
         }
     }
