@@ -10,6 +10,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
+import io.airbyte.cdk.load.command.avro.AvroCompressionConfigurationProvider
+import io.airbyte.cdk.load.command.avro.AvroFormatCompressionCodec
+import io.airbyte.cdk.load.command.avro.AvroFormatNoCompressionCodec
 
 /**
  * Mix-in to provide file format configuration.
@@ -32,7 +36,13 @@ interface ObjectStorageFormatSpecificationProvider {
         return when (format) {
             is JsonFormatSpecification -> JsonFormatConfiguration()
             is CSVFormatSpecification -> CSVFormatConfiguration()
-            is AvroFormatSpecification -> AvroFormatConfiguration()
+            is AvroFormatSpecification ->
+                AvroFormatConfiguration(
+                    avroCompressionConfiguration =
+                        (format as AvroFormatSpecification)
+                            .compressionCodec
+                            .toCompressionConfiguration()
+                )
             is ParquetFormatSpecification -> ParquetFormatConfiguration()
         }
     }
@@ -59,7 +69,7 @@ interface ObjectStorageFormatSpecificationProvider {
     JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet")
 )
 sealed class ObjectStorageFormatSpecification(
-    @JsonSchemaTitle("Format Type") @JsonProperty("format_type") open val formatType: Type
+    @JsonSchemaTitle("Format Type") open val formatType: Type
 ) {
     enum class Type(@get:JsonValue val typeName: String) {
         JSONL("JSONL"),
@@ -69,30 +79,49 @@ sealed class ObjectStorageFormatSpecification(
     }
 }
 
+/** JSONL */
 @JsonSchemaTitle("JSON Lines: Newline-delimited JSON")
 class JsonFormatSpecification(
-    @JsonProperty("format_type") override val formatType: Type = Type.JSONL
+    @JsonSchemaTitle("Format Type")
+    @JsonProperty("format_type")
+    override val formatType: Type = Type.JSONL
 ) : ObjectStorageFormatSpecification(formatType), ObjectStorageCompressionSpecificationProvider {
     override val compression: ObjectStorageCompressionSpecification = NoCompressionSpecification()
 }
 
+/** CSV */
 @JsonSchemaTitle("CSV: Comma-Separated Values")
 class CSVFormatSpecification(
-    @JsonProperty("format_type") override val formatType: Type = Type.CSV
+    @JsonSchemaTitle("Format Type")
+    @JsonProperty("format_type")
+    override val formatType: Type = Type.CSV
 ) : ObjectStorageFormatSpecification(formatType), ObjectStorageCompressionSpecificationProvider {
     override val compression: ObjectStorageCompressionSpecification = NoCompressionSpecification()
 }
 
+/** AVRO */
 @JsonSchemaTitle("Avro: Apache Avro")
 class AvroFormatSpecification(
-    @JsonProperty("format_type") override val formatType: Type = Type.AVRO
-) : ObjectStorageFormatSpecification(formatType)
+    @JsonSchemaTitle("Format Type")
+    @JsonProperty("format_type")
+    override val formatType: Type = Type.AVRO
+) : ObjectStorageFormatSpecification(formatType) {
 
+    @JsonSchemaTitle("Compression Codec")
+    @JsonPropertyDescription(
+        "The compression algorithm used to compress data. Default to no compression."
+    )
+    @JsonProperty("compression_codec")
+    val compressionCodec: AvroFormatCompressionCodec = AvroFormatNoCompressionCodec()
+}
+
+/** Parquet */
 @JsonSchemaTitle("Parquet: Columnar Storage")
 class ParquetFormatSpecification(
     @JsonProperty("format_type") override val formatType: Type = Type.PARQUET
 ) : ObjectStorageFormatSpecification(formatType)
 
+/** Configuration */
 interface OutputFormatConfigurationProvider {
     val outputFormat: ObjectStorageFormatConfiguration
 }
@@ -107,8 +136,10 @@ data class JsonFormatConfiguration(override val extension: String = "jsonl") :
 data class CSVFormatConfiguration(override val extension: String = "csv") :
     ObjectStorageFormatConfiguration
 
-data class AvroFormatConfiguration(override val extension: String = "avro") :
-    ObjectStorageFormatConfiguration
+data class AvroFormatConfiguration(
+    override val extension: String = "avro",
+    override val avroCompressionConfiguration: AvroCompressionConfiguration,
+) : ObjectStorageFormatConfiguration, AvroCompressionConfigurationProvider
 
 data class ParquetFormatConfiguration(override val extension: String = "parquet") :
     ObjectStorageFormatConfiguration
