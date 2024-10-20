@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
+import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.toAirbyteValue
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.file.avro.toAvroReader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.parquet.toParquetReader
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -95,6 +97,15 @@ class ObjectStorageDataDumper(
                             .toList()
                     }
             }
-            else -> error("Unsupported format")
+            is ParquetFormatConfiguration -> {
+                inputStream
+                    .toParquetReader(stream.schemaWithMeta.toAvroSchema(stream.descriptor))
+                    .use { reader ->
+                        reader
+                            .recordSequence()
+                            .map { it.toAirbyteValue(stream.schemaWithMeta).toOutputRecord() }
+                            .toList()
+                    }
+            }
         }
 }

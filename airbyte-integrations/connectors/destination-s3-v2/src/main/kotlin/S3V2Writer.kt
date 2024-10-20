@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.DestinationRecordToAirbyteValueWithMeta
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -18,6 +19,7 @@ import io.airbyte.cdk.load.data.toCsvRecord
 import io.airbyte.cdk.load.data.toJson
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
+import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.message.Batch
@@ -55,7 +57,11 @@ class S3V2Writer(
     inner class S3V2StreamLoader(override val stream: DestinationStream) : StreamLoader {
         private val partNumber = AtomicLong(0L) // TODO: Get from destination state
         private val avroSchema =
-            if (formatConfig.objectStorageFormatConfiguration is AvroFormatConfiguration) {
+            if (
+                formatConfig.objectStorageFormatConfiguration.let {
+                    it is AvroFormatConfiguration || it is ParquetFormatConfiguration
+                }
+            ) {
                 stream.schemaWithMeta.toAvroSchema(stream.descriptor)
             } else {
                 null
@@ -91,6 +97,15 @@ class S3V2Writer(
                         }
                         is AvroFormatConfiguration -> {
                             outputStream.toAvroWriter(avroSchema!!).use { writer ->
+                                records.forEach {
+                                    writer.write(
+                                        recordDecorator.decorate(it).toAvroRecord(avroSchema)
+                                    )
+                                }
+                            }
+                        }
+                        is ParquetFormatConfiguration -> {
+                            outputStream.toParquetWriter(avroSchema!!).use { writer ->
                                 records.forEach {
                                     writer.write(
                                         recordDecorator.decorate(it).toAvroRecord(avroSchema)
