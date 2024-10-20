@@ -59,7 +59,15 @@ class AvroRecordToAirbyteValue {
                 throw UnsupportedOperationException("ObjectTypeWithEmptySchema is not supported")
             is ObjectTypeWithoutSchema ->
                 throw UnsupportedOperationException("ObjectTypeWithoutSchema is not supported")
-            is StringType -> return StringValue((avroValue as Utf8).toString())
+            is StringType ->
+                return StringValue(
+                    when (avroValue) {
+                        is Utf8 -> avroValue.toString() // Avro
+                        is String -> avroValue // Avro via Parquet
+                        else ->
+                            throw IllegalArgumentException("Unsupported string type: $avroValue")
+                    }
+                )
             is TimeType -> throw UnsupportedOperationException("TimeType is not supported")
             is TimestampType ->
                 throw UnsupportedOperationException("TimestampType is not supported")

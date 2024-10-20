@@ -129,8 +129,8 @@
           "properties" : {
             "format_type" : {
               "type" : "string",
-              "enum" : [ "AVRO" ],
-              "default" : "AVRO"
+              "enum" : [ "Avro" ],
+              "default" : "Avro"
             }
           },
           "required" : [ "format_type" ]
@@ -141,8 +141,8 @@
           "properties" : {
             "format_type" : {
               "type" : "string",
-              "enum" : [ "PARQUET" ],
-              "default" : "PARQUET"
+              "enum" : [ "Parquet" ],
+              "default" : "Parquet"
             }
           },
           "required" : [ "format_type" ]
