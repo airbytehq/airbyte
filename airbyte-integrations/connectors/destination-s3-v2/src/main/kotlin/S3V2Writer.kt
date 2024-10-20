@@ -36,7 +36,7 @@ class S3V2Writer(
     private val s3Client: S3Client,
     private val pathFactory: ObjectStoragePathFactory,
     private val recordDecorator: DestinationRecordToAirbyteValueWithMeta,
-    private val formatConfig: ObjectStorageFormatConfigurationProvider
+    private val formatConfigProvider: ObjectStorageFormatConfigurationProvider
 ) : DestinationWriter {
     sealed interface S3V2Batch : Batch
     data class StagedObject(
@@ -49,6 +49,8 @@ class S3V2Writer(
         val s3Object: S3Object,
     ) : S3V2Batch
 
+    private val formatConfig = formatConfigProvider.objectStorageFormatConfiguration
+
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return S3V2StreamLoader(stream)
     }
@@ -58,9 +60,8 @@ class S3V2Writer(
         private val partNumber = AtomicLong(0L) // TODO: Get from destination state
         private val avroSchema =
             if (
-                formatConfig.objectStorageFormatConfiguration.let {
-                    it is AvroFormatConfiguration || it is ParquetFormatConfiguration
-                }
+                formatConfig is AvroFormatConfiguration ||
+                    formatConfig is ParquetFormatConfiguration
             ) {
                 stream.schemaWithMeta.toAvroSchema(stream.descriptor)
             } else {
@@ -75,7 +76,7 @@ class S3V2Writer(
             val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
             val s3Object =
                 s3Client.streamingUpload(key) { outputStream ->
-                    when (formatConfig.objectStorageFormatConfiguration) {
+                    when (formatConfig) {
                         is JsonFormatConfiguration -> {
                             records.forEach {
                                 val serialized =
@@ -96,13 +97,18 @@ class S3V2Writer(
                                 }
                         }
                         is AvroFormatConfiguration -> {
-                            outputStream.toAvroWriter(avroSchema!!).use { writer ->
-                                records.forEach {
-                                    writer.write(
-                                        recordDecorator.decorate(it).toAvroRecord(avroSchema)
-                                    )
+                            outputStream
+                                .toAvroWriter(
+                                    avroSchema!!,
+                                    formatConfig.avroCompressionConfiguration
+                                )
+                                .use { writer ->
+                                    records.forEach {
+                                        writer.write(
+                                            recordDecorator.decorate(it).toAvroRecord(avroSchema)
+                                        )
+                                    }
                                 }
-                            }
                         }
                         is ParquetFormatConfiguration -> {
                             outputStream.toParquetWriter(avroSchema!!).use { writer ->
