@@ -1,5 +1,6 @@
 # Codefresh
-This connector integrates Codefresh with Airbyte, enabling seamless data synchronization for analytics and pipeline monitoring. It provides streams like agents, builds, audit, analytics etc.
+This connector integrates [Codefresh](https://codefresh.io) with Airbyte, enabling seamless data synchronization for analytics and pipeline monitoring. 
+It provides streams like agents, builds, audit, analytics etc.
 
 ## Configuration
 
@@ -7,14 +8,9 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `account_id` | `string` | Account Id.  |  |
-| `report_name` | `string` | Report Name.  |  |
 | `report_granularity` | `string` | Report Granularity.  |  |
 | `report_date_range` | `array` | Report Date Range.  |  |
 | `start_date` | `string` | Start date.  |  |
-| `from` | `integer` | From.  |  |
-| `to` | `string` | To.  |  |
-| `startdate` | `string` | startDate.  |  |
-| `enddate` | `string` | endDate.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -25,14 +21,12 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 | builds | id | DefaultPaginator | ✅ |  ✅  |
 | audit | id | DefaultPaginator | ✅ |  ✅  |
 | analytics_metadata | reportName | No pagination | ✅ |  ❌  |
-| analytics_reports |  | DefaultPaginator | ✅ |  ❌  |
-| execution_contexts | _id | DefaultPaginator | ✅ |  ❌  |
-| contexts | metadata | DefaultPaginator | ✅ |  ❌  |
-| views |  | DefaultPaginator | ✅ |  ❌  |
+| analytics_reports |  | No pagination | ✅ |  ❌  |
+| execution_contexts | _id | No pagination | ✅ |  ❌  |
+| contexts | metadata | No pagination | ✅ |  ❌  |
 | projects | id | DefaultPaginator | ✅ |  ❌  |
 | pipelines | metadata | DefaultPaginator | ✅ |  ❌  |
 | step_types | metadata | DefaultPaginator | ✅ |  ❌  |
-| environments |  | DefaultPaginator | ✅ |  ❌  |
 | helm_repos |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -42,6 +36,6 @@ This connector integrates Codefresh with Airbyte, enabling seamless data synchro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-19 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-21 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
