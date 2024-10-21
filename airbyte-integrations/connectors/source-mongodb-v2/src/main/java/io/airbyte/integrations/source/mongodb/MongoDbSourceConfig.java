@@ -82,13 +82,14 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) ? getDatabaseConfig().get(USERNAME_CONFIGURATION_KEY).asText() : null;
   }
 
-  public boolean shouldUseSSL() {
-    return getDatabaseConfig().has(ENABLE_SSL_CONFIGURATION_KEY) ? getDatabaseConfig().get(ENABLE_SSL_CONFIGURATION_KEY).asText() : true;
-  }
-
   public boolean hasAuthCredentials() {
     return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) && getDatabaseConfig().has(PASSWORD_CONFIGURATION_KEY);
   }
+
+  public boolean shouldUseSSL() {
+    return getDatabaseConfig().has(ENABLE_SSL_CONFIGURATION_KEY) ? getDatabaseConfig().get(ENABLE_SSL_CONFIGURATION_KEY).asBoolean() : true;
+  }
+
 
   public Integer getSampleSize() {
     if (rawConfig.has(DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY)) {
