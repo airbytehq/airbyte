@@ -258,7 +258,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
 class IterableExportStreamRanged(IterableExportStream, ABC):
     """
     This class use RangeSliceGenerator class to break single request into
-    ranges with same (or less for final range) number of days. By default it 90
+    ranges with same (or less for final range) number of days. By default it 7
     days.
     """
 
@@ -328,10 +328,12 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
                     stream_slice=stream_slice,
                     stream_state=stream_state,
                 ):
-                    now = pendulum.now()
-                    self._adjustable_generator.adjust_range(now - start_time)
                     yield record
-                    start_time = now
+
+                now = pendulum.now()
+                self._adjustable_generator.adjust_range(now - start_time)
+                start_time = now
+
                 break
             except ChunkedEncodingError:
                 self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
