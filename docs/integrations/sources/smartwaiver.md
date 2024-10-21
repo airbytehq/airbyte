@@ -9,6 +9,13 @@ The Smartwaiver connector for Airbyte enables seamless integration with the Smar
 | `start_date` | `string` | Start Date.  | 2017-01-24 13:12:29 |
 
 ## Streams
+
+:::warning
+
+Due to some limitation of SmartWaiver API it can have situations where you won't be able to retrieve all records available.
+
+:::
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | templates | templateId | No pagination | ✅ |  ❌  |
