@@ -1,0 +1,1154 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  Real-Time Market Data Solutions for Stocks, Forex, and Crypto
+
+  This connector can be used to extract data from various APIs such as
+  symbol-list,Aggregates,Snapshot and Technical Indicators
+
+check:
+  type: CheckStream
+  stream_names:
+    - Symbol List
+
+definitions:
+  streams:
+    Symbol List:
+      type: DeclarativeStream
+      name: Symbol List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol-list/{{ config['market_type'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 404
+                    error_message: Please enter the type of market
+                    error_message_contains: Cannot GET /symbol-list/
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - symbols
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Symbol List"
+    Market News:
+      type: DeclarativeStream
+      name: Market News
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /news/market/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - news
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Market News"
+    Most Active US Stocks:
+      type: DeclarativeStream
+      name: Most Active US Stocks
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fnd/market-information/us/most-actives
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Most Active US Stocks"
+    Technical Indicators:
+      type: DeclarativeStream
+      name: Technical Indicators
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            fnd/technical-indicator/{{ config['type'] }}/{{ config['time'] }}/{{
+            stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            period: "{{ config['period'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Technical Indicators"
+    Stock Last Quote:
+      type: DeclarativeStream
+      name: Stock Last Quote
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: last/stock/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Last Quote"
+    Stock Last Trade:
+      type: DeclarativeStream
+      name: Stock Last Trade
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: last/trade/stock/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Last Trade"
+    US Stocks Aggregates:
+      type: DeclarativeStream
+      name: US Stocks Aggregates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            agg/stock/{{ stream_partition.symbol }}/{{ config['multiply'] }}/{{
+            config["time_aggregates"] }}/{{ config["from"] }}/{{ config["to"] }}
+          http_method: GET
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/US Stocks Aggregates"
+    US Stocks Previous Close:
+      type: DeclarativeStream
+      name: US Stocks Previous Close
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: agg/stock/prev-close/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/US Stocks Previous Close"
+    US Stocks Snapshot:
+      type: DeclarativeStream
+      name: US Stocks Snapshot
+      primary_key:
+        - s
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: snapshot/stock
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lastQuotes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/US Stocks Snapshot"
+    Forex Last Quote:
+      type: DeclarativeStream
+      name: Forex Last Quote
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: last/forex/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Forex Last Quote"
+    Forex Last Trade:
+      type: DeclarativeStream
+      name: Forex Last Trade
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: last/trade/forex/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Forex Last Trade"
+    Forex Aggregates:
+      type: DeclarativeStream
+      name: Forex Aggregates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            agg/forex/{{ stream_partition.symbol }}/{{ config['multiply'] }}/{{
+            config["time_aggregates"] }}/{{ config["from"] }}/{{ config["to"] }}
+          http_method: GET
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Forex Aggregates"
+    Forex Previous Close:
+      type: DeclarativeStream
+      name: Forex Previous Close
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: agg/forex/prev-close/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Forex Previous Close"
+    Crypto Last Quote:
+      type: DeclarativeStream
+      name: Crypto Last Quote
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: last/crypto/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Crypto Last Quote"
+    Crypto Aggregates:
+      type: DeclarativeStream
+      name: Crypto Aggregates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            agg/crypto/{{ stream_partition.symbol }}/{{ config['multiply'] }}/{{
+            config["time_aggregates"] }}/{{ config["from"] }}/{{ config["to"] }}
+          http_method: GET
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Crypto Aggregates"
+    " Crypto Last Trade":
+      type: DeclarativeStream
+      name: " Crypto Last Trade"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: agg/crypto/prev-close/{{ stream_partition.symbol }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Symbol List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ Crypto Last Trade"
+    Crypto Snapshot:
+      type: DeclarativeStream
+      name: Crypto Snapshot
+      primary_key:
+        - s
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: snapshot/crypto
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lastQuotes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Crypto Snapshot"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.finage.co.uk/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apikey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/Symbol List"
+  - $ref: "#/definitions/streams/Market News"
+  - $ref: "#/definitions/streams/Most Active US Stocks"
+  - $ref: "#/definitions/streams/Technical Indicators"
+  - $ref: "#/definitions/streams/Stock Last Quote"
+  - $ref: "#/definitions/streams/Stock Last Trade"
+  - $ref: "#/definitions/streams/US Stocks Aggregates"
+  - $ref: "#/definitions/streams/US Stocks Previous Close"
+  - $ref: "#/definitions/streams/US Stocks Snapshot"
+  - $ref: "#/definitions/streams/Forex Last Quote"
+  - $ref: "#/definitions/streams/Forex Last Trade"
+  - $ref: "#/definitions/streams/Forex Aggregates"
+  - $ref: "#/definitions/streams/Forex Previous Close"
+  - $ref: "#/definitions/streams/Crypto Last Quote"
+  - $ref: "#/definitions/streams/Crypto Aggregates"
+  - $ref: "#/definitions/streams/ Crypto Last Trade"
+  - $ref: "#/definitions/streams/Crypto Snapshot"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      type:
+        type: string
+        description: " Indicator type. [ DEMA, EMA, SMA, WMA, RSI, TEMA, Williams, ADX ]"
+        order: 5
+        title: Type
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      market_type:
+        type: string
+        description: >-
+          For Example us-stock, ca-stock, in-stock, ru-stock, forex, crypto,
+          index
+        order: 1
+        title: Market type
+      limit:
+        type: string
+        description: Limit of the news. Default is 10 and maximum allowed limit is 30.
+        order: 2
+        title: Limit
+      from:
+        type: string
+        description: Start date
+        order: 3
+        title: From
+      to:
+        type: string
+        description: End date
+        order: 4
+        title: To
+      time:
+        type: string
+        description: Time interval [ daily, 1min , 5min, 15min, 30min, 1hour, 4hour ]
+        order: 6
+        title: Time
+      period:
+        type: string
+        description: Time period. Default is 10
+        order: 7
+        title: Period
+      multiply:
+        type: string
+        description: Time multiplier
+        order: 8
+        title: Multiply
+        default: "1"
+      time_aggregates:
+        type: string
+        description: Size of the time. [minute, hour, day, week, month, quarter, year]
+        order: 9
+        title: Time aggregates
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Symbol List: true
+    Market News: true
+    Most Active US Stocks: true
+    Technical Indicators: true
+    Stock Last Quote: true
+    Stock Last Trade: true
+    US Stocks Aggregates: true
+    US Stocks Previous Close: true
+    US Stocks Snapshot: true
+    Forex Last Quote: true
+    Forex Last Trade: true
+    Forex Aggregates: true
+    Forex Previous Close: true
+    Crypto Last Quote: true
+    Crypto Aggregates: true
+    " Crypto Last Trade": true
+    Crypto Snapshot: true
+  testedStreams:
+    Symbol List:
+      hasRecords: true
+      streamHash: a8083d3df255176d93a930f52020e8408aefa194
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Market News:
+      hasRecords: true
+      streamHash: b69662b49ba9cbb5a51b0a215052a7d798050416
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Most Active US Stocks:
+      hasRecords: true
+      streamHash: 08425464ea169646929ce9305b96d1c55220f3e1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Technical Indicators:
+      hasRecords: true
+      streamHash: ebb28d7894415b1f8eab85d56ee3c2778890aa58
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Stock Last Quote:
+      hasRecords: true
+      streamHash: 16ff9dd97bac15fc52407b22a5ef6a62b8e80147
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Stock Last Trade:
+      hasRecords: true
+      streamHash: 6d4d4acd85df128ddde6764deca77143d52816dd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    US Stocks Aggregates:
+      hasRecords: true
+      streamHash: aed95ffd41b1eecea6bb203f5891eef4b700c21e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    US Stocks Previous Close:
+      hasRecords: true
+      streamHash: 5118fff1604f0a962d24be9a89bc4665a9c0c8cb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    US Stocks Snapshot:
+      hasRecords: true
+      streamHash: 00d9cf8ad5734e0e4fa7c47ba92bf27d282133dd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Forex Last Quote:
+      hasRecords: true
+      streamHash: cabdeb333f3a7a4eb6a05a3ea8bc3c189f1a1605
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Forex Last Trade:
+      hasRecords: true
+      streamHash: 1869566e2669881768c67d7f3d1237f4f07f3d7d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Forex Aggregates:
+      hasRecords: true
+      streamHash: 48f73aae2f53d9ac0eca9f3fba1778ee2e00794a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Forex Previous Close:
+      hasRecords: true
+      streamHash: 1ef688c52fdd5e690d6affe1512981079c2068be
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Crypto Last Quote:
+      hasRecords: true
+      streamHash: 2f8939e78b141b35f6a7466bd68a2447007f051a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Crypto Aggregates:
+      hasRecords: true
+      streamHash: 81c54867cb753d6aba7f9af2cce22386573d2657
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    " Crypto Last Trade":
+      hasRecords: true
+      streamHash: 1cc8dd0ed6e3e84b241505b61687b02b7b7d4538
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Crypto Snapshot:
+      hasRecords: true
+      streamHash: 5b6c8107d9e809ad8fb46a7aa4cf8d6e42a908c1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  Symbol List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Market News:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+  Most Active US Stocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - number
+          - "null"
+      change_percentage:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  Technical Indicators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      close:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - string
+          - "null"
+      low:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+      volume:
+        type:
+          - string
+          - "null"
+  Stock Last Quote:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asize:
+        type:
+          - number
+          - "null"
+      ask:
+        type:
+          - number
+          - "null"
+      bid:
+        type:
+          - number
+          - "null"
+      bsize:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+  Stock Last Trade:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      price:
+        type:
+          - number
+          - "null"
+      size:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+  US Stocks Aggregates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  US Stocks Previous Close:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  US Stocks Snapshot:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      a:
+        type:
+          - number
+          - "null"
+      asz:
+        type:
+          - number
+          - "null"
+      b:
+        type:
+          - number
+          - "null"
+      bsz:
+        type:
+          - number
+          - "null"
+      s:
+        type: string
+      t:
+        type:
+          - number
+          - "null"
+    required:
+      - s
+  Forex Last Quote:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ask:
+        type:
+          - number
+          - "null"
+      bid:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+  Forex Last Trade:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      price:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+  Forex Aggregates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  Forex Previous Close:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  Crypto Last Quote:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      price:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+  Crypto Aggregates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  " Crypto Last Trade":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      t:
+        type:
+          - number
+          - "null"
+      v:
+        type:
+          - number
+          - "null"
+  Crypto Snapshot:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      a:
+        type:
+          - number
+          - "null"
+      asz:
+        type:
+          - number
+          - "null"
+      b:
+        type:
+          - number
+          - "null"
+      bsz:
+        type:
+          - number
+          - "null"
+      s:
+        type: string
+      t:
+        type:
+          - number
+          - "null"
+    required:
+      - s
