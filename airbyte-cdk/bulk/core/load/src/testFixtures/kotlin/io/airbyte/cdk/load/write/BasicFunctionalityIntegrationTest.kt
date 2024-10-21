@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -207,15 +208,21 @@ abstract class BasicFunctionalityIntegrationTest(
             val stateMessages: List<AirbyteStateMessage>
             var i = 0
             while (true) {
-                destination.sendMessage(
-                    DestinationRecord(
+                // limit ourselves to 2M messages, which should be enough to force a flush
+                if (i < 2_000_000) {
+                    destination.sendMessage(
+                        DestinationRecord(
                             namespace = randomizedNamespace,
                             name = "test_stream1",
                             data = """{"id": 56}""",
                             emittedAtMs = 1234,
                         )
-                        .asProtocolMessage()
-                )
+                            .asProtocolMessage()
+                    )
+                    i++
+                } else {
+                    delay(1000)
+                }
                 val returnedMessages = destination.readMessages()
                 if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
                     stateMessages =
@@ -224,7 +231,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             .map { it.state }
                     break
                 }
-                i++
             }
 
             // for each state message, verify that it's a valid state,
