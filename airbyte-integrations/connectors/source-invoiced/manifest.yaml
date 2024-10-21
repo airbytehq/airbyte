@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -705,119 +705,119 @@ metadata:
   testedStreams:
     customers:
       hasRecords: true
-      streamHash: 8ca5e90dbf4109305d84ee91100ee996b8039528
+      streamHash: f04d81d913e85427986d2249751ec9adf47e64f4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     invoices:
       hasRecords: true
-      streamHash: 3445a17afde7f80e5303c67240220f8ae4bbee20
+      streamHash: da4a0bcf9cd7404e506e651999c4c4244fecb648
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     payments:
       hasRecords: true
-      streamHash: 93d02772fc427e739980c8584bf556c26be056dc
+      streamHash: 6de406fdd591255593d5ea989639d0b0beb50a00
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     credit_balance_adjustments:
       hasRecords: true
-      streamHash: a762e405f681244706bad71e3f1c5e1993d0c668
+      streamHash: 44c78e2a121236faac8189086c5d85573be55320
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     credit_notes:
-      streamHash: 57476cdda4030acd5f39d26ddbc12e97ee63dab4
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 61812f3784888d62631b6a3acab333a25d036370
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     subscriptions:
-      streamHash: 209b5b63ad07d182a5a397d5bd0d8e3099d1c417
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 2c9149c2d49abc9497101567d25783661e6b7efa
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     estimates:
-      streamHash: 1163d38771b8d7c49fae986c7eb9cad98083c2a8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 6b12be619ac63db3b052ed73bac7f6201a2e854b
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
-      streamHash: c4a1a24b9ae0e54a390bff8a8bab96cfa7d11934
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 95905b7d863600d7068d55d4d6fc94bfe504e826
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     items:
-      streamHash: 59b7a93f947215c493415aef75a130c3e630f37d
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 77869dbd11017ceafa20406c5a88e8f09ae4cbef
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tax_rates:
-      streamHash: e3d442d8a8ca4298c1fdd3709fd01b8acd65b402
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 8d5aee416e854b7170c5fdeee3cebd3952efecb3
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     plans:
-      streamHash: 843dbd396a8745e4f22868de10c3b7ed78c727bd
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: bdf9a0dcf6b1339c7ba6e42b8fe1a60e190a5942
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     coupons:
-      streamHash: a23db906e96c6dd02b9c5e163218bb6baf396d7b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: d5a045d226ae14ad906354d7bffcd9c857b99727
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     events:
-      streamHash: d5d2967e2e8b24fd346da6b1311399b8ef2ef52b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: daf83446e7a5b197bb4fba1bf88483b2127ec066
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     notes:
       hasRecords: true
-      streamHash: b1d9573778b480d9cda9defc9d39fa5472e26650
+      streamHash: 67456e62e82f91a79e47ace5d87e27bed477b24c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tasks:
       hasRecords: true
-      streamHash: ad9a6a7620f321c1d4ebbed665e0ca1f815c7734
+      streamHash: ecfb21a2fcb4c701f55891a0a4fc2aa3576a39d8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     metered_billings:
-      hasRecords: true
-      streamHash: fdb1caa6622e848ace5f8b02bf075e387a0a55fe
+      streamHash: 424dc7e1237af4f012fde9ab05933752ff215502
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     payment_sources:
       hasRecords: true
-      streamHash: 99c086ff8f5a40ddba1bcb10658b33ca5e118416
+      streamHash: de3c7a953623aab9f1a2c8d0d23384de68cbb563
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1057,6 +1057,10 @@ schemas:
         type:
           - boolean
           - "null"
+      due_date:
+        type:
+          - number
+          - "null"
       id:
         type: number
       items:
@@ -1083,6 +1087,10 @@ schemas:
             amount:
               type:
                 - number
+                - "null"
+            catalog_item:
+              type:
+                - string
                 - "null"
             created_at:
               type:
@@ -1171,6 +1179,14 @@ schemas:
       paid:
         type:
           - boolean
+          - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      payment_url:
+        type:
+          - string
           - "null"
       pdf_url:
         type:
@@ -1924,6 +1940,7 @@ schemas:
   events:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -2812,7 +2829,6 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   notes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2937,10 +2953,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      type:
-        type:
-          - string
-          - "null"
       description:
         type:
           - string
@@ -2952,10 +2964,6 @@ schemas:
       amount:
         type:
           - number
-          - "null"
-      catalog_item:
-        type:
-          - string
           - "null"
       created_at:
         type:
