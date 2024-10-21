@@ -269,9 +269,9 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
-        except:
+        except Exception:
             logger.exception(
-                f"Writing with PyArrow table failed, falling back to writing with executemany. Expect some performance degradation."
+                "Writing with PyArrow table failed, falling back to writing with executemany. Expect some performance degradation."
             )
             self._write_with_executemany(buffer, stream_name, temp_table_name)
         else:
