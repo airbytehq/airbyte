@@ -81,10 +81,8 @@ class S3MultipartUpload<T : OutputStream>(
 
     inner class UploadStream : OutputStream() {
         override fun close() = runBlocking {
-            workQueue.send {
-                if (closeOnce.setOnce()) {
-                    workQueue.close()
-                }
+            if (closeOnce.setOnce()) {
+                workQueue.send { workQueue.close() }
             }
         }
 
