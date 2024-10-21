@@ -11,6 +11,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter as ApacheParquetWriter
+import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.parquet.io.OutputFile
 import org.apache.parquet.io.PositionOutputStream
 
@@ -19,7 +20,10 @@ class ParquetWriter(private val writer: ApacheParquetWriter<GenericRecord>) : Cl
     override fun close() = writer.close()
 }
 
-fun OutputStream.toParquetWriter(avroSchema: Schema): ParquetWriter {
+fun OutputStream.toParquetWriter(
+    avroSchema: Schema,
+    config: ParquetWriterConfiguration
+): ParquetWriter {
     // Custom OutputFile implementation wrapping the OutputStream
     val outputFile =
         object : OutputFile {
@@ -49,7 +53,29 @@ fun OutputStream.toParquetWriter(avroSchema: Schema): ParquetWriter {
         AvroParquetWriter.builder<GenericRecord>(outputFile)
             .withSchema(avroSchema)
             .withConf(Configuration())
+            .withCompressionCodec(config.compressionCodec)
+            .withRowGroupSize(config.blockSizeMb * 1024 * 1024L)
+            .withPageSize(config.pageSizeKb * 1024)
+            .withDictionaryPageSize(config.dictionaryPageSizeKb * 1024)
+            .withDictionaryEncoding(config.dictionaryEncoding)
+            .withMaxPaddingSize(config.maxPaddingSizeMb * 1024 * 1024)
             .build()
 
     return ParquetWriter(writer)
+}
+
+data class ParquetWriterConfiguration(
+    val compressionCodecName: String,
+    val blockSizeMb: Int,
+    val maxPaddingSizeMb: Int,
+    val pageSizeKb: Int,
+    val dictionaryPageSizeKb: Int,
+    val dictionaryEncoding: Boolean
+) {
+    val compressionCodec
+        get() = CompressionCodecName.valueOf(compressionCodecName)
+}
+
+interface ParquetWriterConfigurationProvider {
+    val parquetWriterConfiguration: ParquetWriterConfiguration
 }

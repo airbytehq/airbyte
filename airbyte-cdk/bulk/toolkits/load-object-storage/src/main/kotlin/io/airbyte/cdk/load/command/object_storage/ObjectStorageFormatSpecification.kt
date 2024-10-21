@@ -12,8 +12,10 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
 import io.airbyte.cdk.load.command.avro.AvroCompressionConfigurationProvider
-import io.airbyte.cdk.load.command.avro.AvroFormatCompressionCodec
-import io.airbyte.cdk.load.command.avro.AvroFormatNoCompressionCodec
+import io.airbyte.cdk.load.command.avro.AvroFormatCompressionCodecSpecification
+import io.airbyte.cdk.load.command.avro.AvroFormatNoCompressionCodecSpecification
+import io.airbyte.cdk.load.file.parquet.ParquetWriterConfiguration
+import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
 
 /**
  * Mix-in to provide file format configuration.
@@ -43,7 +45,21 @@ interface ObjectStorageFormatSpecificationProvider {
                             .compressionCodec
                             .toCompressionConfiguration()
                 )
-            is ParquetFormatSpecification -> ParquetFormatConfiguration()
+            is ParquetFormatSpecification -> {
+                (format as ParquetFormatSpecification).let {
+                    ParquetFormatConfiguration(
+                        parquetWriterConfiguration =
+                            ParquetWriterConfiguration(
+                                compressionCodecName = it.compressionCodec!!.name,
+                                blockSizeMb = it.blockSizeMb!!,
+                                maxPaddingSizeMb = it.maxPaddingSizeMb!!,
+                                pageSizeKb = it.pageSizeKb!!,
+                                dictionaryPageSizeKb = it.dictionaryPageSizeKb!!,
+                                dictionaryEncoding = it.dictionaryEncoding!!
+                            )
+                    )
+                }
+            }
         }
     }
 
@@ -112,14 +128,66 @@ class AvroFormatSpecification(
         "The compression algorithm used to compress data. Default to no compression."
     )
     @JsonProperty("compression_codec")
-    val compressionCodec: AvroFormatCompressionCodec = AvroFormatNoCompressionCodec()
+    val compressionCodec: AvroFormatCompressionCodecSpecification =
+        AvroFormatNoCompressionCodecSpecification()
 }
 
 /** Parquet */
 @JsonSchemaTitle("Parquet: Columnar Storage")
 class ParquetFormatSpecification(
-    @JsonProperty("format_type") override val formatType: Type = Type.PARQUET
-) : ObjectStorageFormatSpecification(formatType)
+    @JsonSchemaTitle("Format Type")
+    @JsonProperty("format_type")
+    override val formatType: Type = Type.PARQUET
+) : ObjectStorageFormatSpecification(formatType) {
+    enum class ParquetFormatCompressionCodec {
+        UNCOMPRESSED,
+        SNAPPY,
+        GZIP,
+        LZO,
+        BROTLI, // TODO: Broken locally in both this and s3 v1; Validate whether it works in prod
+        LZ4,
+        ZSTD
+    }
+
+    @JsonSchemaTitle("Compression Codec")
+    @JsonPropertyDescription("The compression algorithm used to compress data pages.")
+    @JsonProperty("compression_codec")
+    val compressionCodec: ParquetFormatCompressionCodec? =
+        ParquetFormatCompressionCodec.UNCOMPRESSED
+
+    @JsonSchemaTitle("Block Size (Row Group Size) (MB)")
+    @JsonPropertyDescription(
+        "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB."
+    )
+    @JsonProperty("block_size_mb")
+    val blockSizeMb: Int? = 128
+
+    @JsonSchemaTitle("Max Padding Size (MB)")
+    @JsonPropertyDescription(
+        "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB."
+    )
+    @JsonProperty("max_padding_size_mb")
+    val maxPaddingSizeMb: Int? = 8
+
+    @JsonSchemaTitle("Page Size (KB)")
+    @JsonPropertyDescription(
+        "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB."
+    )
+    @JsonProperty("page_size_kb")
+    val pageSizeKb: Int? = 1024
+
+    @JsonSchemaTitle("Dictionary Page Size (KB)")
+    @JsonPropertyDescription(
+        "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB."
+    )
+    @JsonProperty("dictionary_page_size_kb")
+    val dictionaryPageSizeKb: Int? = 1024
+
+    @JsonSchemaTitle("Dictionary Encoding")
+    @JsonPropertyDescription("Default: true.")
+    @JsonProperty("dictionary_encoding")
+    val dictionaryEncoding: Boolean? = true
+}
 
 /** Configuration */
 interface OutputFormatConfigurationProvider {
@@ -141,8 +209,10 @@ data class AvroFormatConfiguration(
     override val avroCompressionConfiguration: AvroCompressionConfiguration,
 ) : ObjectStorageFormatConfiguration, AvroCompressionConfigurationProvider
 
-data class ParquetFormatConfiguration(override val extension: String = "parquet") :
-    ObjectStorageFormatConfiguration
+data class ParquetFormatConfiguration(
+    override val extension: String = "parquet",
+    override val parquetWriterConfiguration: ParquetWriterConfiguration
+) : ObjectStorageFormatConfiguration, ParquetWriterConfigurationProvider
 
 interface ObjectStorageFormatConfigurationProvider {
     val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration
