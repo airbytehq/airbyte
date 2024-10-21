@@ -630,10 +630,10 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     editor_blocks:
-      streamHash: 8a5d334f006dba946763c405df68ca39be6f480c
+      streamHash: 604b60e52ee24a87ca48a756a6ebf42c6dfed0bd
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: false
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     comments:
