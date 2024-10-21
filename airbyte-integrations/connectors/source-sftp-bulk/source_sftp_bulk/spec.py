@@ -23,7 +23,7 @@ class PrivateKeyCredentials(BaseModel):
         discriminator = "auth_type"
 
     auth_type: Literal["private_key"] = Field("private_key", const=True)
-    private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4)
+    private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4, airbyte_secret=true)
 
 
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):
