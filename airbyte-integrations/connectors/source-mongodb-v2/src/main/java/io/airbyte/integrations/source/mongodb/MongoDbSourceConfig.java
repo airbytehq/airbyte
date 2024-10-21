@@ -21,6 +21,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.ENABLE_SSL_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -79,6 +80,10 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
 
   public String getUsername() {
     return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) ? getDatabaseConfig().get(USERNAME_CONFIGURATION_KEY).asText() : null;
+  }
+
+  public boolean shouldUseSSL() {
+    return getDatabaseConfig().has(ENABLE_SSL_CONFIGURATION_KEY) ? getDatabaseConfig().get(ENABLE_SSL_CONFIGURATION_KEY).asText() : true;
   }
 
   public boolean hasAuthCredentials() {
