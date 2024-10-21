@@ -1422,9 +1422,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/contracts"
-    fractional_inventory:
+    fractionals_inventory:
       type: DeclarativeStream
-      name: fractional_inventory
+      name: fractionals_inventory
       primary_key:
         - fraction_id
         - id
@@ -1498,10 +1498,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/fractional_inventory"
-    fractional_owners:
+          $ref: "#/schemas/fractionals_inventory"
+    fractionals_owners:
       type: DeclarativeStream
-      name: fractional_owners
+      name: fractionals_owners
       primary_key:
         - fraction_id
         - id
@@ -1583,7 +1583,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/fractional_owners"
+          $ref: "#/schemas/fractionals_owners"
     unit_type_daily_pricing_v2:
       type: DeclarativeStream
       name: unit_type_daily_pricing_v2
@@ -2996,6 +2996,7 @@ definitions:
       type: DeclarativeStream
       name: folio_logs
       primary_key:
+        - folio_id
         - id
       retriever:
         type: SimpleRetriever
@@ -3324,10 +3325,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/owner-statements"
-    owner_statment_transactions:
+    owner_statement_transactions:
       type: DeclarativeStream
-      name: owner_statment_transactions
+      name: owner_statement_transactions
       primary_key:
+        - statement_id
         - id
       retriever:
         type: SimpleRetriever
@@ -3404,7 +3406,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/owner_statment_transactions"
+          $ref: "#/schemas/owner_statement_transactions"
     promo-codes:
       type: DeclarativeStream
       name: promo-codes
@@ -4545,9 +4547,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/housekeeping-task-list"
-    folios_master_rules:
+    folios-master-rules:
       type: DeclarativeStream
-      name: folios_master_rules
+      name: folios-master-rules
       primary_key:
         - id
       retriever:
@@ -4602,7 +4604,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/folios_master_rules"
+          $ref: "#/schemas/folios-master-rules"
     contact_companies:
       type: DeclarativeStream
       name: contact_companies
@@ -5310,6 +5312,7 @@ definitions:
       type: DeclarativeStream
       name: owner_statement_transactions_pii_redacted
       primary_key:
+        - statement_id
         - id
       retriever:
         type: SimpleRetriever
@@ -5501,8 +5504,8 @@ streams:
   - $ref: "#/definitions/streams/travel-insurance-products"
   - $ref: "#/definitions/streams/companies"
   - $ref: "#/definitions/streams/contracts"
-  - $ref: "#/definitions/streams/fractional_inventory"
-  - $ref: "#/definitions/streams/fractional_owners"
+  - $ref: "#/definitions/streams/fractionals_inventory"
+  - $ref: "#/definitions/streams/fractionals_owners"
   - $ref: "#/definitions/streams/unit_type_daily_pricing_v2"
   - $ref: "#/definitions/streams/unit_daily_pricing_v2"
   - $ref: "#/definitions/streams/unit_taxes"
@@ -5528,7 +5531,7 @@ streams:
   - $ref: "#/definitions/streams/owners_units"
   - $ref: "#/definitions/streams/owners-contracts"
   - $ref: "#/definitions/streams/owner-statements"
-  - $ref: "#/definitions/streams/owner_statment_transactions"
+  - $ref: "#/definitions/streams/owner_statement_transactions"
   - $ref: "#/definitions/streams/promo-codes"
   - $ref: "#/definitions/streams/reservations-cancellation-policies"
   - $ref: "#/definitions/streams/reservations-guarantee-policies"
@@ -5546,7 +5549,7 @@ streams:
   - $ref: "#/definitions/streams/housekeeping-work-orders"
   - $ref: "#/definitions/streams/housekeeping-clean-types"
   - $ref: "#/definitions/streams/housekeeping-task-list"
-  - $ref: "#/definitions/streams/folios_master_rules"
+  - $ref: "#/definitions/streams/folios-master-rules"
   - $ref: "#/definitions/streams/contact_companies"
   - $ref: "#/definitions/streams/reviews"
   - $ref: "#/definitions/streams/accounting-deposits"
@@ -5606,8 +5609,8 @@ metadata:
     travel-insurance-products: true
     companies: true
     contracts: true
-    fractional_inventory: true
-    fractional_owners: true
+    fractionals_inventory: true
+    fractionals_owners: true
     unit_type_daily_pricing_v2: true
     unit_daily_pricing_v2: true
     unit_taxes: true
@@ -5633,7 +5636,7 @@ metadata:
     owners_units: true
     owners-contracts: true
     owner-statements: true
-    owner_statment_transactions: true
+    owner_statement_transactions: true
     promo-codes: true
     reservations-cancellation-policies: true
     reservations-guarantee-policies: true
@@ -5651,7 +5654,7 @@ metadata:
     housekeeping-work-orders: true
     housekeeping-clean-types: true
     housekeeping-task-list: true
-    folios_master_rules: true
+    folios-master-rules: true
     contact_companies: true
     reviews: true
     accounting-deposits: true
@@ -5668,12 +5671,12 @@ metadata:
       - authenticator
   testedStreams:
     units:
-      streamHash: 6025144d6f14191d1dc60cf2ceb6936ce2cd4903
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: aade4a0162c42c4131967cd17e5dcbce1c820d83
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     owners:
       hasRecords: true
       streamHash: 1cfd4be37564b44bbd352062fb339fb23607424a
@@ -5807,16 +5810,16 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    fractional_inventory:
+    fractionals_inventory:
       hasRecords: true
-      streamHash: 55e5e67a6048bc5a62909f81416854e111e7faac
+      streamHash: cf1f14f26912a32046630c26e5e0818644e4e678
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    fractional_owners:
+    fractionals_owners:
       hasRecords: true
-      streamHash: b917e062704951ce4d3ecddf11ffcc0d78f0d7bb
+      streamHash: 5d2603b1eb2883868846ba12f216b8c8ebf47835
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5963,7 +5966,7 @@ metadata:
       responsesAreSuccessful: true
     folio_logs:
       hasRecords: true
-      streamHash: 3cf4fd7a26d4bd781bcf15dd054e4154e4c9d910
+      streamHash: 8250a19b3d2f9c55c03c6adc379ef39556df79e8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5996,9 +5999,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    owner_statment_transactions:
+    owner_statement_transactions:
       hasRecords: true
-      streamHash: 24d321abd566da392a4914f91da8ea7d6dbf22e2
+      streamHash: f30bb4e7e700406ff7eaf91c2f269eb78f2b70c6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6095,12 +6098,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_channel:
-      streamHash: 076beebea7eae94b9d95d361eb19ef0d1f8f9d53
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 0e02d44e32b58d2e1970ac8b419e525eb763ad49
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     housekeeping-work-orders:
       hasRecords: true
       streamHash: 931b0b126a9c1b3681c55055ef95222ff79dda1d
@@ -6122,9 +6125,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    folios_master_rules:
+    folios-master-rules:
       hasRecords: true
-      streamHash: e3c5d903ea52dd45e45a09a207333e39a039fc09
+      streamHash: 2ae99a03e088876e3df1a7d060f1844a4d6e42fe
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6194,7 +6197,7 @@ metadata:
       responsesAreSuccessful: true
     owner_statement_transactions_pii_redacted:
       hasRecords: true
-      streamHash: 492c1ba36df9bcb6e5fc6656c849f3578b987a61
+      streamHash: d863e1bb989a65fc5dda129b0d361fa690a9285d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6218,58 +6221,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          housekeepingZone:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              _links:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  self:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      href:
-                        type:
-                          - string
-                          - "null"
-              createdAt:
-                type:
-                  - string
-                  - "null"
-              createdBy:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              isActive:
-                type:
-                  - boolean
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              updatedAt:
-                type:
-                  - string
-                  - "null"
-              updatedBy:
-                type:
-                  - string
-                  - "null"
       amenitiesIds:
         type:
           - array
@@ -6384,6 +6335,10 @@ schemas:
         type:
           - boolean
           - "null"
+      extendedAddress:
+        type:
+          - string
+          - "null"
       floors:
         type:
           - number
@@ -6431,10 +6386,6 @@ schemas:
       housekeepingNotes:
         type:
           - string
-          - "null"
-      housekeepingZoneId:
-        type:
-          - number
           - "null"
       id:
         type: number
@@ -6487,10 +6438,6 @@ schemas:
           - string
           - "null"
       maxOccupancy:
-        type:
-          - number
-          - "null"
-      maxPets:
         type:
           - number
           - "null"
@@ -11841,7 +11788,7 @@ schemas:
           - "null"
     required:
       - id
-  fractional_inventory:
+  fractionals_inventory:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -11885,7 +11832,7 @@ schemas:
     required:
       - fraction_id
       - id
-  fractional_owners:
+  fractionals_owners:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -24842,7 +24789,7 @@ schemas:
           - "null"
     required:
       - id
-  owner_statment_transactions:
+  owner_statement_transactions:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -24968,9 +24915,7 @@ schemas:
           - string
           - "null"
       statement_id:
-        type:
-          - number
-          - "null"
+        type: number
       txnDate:
         type:
           - string
@@ -24988,6 +24933,7 @@ schemas:
           - string
           - "null"
     required:
+      - statement_id
       - id
   promo-codes:
     type: object
@@ -26321,155 +26267,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
       _embedded:
         type:
           - object
           - "null"
         properties:
-          cancellationPolicy:
-            type:
-              - object
-              - "null"
-            properties:
-              _links:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  self:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      href:
-                        type:
-                          - string
-                          - "null"
-              airbnbType:
-                type:
-                  - string
-                  - "null"
-              breakpoints:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    description:
-                      type:
-                        - string
-                        - "null"
-                    id:
-                      type:
-                        - number
-                        - "null"
-                    nonCancelable:
-                      type:
-                        - boolean
-                        - "null"
-                    nonRefundable:
-                      type:
-                        - boolean
-                        - "null"
-                    penaltyFlat:
-                      type:
-                        - string
-                        - "null"
-                    penaltyNights:
-                      type:
-                        - number
-                        - "null"
-                    penaltyPercent:
-                      type:
-                        - string
-                        - "null"
-                    rangeEnd:
-                      type:
-                        - number
-                        - "null"
-                    rangeStart:
-                      type:
-                        - number
-                        - "null"
-              canExceedBalance:
-                type:
-                  - boolean
-                  - "null"
-              cancelTime:
-                type:
-                  - string
-                  - "null"
-              cancelTimezone:
-                type:
-                  - string
-                  - "null"
-              chargeAs:
-                type:
-                  - string
-                  - "null"
-              code:
-                type:
-                  - string
-                  - "null"
-              createdAt:
-                type:
-                  - string
-                  - "null"
-              createdBy:
-                type:
-                  - string
-                  - "null"
-              dateRangeType:
-                type:
-                  - string
-                  - "null"
-              homeawayType:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              isActive:
-                type:
-                  - boolean
-                  - "null"
-              isDefault:
-                type:
-                  - boolean
-                  - "null"
-              marriottCategory:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              postDate:
-                type:
-                  - string
-                  - "null"
-              priority:
-                type:
-                  - number
-                  - "null"
-              updatedAt:
-                type:
-                  - string
-                  - "null"
-              updatedBy:
-                type:
-                  - string
-                  - "null"
           channel:
             type:
               - object
@@ -26682,18 +26484,6 @@ schemas:
                         type:
                           - number
                           - "null"
-                      scheduleType1:
-                        type:
-                          - string
-                          - "null"
-                      scheduleType2:
-                        type:
-                          - string
-                          - "null"
-                      securityDepositType:
-                        type:
-                          - string
-                          - "null"
                       sendPortalInvites:
                         type:
                           - boolean
@@ -26895,10 +26685,6 @@ schemas:
                 type:
                   - number
                   - "null"
-              cancellationPolicy:
-                type:
-                  - string
-                  - "null"
               channelData:
                 type:
                   - object
@@ -26919,14 +26705,6 @@ schemas:
                 type:
                   - boolean
                   - "null"
-              defaultLosType:
-                type:
-                  - string
-                  - "null"
-              defaultRateType:
-                type:
-                  - string
-                  - "null"
               enableConfirmationEmail:
                 type:
                   - boolean
@@ -26934,23 +26712,6 @@ schemas:
               enableNodesApi:
                 type:
                   - boolean
-                  - "null"
-              externalAccounts:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  hotelCode:
-                    type:
-                      - string
-                      - "null"
-              guaranteePolicyId:
-                type:
-                  - number
-                  - "null"
-              handle:
-                type:
-                  - string
                   - "null"
               id:
                 type:
@@ -27032,75 +26793,6 @@ schemas:
                 type:
                   - boolean
                   - "null"
-      airbnbAccountId:
-        type:
-          - number
-          - "null"
-      airbnbCheckinType:
-        type:
-          - string
-          - "null"
-      airbnbChildrenDetails:
-        type:
-          - string
-          - "null"
-      airbnbEligibleForPassThroughTaxes:
-        type:
-          - boolean
-          - "null"
-      airbnbNotes:
-        type:
-          - string
-          - "null"
-      airbnbPassThroughTaxesCollectionType:
-        type:
-          - string
-          - "null"
-      airbnbPublishError:
-        type:
-          - object
-          - "null"
-        properties:
-          HasImages:
-            type:
-              - string
-              - "null"
-          IsActiveByOwner:
-            type:
-              - string
-              - "null"
-          IsListingNotArchived:
-            type:
-              - string
-              - "null"
-          IsNotInactiveByOwner:
-            type:
-              - string
-              - "null"
-      airbnbStatus:
-        type:
-          - string
-          - "null"
-      airbnbStatusCategory:
-        type:
-          - string
-          - "null"
-      airbnbSyncOption:
-        type:
-          - string
-          - "null"
-      airbnbTheSpace:
-        type:
-          - string
-          - "null"
-      availabilityUpdatedAt:
-        type:
-          - string
-          - "null"
-      cancellationPolicyId:
-        type:
-          - number
-          - "null"
       channelId:
         type:
           - number
@@ -27117,64 +26809,11 @@ schemas:
         type:
           - boolean
           - "null"
-      externalId:
-        type:
-          - string
-          - "null"
-      haCommission:
-        type:
-          - string
-          - "null"
-      headline:
-        type:
-          - string
-          - "null"
       id:
         type: number
-      instantBookingAllowedCategory:
-        type:
-          - string
-          - "null"
-      isPublished:
-        type:
-          - boolean
-          - "null"
-      marriottAccountId:
-        type:
-          - number
-          - "null"
       metaData:
         type:
           - object
-          - "null"
-        properties:
-          checkOutTasks:
-            type:
-              - array
-              - "null"
-      neighborhoodView:
-        type:
-          - string
-          - "null"
-      ratesUpdatedAt:
-        type:
-          - string
-          - "null"
-      reservationMode:
-        type:
-          - string
-          - "null"
-      showAllowAboveMaxNights:
-        type:
-          - boolean
-          - "null"
-      syncMode:
-        type:
-          - string
-          - "null"
-      taxesUpdatedAt:
-        type:
-          - string
           - "null"
       unit_id:
         type: number
@@ -27822,7 +27461,7 @@ schemas:
           - "null"
     required:
       - id
-  folios_master_rules:
+  folios-master-rules:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -29515,9 +29154,7 @@ schemas:
           - string
           - "null"
       statement_id:
-        type:
-          - number
-          - "null"
+        type: number
       txnDate:
         type:
           - string
@@ -29535,6 +29172,7 @@ schemas:
           - string
           - "null"
     required:
+      - statement_id
       - id
   users-pii-redacted:
     type: object
