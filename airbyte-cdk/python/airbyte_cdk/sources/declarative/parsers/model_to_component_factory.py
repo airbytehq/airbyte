@@ -10,6 +10,9 @@ import re
 from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
+from isodate import parse_duration
+from pydantic.v1 import BaseModel
+
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
@@ -32,6 +35,7 @@ from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import (
+    CsvDecoder,
     Decoder,
     IterableDecoder,
     JsonDecoder,
@@ -66,6 +70,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CsvDecoder as CsvDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
@@ -170,8 +175,6 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMe
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from isodate import parse_duration
-from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -236,6 +239,7 @@ class ModelToComponentFactory:
             KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
             XmlDecoderModel: self.create_xml_decoder,
+            CsvDecoderModel: self.create_csv_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
@@ -388,7 +392,9 @@ class ModelToComponentFactory:
         if not hasattr(partition_router, "parent_stream_configs"):
             raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
 
-        return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
+        return LegacyToPerPartitionStateMigration(
+            declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters
+        )  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
@@ -972,6 +978,10 @@ class ModelToComponentFactory:
         return XmlDecoder(parameters={})
 
     @staticmethod
+    def create_csv_decoder(model: CsvDecoderModel, config: Config, **kwargs: Any) -> CsvDecoder:
+        return CsvDecoder(parameters={"delimiter": model.delimiter})
+
+    @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
         return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
 
@@ -1323,7 +1333,6 @@ class ModelToComponentFactory:
         transformations: List[RecordTransformation],
         **kwargs: Any,
     ) -> AsyncRetriever:
-
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         record_selector = self._create_component_from_model(
             model=model.record_selector,

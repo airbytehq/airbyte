@@ -676,6 +676,11 @@ class JsonlDecoder(BaseModel):
     type: Literal['JsonlDecoder']
 
 
+class CsvDecoder(BaseModel):
+    type: Literal['CsvDecoder']
+    delimiter: str = Field(..., description='The delimiter used in the CSV file.')
+
+
 class KeysToLower(BaseModel):
     type: Literal['KeysToLower']
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
@@ -1634,12 +1639,12 @@ class SimpleRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder]] = (
-        Field(
-            None,
-            description='Component decoding the response so records can be extracted.',
-            title='Decoder',
-        )
+    decoder: Optional[
+        Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder, CsvDecoder]
+    ] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1700,12 +1705,12 @@ class AsyncRetriever(BaseModel):
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder]] = (
-        Field(
-            None,
-            description='Component decoding the response so records can be extracted.',
-            title='Decoder',
-        )
+    decoder: Optional[
+        Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder, CsvDecoder]
+    ] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
