@@ -37,6 +37,7 @@ poetry run pytest
 ```
 
 ## Changelog
+- 0.10.0: Add `documentation_file_name` property to `Connector` class.
 - 0.9.0: Add components path attribute for manifest-only connectors.
 - 0.8.1: Gradle dependency discovery logic supports the Bulk CDK.
 - 0.8.0: Add a `sbom_url` property to `Connector`

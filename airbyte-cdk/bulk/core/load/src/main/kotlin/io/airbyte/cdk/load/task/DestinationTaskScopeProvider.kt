@@ -9,12 +9,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -33,20 +35,12 @@ import kotlinx.coroutines.withTimeoutOrNull
  *       - should not block internal tasks (esp reading from stdin)
  *       - should complete if possible even when failing the sync
  * ```
- * - [ShutdownScope]: special case of [ImplementorScope]
- * ```
- *       - tasks that should run during shutdown
- *       - handles canceling/joining other tasks
- *       - (and so should not cancel themselves)
- * ```
  */
 sealed interface ScopedTask : Task
 
 interface InternalScope : ScopedTask
 
 interface ImplementorScope : ScopedTask
-
-interface ShutdownScope : ScopedTask
 
 @Singleton
 @Secondary
@@ -57,42 +51,65 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
     private val timeoutMs = config.gracefulCancellationTimeoutMs
 
     data class ControlScope(
-        val job: Job,
-        val dispatcher: CoroutineDispatcher,
+        val name: String,
+        val job: CompletableJob,
+        val dispatcher: CoroutineDispatcher
+    ) {
         val scope: CoroutineScope = CoroutineScope(dispatcher + job)
-    )
+        val runningJobs: AtomicLong = AtomicLong(0)
+    }
 
-    private val internalScope = ControlScope(Job(), Dispatchers.IO)
+    private val internalScope = ControlScope("internal", Job(), Dispatchers.IO)
 
     private val implementorScope =
         ControlScope(
-            SupervisorJob(),
+            "implementor",
+            Job(),
             Executors.newFixedThreadPool(config.maxNumImplementorTaskThreads)
                 .asCoroutineDispatcher()
         )
 
     override suspend fun launch(task: WrappedTask<ScopedTask>) {
-        when (task.innerTask) {
-            is InternalScope -> internalScope.scope.launch { execute(task, "internal") }
-            is ImplementorScope -> implementorScope.scope.launch { execute(task, "implementor") }
-            is ShutdownScope -> implementorScope.scope.launch { execute(task, "shutdown") }
+        val scope =
+            when (task.innerTask) {
+                is InternalScope -> internalScope
+                is ImplementorScope -> implementorScope
+            }
+        scope.scope.launch {
+            var nJobs = scope.runningJobs.incrementAndGet()
+            log.info { "Launching task $task in scope ${scope.name} ($nJobs now running)" }
+            val elapsed = measureTimeMillis { task.execute() }
+            nJobs = scope.runningJobs.decrementAndGet()
+            log.info { "Task $task completed in $elapsed ms ($nJobs now running)" }
         }
     }
 
-    private suspend fun execute(task: WrappedTask<ScopedTask>, scope: String) {
-        log.info { "Launching task $task in scope $scope" }
-        val elapsed = measureTimeMillis { task.execute() }
-        log.info { "Task $task completed in $elapsed ms" }
-    }
-
     override suspend fun close() {
-        log.info { "Closing task scopes" }
         // Under normal operation, all tasks should be complete
         // (except things like force flush, which loop). So
         // - it's safe to force cancel the internal tasks
         // - implementor scope should join immediately
+        log.info { "Closing task scopes (${implementorScope.runningJobs.get()} remaining)" }
+        val uncaughtExceptions = AtomicReference<Throwable>()
+        implementorScope.job.children.forEach {
+            it.invokeOnCompletion { cause ->
+                if (cause != null) {
+                    log.error { "Uncaught exception in implementor task: $cause" }
+                    uncaughtExceptions.set(cause)
+                }
+            }
+        }
+        implementorScope.job.complete()
         implementorScope.job.join()
-        log.info { "Implementor tasks completed, cancelling internal tasks." }
+        if (uncaughtExceptions.get() != null) {
+            throw IllegalStateException(
+                "Uncaught exceptions in implementor tasks",
+                uncaughtExceptions.get()
+            )
+        }
+        log.info {
+            "Implementor tasks completed, cancelling internal tasks (${internalScope.runningJobs.get()} remaining)."
+        }
         internalScope.job.cancel()
     }
 
@@ -104,6 +121,7 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
             log.info {
                 "Cancelled internal tasks, waiting ${timeoutMs}ms for implementor tasks to complete"
             }
+            implementorScope.job.complete()
             implementorScope.job.join()
             log.info { "Implementor tasks completed" }
         }
