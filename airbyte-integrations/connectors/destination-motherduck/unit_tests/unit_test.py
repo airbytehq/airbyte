@@ -1,13 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
-from destination_duckdb.destination import DestinationDuckdb, validated_sql_name
+from destination_motherduck.destination import DestinationMotherDuck, validated_sql_name
 
 
 def test_read_invalid_path():
     invalid_input = "/test.duckdb"
     with pytest.raises(ValueError):
-        _ = DestinationDuckdb._get_destination_path(invalid_input)
+        _ = DestinationMotherDuck._get_destination_path(invalid_input)
 
     assert True
 

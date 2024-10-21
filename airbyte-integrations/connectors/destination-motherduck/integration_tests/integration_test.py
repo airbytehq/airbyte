@@ -27,8 +27,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_duckdb import DestinationDuckdb
-from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY
+from destination_motherduck import DestinationMotherDuck
+from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY
 from faker import Faker
 
 CONFIG_PATH = "integration_tests/config.json"
@@ -82,7 +82,7 @@ def disable_destination_modification(monkeypatch, request):
     if "disable_autouse" in request.keywords:
         return
     else:
-        monkeypatch.setattr(DestinationDuckdb, "_get_destination_path", lambda _, x: x)
+        monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
 
 
 @pytest.fixture(scope="module")
@@ -218,7 +218,7 @@ def airbyte_message3():
 
 @pytest.mark.disable_autouse
 def test_check_fails(invalid_config, request):
-    destination = DestinationDuckdb()
+    destination = DestinationMotherDuck()
     status = destination.check(logger=MagicMock(), config=invalid_config)
     assert status.status == Status.FAILED
 
@@ -227,7 +227,7 @@ def test_check_succeeds(
     config: dict[str, str],
     request,
 ):
-    destination = DestinationDuckdb()
+    destination = DestinationMotherDuck()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.SUCCEEDED
 
@@ -246,7 +246,7 @@ def test_write(
     test_table_name: str,
     test_schema_name: str,
 ):
-    destination = DestinationDuckdb()
+    destination = DestinationMotherDuck()
     generator = destination.write(
         config,
         configured_catalogue,
@@ -286,7 +286,7 @@ def test_write_dupe(
     test_table_name: str,
     test_schema_name: str,
 ):
-    destination = DestinationDuckdb()
+    destination = DestinationMotherDuck()
     generator = destination.write(
         config,
         configured_catalogue_append_dedup,
@@ -410,7 +410,7 @@ def test_large_number_of_writes(
     airbyte_message_generator: Callable[[int, int, str], Iterable[AirbyteMessage]],
     explanation: str,
 ):
-    destination = DestinationDuckdb()
+    destination = DestinationMotherDuck()
     generator = destination.write(
         config,
         configured_catalogue,
