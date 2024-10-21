@@ -212,11 +212,11 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (i < 2_000_000) {
                     destination.sendMessage(
                         DestinationRecord(
-                            namespace = randomizedNamespace,
-                            name = "test_stream1",
-                            data = """{"id": 56}""",
-                            emittedAtMs = 1234,
-                        )
+                                namespace = randomizedNamespace,
+                                name = "test_stream1",
+                                data = """{"id": 56}""",
+                                emittedAtMs = 1234,
+                            )
                             .asProtocolMessage()
                     )
                     i++
