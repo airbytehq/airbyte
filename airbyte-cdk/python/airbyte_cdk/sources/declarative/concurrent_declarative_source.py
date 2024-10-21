@@ -134,9 +134,9 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         """
         The `streams` method is used as part of the AbstractSource in the following cases:
         * ConcurrentDeclarativeSource.check -> ManifestDeclarativeSource.check -> AbstractSource.check -> DeclarativeSource.check_connection -> CheckStream.check_connection -> streams
-        * ConcurrentDeclarativeSource.discover -> ManifestDeclarativeSource.discover -> streams
+        * ConcurrentDeclarativeSource.read -> AbstractSource.read -> streams (note that we filter for a specific catalog which excludes concurrent streams so not all streams actually read from all the streams returned by `streams`)
 
-        In both case, we will assume that calling the DeclarativeStream is perfectly fine as the result for these is the same regardless of if it is a DeclarativeStream or a DefaultStream (concurrent). This
+        In both case, we will assume that calling the DeclarativeStream is perfectly fine as the result for these is the same regardless of if it is a DeclarativeStream or a DefaultStream (concurrent). This should simply be removed once we have moved away from the mentioned code paths above.
         """
         return super().streams(config)
 
