@@ -1,4 +1,4 @@
-version: 4.3.2
+version: 4.6.2
 definitions:
   selector:
     description: "Base records selector for Full Refresh streams"
