@@ -2,40 +2,25 @@
 
 import datetime
 import json
+import logging
 import os
 import re
-from urllib.parse import urlparse
 import uuid
 from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
+from urllib.parse import urlparse
 
 import duckdb
-
-import logging
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    DestinationSyncMode,
-    Status,
-    Type,
-)
-from airbyte_cdk.sql.types import SQLTypeConverter
-from airbyte_cdk.sql.constants import (
-    AB_RAW_ID_COLUMN,
-    AB_EXTRACTED_AT_COLUMN,
-    AB_META_COLUMN,
-    AB_INTERNAL_COLUMNS,
-)
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
+from airbyte_cdk.sql._processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
-from airbyte_cdk.sql._processors.duckdb import DuckDBSqlProcessor, DuckDBConfig
-from airbyte_cdk.sql._processors.motherduck import MotherDuckSqlProcessor
-from airbyte_cdk.sql._processors.motherduck import MotherDuckConfig
-from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
-
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+from airbyte_cdk.sql.types import SQLTypeConverter
 
 logger = getLogger("airbyte")
 
