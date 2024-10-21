@@ -47,7 +47,14 @@ class CustomFieldTransformation(RecordTransformation):
         for item in record:
             if item in self._date_and_date_time_fields and record.get(item):
                 try:
-                    pendulum.parse(record[item])
+                    if isinstance(record[item], list):
+                        item_value = record[item][-1].get('value', None)
+                        if item_value != None:
+                            record[item] = pendulum.parse(item_value)
+                        else:
+                            record[item] = None
+                    else:
+                        pendulum.parse(record[item])
                 except ParserError:
                     record[item] = None
         return record
