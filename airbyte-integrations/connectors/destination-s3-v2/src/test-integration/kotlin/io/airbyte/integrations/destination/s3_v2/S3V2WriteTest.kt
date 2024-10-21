@@ -42,4 +42,7 @@ class S3V2WriteTestAvroUncompressed : S3V2WriteTest(S3V2TestUtils.AVRO_UNCOMPRES
 
 class S3V2WriteTestAvroBzip2 : S3V2WriteTest(S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH)
 
-class S3V2WriteTestParquet : S3V2WriteTest(S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH)
+class S3V2WriteTestParquetUncompressed :
+    S3V2WriteTest(S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH)
+
+class S3V2WriteTestParquetSnappy : S3V2WriteTest(S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH)

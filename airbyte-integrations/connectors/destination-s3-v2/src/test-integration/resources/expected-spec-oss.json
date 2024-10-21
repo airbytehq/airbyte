@@ -237,6 +237,37 @@
               "type" : "string",
               "enum" : [ "Parquet" ],
               "default" : "Parquet"
+            },
+            "compression_codec" : {
+              "type" : "string",
+              "enum" : [ "UNCOMPRESSED", "SNAPPY", "GZIP", "LZO", "BROTLI", "LZ4", "ZSTD" ],
+              "description" : "The compression algorithm used to compress data pages.",
+              "title" : "Compression Codec"
+            },
+            "block_size_mb" : {
+              "type" : "integer",
+              "description" : "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
+              "title" : "Block Size (Row Group Size) (MB)"
+            },
+            "max_padding_size_mb" : {
+              "type" : "integer",
+              "description" : "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
+              "title" : "Max Padding Size (MB)"
+            },
+            "page_size_kb" : {
+              "type" : "integer",
+              "description" : "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
+              "title" : "Page Size (KB)"
+            },
+            "dictionary_page_size_kb" : {
+              "type" : "integer",
+              "description" : "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
+              "title" : "Dictionary Page Size (KB)"
+            },
+            "dictionary_encoding" : {
+              "type" : "boolean",
+              "description" : "Default: true.",
+              "title" : "Dictionary Encoding"
             }
           },
           "required" : [ "format_type" ]
