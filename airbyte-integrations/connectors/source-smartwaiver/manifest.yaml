@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 5.11.1
 
 type: DeclarativeSource
 
@@ -49,26 +49,34 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "300"
-            toDts: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
-            fromDts: >-
-              {{config['start_date'] if next_page_token is none else
-              next_page_token }}
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - waivers
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: fromDts
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response['waivers'][0]['createdOn']    }}"
-            stop_condition: "{{ response.waivers|length == 0 }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdOn
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDts
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDts
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -113,12 +121,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: checkins
           http_method: GET
-          request_parameters:
-            limit: "100"
-            toDts: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
-            fromDts: >-
-              {{config['start_date'] if next_page_token is none else
-              next_page_token }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -130,12 +132,37 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: body_json
-            field_name: fromDts
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response['checkins']['toDts']    }}"
-            stop_condition: "{{ response. checkins. checkins |length == 0 }}"
+            type: OffsetIncrement
+            page_size: 100
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDts
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDts
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -161,6 +188,7 @@ spec:
     required:
       - api_key
       - start_date
+      - start_date_2
     properties:
       api_key:
         type: string
@@ -172,12 +200,15 @@ spec:
         airbyte_secret: true
       start_date:
         type: string
-        description: >-
-          Any data before this date will not be replicated and date time formate
-          should be %Y-%m-%d %H:%M:%S. Example 2017-01-24 13:12:29.
         order: 1
         title: Start Date
         default: "2017-01-24 13:12:29"
+      start_date_2:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
     additionalProperties: true
 
 metadata:
@@ -188,33 +219,33 @@ metadata:
     checkins: true
   testedStreams:
     templates:
-      hasRecords: true
       streamHash: 8b84fca96d10ec9fa374524feb71275759fd211d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    signed_waivers:
       hasRecords: true
-      streamHash: 19b2ddc1b6e58ca2c872a04e832f479570f65ea3
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signed_waivers:
+      streamHash: 04541410c98ab9b2bf558d8e7814ebc51525f6cc
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     detailed_signed_waiver:
       hasRecords: true
-      streamHash: 8274b63c77395a684a9437cda3980a773b018aa9
+      streamHash: 00186b68dbd27cc17a022233b376a00125446ebf
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     checkins:
-      hasRecords: true
-      streamHash: 3064832fb754879703a6a28d7bf6bd785b73b007
+      streamHash: aaaf25f925f28786feb50281f71720bc313a98bf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -261,9 +292,7 @@ schemas:
           - string
           - "null"
       createdOn:
-        type:
-          - string
-          - "null"
+        type: string
       dob:
         type:
           - string
@@ -324,6 +353,7 @@ schemas:
         type: string
     required:
       - waiverId
+      - createdOn
   detailed_signed_waiver:
     type: object
     $schema: http://json-schema.org/schema#
@@ -549,9 +579,7 @@ schemas:
     additionalProperties: true
     properties:
       date:
-        type:
-          - string
-          - "null"
+        type: string
       firstName:
         type:
           - string
@@ -572,3 +600,4 @@ schemas:
         type: string
     required:
       - waiverId
+      - date
