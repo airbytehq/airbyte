@@ -103,6 +103,7 @@ definitions:
         $ref: "#/definitions/paginator"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   # Stream Issues https://docs.sentry.io/api/events/list-a-projects-issues/
   issues:
@@ -165,6 +166,12 @@ check:
   type: CheckStream
   stream_names:
     - project_detail
+
+# Sentry currently supports 5 streams and each operates as descending data feed that can only run in
+# parallel with each other. This number can increase if we add more streams
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
 
 metadata:
   autoImportSchema:
