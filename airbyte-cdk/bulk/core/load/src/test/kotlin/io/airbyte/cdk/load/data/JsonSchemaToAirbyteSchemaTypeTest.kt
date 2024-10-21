@@ -64,26 +64,26 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     fun testStringTime() {
         val stringType = ofType("string").put("format", "time")
         val airbyteType = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType, TimeType(hasTimezone = true))
+        Assertions.assertEquals(airbyteType, TimeTypeWithTimezone)
         stringType.put("airbyte_type", "time_without_timezone")
         val airbyteType2 = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType2, TimeType(hasTimezone = false))
+        Assertions.assertEquals(airbyteType2, TimeTypeWithoutTimezone)
         stringType.put("airbyte_type", "time_with_timezone")
         val airbyteType3 = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType3, TimeType(hasTimezone = true))
+        Assertions.assertEquals(airbyteType3, TimeTypeWithTimezone)
     }
 
     @Test
     fun testStringTimestamp() {
         val stringType = ofType("string").put("format", "date-time")
         val airbyteType = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType, TimestampType(hasTimezone = true))
+        Assertions.assertEquals(airbyteType, TimestampTypeWithTimezone)
         stringType.put("airbyte_type", "timestamp_without_timezone")
         val airbyteType2 = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType2, TimestampType(hasTimezone = false))
+        Assertions.assertEquals(airbyteType2, TimestampTypeWithoutTimezone)
         stringType.put("airbyte_type", "timestamp_with_timezone")
         val airbyteType3 = JsonSchemaToAirbyteType().convert(stringType)
-        Assertions.assertEquals(airbyteType3, TimestampType(hasTimezone = true))
+        Assertions.assertEquals(airbyteType3, TimestampTypeWithTimezone)
     }
 
     @Test

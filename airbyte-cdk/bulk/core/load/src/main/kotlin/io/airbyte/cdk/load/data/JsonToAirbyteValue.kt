@@ -31,8 +31,10 @@ class JsonToAirbyteValue {
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema -> toObjectWithoutSchema(json)
                 is StringType -> StringValue(json.asText())
-                is TimeType -> TimeValue(json.asText())
-                is TimestampType -> TimestampValue(json.asText())
+                is TimeTypeWithTimezone,
+                is TimeTypeWithoutTimezone -> TimeValue(json.asText())
+                is TimestampTypeWithTimezone,
+                is TimestampTypeWithoutTimezone -> TimestampValue(json.asText())
                 is UnionType -> toUnion(json, schema.options)
                 is UnknownType -> UnknownValue("From $schema: $json")
             }
@@ -172,8 +174,10 @@ class JsonToAirbyteValue {
             is ObjectTypeWithoutSchema,
             is ObjectTypeWithEmptySchema -> json.isObject
             is StringType -> json.isTextual
-            is TimeType -> json.isTextual
-            is TimestampType -> json.isTextual
+            is TimeTypeWithTimezone,
+            is TimeTypeWithoutTimezone,
+            is TimestampTypeWithTimezone,
+            is TimestampTypeWithoutTimezone -> json.isTextual
             is UnionType -> schema.options.any { matchesStrictly(it, json) }
             is UnknownType -> false
         }
