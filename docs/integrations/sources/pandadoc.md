@@ -6,18 +6,19 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.pandadoc.com/a/#/settings/api-dashboard/configuration |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| documents | id | DefaultPaginator | ✅ |  ❌  |
+| documents | id | DefaultPaginator | ✅ |  ✅  |
 | attachments | uuid | No pagination | ✅ |  ❌  |
 | fields | uuid | No pagination | ✅ |  ❌  |
-| sections | uuid | No pagination | ✅ |  ❌  |
-| templates |  | No pagination | ✅ |  ❌  |
-| forms | id | No pagination | ✅ |  ❌  |
+| sections |  | No pagination | ✅ |  ❌  |
+| templates |  | DefaultPaginator | ✅ |  ❌  |
+| forms | id | No pagination | ✅ |  ✅  |
 | contacts | id | No pagination | ✅ |  ❌  |
-| members | user_id | No pagination | ✅ |  ❌  |
+| members | user_id | No pagination | ✅ |  ✅  |
 | api_logs | id | DefaultPaginator | ✅ |  ❌  |
 | document_folders | uuid | DefaultPaginator | ✅ |  ❌  |
 | templates_folders | uuid | No pagination | ✅ |  ❌  |

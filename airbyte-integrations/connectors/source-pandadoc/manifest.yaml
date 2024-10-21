@@ -15,14 +15,16 @@ check:
 
 definitions:
   streams:
-    forms:
+    documents:
       type: DeclarativeStream
-      name: forms
+      name: documents
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /forms
+          path: /documents
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -30,15 +32,77 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/forms"
+          $ref: "#/schemas/documents"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /documents/{{ stream_partition.document_id }}/attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: document_id
+              stream:
+                $ref: "#/definitions/streams/documents"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
     fields:
       type: DeclarativeStream
       name: fields
+      primary_key:
+        - uuid
       retriever:
         type: SimpleRetriever
         requester:
@@ -55,90 +119,14 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/documents"
               parent_key: id
               partition_field: document_id
-      primary_key:
-        - uuid
+              stream:
+                $ref: "#/definitions/streams/documents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/fields"
-    members:
-      type: DeclarativeStream
-      name: members
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /members
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - user_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/members"
-    api_logs:
-      type: DeclarativeStream
-      name: api_logs
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /logs
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/api_logs"
-    contacts:
-      type: DeclarativeStream
-      name: contacts
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: contacts
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/contacts"
     sections:
       type: DeclarativeStream
       name: sections
@@ -158,48 +146,15 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/documents"
               parent_key: id
               partition_field: document_id
-      primary_key:
-        - uuid
+              stream:
+                $ref: "#/definitions/streams/documents"
+              incremental_dependency: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sections"
-    documents:
-      type: DeclarativeStream
-      name: documents
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /documents
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/documents"
     templates:
       type: DeclarativeStream
       name: templates
@@ -215,29 +170,31 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/templates"
-    workspaces:
-      type: DeclarativeStream
-      name: workspaces
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: page
             inject_into: request_parameter
+            field_name: page
           pagination_strategy:
             type: PageIncrement
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /workspaces
+          path: /forms
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -245,87 +202,137 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
       primary_key:
         - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/workspaces"
-    attachments:
-      type: DeclarativeStream
-      name: attachments
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /documents/{{ stream_partition.document_id }}/attachments
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/documents"
-              parent_key: id
-              partition_field: document_id
-      primary_key:
-        - uuid
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/attachments"
-    webhook_events:
-      type: DeclarativeStream
-      name: webhook_events
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /webhook-events
+          path: contacts
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - items
-      primary_key:
-        - uuid
+              - results
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/webhook_events"
-    document_folders:
+          $ref: "#/schemas/contacts"
+    members:
       type: DeclarativeStream
-      name: document_folders
+      name: members
+      primary_key:
+        - user_id
       retriever:
         type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /members
+          http_method: GET
+          request_parameters:
+            oder_by: date_modified
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    api_logs:
+      type: DeclarativeStream
+      name: api_logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /logs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: page
             inject_into: request_parameter
+            field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/api_logs"
+    document_folders:
+      type: DeclarativeStream
+      name: document_folders
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /documents/folders
@@ -336,8 +343,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
-      primary_key:
-        - uuid
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -345,6 +361,8 @@ definitions:
     templates_folders:
       type: DeclarativeStream
       name: templates_folders
+      primary_key:
+        - uuid
       retriever:
         type: SimpleRetriever
         requester:
@@ -357,15 +375,47 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
-      primary_key:
-        - uuid
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/templates_folders"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
     webhook_subscriptions:
       type: DeclarativeStream
       name: webhook_subscriptions
+      primary_key:
+        - uuid
       retriever:
         type: SimpleRetriever
         requester:
@@ -378,12 +428,41 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
-      primary_key:
-        - uuid
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/webhook_subscriptions"
+    webhook_events:
+      type: DeclarativeStream
+      name: webhook_events
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhook-events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_events"
   base_requester:
     type: HttpRequester
     url_base: https://api.pandadoc.com/public/v1
@@ -418,6 +497,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
@@ -428,40 +508,76 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://developers.pandadoc.com/reference/about
+  autoImportSchema:
+    documents: true
+    attachments: false
+    fields: false
+    sections: false
+    templates: true
+    forms: true
+    contacts: true
+    members: true
+    api_logs: true
+    document_folders: false
+    templates_folders: true
+    workspaces: false
+    webhook_subscriptions: false
+    webhook_events: false
+  yamlComponents:
+    global:
+      - authenticator
   testedStreams:
-    forms:
-      hasRecords: true
-      streamHash: f414bdeedd1220a2df50105a33630f67f74c90d7
+    documents:
+      streamHash: a6daec8062e8bea99bc7c9c42d9ad8631299a7fa
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attachments:
+      streamHash: 7e92f47fe12490b9e30b0a718de3f56e089b32ca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     fields:
-      hasRecords: true
-      streamHash: 63eb98904d42e6f1a59f31c27e245bf70d5d80a6
+      streamHash: f60764fa30da1d01b40e93f609bfa280e9391ed6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    members:
       hasRecords: true
-      streamHash: d42b75318996960164571683020bdf4f644f9057
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sections:
+      streamHash: ad53eb809a0855d95046c7c313f80d1f424f860e
+      hasResponse: true
       responsesAreSuccessful: true
-    api_logs:
       hasRecords: true
-      streamHash: 6ec810120a0712f8a6400d04d3f446881fc0f34b
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: c7021760c8821177eb151b25fdf38000dd1f1bc7
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    forms:
+      streamHash: 3c7be9fbe8a91165c21af3da61ccdf0eb2efc244
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contacts:
       hasRecords: true
       streamHash: 75385df6b646922ef585cbeba10ecc179e90f2dc
@@ -469,44 +585,16 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    sections:
-      hasRecords: true
-      streamHash: 1905b6c4e5edf03eb0474611118fe30be07f4a93
+    members:
+      streamHash: 413131922d82461eb976dbace1be4ab64f27e2df
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    documents:
       hasRecords: true
-      streamHash: e8b86239ba8233506810bf855f37143edc9d54c4
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    templates:
-      hasRecords: true
-      streamHash: 93aaa74c1de195e84e59ea001ad007d15a02f1fc
-      hasResponse: true
       primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    workspaces:
+    api_logs:
       hasRecords: true
-      streamHash: 9f56defbbdcd0199e433a4bb05393f032676224f
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    attachments:
-      hasRecords: true
-      streamHash: cb192163458c0136e044ff8c51bd7c72914ecbf6
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    webhook_events:
-      hasRecords: true
-      streamHash: 15cbb841befa69ada8bfbeca92c52a73e6637807
+      streamHash: 6ec810120a0712f8a6400d04d3f446881fc0f34b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -525,6 +613,13 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    workspaces:
+      hasRecords: true
+      streamHash: 9f56defbbdcd0199e433a4bb05393f032676224f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhook_subscriptions:
       hasRecords: true
       streamHash: 90b2f50b03d6c24fc76981df02582765d0e5b14c
@@ -532,32 +627,40 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  yamlComponents:
-    global:
-      - authenticator
-  autoImportSchema:
-    forms: true
-    fields: false
-    members: true
-    api_logs: true
-    contacts: true
-    sections: false
-    documents: true
-    templates: true
-    workspaces: false
-    attachments: false
-    webhook_events: false
-    document_folders: false
-    templates_folders: true
-    webhook_subscriptions: false
+    webhook_events:
+      hasRecords: true
+      streamHash: 15cbb841befa69ada8bfbeca92c52a73e6637807
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.pandadoc.com/reference/about
 
 schemas:
-  forms:
+  documents:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
+      version:
+        type:
+          - string
+          - "null"
+      date_completed:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_modified:
+        type: string
+      expiration_date:
+        type:
+          - string
+          - "null"
       id:
         type: string
       name:
@@ -568,22 +671,40 @@ schemas:
         type:
           - string
           - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      date_modified:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  fields:
+    required:
+      - id
+      - date_modified
+  attachments:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - uuid
+    additionalProperties: true
     properties:
       type:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+      date_created:
         type:
           - string
           - "null"
@@ -593,87 +714,17 @@ schemas:
           - "null"
       uuid:
         type: string
-      title:
+    required:
+      - uuid
+  fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
         type:
           - string
           - "null"
-      value:
-        type:
-          - object
-          - string
-          - "null"
-      layout:
-        type:
-          - object
-          - "null"
-        properties:
-          page:
-            type:
-              - number
-              - "null"
-          style:
-            type:
-              - object
-              - "null"
-            properties:
-              width:
-                type:
-                  - number
-                  - "null"
-              height:
-                type:
-                  - number
-                  - "null"
-          position:
-            type:
-              - object
-              - "null"
-            properties:
-              offset_x:
-                type:
-                  - string
-                  - "null"
-              offset_y:
-                type:
-                  - string
-                  - "null"
-              anchor_point:
-                type:
-                  - string
-                  - "null"
-      field_id:
-        type:
-          - string
-          - "null"
-      settings:
-        type:
-          - object
-          - "null"
-        properties:
-          masked:
-            type:
-              - boolean
-              - "null"
-          required:
-            type:
-              - boolean
-              - "null"
-          multiline:
-            type:
-              - boolean
-              - "null"
-          autofilled:
-            type:
-              - boolean
-              - "null"
-          date_format:
-            type:
-              - string
-              - "null"
-          placeholder:
-            type:
-              - string
-              - "null"
       assigned_to:
         type:
           - object
@@ -683,40 +734,20 @@ schemas:
             type:
               - string
               - "null"
-          id:
-            type:
-              - string
-              - "null"
-          role:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          roles:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          redirect:
+          delivery_methods:
             type:
               - object
               - "null"
             properties:
-              is_enabled:
+              email:
                 type:
                   - boolean
                   - "null"
-          last_name:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+          email:
             type:
               - string
               - "null"
@@ -728,24 +759,91 @@ schemas:
             type:
               - boolean
               - "null"
+          id:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
           recipient_type:
             type:
               - string
               - "null"
-          delivery_methods:
+          redirect:
             type:
               - object
               - "null"
             properties:
-              sms:
+              is_enabled:
                 type:
                   - boolean
                   - "null"
-              email:
+          role:
+            type:
+              - string
+              - "null"
+          roles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      field_id:
+        type:
+          - string
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          page:
+            type:
+              - number
+              - "null"
+          position:
+            type:
+              - object
+              - "null"
+            properties:
+              anchor_point:
                 type:
-                  - boolean
+                  - string
+                  - "null"
+              offset_x:
+                type:
+                  - string
+                  - "null"
+              offset_y:
+                type:
+                  - string
+                  - "null"
+          style:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              width:
+                type:
+                  - number
                   - "null"
       merge_field:
+        type:
+          - string
+          - "null"
+      name:
         type:
           - string
           - "null"
@@ -753,14 +851,116 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  members:
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          autofilled:
+            type:
+              - boolean
+              - "null"
+          date_format:
+            type:
+              - string
+              - "null"
+          masked:
+            type:
+              - boolean
+              - "null"
+          multiline:
+            type:
+              - boolean
+              - "null"
+          placeholder:
+            type:
+              - string
+              - "null"
+          required:
+            type:
+              - boolean
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      value:
+        type:
+          - object
+          - string
+          - "null"
+    required:
+      - uuid
+  sections:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - user_id
+    additionalProperties: true
     properties:
-      role:
+      name:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_modified:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date_created:
+        type:
+          - string
+          - "null"
+      date_modified:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - date_modified
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
         type:
           - string
           - "null"
@@ -768,8 +968,45 @@ schemas:
         type:
           - string
           - "null"
-      user_id:
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
         type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date_created:
+        type:
+          - string
+          - "null"
+      date_modified:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      email_verified:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
       is_active:
         type:
           - boolean
@@ -778,58 +1015,41 @@ schemas:
         type:
           - string
           - "null"
-      workspace:
-        type:
-          - string
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      user_license:
-        type:
-          - string
-          - "null"
-      date_modified:
-        type:
-          - string
-          - "null"
       membership_id:
         type:
           - string
           - "null"
-      email_verified:
+      role:
         type:
-          - boolean
+          - string
+          - "null"
+      user_id:
+        type: string
+      user_license:
+        type:
+          - string
+          - "null"
+      workspace:
+        type:
+          - string
           - "null"
       workspace_name:
         type:
           - string
           - "null"
-    additionalProperties: true
+    required:
+      - user_id
+      - date_modified
   api_logs:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       id:
         type: string
-      url:
-        type:
-          - string
-          - "null"
       method:
         type:
           - string
-          - "null"
-      status:
-        type:
-          - number
           - "null"
       request_time:
         type:
@@ -839,254 +1059,81 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  contacts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      email:
-        type:
-          - string
-          - "null"
-      phone:
-        type:
-          - string
-          - "null"
-      company:
-        type:
-          - string
-          - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  sections:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
-      name:
-        type:
-          - string
-          - "null"
-      uuid:
-        type: string
-    additionalProperties: true
-  documents:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      version:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      name:
-        type:
-          - string
-          - "null"
       status:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      date_modified:
-        type:
-          - string
-          - "null"
-      date_completed:
-        type:
-          - string
-          - "null"
-      expiration_date:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  templates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      version:
-        type:
-          - string
-          - "null"
-      id:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-      date_modified:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  workspaces:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
-    additionalProperties: true
-  attachments:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      uuid:
-        type: string
-      created_by:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  webhook_events:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      uuid:
-        type: string
-      delivery_time:
-        type:
-          - string
-          - "null"
-      http_status_code:
         type:
           - number
           - "null"
-    additionalProperties: true
-  document_folders:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
-      name:
-        type:
-          - string
-          - "null"
-      uuid:
-        type: string
-      has_items:
-        type:
-          - boolean
-          - "null"
-      has_folders:
-        type:
-          - boolean
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  templates_folders:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
-      name:
-        type:
-          - string
-          - "null"
-      uuid:
-        type: string
-      has_items:
-        type:
-          - boolean
-          - "null"
-      has_folders:
-        type:
-          - boolean
-          - "null"
-      date_created:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  webhook_subscriptions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uuid
-    properties:
       url:
         type:
           - string
           - "null"
+    required:
+      - id
+  document_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date_created:
+        type:
+          - string
+          - "null"
+      has_folders:
+        type:
+          - boolean
+          - "null"
+      has_items:
+        type:
+          - boolean
+          - "null"
       name:
         type:
           - string
           - "null"
       uuid:
         type: string
+    required:
+      - uuid
+  templates_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date_created:
+        type:
+          - string
+          - "null"
+      has_folders:
+        type:
+          - boolean
+          - "null"
+      has_items:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  webhook_subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       active:
         type:
           - boolean
           - "null"
-      status:
+      name:
         type:
           - string
           - "null"
@@ -1098,6 +1145,14 @@ schemas:
           type:
             - string
             - "null"
+      shared_key:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
       triggers:
         type:
           - array
@@ -1106,12 +1161,40 @@ schemas:
           type:
             - string
             - "null"
-      shared_key:
+      url:
         type:
           - string
           - "null"
+      uuid:
+        type: string
       workspace_id:
         type:
           - string
           - "null"
+    required:
+      - uuid
+  webhook_events:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      delivery_time:
+        type:
+          - string
+          - "null"
+      http_status_code:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
