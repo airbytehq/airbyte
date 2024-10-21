@@ -1,7 +1,7 @@
 # Wasabi
 This directory contains the manifest-only connector for `source-wasabi`.
 
-Connector for https://www.wasabi.com API.
+Connector for https://www.wasabi.com API. API docs: https://docs.wasabi.com/docs/wasabi-stats-api
 
 ## Usage
 There are multiple ways to use this connector:
