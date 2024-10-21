@@ -131,9 +131,103 @@
               "type" : "string",
               "enum" : [ "Avro" ],
               "default" : "Avro"
+            },
+            "compression_codec" : {
+              "oneOf" : [ {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "no compression" ],
+                    "default" : "no compression"
+                  }
+                },
+                "title" : "no compression",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "Deflate" ],
+                    "default" : "Deflate"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Deflate Level"
+                  }
+                },
+                "title" : "Deflate",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "bzip2" ],
+                    "default" : "bzip2"
+                  }
+                },
+                "title" : "bzip2",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "xz" ],
+                    "default" : "xz"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  }
+                },
+                "title" : "xz",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "zstandard" ],
+                    "default" : "zstandard"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  },
+                  "include_checksum" : {
+                    "type" : "boolean",
+                    "title" : "Include Checksum"
+                  }
+                },
+                "title" : "zstandard",
+                "required" : [ "codec", "compression_level", "include_checksum" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "snappy" ],
+                    "default" : "snappy"
+                  }
+                },
+                "title" : "snappy",
+                "required" : [ "codec" ]
+              } ],
+              "description" : "The compression algorithm used to compress data. Default to no compression.",
+              "title" : "Compression Codec",
+              "type" : "object"
             }
           },
-          "required" : [ "format_type" ]
+          "required" : [ "format_type", "compression_codec" ]
         }, {
           "title" : "Parquet: Columnar Storage",
           "type" : "object",

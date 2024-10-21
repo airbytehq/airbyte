@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.avro
 
+import io.airbyte.cdk.load.command.avro.AvroCompressionConfiguration
 import java.io.Closeable
 import java.io.OutputStream
 import org.apache.avro.Schema
@@ -27,9 +28,13 @@ class AvroWriter(
     }
 }
 
-fun OutputStream.toAvroWriter(avroSchema: Schema): AvroWriter {
+fun OutputStream.toAvroWriter(
+    avroSchema: Schema,
+    config: AvroCompressionConfiguration
+): AvroWriter {
     val datumWriter = GenericDatumWriter<GenericRecord>(avroSchema)
     val dataFileWriter = DataFileWriter(datumWriter)
+    dataFileWriter.setCodec(config.compressionCodec)
     dataFileWriter.create(avroSchema, this)
     return AvroWriter(dataFileWriter)
 }
