@@ -217,10 +217,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -244,10 +244,10 @@ class TestBaseInsightsStream:
                 },
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
             ),
@@ -256,10 +256,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -276,10 +276,10 @@ class TestBaseInsightsStream:
             (
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
                 None,
@@ -298,14 +298,14 @@ class TestBaseInsightsStream:
 
         assert stream.state == {
             "time_increment": 1,
-            "unknown_account": {"slices": set()},
+            "unknown_account": {"slices": []},
         }
 
         stream.state = state
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", set())
+        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
