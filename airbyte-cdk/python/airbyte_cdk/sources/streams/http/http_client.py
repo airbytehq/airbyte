@@ -4,6 +4,7 @@
 
 import logging
 import os
+import orjson
 import urllib
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
@@ -45,7 +46,6 @@ from airbyte_cdk.sources.streams.http.rate_limiting import (
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from orjson import orjson
 from requests.auth import AuthBase
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
