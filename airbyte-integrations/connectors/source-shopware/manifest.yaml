@@ -1,0 +1,5141 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: Shopware source connector
+
+check:
+  type: CheckStream
+  stream_names:
+    - Customer List
+
+definitions:
+  streams:
+    Customer List:
+      type: DeclarativeStream
+      name: Customer List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer List"
+    Customer Address List:
+      type: DeclarativeStream
+      name: Customer Address List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer-address
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer Address List"
+    Customer Group List:
+      type: DeclarativeStream
+      name: Customer Group List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer-group
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer Group List"
+    "Customer WishList ":
+      type: DeclarativeStream
+      name: "Customer WishList "
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer-wishlist
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer WishList "
+    Customer Wishlist Product:
+      type: DeclarativeStream
+      name: Customer Wishlist Product
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer-wishlist-product
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customer Wishlist Product"
+    Delivery Time Resources:
+      type: DeclarativeStream
+      name: Delivery Time Resources
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /delivery-time
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Delivery Time Resources"
+    Document Resources:
+      type: DeclarativeStream
+      name: Document Resources
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /document
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Document Resources"
+    Order List:
+      type: DeclarativeStream
+      name: Order List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order List"
+    Order Addreses:
+      type: DeclarativeStream
+      name: Order Addreses
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-address
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Addreses"
+    Order Customer List:
+      type: DeclarativeStream
+      name: Order Customer List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-customer
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Customer List"
+    Order Delivery List:
+      type: DeclarativeStream
+      name: Order Delivery List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-delivery
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Delivery List"
+    Order Delivery Positions:
+      type: DeclarativeStream
+      name: Order Delivery Positions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-delivery-position
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Delivery Positions"
+    Order Line Items:
+      type: DeclarativeStream
+      name: Order Line Items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-line-item
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Line Items"
+    Order Transactions:
+      type: DeclarativeStream
+      name: Order Transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order-transaction
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Order Transactions"
+    Products:
+      type: DeclarativeStream
+      name: Products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Products"
+    Product Reviews:
+      type: DeclarativeStream
+      name: Product Reviews
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product-review
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Product Reviews"
+    Countries:
+      type: DeclarativeStream
+      name: Countries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /country
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Countries"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}/api"
+    authenticator:
+      type: OAuthAuthenticator
+      refresh_request_body: {}
+      token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth/token"
+      grant_type: client_credentials
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      scopes: []
+
+streams:
+  - $ref: "#/definitions/streams/Customer List"
+  - $ref: "#/definitions/streams/Customer Address List"
+  - $ref: "#/definitions/streams/Customer Group List"
+  - $ref: "#/definitions/streams/Customer WishList "
+  - $ref: "#/definitions/streams/Customer Wishlist Product"
+  - $ref: "#/definitions/streams/Delivery Time Resources"
+  - $ref: "#/definitions/streams/Document Resources"
+  - $ref: "#/definitions/streams/Order List"
+  - $ref: "#/definitions/streams/Order Addreses"
+  - $ref: "#/definitions/streams/Order Customer List"
+  - $ref: "#/definitions/streams/Order Delivery List"
+  - $ref: "#/definitions/streams/Order Delivery Positions"
+  - $ref: "#/definitions/streams/Order Line Items"
+  - $ref: "#/definitions/streams/Order Transactions"
+  - $ref: "#/definitions/streams/Products"
+  - $ref: "#/definitions/streams/Product Reviews"
+  - $ref: "#/definitions/streams/Countries"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - base_url
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 1
+      base_url:
+        type: string
+        title: Base Url
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Customer List: true
+    Customer Address List: true
+    Customer Group List: true
+    "Customer WishList ": true
+    Customer Wishlist Product: true
+    Delivery Time Resources: true
+    Document Resources: true
+    Order List: true
+    Order Addreses: true
+    Order Customer List: true
+    Order Delivery List: true
+    Order Delivery Positions: true
+    Order Line Items: true
+    Order Transactions: true
+    Products: true
+    Product Reviews: true
+    Countries: true
+  testedStreams:
+    Customer List:
+      streamHash: a07123b5961d5dc9c20efd0de92ab5344ef1e857
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer Address List:
+      streamHash: d54f0e41d981c47a30ee94dc3f5009677e0f8799
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer Group List:
+      streamHash: a99d13c90daed5cf052c2fb7d4090d2238e5fc08
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    "Customer WishList ":
+      streamHash: 9d7d85ee44e4d6534caf8663ea4f8ba17008698d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customer Wishlist Product:
+      streamHash: bf1817ce83d8dba6679aea67b7e3c7b6aad75fbe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Delivery Time Resources:
+      streamHash: b1f12fdf373cb61217e480ff7e4adb1cc615ba22
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Document Resources:
+      streamHash: eb4b7e2d350049d22e7480ddde4c8ae7e78dac29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order List:
+      streamHash: d7cbfbceb9bb1fcb5a359809bdbf0117b99baa04
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Addreses:
+      streamHash: 10c13f84530c14ccb3c9112ef577338f944a6abe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Customer List:
+      streamHash: 9840068ab25c1db6c42543fbf62e09b86782d382
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Delivery List:
+      streamHash: 238d793927bf21aff58355b3efad1429020233a5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Delivery Positions:
+      streamHash: 9a8401465c956a53c6a9a3d3a5b32c28f7686bf0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Line Items:
+      streamHash: 28a6a63db68f254f6e7a180683cf010bff7c92af
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Order Transactions:
+      streamHash: 1ee14576320f83c3edabb2060f51ab824c31fcee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Products:
+      streamHash: 2ac80bd8b0aeda1ca831cf06876560a231dc2497
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Product Reviews:
+      streamHash: 2a4d3105ed21571b5eb0f5705173be3a9d6049ef
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Countries:
+      streamHash: ee33f17ccb94043550472d97fd29933be033ed7d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Customer List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          accountType:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          autoIncrement:
+            type:
+              - number
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - string
+              - "null"
+          defaultBillingAddressId:
+            type:
+              - string
+              - "null"
+          defaultPaymentMethodId:
+            type:
+              - string
+              - "null"
+          defaultShippingAddressId:
+            type:
+              - string
+              - "null"
+          doubleOptInRegistration:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstLogin:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          groupId:
+            type:
+              - string
+              - "null"
+          guest:
+            type:
+              - boolean
+              - "null"
+          languageId:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          orderCount:
+            type:
+              - number
+              - "null"
+          orderTotalAmount:
+            type:
+              - number
+              - "null"
+          remoteAddress:
+            type:
+              - string
+              - "null"
+          reviewCount:
+            type:
+              - number
+              - "null"
+          salesChannelId:
+            type:
+              - string
+              - "null"
+          salutationId:
+            type:
+              - string
+              - "null"
+          tagIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          updatedById:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          addresses:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          boundSalesChannel:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          createdBy:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          defaultBillingAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          defaultPaymentMethod:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          defaultShippingAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          group:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          language:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          lastPaymentMethod:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderCustomers:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          productReviews:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          promotions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          recoveryCustomer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          requestedGroup:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannel:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salutation:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          updatedBy:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          wishlists:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Customer Address List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          countryId:
+            type:
+              - string
+              - "null"
+          countryStateId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          salutationId:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          country:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          countryState:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salutation:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Customer Group List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          displayGross:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          registrationActive:
+            type:
+              - boolean
+              - "null"
+          translated:
+            type:
+              - object
+              - "null"
+            properties:
+              customFields:
+                type:
+                  - object
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          customers:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          registrationSalesChannels:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannels:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          translations:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  "Customer WishList ":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerId:
+            type:
+              - string
+              - "null"
+          salesChannelId:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          products:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannel:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Customer Wishlist Product:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          productId:
+            type:
+              - string
+              - "null"
+          productVersionId:
+            type:
+              - string
+              - "null"
+          wishlistId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          product:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          wishlist:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Delivery Time Resources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          translated:
+            type:
+              - object
+              - "null"
+            properties:
+              customFields:
+                type:
+                  - object
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          unit:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          products:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          shippingMethods:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          translations:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Document Resources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          config:
+            type:
+              - object
+              - "null"
+            properties:
+              bankBic:
+                type:
+                  - string
+                  - "null"
+              bankIban:
+                type:
+                  - string
+                  - "null"
+              bankName:
+                type:
+                  - string
+                  - "null"
+              companyAddress:
+                type:
+                  - string
+                  - "null"
+              companyName:
+                type:
+                  - string
+                  - "null"
+              custom:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  deliveryDate:
+                    type:
+                      - string
+                      - "null"
+                  deliveryNoteDate:
+                    type:
+                      - string
+                      - "null"
+                  deliveryNoteNumber:
+                    type:
+                      - string
+                      - "null"
+                  invoiceNumber:
+                    type:
+                      - string
+                      - "null"
+              deliveryCountries:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              diplayLineItemPosition:
+                type:
+                  - boolean
+                  - "null"
+              displayCompanyAddress:
+                type:
+                  - boolean
+                  - "null"
+              displayFooter:
+                type:
+                  - boolean
+                  - "null"
+              displayHeader:
+                type:
+                  - boolean
+                  - "null"
+              displayLineItems:
+                type:
+                  - boolean
+                  - "null"
+              displayPageCount:
+                type:
+                  - boolean
+                  - "null"
+              displayPrices:
+                type:
+                  - boolean
+                  - "null"
+              documentComment:
+                type:
+                  - string
+                  - "null"
+              documentDate:
+                type:
+                  - string
+                  - "null"
+              documentNumber:
+                type:
+                  - string
+                  - "null"
+              documentTypeId:
+                type:
+                  - string
+                  - "null"
+              executiveDirector:
+                type:
+                  - string
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              filenamePrefix:
+                type:
+                  - string
+                  - "null"
+              filenameSuffix:
+                type:
+                  - string
+                  - "null"
+              global:
+                type:
+                  - boolean
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              itemsPerPage:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              pageOrientation:
+                type:
+                  - string
+                  - "null"
+              pageSize:
+                type:
+                  - string
+                  - "null"
+              placeOfFulfillment:
+                type:
+                  - string
+                  - "null"
+              placeOfJurisdiction:
+                type:
+                  - string
+                  - "null"
+              taxNumber:
+                type:
+                  - string
+                  - "null"
+              taxOffice:
+                type:
+                  - string
+                  - "null"
+              translated:
+                type:
+                  - array
+                  - "null"
+              vatId:
+                type:
+                  - string
+                  - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          deepLinkCode:
+            type:
+              - string
+              - "null"
+          documentMediaFileId:
+            type:
+              - string
+              - "null"
+          documentNumber:
+            type:
+              - string
+              - "null"
+          documentTypeId:
+            type:
+              - string
+              - "null"
+          fileType:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          sent:
+            type:
+              - boolean
+              - "null"
+          static:
+            type:
+              - boolean
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          dependentDocuments:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          documentMediaFile:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          documentType:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          referencedDocument:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          amountNet:
+            type:
+              - number
+              - "null"
+          amountTotal:
+            type:
+              - number
+              - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          autoIncrement:
+            type:
+              - number
+              - "null"
+          billingAddressId:
+            type:
+              - string
+              - "null"
+          billingAddressVersionId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          currencyFactor:
+            type:
+              - number
+              - "null"
+          currencyId:
+            type:
+              - string
+              - "null"
+          deepLinkCode:
+            type:
+              - string
+              - "null"
+          itemRounding:
+            type:
+              - object
+              - "null"
+            properties:
+              decimals:
+                type:
+                  - number
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              interval:
+                type:
+                  - number
+                  - "null"
+              roundForNet:
+                type:
+                  - boolean
+                  - "null"
+          languageId:
+            type:
+              - string
+              - "null"
+          orderDate:
+            type:
+              - string
+              - "null"
+          orderDateTime:
+            type:
+              - string
+              - "null"
+          orderNumber:
+            type:
+              - string
+              - "null"
+          positionPrice:
+            type:
+              - number
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              netPrice:
+                type:
+                  - number
+                  - "null"
+              positionPrice:
+                type:
+                  - number
+                  - "null"
+              rawTotal:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              taxStatus:
+                type:
+                  - string
+                  - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+          ruleIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          salesChannelId:
+            type:
+              - string
+              - "null"
+          shippingCosts:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+              unitPrice:
+                type:
+                  - number
+                  - "null"
+          shippingTotal:
+            type:
+              - number
+              - "null"
+          stateId:
+            type:
+              - string
+              - "null"
+          taxStatus:
+            type:
+              - string
+              - "null"
+          totalRounding:
+            type:
+              - object
+              - "null"
+            properties:
+              decimals:
+                type:
+                  - number
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              interval:
+                type:
+                  - number
+                  - "null"
+              roundForNet:
+                type:
+                  - boolean
+                  - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          updatedById:
+            type:
+              - string
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          addresses:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          billingAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          createdBy:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          currency:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          deliveries:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          documents:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          language:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          lineItems:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderCustomer:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannel:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          stateMachineState:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          transactions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          updatedBy:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Addreses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          countryId:
+            type:
+              - string
+              - "null"
+          countryStateId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          salutationId:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          country:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          countryState:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderDeliveries:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salutation:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Customer List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerId:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          remoteAddress:
+            type:
+              - string
+              - "null"
+          salutationId:
+            type:
+              - string
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salutation:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Delivery List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          shippingCosts:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+              unitPrice:
+                type:
+                  - number
+                  - "null"
+          shippingDateEarliest:
+            type:
+              - string
+              - "null"
+          shippingDateLatest:
+            type:
+              - string
+              - "null"
+          shippingMethodId:
+            type:
+              - string
+              - "null"
+          shippingOrderAddressId:
+            type:
+              - string
+              - "null"
+          shippingOrderAddressVersionId:
+            type:
+              - string
+              - "null"
+          stateId:
+            type:
+              - string
+              - "null"
+          trackingCodes:
+            type:
+              - array
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          positions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          shippingMethod:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          shippingOrderAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          stateMachineState:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Delivery Positions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          orderDeliveryId:
+            type:
+              - string
+              - "null"
+          orderDeliveryVersionId:
+            type:
+              - string
+              - "null"
+          orderLineItemId:
+            type:
+              - string
+              - "null"
+          orderLineItemVersionId:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+              unitPrice:
+                type:
+                  - number
+                  - "null"
+          quantity:
+            type:
+              - number
+              - "null"
+          totalPrice:
+            type:
+              - number
+              - "null"
+          unitPrice:
+            type:
+              - number
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          orderDelivery:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderLineItem:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Line Items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          coverId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          good:
+            type:
+              - boolean
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          parentVersionId:
+            type:
+              - string
+              - "null"
+          payload:
+            type:
+              - object
+              - "null"
+            properties:
+              categoryIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              customFields:
+                type:
+                  - array
+                  - "null"
+              features:
+                type:
+                  - array
+                  - "null"
+              isCloseout:
+                type:
+                  - boolean
+                  - "null"
+              isNew:
+                type:
+                  - boolean
+                  - "null"
+              manufacturerId:
+                type:
+                  - string
+                  - "null"
+              optionIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              options:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    group:
+                      type:
+                        - string
+                        - "null"
+                    option:
+                      type:
+                        - string
+                        - "null"
+              productNumber:
+                type:
+                  - string
+                  - "null"
+              propertyIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              releaseDate:
+                type:
+                  - string
+                  - "null"
+              taxId:
+                type:
+                  - string
+                  - "null"
+          position:
+            type:
+              - number
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+              unitPrice:
+                type:
+                  - number
+                  - "null"
+          priceDefinition:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              isCalculated:
+                type:
+                  - boolean
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+          productId:
+            type:
+              - string
+              - "null"
+          productVersionId:
+            type:
+              - string
+              - "null"
+          quantity:
+            type:
+              - number
+              - "null"
+          referencedId:
+            type:
+              - string
+              - "null"
+          removable:
+            type:
+              - boolean
+              - "null"
+          stackable:
+            type:
+              - boolean
+              - "null"
+          states:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          totalPrice:
+            type:
+              - number
+              - "null"
+          unitPrice:
+            type:
+              - number
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          children:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          cover:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          downloads:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderDeliveryPositions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderTransactionCaptureRefundPositions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          parent:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          product:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          promotion:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Order Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - object
+              - "null"
+            properties:
+              calculatedTaxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    tax:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+              quantity:
+                type:
+                  - number
+                  - "null"
+              taxRules:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    extensions:
+                      type:
+                        - array
+                        - "null"
+                    percentage:
+                      type:
+                        - number
+                        - "null"
+                    taxRate:
+                      type:
+                        - number
+                        - "null"
+              totalPrice:
+                type:
+                  - number
+                  - "null"
+              unitPrice:
+                type:
+                  - number
+                  - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          orderId:
+            type:
+              - string
+              - "null"
+          orderVersionId:
+            type:
+              - string
+              - "null"
+          paymentMethodId:
+            type:
+              - string
+              - "null"
+          stateId:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          validationData:
+            type:
+              - array
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          captures:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          order:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          paymentMethod:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          stateMachineState:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          autoIncrement:
+            type:
+              - number
+              - "null"
+          available:
+            type:
+              - boolean
+              - "null"
+          availableStock:
+            type:
+              - number
+              - "null"
+          categoryIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          categoryTree:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          childCount:
+            type:
+              - number
+              - "null"
+          cmsPageId:
+            type:
+              - string
+              - "null"
+          coverId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          deliveryTimeId:
+            type:
+              - string
+              - "null"
+          displayGroup:
+            type:
+              - string
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          isCloseout:
+            type:
+              - boolean
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+          manufacturerId:
+            type:
+              - string
+              - "null"
+          minPurchase:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          optionIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          parentId:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                currencyId:
+                  type:
+                    - string
+                    - "null"
+                extensions:
+                  type:
+                    - array
+                    - "null"
+                gross:
+                  type:
+                    - number
+                    - "null"
+                linked:
+                  type:
+                    - boolean
+                    - "null"
+                net:
+                  type:
+                    - number
+                    - "null"
+          productNumber:
+            type:
+              - string
+              - "null"
+          propertyIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          purchasePrices:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                currencyId:
+                  type:
+                    - string
+                    - "null"
+                extensions:
+                  type:
+                    - array
+                    - "null"
+                gross:
+                  type:
+                    - number
+                    - "null"
+                linked:
+                  type:
+                    - boolean
+                    - "null"
+                net:
+                  type:
+                    - number
+                    - "null"
+          purchaseSteps:
+            type:
+              - number
+              - "null"
+          purchaseUnit:
+            type:
+              - number
+              - "null"
+          referenceUnit:
+            type:
+              - number
+              - "null"
+          releaseDate:
+            type:
+              - string
+              - "null"
+          sales:
+            type:
+              - number
+              - "null"
+          shippingFree:
+            type:
+              - boolean
+              - "null"
+          states:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          stock:
+            type:
+              - number
+              - "null"
+          tagIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          taxId:
+            type:
+              - string
+              - "null"
+          translated:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              customFields:
+                type:
+                  - object
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          variation:
+            type:
+              - array
+              - "null"
+          versionId:
+            type:
+              - string
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          streams:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          canonicalProduct:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          categories:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          categoriesRo:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          children:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          cmsPage:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          configuratorSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          cover:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          crossSellingAssignedProducts:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          crossSellings:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          customFieldSets:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          deliveryTime:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          downloads:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          featureSet:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          mainCategories:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          manufacturer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          media:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          options:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderLineItems:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          parent:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          prices:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          productReviews:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          properties:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          searchKeywords:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          seoUrls:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          tax:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          translations:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          unit:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          visibilities:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          wishlists:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Product Reviews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          apiAlias:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerId:
+            type:
+              - string
+              - "null"
+          externalEmail:
+            type:
+              - string
+              - "null"
+          externalUser:
+            type:
+              - string
+              - "null"
+          languageId:
+            type:
+              - string
+              - "null"
+          points:
+            type:
+              - number
+              - "null"
+          productId:
+            type:
+              - string
+              - "null"
+          salesChannelId:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          language:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          product:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannel:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+  Countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          active:
+            type:
+              - boolean
+              - "null"
+          addressFormat:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+          apiAlias:
+            type:
+              - string
+              - "null"
+          checkAdvancedPostalCodePattern:
+            type:
+              - boolean
+              - "null"
+          checkPostalCodePattern:
+            type:
+              - boolean
+              - "null"
+          checkVatIdPattern:
+            type:
+              - boolean
+              - "null"
+          companyTax:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currencyId:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          customerTax:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currencyId:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              extensions:
+                type:
+                  - array
+                  - "null"
+          defaultPostalCodePattern:
+            type:
+              - string
+              - "null"
+          displayStateInRegistration:
+            type:
+              - boolean
+              - "null"
+          forceStateInRegistration:
+            type:
+              - boolean
+              - "null"
+          isEu:
+            type:
+              - boolean
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          iso3:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          postalCodeRequired:
+            type:
+              - boolean
+              - "null"
+          shippingAvailable:
+            type:
+              - boolean
+              - "null"
+          translated:
+            type:
+              - object
+              - "null"
+            properties:
+              addressFormat:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+              customFields:
+                type:
+                  - object
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          vatIdPattern:
+            type:
+              - string
+              - "null"
+          vatIdRequired:
+            type:
+              - boolean
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          currencyCountryRoundings:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          customerAddresses:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          orderAddresses:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannelDefaultAssignments:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          salesChannels:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          states:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          taxRules:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+          translations:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
