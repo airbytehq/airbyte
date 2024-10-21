@@ -86,7 +86,9 @@ class DestinationMotherDuck(Destination):
             )
         else:
             return DuckDBSqlProcessor(
-                sql_config=DuckDBConfig(schema_name=schema_name, table_prefix=table_prefix, db_path=db_path),
+                sql_config=DuckDBConfig(
+                    schema_name=schema_name, table_prefix=table_prefix, db_path=db_path
+                ),
                 catalog_provider=catalog_provider,
             )
 
@@ -96,7 +98,9 @@ class DestinationMotherDuck(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
-        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+        if destination_path.startswith("md:") or destination_path.startswith(
+            "motherduck:"
+        ):
             return destination_path
 
         if not destination_path.startswith("/local"):
@@ -105,7 +109,8 @@ class DestinationMotherDuck(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path."
+                "A valid path shall start with /local or no / prefix"
             )
 
         return destination_path
@@ -167,7 +172,8 @@ class DestinationMotherDuck(Destination):
             # Get the SQL column definitions
             sql_columns = processor._get_sql_column_definitions(stream_name)
             column_definition_str = ",\n                ".join(
-                f"{self._quote_identifier(column_name)} {sql_type}" for column_name, sql_type in sql_columns.items()
+                f"{self._quote_identifier(column_name)} {sql_type}"
+                for column_name, sql_type in sql_columns.items()
             )
 
             # create the table if needed
@@ -179,7 +185,9 @@ class DestinationMotherDuck(Destination):
                 primary_keys=primary_keys,
             )
 
-            processor._ensure_compatible_table_schema(stream_name=stream_name, table_name=table_name)
+            processor._ensure_compatible_table_schema(
+                stream_name=stream_name, table_name=table_name
+            )
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
         for message in input_messages:
@@ -193,7 +201,9 @@ class DestinationMotherDuck(Destination):
                 data = message.record.data
                 stream_name = message.record.stream
                 if stream_name not in streams:
-                    logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
+                    logger.debug(
+                        f"Stream {stream_name} was not present in configured streams, skipping"
+                    )
                     continue
                 # add to buffer
                 record_meta: dict[str, str] = {}
@@ -203,7 +213,9 @@ class DestinationMotherDuck(Destination):
                     elif column_name not in AB_INTERNAL_COLUMNS:
                         buffer[stream_name][column_name].append(None)
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
-                buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
+                buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(
+                    datetime.datetime.now().isoformat()
+                )
                 buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
 
             else:
@@ -230,9 +242,13 @@ class DestinationMotherDuck(Destination):
                     schema_name=schema_name,
                     db_path=db_path,
                 )
-                processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
+                processor.write_stream_data_from_buffer(
+                    buffer, stream_name, configured_stream.destination_sync_mode
+                )
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: logging.Logger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -254,7 +270,9 @@ class DestinationMotherDuck(Destination):
 
             duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["motherduck_token"] = str(
+                    config[CONFIG_MOTHERDUCK_API_KEY]
+                )
                 duckdb_config["custom_user_agent"] = "airbyte"
 
             con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
@@ -263,4 +281,6 @@ class DestinationMotherDuck(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )
