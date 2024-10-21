@@ -26,11 +26,11 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -285,9 +285,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             )
                         )
 
-                    assertTrue("Expected the first record to be present in the dumped records.") {
-                        records.any { actualRecord -> expectedRecord.data == actualRecord.data }
-                    }
+                    assertTrue(
+                        records.any { actualRecord -> expectedRecord.data == actualRecord.data },
+                        "Expected the first record to be present in the dumped records."
+                    )
                 }
             }
 
