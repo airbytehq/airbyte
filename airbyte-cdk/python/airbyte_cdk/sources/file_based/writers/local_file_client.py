@@ -2,6 +2,8 @@
 
 import logging
 import os
+import psutil
+import time
 from typing import Optional, Union, Any, Mapping
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -46,10 +48,39 @@ class LocalFileTransferClient:
         # Get the absolute path
         absolute_file_path = os.path.abspath(local_file_path)
 
-        logger.info(f"Writing file to {local_file_path}.")
+        # Get available disk space
+        disk_usage = psutil.disk_usage('/')
+        available_disk_space = disk_usage.free
+
+        # Get available memory
+        memory_info = psutil.virtual_memory()
+        available_memory = memory_info.available
+
+        # logger.info(f"Writing file to {local_file_path}.")
+        # Log file size, available disk space, and memory
+        logger.info(
+            f"Writing file to '{local_file_path}' "
+            f"with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB), "
+            f"available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB),"
+            f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+        )
+
 
         with open(local_file_path, "wb") as f:
-            f.write(fp.read())
+            # Measure the time for reading
+            logger.info(f"Starting to read the file")
+            start_read_time = time.time()
+            file_content = fp.read()  # Read the file content
+            read_duration = time.time() - start_read_time
+            logger.info(f"Time taken to read the file: {read_duration:,.2f} seconds.")
+
+            # Measure the time for writing
+            logger.info(f"Starting to write the file locally")
+            start_write_time = time.time()
+            f.write(file_content)
+            write_duration = time.time() - start_write_time
+            logger.info(f"Time taken to write the file: {write_duration:,.2f} seconds.")
+
         logger.info(f"File {file_relative_path} successfully written to {self._local_directory}.")
 
         return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
