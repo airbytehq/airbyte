@@ -134,6 +134,14 @@
                 "examples": ["admin"],
                 "order": 6
               },
+              "enable_ssl": {
+                "title": "Enable SSL",
+                "description": "When enabled, connections to the MongoDB cluster are SSL encrypted.",
+                "default": false,
+                "type": "boolean",
+                "always_show": true,
+                "order": 7
+              },
               "schema_enforced": {
                 "title": "Schema Enforced",
                 "description": "When enabled, syncs will validate and structure records against the stream's schema.",
