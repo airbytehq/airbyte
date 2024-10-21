@@ -19,6 +19,9 @@ from typing import TYPE_CHECKING, Literal
 import orjson
 import pytest
 import yaml
+from pydantic import BaseModel
+from source_s3.source import SourceS3
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStream,
@@ -29,8 +32,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.test import entrypoint_wrapper
-from pydantic import BaseModel
-from source_s3.source import SourceS3
+
 
 if TYPE_CHECKING:
     from airbyte_cdk import Source
@@ -55,12 +57,16 @@ class AcceptanceTestInstance(BaseModel):
         skip_test: bool
         bypass_reason: str
 
+    class FutureState(BaseModel):
+        future_state_path: Path
+
     config_path: Path
     configured_catalog_path: Path | None = None
     timeout_seconds: int | None = None
     expect_records: AcceptanceTestExpectRecords | None = None
     file_types: AcceptanceTestFileTypes | None = None
     status: Literal["succeed", "failed"] | None = None
+    future_state: FutureState | None = None
 
     @property
     def expect_exception(self) -> bool:
@@ -84,35 +90,47 @@ def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
 
 SOURCE_CLASS: type[Source] = SourceS3
 
+def random_suffix() -> str:
+    return uuid.uuid4().hex[:6]
 
 def run_test_job(
     verb: Literal["read", "check", "discover"],
     test_instance: AcceptanceTestInstance,
-    catalog: dict | None = None,
+    catalog_override: dict | None = None,
+    state_override: dict | None = None,
 ) -> entrypoint_wrapper.EntrypointOutput:
     """Run a test job from provided CLI args and return the result."""
     args = [verb]
+    tmp_dir = Path(tempfile.gettempdir()) / "airbyte-test"
     if test_instance.config_path:
         args += ["--config", str(test_instance.config_path)]
 
     catalog_path: Path | None = None
+    state_path: Path | None = None
     if verb not in ["discover", "check"]:
-        if catalog:
+        if catalog_override:
             # Write the catalog to a temp json file and pass the path to the file as an argument.
-            catalog_path = Path(tempfile.gettempdir()) / "airbyte-test" / f"temp_catalog_{uuid.uuid4().hex}.json"
+            catalog_path = tmp_dir / f"temp_catalog_{random_suffix()}.json"
             catalog_path.parent.mkdir(parents=True, exist_ok=True)
-            catalog_path.write_text(orjson.dumps(catalog).decode())
+            catalog_path.write_text(orjson.dumps(catalog_override).decode())
         elif test_instance.configured_catalog_path:
             catalog_path = Path(test_instance.configured_catalog_path)
 
         if catalog_path:
             args += ["--catalog", str(catalog_path)]
 
+        if state_override:
+            state_path = tmp_dir / f"temp_state_{random_suffix()}.json"
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            state_path.write_text(orjson.dumps(state_override).decode())
+            args += ["--state", str(state_path)]
+
     # This is a bit of a hack because the source needs the catalog early.
     # Because it *also* can fail, we have ot redundantly wrap it in a try/except block.
     try:
         source: Source = SOURCE_CLASS.create(
             configured_catalog_path=catalog_path,
+            # state_path=state_path,
         )
     except Exception as ex:
         if not test_instance.expect_exception:
@@ -154,6 +172,45 @@ def test_full_refresh(instance: AcceptanceTestInstance) -> None:
     )
     if not result.records:
         raise AssertionError("Expected records but got none.")  # noqa: TRY003
+
+
+@pytest.mark.parametrize(
+    "instance",
+    get_acceptance_tests("incremental"),
+    ids=lambda instance: instance.instance_name,
+)
+def test_incremental_refresh(instance: AcceptanceTestInstance) -> None:
+    """Run acceptance tests."""
+    result_1 = run_test_job(
+        "read",
+        test_instance=instance,
+    )
+    result_2 = run_test_job(
+        "read",
+        test_instance=instance,
+        state_override=orjson.loads(
+            instance.future_state.future_state_path.read_text(),
+        ),
+    )
+    assert result_1.records, "No records found in the first run."
+    assert len(result_1.records) > len(result_2.records), "Expected different records in the two runs."
+
+
+@pytest.mark.parametrize(
+    "instance",
+    get_acceptance_tests("incremental"),
+    ids=lambda instance: instance.instance_name,
+)
+def test_incremental_empty_with_future_state(instance: AcceptanceTestInstance) -> None:
+    """Run acceptance tests."""
+    result = run_test_job(
+        "read",
+        test_instance=instance,
+        state_override=orjson.loads(
+            instance.future_state.future_state_path.read_text(),
+        ),
+    )
+    assert not result.records, "No records should be generated when using a future state."
 
 
 @pytest.mark.parametrize(
