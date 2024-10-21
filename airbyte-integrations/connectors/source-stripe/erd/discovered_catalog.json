@@ -12503,12 +12503,22 @@
                 }
               }
             }
+          },
+          "created": {
+            "description": "Timestamp for when the parent invoice was created",
+            "type": ["null", "integer"]
+          },
+          "updated": {
+            "description": "Timestamp for when the parent invoice was last updated",
+            "type": ["null", "integer"]
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "is_resumable": true
     },
     {
       "name": "subscription_items",
@@ -12796,12 +12806,18 @@
               "unit_amount": { "type": ["null", "integer"] },
               "unit_amount_decimal": { "type": ["null", "string"] }
             }
+          },
+          "updated": {
+            "description": "Timestamp for when the parent subscription was last updated",
+            "type": ["null", "integer"]
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "is_resumable": true
     },
     {
       "name": "transfer_reversals",
