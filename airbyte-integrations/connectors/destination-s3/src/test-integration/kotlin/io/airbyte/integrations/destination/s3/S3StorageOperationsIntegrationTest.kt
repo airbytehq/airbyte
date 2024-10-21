@@ -22,6 +22,7 @@ import java.io.File
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Map
 import java.util.Random
 import java.util.stream.Stream
@@ -91,9 +92,9 @@ class S3StorageOperationsIntegrationTest {
         objectPrefix: String,
         numOfRecords: Int,
         generationId: Long
-    ) {
+    ): List<String> {
         log.info { "Uploading $numOfRecords test objects" }
-        for (i in 1..numOfRecords) {
+        return (1..numOfRecords).map {
             s3StorageOperations.uploadRecordsToBucket(
                 createStringBuffer("DummyStringToWrite"),
                 namespace,
@@ -152,12 +153,13 @@ class S3StorageOperationsIntegrationTest {
                 outputFormat
             )
 
+        val expectedObjects: List<String> =
         // write 12 files with genId 1
-        uploadTestRecords(namespace, fullObjectPath, 12, 1)
-        // write 10 files with genId 2
-        uploadTestRecords(namespace, fullObjectPath, 10, 2)
-        // write 5 files with genId 3
-        uploadTestRecords(namespace, fullObjectPath, 5, 3)
+        uploadTestRecords(namespace, fullObjectPath, 12, 1) +
+                // write 10 files with genId 2
+                uploadTestRecords(namespace, fullObjectPath, 10, 2) +
+                // write 5 files with genId 3
+                uploadTestRecords(namespace, fullObjectPath, 5, 3)
 
         val existingObjects =
             s3StorageOperations.listExistingObjects(
@@ -166,7 +168,11 @@ class S3StorageOperationsIntegrationTest {
                 s3DestinationConfig.bucketPath!!,
                 outputFormat
             )
-        assertEquals(27, existingObjects.size)
+        val objectDirectory = Paths.get(fullObjectPath).parent.toString()
+        assertEquals(
+            expectedObjects.map { "$objectDirectory/$it" }.sorted(),
+            existingObjects.sorted()
+        )
     }
 
     @ParameterizedTest
@@ -186,18 +192,24 @@ class S3StorageOperationsIntegrationTest {
                 DateTime.now(DateTimeZone.UTC),
                 outputFormat
             )
-        var expectedNumberOfObjects = 0
-        if (numberOfGens != 0) {
-            for (i in 1..numberOfGens) {
-                val numberOfObjects =
-                    when (val randomNumber = random.nextInt(5)) {
-                        0 -> 1
-                        else -> randomNumber
+        val objectDirectory = Paths.get(fullObjectPath).parent.toString()
+
+        val expectedObjects: List<String> =
+            if (numberOfGens != 0) {
+                (1..numberOfGens)
+                    .map {
+                        val numberOfObjects =
+                            when (val randomNumber = random.nextInt(5)) {
+                                0 -> 1
+                                else -> randomNumber
+                            }
+                        uploadTestRecords(namespace, fullObjectPath, numberOfObjects, it.toLong())
                     }
-                expectedNumberOfObjects += numberOfObjects
-                uploadTestRecords(namespace, fullObjectPath, numberOfObjects, i.toLong())
+                    .flatten()
+                    .map { "$objectDirectory/$it" }
+            } else {
+                emptyList()
             }
-        }
 
         // Skip records to insert because the algorithm is
         // tightly dependent on both lastModified and genId to be in the same sorted order
@@ -215,7 +227,7 @@ class S3StorageOperationsIntegrationTest {
                 outputFormat,
                 currentGen.toLong()
             )
-        assertEquals(expectedNumberOfObjects, existingObjects.size)
+        assertEquals(expectedObjects.sorted(), existingObjects.sorted())
     }
 
     private fun createStringBuffer(strData: String): SerializableBuffer {
