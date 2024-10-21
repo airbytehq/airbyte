@@ -51,7 +51,7 @@ definitions:
     record_selector:
       $ref: "#/definitions/record_selector"
       record_filter:
-        condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+        condition: "{{ record[parameters['cursor_field']] > stream_interval.get('start_time', '') }}"
     paginator:
       $ref: "#/definitions/paginator"
     partition_router: []
@@ -62,7 +62,7 @@ definitions:
       - "%Y-%m-%dT%H:%M:%SZ"
       - "%Y-%m-%dT%H:%M:%S.%f%z"
       - "%Y-%m-%dT%H:%M:%S%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     start_datetime:
       type: MinMaxDatetime
       datetime: "1900-01-01T00:00:00.0Z"
@@ -98,11 +98,12 @@ definitions:
       record_selector:
         $ref: "#/definitions/record_selector"
         record_filter:
-          condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+          condition: "{{ record[parameters['cursor_field']] > stream_interval.get('start_time', '') }}"
       paginator:
         $ref: "#/definitions/paginator"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   # Stream Issues https://docs.sentry.io/api/events/list-a-projects-issues/
   issues:
@@ -117,7 +118,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          query: "lastSeen:>{{ stream_state.get(parameters['cursor_field']) or '1900-01-01T00:00:00.0Z' if stream_state else '1900-01-01T00:00:00.0Z' }}"
+          query: "lastSeen:>{{ stream_interval.get('start_time', '') or '1900-01-01T00:00:00.0Z' if stream_interval else '1900-01-01T00:00:00.0Z' }}"
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -165,6 +166,12 @@ check:
   type: CheckStream
   stream_names:
     - project_detail
+
+# Sentry currently supports 5 streams and each operates as descending data feed that can only run in
+# parallel with each other. This number can increase if we add more streams
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
 
 metadata:
   autoImportSchema:

@@ -67,6 +67,7 @@ class AbstractAvailabilityStrategy(ABC):
         """
 
 
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
     """
     An availability strategy that always indicates a stream is available.

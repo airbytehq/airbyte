@@ -3,23 +3,37 @@
 #
 
 import pkgutil
-from typing import Any
+from typing import Any, List, Mapping, Optional
 
 import yaml
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.types import ConnectionDefinition
 
 
-class YamlDeclarativeSource(ManifestDeclarativeSource):
+class YamlDeclarativeSource(ConcurrentDeclarativeSource[List[AirbyteStateMessage]]):
     """Declarative source defined by a yaml file"""
 
-    def __init__(self, path_to_yaml: str, debug: bool = False) -> None:
+    def __init__(
+        self,
+        path_to_yaml: str,
+        debug: bool = False,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
+        config: Optional[Mapping[str, Any]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
+    ) -> None:
         """
         :param path_to_yaml: Path to the yaml file describing the source
         """
         self._path_to_yaml = path_to_yaml
         source_config = self._read_and_parse_yaml_file(path_to_yaml)
-        super().__init__(source_config, debug)
+
+        super().__init__(
+            catalog=catalog or ConfiguredAirbyteCatalog(streams=[]),
+            config=config or {},
+            state=state or [],
+            source_config=source_config,
+        )
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file: str) -> ConnectionDefinition:
         package = self.__class__.__module__.split(".")[0]

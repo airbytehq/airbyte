@@ -160,7 +160,7 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
-        self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._slice_boundary_fields = slice_boundary_fields
         self._start = start
         self._end_provider = end_provider
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
@@ -173,6 +173,14 @@ class ConcurrentCursor(Cursor):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
+
+    @property
+    def cursor_field(self) -> CursorField:
+        return self._cursor_field
+
+    @property
+    def slice_boundary_fields(self) -> Optional[Tuple[str, str]]:
+        return self._slice_boundary_fields
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
@@ -321,7 +329,10 @@ class ConcurrentCursor(Cursor):
 
         lower = max(lower, self._start) if self._start else lower
         if not self._slice_range or lower + self._slice_range >= upper:
-            yield lower, upper
+            if self._cursor_granularity:
+                yield lower, upper - self._cursor_granularity
+            else:
+                yield lower, upper
         else:
             stop_processing = False
             current_lower_boundary = lower

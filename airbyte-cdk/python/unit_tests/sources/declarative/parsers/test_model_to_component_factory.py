@@ -10,6 +10,7 @@ import freezegun
 import pytest
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -2542,3 +2543,49 @@ def test_use_default_request_options_provider():
 
     assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
     assert isinstance(retriever.request_option_provider, DefaultRequestOptionsProvider)
+
+
+def test_create_concurrent_cursor_from_datetime_based_cursor():
+
+    expected_cursor_field = "updated_at"
+
+    connector_state_manager = ConnectorStateManager()
+
+    config = {
+        "start_time": "2024-08-01T00:00:00.000000Z"
+    }
+
+    stream_state = {
+        "updated_at": "2024-10-01T00:00:00.000000Z"
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "start_datetime": "{{ config['start_time'] }}",
+        "end_datetime": "{{ config['end_time'] }}",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+    }
+
+    concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+        state_manager=connector_state_manager,
+        model_type=DatetimeBasedCursorModel,
+        component_definition=cursor_component_definition,
+        stream_name=stream_name,
+        stream_namespace=None,
+        config=config,
+        stream_state=stream_state,
+    )
+
+    assert concurrent_cursor._stream_name == stream_name
+    assert not concurrent_cursor._stream_namespace
+    assert concurrent_cursor._connector_state_manager == connector_state_manager
+    assert concurrent_cursor.cursor_field.cursor_field_key == expected_cursor_field
+
+    # todo add the rest of the assertions
