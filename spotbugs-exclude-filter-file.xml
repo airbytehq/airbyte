@@ -20,6 +20,6 @@
     <Bug code="SECOBDES" />
   </Match>
   <Match>
-    <Package name="io.airbyte.cdk.util.*" />
+    <Package name="io.airbyte.cdk.load.util.*" />
   </Match>
 </FindBugsFilter>

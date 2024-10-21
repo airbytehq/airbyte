@@ -46,7 +46,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     Returns:
         bool: Whether the path exists in the container working directory.
     """
-    workdir = (await container.with_exec(["pwd"], skip_entrypoint=True).stdout()).strip()
+    workdir = (await container.with_exec(["pwd"]).stdout()).strip()
     mounts = await container.mounts()
     if workdir in mounts:
         expected_file_path = Path(workdir[1:]) / path
