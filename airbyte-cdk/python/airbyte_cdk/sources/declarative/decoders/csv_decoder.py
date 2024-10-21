@@ -9,7 +9,6 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping, MutableMapping
 
 import requests
-
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 logger = logging.getLogger("airbyte")
