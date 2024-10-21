@@ -4,14 +4,12 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import com.google.common.collect.Lists
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
@@ -38,8 +36,8 @@ class DockerizedDestination(
     command: String,
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
-    testDeploymentMode: TestDeploymentMode,
     private val testName: String,
+    vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
@@ -87,35 +85,38 @@ class DockerizedDestination(
         logger.info { "Creating docker container $containerName" }
 
         val cmd: MutableList<String> =
-            Lists.newArrayList(
-                "docker",
-                "run",
-                "--rm",
-                "--init",
-                "-i",
-                "-w",
-                "/data/job",
-                "--log-driver",
-                "none",
-                "--name",
-                containerName,
-                "--network",
-                "host",
-                "-v",
-                String.format("%s:%s", workspaceRoot, "/data"),
-                "-v",
-                String.format("%s:%s", localRoot, "/local"),
-                "-e",
-                "DEPLOYMENT_MODE=$testDeploymentMode",
-                // Yes, we hardcode the job ID to 0.
-                // Also yes, this is available in the configured catalog
-                // via the syncId property.
-                // Also also yes, we're relying on this env var >.>
-                "-e",
-                "WORKER_JOB_ID=0",
-                imageTag,
-                command,
-            )
+            (listOf(
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--init",
+                    "-i",
+                    "-w",
+                    "/data/job",
+                    "--log-driver",
+                    "none",
+                    "--name",
+                    containerName,
+                    "--network",
+                    "host",
+                    "-v",
+                    String.format("%s:%s", workspaceRoot, "/data"),
+                    "-v",
+                    String.format("%s:%s", localRoot, "/local"),
+                ) +
+                    featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
+                    listOf(
+
+                        // Yes, we hardcode the job ID to 0.
+                        // Also yes, this is available in the configured catalog
+                        // via the syncId property.
+                        // Also also yes, we're relying on this env var >.>
+                        "-e",
+                        "WORKER_JOB_ID=0",
+                        imageTag,
+                        command,
+                    ))
+                .toMutableList()
 
         fun addInput(paramName: String, fileContents: Any) {
             Files.write(
@@ -198,40 +199,20 @@ class DockerizedDestination(
     override suspend fun shutdown() {
         withContext(Dispatchers.IO) {
             destinationStdin.close()
-            // The old cdk had a 1-minute timeout here. That seems... weird?
-            // We can just rely on the junit timeout, presumably?
-            process.waitFor()
             // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
             // all the destination output (logs/trace messages).
             stdoutDrained.join()
             stderrDrained.join()
+            // The old cdk had a 1-minute timeout here. That seems... weird?
+            // We can just rely on the junit timeout, presumably?
+            process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                // Hey look, it's possible to extract the error from a failed destination process!
-                // because "destination exit code 1" is the least-helpful error message.
-                val filteredTraces =
-                    destinationOutput
-                        .traces()
-                        .filter { it.type == AirbyteTraceMessage.Type.ERROR }
-                        .map { it.error }
-                throw DestinationUncleanExitException(exitCode, filteredTraces)
+                throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())
             }
         }
     }
 }
-
-class DestinationUncleanExitException(
-    exitCode: Int,
-    traceMessages: List<AirbyteErrorTraceMessage>
-) :
-    Exception(
-        """
-        Destination process exited uncleanly: $exitCode
-        Trace messages:
-        """.trimIndent()
-        // explicit concat because otherwise trimIndent behaves badly
-        + traceMessages
-    )
 
 @Singleton
 @Requires(env = [DOCKERIZED_TEST_ENV])
@@ -252,15 +233,15 @@ class DockerizedDestinationFactory(
         command: String,
         config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
-        deploymentMode: TestDeploymentMode,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
             command,
             config,
             catalog,
-            deploymentMode,
             testName,
+            *featureFlags,
         )
     }
 }

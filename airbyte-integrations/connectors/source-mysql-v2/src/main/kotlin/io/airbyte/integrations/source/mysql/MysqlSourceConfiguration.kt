@@ -4,13 +4,16 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -68,8 +71,11 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MysqlSourceConfigurationFactory :
+class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
     SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
+
+    constructor() : this(emptySet())
+
     override fun makeWithoutExceptionHandling(
         pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration {
@@ -99,7 +105,18 @@ class MysqlSourceConfigurationFactory :
         val encryption: Encryption = pojo.getEncryptionValue()
         val jdbcEncryption =
             when (encryption) {
-                is EncryptionPreferred -> MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                is EncryptionPreferred -> {
+                    if (
+                        featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) &&
+                            sshTunnel is SshNoTunnelMethod
+                    ) {
+                        throw ConfigErrorException(
+                            "Connection from Airbyte Cloud requires " +
+                                "SSL encryption or an SSH tunnel."
+                        )
+                    }
+                    MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                }
                 is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
                 is SslVerifyCertificate ->
                     MysqlJdbcEncryption(

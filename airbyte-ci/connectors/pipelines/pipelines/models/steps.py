@@ -265,7 +265,7 @@ class Step(ABC):
 
     @property
     def dagger_client(self) -> Client:
-        return self.context.dagger_client.pipeline(self.title)
+        return self.context.dagger_client
 
     async def log_progress(self, completion_event: anyio.Event) -> None:
         """Log the step progress every 30 seconds until the step is done."""
