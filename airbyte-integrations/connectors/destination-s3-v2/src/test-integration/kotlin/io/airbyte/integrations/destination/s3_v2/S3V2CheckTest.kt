@@ -21,7 +21,15 @@ class S3V2CheckTest :
                 CheckTestConfig(
                     S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                )
+                ),
+                CheckTestConfig(
+                    S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                ),
+                CheckTestConfig(
+                    S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                ),
             ),
         failConfigFilenamesAndFailureReasons = emptyMap()
     ) {
