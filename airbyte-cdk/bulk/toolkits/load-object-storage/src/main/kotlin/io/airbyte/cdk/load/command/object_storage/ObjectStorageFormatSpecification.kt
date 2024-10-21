@@ -55,8 +55,8 @@ interface ObjectStorageFormatSpecificationProvider {
 @JsonSubTypes(
     JsonSubTypes.Type(value = JsonFormatSpecification::class, name = "JSONL"),
     JsonSubTypes.Type(value = CSVFormatSpecification::class, name = "CSV"),
-    JsonSubTypes.Type(value = AvroFormatSpecification::class, name = "AVRO"),
-    JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "PARQUET")
+    JsonSubTypes.Type(value = AvroFormatSpecification::class, name = "Avro"),
+    JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet")
 )
 sealed class ObjectStorageFormatSpecification(
     @JsonSchemaTitle("Format Type") @JsonProperty("format_type") open val formatType: Type
@@ -64,8 +64,8 @@ sealed class ObjectStorageFormatSpecification(
     enum class Type(@get:JsonValue val typeName: String) {
         JSONL("JSONL"),
         CSV("CSV"),
-        AVRO("AVRO"),
-        PARQUET("PARQUET")
+        AVRO("Avro"),
+        PARQUET("Parquet")
     }
 }
 
