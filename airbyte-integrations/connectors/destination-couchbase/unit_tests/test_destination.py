@@ -65,7 +65,7 @@ def test_write(mock_cluster, config, configured_catalog):
     list(destination.write(config, configured_catalog, messages))
 
     # Check if _clear_collection was called for overwrite mode
-    mock_bucket.cluster.query.assert_called_once()
+    mock_cluster.return_value.query.assert_called_once()
 
     # Check if insert_multi was called for writing records
     mock_collection.insert_multi.assert_called_once()
