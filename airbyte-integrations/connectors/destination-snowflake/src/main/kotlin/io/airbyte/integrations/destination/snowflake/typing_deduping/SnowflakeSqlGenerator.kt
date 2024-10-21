@@ -30,7 +30,8 @@ import java.util.*
 
 class SnowflakeSqlGenerator(
     private val retentionPeriodDays: Int,
-    private val useMergeForUpserts: Boolean = false
+    private val useMergeForUpserts: Boolean = false,
+    private val enableChangeTracking: Boolean = false
 ) : SqlGenerator {
     private val cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at")
 
@@ -107,7 +108,8 @@ class SnowflakeSqlGenerator(
             |  "_AIRBYTE_META" VARIANT NOT NULL,
             |  "_AIRBYTE_GENERATION_ID" INTEGER
             |  $columnDeclarations
-            |) data_retention_time_in_days = $retentionPeriodDays;
+            |) data_retention_time_in_days = $retentionPeriodDays
+            CHANGE_TRACKING = $enableChangeTracking;
         """.trimMargin()
 
         return of(createTableSql)
