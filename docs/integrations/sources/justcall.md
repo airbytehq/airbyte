@@ -1,14 +1,14 @@
 # JustCall
-ustCall connector enables seamless data integration by syncing call logs, contacts, and analytics from JustCall to various data destinations. This connector ensures businesses can centralize communication data for better reporting and analysis
+JustCall connector enables seamless data integration by syncing call logs, contacts, and analytics from JustCall to various data destinations. This connector ensures businesses can centralize communication data for better reporting and analysis
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `sort` | `string` | Sort.  | id |
-| `order` | `string` | Order.  | desc |
 | `api_key_2` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
+| `order` | `string` | Order.  | desc |
+| `sort` | `string` | Sort.  | id |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

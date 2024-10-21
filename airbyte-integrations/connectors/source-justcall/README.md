@@ -1,7 +1,7 @@
 # JustCall
 This directory contains the manifest-only connector for `source-justcall`.
 
-ustCall connector enables seamless data integration by syncing call logs, contacts, and analytics from JustCall to various data destinations. This connector ensures businesses can centralize communication data for better reporting and analysis
+JustCall connector enables seamless data integration by syncing call logs, contacts, and analytics from JustCall to various data destinations. This connector ensures businesses can centralize communication data for better reporting and analysis
 
 ## Usage
 There are multiple ways to use this connector:

@@ -3,7 +3,7 @@ version: 5.14.0
 type: DeclarativeSource
 
 description: >-
-  ustCall connector enables seamless data integration by syncing call logs,
+  JustCall connector enables seamless data integration by syncing call logs,
   contacts, and analytics from JustCall to various data destinations. This
   connector ensures businesses can centralize communication data for better
   reporting and analysis
@@ -15,78 +15,45 @@ check:
 
 definitions:
   streams:
-    sms:
+    users:
       type: DeclarativeStream
-      name: sms
+      name: users
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20
-            start_from_page: 0
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2.1/texts
+          path: /v2.1/users
           http_method: GET
-          request_parameters:
-            order: "{{ config[\"order\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/sms"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: sms_date
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
-        end_time_option:
-          type: RequestOption
-          field_name: to_datetime
-          inject_into: request_parameter
-        start_time_option:
-          type: RequestOption
-          field_name: from_datetime
-          inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-    calls:
-      type: DeclarativeStream
-      name: calls
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: page
             inject_into: request_parameter
+            field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
+            page_size: 50
             start_from_page: 0
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /v2.1/calls
@@ -100,69 +67,104 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/calls"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: call_date
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%d"
-        end_time_option:
-          type: RequestOption
-          field_name: to_datetime
-          inject_into: request_parameter
-        start_time_option:
-          type: RequestOption
-          field_name: from_datetime
-          inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-    users:
-      type: DeclarativeStream
-      name: users
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: page
             inject_into: request_parameter
+            field_name: page
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 20
             start_from_page: 0
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: call_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from_datetime
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    sms:
+      type: DeclarativeStream
+      name: sms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2.1/users
+          path: /v2.1/texts
           http_method: GET
+          request_parameters:
+            order: "{{ config[\"order\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 0
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: sms_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from_datetime
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/users"
+          $ref: "#/schemas/sms"
     contacts:
       type: DeclarativeStream
       name: contacts
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -175,8 +177,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -184,6 +184,8 @@ definitions:
     phone_numbers:
       type: DeclarativeStream
       name: phone_numbers
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -196,8 +198,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -205,6 +205,8 @@ definitions:
     agent_analytics:
       type: DeclarativeStream
       name: agent_analytics
+      primary_key:
+        - agent_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -217,8 +219,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - agent_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -253,6 +253,25 @@ spec:
       - order
       - sort
     properties:
+      api_key_2:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      order:
+        type: string
+        enum:
+          - desc
+          - asc
+        order: 2
+        title: Order
+        default: desc
       sort:
         type: string
         enum:
@@ -265,34 +284,20 @@ spec:
         order: 3
         title: Sort
         default: id
-      order:
-        type: string
-        enum:
-          - desc
-          - asc
-        order: 2
-        title: Order
-        default: desc
-      api_key_2:
-        type: string
-        order: 0
-        title: API Key
-        airbyte_secret: true
-      start_date:
-        type: string
-        order: 1
-        title: Start date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://developer.justcall.io/reference/call_list_v21
+  autoImportSchema:
+    users: true
+    calls: true
+    sms: true
+    contacts: true
+    phone_numbers: true
+    agent_analytics: true
   testedStreams:
-    sms:
+    users:
       hasRecords: true
-      streamHash: 511704e03566725c20ed428f1341f3e3db4c4183
+      streamHash: e648a5d7db3d8a9bd79bf3156559fd7093a910fc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -304,9 +309,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    users:
+    sms:
       hasRecords: true
-      streamHash: e648a5d7db3d8a9bd79bf3156559fd7093a910fc
+      streamHash: 511704e03566725c20ed428f1341f3e3db4c4183
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -332,25 +337,89 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    sms: true
-    calls: true
-    users: true
-    contacts: true
-    phone_numbers: true
-    agent_analytics: true
+  assist:
+    docsUrl: https://developer.justcall.io/reference/call_list_v21
 
 schemas:
-  sms:
+  users:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
-      - sms_date
+    additionalProperties: true
     properties:
+      available:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      extension:
+        type:
+          - number
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
       id:
         type: number
-      medium:
+      last_login_timestamp:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      on_call:
+        type:
+          - string
+          - "null"
+      owned_numbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      role:
+        type:
+          - string
+          - "null"
+      shared_numbers:
+        type:
+          - array
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      unavailability_reason:
+        type:
+          - string
+          - "null"
+      working_hours_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  calls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agent_active:
+        type:
+          - string
+          - "null"
+      agent_email:
         type:
           - string
           - "null"
@@ -358,46 +427,111 @@ schemas:
         type:
           - number
           - "null"
-      sms_date:
-        type: string
-      sms_info:
-        type:
-          - object
-          - "null"
-        properties:
-          mms:
-            type:
-              - array
-              - "null"
-          body:
-            type:
-              - string
-              - "null"
-          is_mms:
-            type:
-              - string
-              - "null"
-      sms_time:
-        type:
-          - string
-          - "null"
-      direction:
-        type:
-          - string
-          - "null"
       agent_name:
         type:
           - string
           - "null"
-      is_deleted:
+      call_date:
+        type: string
+      call_duration:
         type:
-          - boolean
+          - object
           - "null"
-      agent_email:
+        properties:
+          conversation_time:
+            type:
+              - number
+              - "null"
+          friendly_duration:
+            type:
+              - string
+              - "null"
+          handle_time:
+            type:
+              - number
+              - "null"
+          hold_time:
+            type:
+              - number
+              - "null"
+          queue_wait_time:
+            type:
+              - number
+              - "null"
+          ring_time:
+            type:
+              - number
+              - "null"
+          total_duration:
+            type:
+              - number
+              - "null"
+          wrap_up_time:
+            type:
+              - number
+              - "null"
+      call_info:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          call_traits:
+            type:
+              - array
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          disposition:
+            type:
+              - string
+              - "null"
+          missed_call_reason:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          rating:
+            type:
+              - string
+              - "null"
+          recording:
+            type:
+              - string
+              - "null"
+          recording_child:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          voicemail_transcription:
+            type:
+              - string
+              - "null"
+      call_sid:
         type:
           - string
           - "null"
-      contact_name:
+      call_time:
+        type:
+          - string
+          - "null"
+      call_user_date:
+        type:
+          - string
+          - "null"
+      call_user_time:
         type:
           - string
           - "null"
@@ -405,15 +539,7 @@ schemas:
         type:
           - string
           - "null"
-      cost_incurred:
-        type:
-          - number
-          - "null"
-      sms_user_date:
-        type:
-          - string
-          - "null"
-      sms_user_time:
+      contact_name:
         type:
           - string
           - "null"
@@ -421,40 +547,12 @@ schemas:
         type:
           - string
           - "null"
-      delivery_status:
-        type:
-          - string
-          - "null"
-      justcall_number:
-        type:
-          - string
-          - "null"
-      justcall_line_name:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  calls:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-      - call_date
-    properties:
-      id:
-        type: number
-      queue:
-        type:
-          - object
-          - "null"
-      agent_id:
+      cost_incurred:
         type:
           - number
           - "null"
-      call_sid:
-        type:
-          - string
-          - "null"
+      id:
+        type: number
       ivr_info:
         type:
           - object
@@ -468,266 +566,35 @@ schemas:
             type:
               - string
               - "null"
-      call_date:
-        type: string
-      call_info:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          notes:
-            type:
-              - string
-              - "null"
-          rating:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          direction:
-            type:
-              - string
-              - "null"
-          recording:
-            type:
-              - string
-              - "null"
-          call_traits:
-            type:
-              - array
-              - "null"
-          disposition:
-            type:
-              - string
-              - "null"
-          recording_child:
-            type:
-              - string
-              - "null"
-          missed_call_reason:
-            type:
-              - string
-              - "null"
-          voicemail_transcription:
-            type:
-              - string
-              - "null"
-      call_time:
-        type:
-          - string
-          - "null"
-      agent_name:
-        type:
-          - string
-          - "null"
-      agent_email:
-        type:
-          - string
-          - "null"
       justcall_ai:
         type:
           - object
-          - "null"
-      agent_active:
-        type:
-          - string
-          - "null"
-      contact_name:
-        type:
-          - string
-          - "null"
-      call_duration:
-        type:
-          - object
-          - "null"
-        properties:
-          hold_time:
-            type:
-              - number
-              - "null"
-          ring_time:
-            type:
-              - number
-              - "null"
-          handle_time:
-            type:
-              - number
-              - "null"
-          wrap_up_time:
-            type:
-              - number
-              - "null"
-          total_duration:
-            type:
-              - number
-              - "null"
-          queue_wait_time:
-            type:
-              - number
-              - "null"
-          conversation_time:
-            type:
-              - number
-              - "null"
-          friendly_duration:
-            type:
-              - string
-              - "null"
-      contact_email:
-        type:
-          - string
-          - "null"
-      cost_incurred:
-        type:
-          - number
-          - "null"
-      call_user_date:
-        type:
-          - string
-          - "null"
-      call_user_time:
-        type:
-          - string
-          - "null"
-      contact_number:
-        type:
-          - string
-          - "null"
-      queue_callback:
-        type:
-          - object
-          - "null"
-      justcall_number:
-        type:
-          - string
           - "null"
       justcall_line_name:
         type:
           - string
           - "null"
-    additionalProperties: true
-  users:
-    type: object
-    $schema: http://json-schema.org/schema#
+      justcall_number:
+        type:
+          - string
+          - "null"
+      queue:
+        type:
+          - object
+          - "null"
+      queue_callback:
+        type:
+          - object
+          - "null"
     required:
       - id
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      role:
-        type:
-          - string
-          - "null"
-      email:
-        type:
-          - string
-          - "null"
-      groups:
-        type:
-          - array
-          - "null"
-      on_call:
-        type:
-          - string
-          - "null"
-      timezone:
-        type:
-          - string
-          - "null"
-      available:
-        type:
-          - string
-          - "null"
-      extension:
-        type:
-          - number
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      owned_numbers:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      shared_numbers:
-        type:
-          - array
-          - "null"
-      working_hours_type:
-        type:
-          - string
-          - "null"
-      last_login_timestamp:
-        type:
-          - string
-          - "null"
-      unavailability_reason:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  contacts:
+      - call_date
+  sms:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      email:
-        type:
-          - string
-          - "null"
-      notes:
-        type:
-          - string
-          - "null"
-      phone:
-        type:
-          - string
-          - "null"
-      company:
-        type:
-          - string
-          - "null"
-      lastname:
-        type:
-          - string
-          - "null"
-      firstname:
-        type:
-          - string
-          - "null"
-      other_phones:
-        type:
-          - array
-          - "null"
     additionalProperties: true
-  phone_numbers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
     properties:
-      id:
-        type: number
-      phone:
+      agent_email:
         type:
           - string
           - "null"
@@ -735,9 +602,131 @@ schemas:
         type:
           - number
           - "null"
-      custom_name:
+      agent_name:
         type:
           - string
+          - "null"
+      contact_email:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      contact_number:
+        type:
+          - string
+          - "null"
+      cost_incurred:
+        type:
+          - number
+          - "null"
+      delivery_status:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      justcall_line_name:
+        type:
+          - string
+          - "null"
+      justcall_number:
+        type:
+          - string
+          - "null"
+      medium:
+        type:
+          - string
+          - "null"
+      sms_date:
+        type: string
+      sms_info:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          is_mms:
+            type:
+              - string
+              - "null"
+          mms:
+            type:
+              - array
+              - "null"
+      sms_time:
+        type:
+          - string
+          - "null"
+      sms_user_date:
+        type:
+          - string
+          - "null"
+      sms_user_time:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - sms_date
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      lastname:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      other_phones:
+        type:
+          - array
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  phone_numbers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agent_id:
+        type:
+          - number
           - "null"
       capabilities:
         type:
@@ -760,36 +749,42 @@ schemas:
             type:
               - string
               - "null"
+      custom_name:
+        type:
+          - string
+          - "null"
       friendly_name:
         type:
           - string
           - "null"
-    additionalProperties: true
+      id:
+        type: number
+      phone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   agent_analytics:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - agent_id
+    additionalProperties: true
     properties:
+      abandoned_calls:
+        type:
+          - number
+          - "null"
+      agent_email:
+        type:
+          - string
+          - "null"
       agent_id:
         type: number
       agent_name:
         type:
           - string
           - "null"
-      pause_time:
-        type:
-          - string
-          - "null"
-      agent_email:
-        type:
-          - string
-          - "null"
-      dialed_calls:
-        type:
-          - number
-          - "null"
-      campaigns_run:
+      agent_success_rate:
         type:
           - number
           - "null"
@@ -797,7 +792,15 @@ schemas:
         type:
           - number
           - "null"
-      abandoned_calls:
+      available_time_in_campaign:
+        type:
+          - string
+          - "null"
+      average_call_duration:
+        type:
+          - string
+          - "null"
+      campaigns_run:
         type:
           - number
           - "null"
@@ -805,13 +808,21 @@ schemas:
         type:
           - number
           - "null"
+      dialed_calls:
+        type:
+          - number
+          - "null"
       max_call_duration:
         type:
           - string
           - "null"
-      agent_success_rate:
+      pause_time:
         type:
-          - number
+          - string
+          - "null"
+      total_after_call_work:
+        type:
+          - string
           - "null"
       total_call_duration:
         type:
@@ -821,14 +832,6 @@ schemas:
         type:
           - number
           - "null"
-      average_call_duration:
-        type:
-          - string
-          - "null"
-      total_after_call_work:
-        type:
-          - string
-          - "null"
       total_unanswered_calls:
         type:
           - number
@@ -837,8 +840,5 @@ schemas:
         type:
           - number
           - "null"
-      available_time_in_campaign:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
+    required:
+      - agent_id
