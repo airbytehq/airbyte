@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.TimeProvider
@@ -23,11 +24,21 @@ import java.util.*
 class ObjectStoragePathFactory(
     pathConfigProvider: ObjectStoragePathConfigurationProvider,
     formatConfigProvider: ObjectStorageFormatConfigurationProvider? = null,
+    compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
     timeProvider: TimeProvider? = null,
 ) {
     private val loadedAt = timeProvider?.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
-    private val defaultExtension = formatConfigProvider?.objectStorageFormatConfiguration?.extension
+    private val fileFormatExtension =
+        formatConfigProvider?.objectStorageFormatConfiguration?.extension
+    private val compressionExtension =
+        compressionConfigProvider?.objectStorageCompressionConfiguration?.compressor?.extension
+    private val defaultExtension =
+        if (fileFormatExtension != null && compressionExtension != null) {
+            "$fileFormatExtension.$compressionExtension"
+        } else {
+            fileFormatExtension ?: compressionExtension
+        }
 
     inner class VariableContext(
         val stream: DestinationStream,
@@ -143,8 +154,9 @@ class ObjectStoragePathFactory(
 
         fun <T> from(config: T, timeProvider: TimeProvider? = null): ObjectStoragePathFactory where
         T : ObjectStoragePathConfigurationProvider,
-        T : ObjectStorageFormatConfigurationProvider {
-            return ObjectStoragePathFactory(config, config, timeProvider)
+        T : ObjectStorageFormatConfigurationProvider,
+        T : ObjectStorageCompressionConfigurationProvider<*> {
+            return ObjectStoragePathFactory(config, config, config, timeProvider)
         }
     }
 
