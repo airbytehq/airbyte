@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import dpath.util
+import dpath
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import InterpolatedNestedMapping
 
@@ -22,19 +22,19 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping i
 )
 def test(test_name, path, expected_value):
     d = {
-            "nested": {
-                "field": "value",
-                "number": 100,
-                "nested_array": [
-                    {"{{ parameters.k }}": "VALUE"},
-                    {"value": "{{ config['num_value'] | int + 2 }}"},
-                    {"value": "{{ True }}"},
-                ],
-                "config_value": "{{ config['c'] }}",
-                "parameters_value": "{{ parameters['b'] }}",
-                "kwargs_value": "{{ kwargs['a'] }}",
-            }
+        "nested": {
+            "field": "value",
+            "number": 100,
+            "nested_array": [
+                {"{{ parameters.k }}": "VALUE"},
+                {"value": "{{ config['num_value'] | int + 2 }}"},
+                {"value": "{{ True }}"},
+            ],
+            "config_value": "{{ config['c'] }}",
+            "parameters_value": "{{ parameters['b'] }}",
+            "kwargs_value": "{{ kwargs['a'] }}",
         }
+    }
 
     config = {"c": "VALUE_FROM_CONFIG", "num_value": 3}
     kwargs = {"a": "VALUE_FROM_KWARGS"}
@@ -42,4 +42,4 @@ def test(test_name, path, expected_value):
 
     interpolated = mapping.eval(config, **{"kwargs": kwargs})
 
-    assert dpath.util.get(interpolated, path) == expected_value
+    assert dpath.get(interpolated, path) == expected_value

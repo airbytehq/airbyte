@@ -1,5 +1,22 @@
-{
-  "private_reviews": {
-    "5f5e954ec15b2700017c834f_createdAt": "2099-12-31T23:59:59Z"
+[
+  {
+    "streamDescriptor": {
+      "name": "private_reviews"
+    },
+    "streamState": {
+      "states": [
+        {
+          "cursor": {
+            "createdAt": "2099-12-18T15:48:56Z"
+          },
+          "partition": {
+            "parent_slice": {
+              "business_unit": "example.com"
+            },
+            "business_unit_id": "657e1a3ca4677d24861a2fd9"
+          }
+        }
+      ]
+    }
   }
-}
+]

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Firebolt is a cloud data warehouse purpose-built to provide sub-second analytics performance on massive, terabyte-scale data sets. 
+Firebolt is a cloud data warehouse purpose-built to provide sub-second analytics performance on massive, terabyte-scale data sets.
 
 Firebolt has two main concepts: Databases, which denote the storage of data and Engines, which describe the compute layer on top of a Database.
 
@@ -18,5 +18,5 @@ This connector uses [firebolt-sdk](https://pypi.org/project/firebolt-sdk/), whic
 
 ## Notes
 
-* Integration testing requires the user to have a running engine. Spinning up an engine can take a while so this ensures a faster iteration on the connector.
-* S3 is generally faster writing strategy and should be preferred.
+- Integration testing requires the user to have a running engine. Spinning up an engine can take a while so this ensures a faster iteration on the connector.
+- S3 is generally faster writing strategy and should be preferred.

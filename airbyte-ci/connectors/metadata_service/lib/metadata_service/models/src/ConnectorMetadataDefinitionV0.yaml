@@ -25,6 +25,7 @@ properties:
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
+    additionalProperties: false
     properties:
       name:
         type: string
@@ -33,6 +34,12 @@ properties:
       definitionId:
         type: string
         format: uuid
+      connectorBuildOptions:
+        "$ref": ConnectorBuildOptions.yaml
+      connectorTestSuitesOptions:
+        type: array
+        items:
+          "$ref": ConnectorTestSuiteOptions.yaml
       connectorType:
         type: string
         enum:
@@ -63,28 +70,31 @@ properties:
       protocolVersion:
         type: string
         description: the Airbyte Protocol version supported by the connector
+      erdUrl:
+        type: string
+        description: The URL where you can visualize the ERD
       connectorSubtype:
         type: string
         enum:
           - api
           - database
+          - datalake
           - file
           - custom
           - message_queue
           - unknown
+          - vectorstore
       releaseStage:
-        type: string
-        enum:
-          - alpha
-          - beta
-          - generally_available
-          - source
+        "$ref": ReleaseStage.yaml
+      supportLevel:
+        "$ref": SupportLevel.yaml
       tags:
         type: array
         description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
         items:
           type: string
-      registries:
+        default: []
+      registryOverrides:
         anyOf:
           - type: object
             additionalProperties: false
@@ -98,9 +108,23 @@ properties:
 
       allowedHosts:
         "$ref": AllowedHosts.yaml
+      releases:
+        "$ref": ConnectorReleases.yaml
       normalizationConfig:
         "$ref": NormalizationDestinationDefinitionConfig.yaml
       suggestedStreams:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
+      ab_internal:
+        "$ref": AirbyteInternal.yaml
+      remoteRegistries:
+        "$ref": RemoteRegistries.yaml
+      supportsRefreshes:
+        type: boolean
+        default: false
+      generated:
+        "$ref": GeneratedFields.yaml
+      supportsFileTransfer:
+        type: boolean
+        default: false

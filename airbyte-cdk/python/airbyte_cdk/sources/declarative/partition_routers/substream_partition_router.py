@@ -1,17 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import copy
+import logging
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
-import dpath.util
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+import dpath
+from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.utils import AirbyteTracedException
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
@@ -22,23 +27,32 @@ class ParentStreamConfig:
     stream: The stream to read records from
     parent_key: The key of the parent stream's records that will be the stream slice key
     partition_field: The partition key
+    extra_fields: Additional field paths to include in the stream slice
     request_option: How to inject the slice value on an outgoing HTTP request
+    incremental_dependency (bool): Indicates if the parent stream should be read incrementally.
     """
 
-    stream: Stream
+    stream: "DeclarativeStream"  # Parent streams must be DeclarativeStream because we can't know which part of the stream slice is a partition for regular Stream
     parent_key: Union[InterpolatedString, str]
     partition_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    extra_fields: Optional[Union[List[List[str]], List[List[InterpolatedString]]]] = None  # List of field paths (arrays of strings)
     request_option: Optional[RequestOption] = None
+    incremental_dependency: bool = False
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
         self.partition_field = InterpolatedString.create(self.partition_field, parameters=parameters)
+        if self.extra_fields:
+            # Create InterpolatedString for each field path in extra_keys
+            self.extra_fields = [
+                [InterpolatedString.create(path, parameters=parameters) for path in key_path] for key_path in self.extra_fields
+            ]
 
 
 @dataclass
-class SubstreamPartitionRouter(StreamSlicer):
+class SubstreamPartitionRouter(PartitionRouter):
     """
     Partition router that iterates over the parent's stream records and emits slices
     Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
@@ -51,21 +65,11 @@ class SubstreamPartitionRouter(StreamSlicer):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
-        self._cursor = None
         self._parameters = parameters
-
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # This method is called after the records are processed.
-        cursor = {}
-        for parent_stream_config in self.parent_stream_configs:
-            partition_field = parent_stream_config.partition_field.eval(self.config)
-            slice_value = stream_slice.get(partition_field)
-            if slice_value:
-                cursor.update({partition_field: slice_value})
-        self._cursor = cursor
+        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
@@ -99,25 +103,22 @@ class SubstreamPartitionRouter(StreamSlicer):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Mapping[str, Any]:
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
+    def _get_request_option(self, option_type: RequestOptionType, stream_slice: Optional[StreamSlice]) -> Mapping[str, Any]:
         params = {}
         if stream_slice:
             for parent_config in self.parent_stream_configs:
                 if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                    key = parent_config.partition_field.eval(self.config)
+                    key = parent_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                     value = stream_slice.get(key)
                     if value:
-                        params.update({parent_config.request_option.field_name: value})
+                        params.update({parent_config.request_option.field_name.eval(config=self.config): value})  # type: ignore # field_name is always casted to an interpolated string
         return params
 
-    def get_stream_state(self) -> StreamState:
-        return self._cursor if self._cursor else {}
-
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
 
@@ -137,28 +138,131 @@ class SubstreamPartitionRouter(StreamSlicer):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key.eval(self.config)
-                stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
-                    empty_parent_slice = True
-                    parent_slice = parent_stream_slice
+                parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
+                partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
+                extra_fields = None
+                if parent_stream_config.extra_fields:
+                    extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]  # type: ignore # extra_fields is always casted to an interpolated string
 
-                    for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
-                    ):
-                        # Skip non-records (eg AirbyteLogMessage)
-                        if isinstance(parent_record, AirbyteMessage):
-                            if parent_record.type == Type.RECORD:
-                                parent_record = parent_record.record.data
-                            else:
-                                continue
-                        try:
-                            stream_state_value = dpath.util.get(parent_record, parent_field)
-                        except KeyError:
-                            pass
+                incremental_dependency = parent_stream_config.incremental_dependency
+
+                # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
+                # not support either substreams or RFR, but something that needs to be considered once we do
+                for parent_record in parent_stream.read_only_records():
+                    parent_partition = None
+                    # Skip non-records (eg AirbyteLogMessage)
+                    if isinstance(parent_record, AirbyteMessage):
+                        self.logger.warning(
+                            f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
+                        )
+                        if parent_record.type == MessageType.RECORD:
+                            parent_record = parent_record.record.data  # type: ignore[union-attr]  # record is always a Record
                         else:
-                            empty_parent_slice = False
-                            yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
-                    # If the parent slice contains no records,
-                    if empty_parent_slice:
-                        yield from []
+                            continue
+                    elif isinstance(parent_record, Record):
+                        parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
+                        parent_record = parent_record.data
+                    elif not isinstance(parent_record, Mapping):
+                        # The parent_record should only take the form of a Record, AirbyteMessage, or Mapping. Anything else is invalid
+                        raise AirbyteTracedException(message=f"Parent stream returned records as invalid type {type(parent_record)}")
+                    try:
+                        partition_value = dpath.get(parent_record, parent_field)
+                    except KeyError:
+                        continue
+
+                    # Add extra fields
+                    extracted_extra_fields = self._extract_extra_fields(parent_record, extra_fields)
+
+                    yield StreamSlice(
+                        partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
+                        cursor_slice={},
+                        extra_fields=extracted_extra_fields,
+                    )
+
+                    if incremental_dependency:
+                        self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
+
+                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
+                if incremental_dependency:
+                    self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
+
+    def _extract_extra_fields(
+        self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
+    ) -> Mapping[str, Any]:
+        """
+        Extracts additional fields specified by their paths from the parent record.
+
+        Args:
+            parent_record (Mapping[str, Any]): The record from the parent stream to extract fields from.
+            extra_fields (Optional[List[List[str]]]): A list of field paths (as lists of strings) to extract from the parent record.
+
+        Returns:
+            Mapping[str, Any]: A dictionary containing the extracted fields.
+                               The keys are the joined field paths, and the values are the corresponding extracted values.
+        """
+        extracted_extra_fields = {}
+        if extra_fields:
+            for extra_field_path in extra_fields:
+                try:
+                    extra_field_value = dpath.get(parent_record, extra_field_path)
+                    self.logger.debug(f"Extracted extra_field_path: {extra_field_path} with value: {extra_field_value}")
+                except KeyError:
+                    self.logger.debug(f"Failed to extract extra_field_path: {extra_field_path}")
+                    extra_field_value = None
+                extracted_extra_fields[".".join(extra_field_path)] = extra_field_value
+        return extracted_extra_fields
+
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Set the state of the parent streams.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
+            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+
+        Example of state format:
+        {
+            "parent_state": {
+                "parent_stream_name1": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                },
+                "parent_stream_name2": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
+        """
+        if not stream_state:
+            return
+
+        parent_state = stream_state.get("parent_state")
+        if not parent_state:
+            return
+
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
+                self._parent_state[parent_config.stream.name] = parent_config.stream.state
+
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+        """
+        Get the state of the parent streams.
+
+        Returns:
+            StreamState: The current state of the parent streams.
+
+        Example of state format:
+        {
+            "parent_stream_name1": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            },
+            "parent_stream_name2": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            }
+        }
+        """
+        return copy.deepcopy(self._parent_state)
+
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger("airbyte.SubstreamPartitionRouter")

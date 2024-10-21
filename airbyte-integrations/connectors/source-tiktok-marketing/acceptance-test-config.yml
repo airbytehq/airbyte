@@ -6,102 +6,108 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_tiktok_marketing/spec.json"
-      # the spec was changed with the `format: date` for start/end dates input,
-      # to satisfy the DatePicker requirements
-      backward_compatibility_tests_config:
-        disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
+      - spec_path: "source_tiktok_marketing/spec.json"
+        # the spec was changed with the `format: date` for start/end dates input,
+        # to satisfy the DatePicker requirements
+        backward_compatibility_tests_config:
+          disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
   connection:
     tests:
-    - config_path: "secrets/prod_config.json"
-      status: "succeed"
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-      status: "succeed"
-    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-      status: "succeed"
-    - config_path: "secrets/new_config_prod.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_config_access_token.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_config_oauth.json"
-      status: "failed"
+      - config_path: "secrets/prod_config.json"
+        status: "succeed"
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        status: "succeed"
+      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+        status: "succeed"
+      - config_path: "secrets/new_config_prod.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_access_token.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_oauth.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/prod_config.json"
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-    - config_path: "secrets/config.json"
-    - config_path: "secrets/new_config_prod.json"
-    - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/prod_config.json"
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+      - config_path: "secrets/config.json"
+      - config_path: "secrets/new_config_prod.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-        extra_fields: no
-        exact_order: no
-        extra_records: yes
-      timeout_seconds: 1200
-      empty_streams:
-      - name: ads_reports_hourly
-        bypass_reason: "Tested with daily granularity."
-      - name: ad_groups_reports_hourly
-        bypass_reason: "Tested with daily granularity."
-      - name: advertisers_reports_hourly
-        bypass_reason: "Tested with daily granularity."
-      - name: campaigns_reports_hourly
-        bypass_reason: "Tested with daily granularity."
-      - name: campaigns_audience_reports_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      # Old style streams with granularity config (for < 0.1.13)
-      # Note: not needed to be tested separately in full and incremental tests, because code of
-      # these streams is called directly in new style streams
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-      expect_records:
-        path: "integration_tests/expected_records2.jsonl"
-        extra_fields: no
-        exact_order: no
-        extra_records: yes
-      timeout_seconds: 1200
-      empty_streams:
-      - name: ad_groups
-        bypass_reason: "This stream is tested on the new style config."
-      - name: ads
-        bypass_reason: "This stream is tested on the new style config."
-      - name: advertiser_ids
-        bypass_reason: "This stream is tested on the new style config."
-      - name: advertisers
-        bypass_reason: "This stream is tested on the new style config."
-      - name: campaigns
-        bypass_reason: "This stream is tested on the new style config."
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        timeout_seconds: 1200
+        empty_streams:
+          - name: ads_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: ad_groups_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: advertisers_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: audiences
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: campaigns_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: creative_assets_portfolios
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: creative_assets_music
+            bypass_reason: "System music provided by TikTok - very volatile data."
+        # Old style streams with granularity config (for < 0.1.13)
+        # Note: not needed to be tested separately in full and incremental tests, because code of
+        # these streams is called directly in new style streams
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        expect_records:
+          path: "integration_tests/expected_records2.jsonl"
+          exact_order: no
+        timeout_seconds: 1200
+        empty_streams:
+          - name: ad_groups
+            bypass_reason: "This stream is tested on the new style config."
+          - name: ads
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertiser_ids
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertisers
+            bypass_reason: "This stream is tested on the new style config."
+          - name: audiences
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: campaigns
+            bypass_reason: "This stream is tested on the new style config."
+          - name: creative_assets_portfolios
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: creative_assets_music
+            bypass_reason: "System music provided by TikTok - very volatile data."
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 7200
+        ignored_fields:
+          ads:
+            - name: "profile_image_url"
+              bypass_reason: "Volatile URLs"
+          creative_assets_images:
+            - name: "image_url"
+              bypass_reason: "Volatile URL params"
+          creative_assets_videos:
+            - name: "preview_url"
+              bypass_reason: "Volatile URL params"
+            - name: "video_cover_url"
+              bypass_reason: "Volatile URL params"
+            - name: "preview_url_expire_time"
+              bypass_reason: "Changes over time"
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
-      skip_comprehensive_incremental_tests: true
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 7200
+        skip_comprehensive_incremental_tests: true
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

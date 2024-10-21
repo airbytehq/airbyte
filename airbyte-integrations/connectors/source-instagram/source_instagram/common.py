@@ -3,15 +3,15 @@
 #
 
 
+import logging
 import sys
 import urllib.parse as urlparse
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class InstagramAPIException(Exception):
@@ -35,6 +35,20 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
         # Rate Limiting Error Codes
         if exc.api_error_code() in (4, 17, 32, 613):
+            return True
+
+        if (
+            exc.http_status() == status_codes.INTERNAL_SERVER_ERROR
+            and exc.api_error_code() == 1
+            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+        ):
+            return True
+
+        if (
+            exc.http_status() == status_codes.INTERNAL_SERVER_ERROR
+            and exc.api_error_code() == 1
+            and exc.api_error_message() == "An unknown error occurred"
+        ):
             return True
 
         if exc.http_status() == status_codes.TOO_MANY_REQUESTS:

@@ -26,13 +26,13 @@
     "adminCreated": {
       "type": ["null", "boolean"]
     },
-    "aliases":  {
+    "aliases": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
-    "nonEditableAliases":  {
+    "nonEditableAliases": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

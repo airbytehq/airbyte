@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_faker import SourceFaker
+from source_faker.run import run
 
 if __name__ == "__main__":
-    source = SourceFaker()
-    launch(source, sys.argv[1:])
+    run()

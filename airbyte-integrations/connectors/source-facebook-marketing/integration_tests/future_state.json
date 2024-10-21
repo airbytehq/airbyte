@@ -3,8 +3,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "event_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "event_time": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "activities"
@@ -15,8 +15,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "updated_time": "2121-07-25",
+        "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
         "name": "campaigns"
@@ -27,8 +27,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "updated_time": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "images"
@@ -39,8 +39,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "updated_time": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "videos"
@@ -51,8 +51,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "updated_time": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ad_creatives"
@@ -63,8 +63,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "updated_time": "2121-07-25",
+        "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
         "name": "ad_sets"
@@ -75,7 +75,11 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "212551616838260": {
+          "updated_time": "2121-07-25",
+          "filter_statuses": ["ARCHIVED"],
+          "include_deleted": true
+        },
         "include_deleted": true
       },
       "stream_descriptor": {
@@ -87,8 +91,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights"
@@ -99,8 +103,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_age_and_gender"
@@ -111,8 +115,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_country"
@@ -123,8 +127,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_dma"
@@ -135,8 +139,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_platform_and_device"
@@ -147,8 +151,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_region"
@@ -159,8 +163,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_type"
@@ -171,21 +175,20 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "custommy_custom_insights"
       }
     }
   },
-
   {
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_carousel_card"
@@ -196,8 +199,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_conversion_device"
@@ -208,8 +211,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_product_id"
@@ -220,8 +223,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_reaction"
@@ -232,8 +235,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_video_sound"
@@ -244,8 +247,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_action_video_type"
@@ -256,8 +259,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_delivery_device"
@@ -268,8 +271,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_delivery_platform"
@@ -280,8 +283,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_delivery_platform_and_device_platform"
@@ -292,8 +295,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_demographics_age"
@@ -304,8 +307,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_demographics_country"
@@ -316,8 +319,8 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_demographics_dma_region"
@@ -328,11 +331,23 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
-        "include_deleted": true
+        "date_start": "2121-07-25",
+        "filter_statuses": []
       },
       "stream_descriptor": {
         "name": "ads_insights_demographics_gender"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25",
+        "filter_statuses": []
+      },
+      "stream_descriptor": {
+        "name": "customcustom_insight_stream"
       }
     }
   }

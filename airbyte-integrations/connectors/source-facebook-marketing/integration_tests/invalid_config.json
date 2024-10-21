@@ -1,6 +1,5 @@
 {
   "start_date": "2023-04-01T00:00:00Z",
   "account_id": "account",
-  "access_token": "wrong_token",
-  "include_deleted": true
+  "access_token": "wrong_token"
 }

@@ -8,7 +8,7 @@ data:
   icon: elasticsearch.svg
   license: MIT
   name: ElasticSearch
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
       enabled: true
@@ -18,4 +18,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
   tags:
     - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

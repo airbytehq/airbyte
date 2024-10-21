@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Ticket Activities",
+  "type": ["null", "object"],
+  "properties": {
+    "active": {
+      "description": "Indicates whether the organization field is currently active or not",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "The date and time when the organization field was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "custom_field_options": {
+      "description": "The list of custom field options available for this organization field",
+      "type": ["null", "array"]
+    },
+    "description": {
+      "description": "The description of the organization field",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the organization field",
+      "type": ["null", "integer"]
+    },
+    "key": {
+      "description": "The key associated with the organization field",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "The position of the organization field",
+      "type": ["null", "integer"]
+    },
+    "raw_description": {
+      "description": "The raw description of the organization field",
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "description": "The raw title of the organization field",
+      "type": ["null", "string"]
+    },
+    "regexp_for_validation": {
+      "description": "Regular expression for validation of the organization field data",
+      "type": ["null", "string"]
+    },
+    "relationship_filter": {
+      "description": "Relationship filter associated with the organization field",
+      "type": ["null", "object"]
+    },
+    "relationship_target_type": {
+      "description": "The target type of the relationship for this organization field",
+      "type": ["null", "string"]
+    },
+    "system": {
+      "description": "Indicates whether the organization field is a system field or not",
+      "type": ["null", "boolean"]
+    },
+    "tag": {
+      "description": "Tags associated with the organization field",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the organization field",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type of the organization field data",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the organization field was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL associated with the organization field",
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -15,7 +15,6 @@ logger = getLogger("airbyte")
 
 
 class DestinationCumulio(Destination):
-
     def write(
         self,
         config: Mapping[str, Any],

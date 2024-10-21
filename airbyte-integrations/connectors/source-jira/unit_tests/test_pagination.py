@@ -7,7 +7,8 @@ import json
 from http import HTTPStatus
 
 import responses
-from source_jira.streams import Issues, Projects, Users
+from conftest import find_stream
+from source_jira.streams import Issues, Projects
 from source_jira.utils import read_full_refresh
 
 
@@ -36,9 +37,42 @@ def test_pagination_projects():
 def test_pagination_issues():
     domain = "domain.com"
     responses_json = [
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 0, "maxResults": 2, "total": 6, "issues": [{"id": "1", "updated": "2022-01-01"}, {"id": "2", "updated": "2022-01-01"}]})),
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 2, "maxResults": 2, "total": 6, "issues": [{"id": "3", "updated": "2022-01-01"}, {"id": "4", "updated": "2022-01-01"}]})),
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 4, "maxResults": 2, "total": 6, "issues": [{"id": "5", "updated": "2022-01-01"}, {"id": "6", "updated": "2022-01-01"}]})),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 0,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "1", "updated": "2022-01-01"}, {"id": "2", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 2,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "3", "updated": "2022-01-01"}, {"id": "4", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 4,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "5", "updated": "2022-01-01"}, {"id": "6", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
     ]
 
     responses.add_callback(
@@ -57,13 +91,14 @@ def test_pagination_issues():
         {"id": "3", "updated": "2022-01-01"},
         {"id": "4", "updated": "2022-01-01"},
         {"id": "5", "updated": "2022-01-01"},
-        {"id": "6", "updated": "2022-01-01"}
+        {"id": "6", "updated": "2022-01-01"},
     ]
 
 
 @responses.activate
-def test_pagination_users():
+def test_pagination_users(config):
     domain = "domain.com"
+    config["domain"] = domain
     responses_json = [
         (HTTPStatus.OK, {}, json.dumps([{"self": "user1"}, {"self": "user2"}])),
         (HTTPStatus.OK, {}, json.dumps([{"self": "user3"}, {"self": "user4"}])),
@@ -77,13 +112,16 @@ def test_pagination_users():
         content_type="application/json",
     )
 
-    stream = Users(authenticator=None, domain=domain, projects=[])
-    stream.page_size = 2
+    stream = find_stream("users", config)
+    stream.retriever.paginator.pagination_strategy.page_size = 2
     records = list(read_full_refresh(stream))
-    assert records == [
+    expected_records = [
         {"self": "user1"},
         {"self": "user2"},
         {"self": "user3"},
         {"self": "user4"},
         {"self": "user5"},
     ]
+
+    for rec, exp in zip(records, expected_records):
+        assert dict(rec) == exp, f"Failed at {rec} vs {exp}"

@@ -2,13 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import os
+
 import pytest
+import responses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-
-
-@pytest.fixture(autouse=True)
-def disable_cache(mocker):
-    mocker.patch("source_iterable.streams.ListUsers.use_cache", False)
 
 
 @pytest.fixture
@@ -31,7 +30,7 @@ def config_fixture():
 
 @pytest.fixture()
 def mock_lists_resp(mocker):
-    mocker.patch("source_iterable.streams.Lists.read_records", return_value=iter([{"id": 1}, {"id": 2}]))
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}, {"id": 2}]})
 
 
 @pytest.fixture(name="lists_stream")
@@ -47,3 +46,17 @@ def lists_stream():
 @pytest.fixture(autouse=True)
 def mock_sleep(mocker):
     mocker.patch("time.sleep")
+
+
+@pytest.fixture(name="large_events_response")
+def large_event_response_fixture():
+    data = {"email": "email1@example.com"}
+    json_string = json.dumps(data)
+    lines_in_response = 5_000_000
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = f"{dir_path}/test_response.txt"
+    with open(file_path, "w") as file:
+        for _ in range(lines_in_response):
+            file.write(json_string + "\n")
+    yield (lines_in_response, file_path)
+    os.remove(file_path)

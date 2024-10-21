@@ -3,20 +3,20 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
-      "description": "The ID of the field configuration."
+      "description": "The ID of the field configuration.",
+      "type": "integer"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the field configuration."
+      "description": "The name of the field configuration.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the field configuration."
+      "description": "The description of the field configuration.",
+      "type": "string"
     },
     "isDefault": {
-      "type": "boolean",
-      "description": "Whether the field configuration is the default."
+      "description": "Whether the field configuration is the default.",
+      "type": "boolean"
     }
   },
   "additionalProperties": true,

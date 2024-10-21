@@ -1,9 +1,11 @@
 # Scylla
 
 ## Prerequisites
+
 - For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Scylla connector to version `0.1.3` or newer
 
 ## Sync overview
+
 ### Output schema
 
 The incoming airbyte data is structured in keyspaces and tables and is partitioned and replicated across different nodes
@@ -11,18 +13,18 @@ in the cluster. This connector maps an incoming `stream` to a Scylla `table` and
 Fields in the airbyte message become different columns in the Scylla tables. Each table will contain the following
 columns.
 
-* `_airbyte_ab_id`: A random uuid generated to be used as a partition key.
-* `_airbyte_emitted_at`: a timestamp representing when the event was received from the data source.
-* `_airbyte_data`: a json text representing the extracted data.
+- `_airbyte_ab_id`: A random uuid generated to be used as a partition key.
+- `_airbyte_emitted_at`: a timestamp representing when the event was received from the data source.
+- `_airbyte_data`: a json text representing the extracted data.
 
 ### Features
 
-| Feature | Support | Notes |
-| :--- | :---: | :--- |
-| Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
-| Incremental - Append Sync | ✅ |  |
-| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | ✅ | Namespace will be used as part of the table name. |
+| Feature                        | Support | Notes                                                                                   |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
+| Incremental - Append Sync      |   ✅    |                                                                                         |
+| Incremental - Append + Deduped |   ❌    |                                                                                         |
+| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
 
 ### Performance considerations
 
@@ -34,18 +36,24 @@ and handle any amount of data from the connector.
 
 ### Requirements
 
-* Driver compatibility: NA
-* Configuration
-    * Keyspace [default keyspace to use when writing data]
-    * Username [authentication username]
-    * Password [authentication password]
-    * Address [cluster address]
-    * Port [default: 9042]
-    * Replication [optional] [default: 1]
+- Driver compatibility: NA
+- Configuration
+  - Keyspace [default keyspace to use when writing data]
+  - Username [authentication username]
+  - Password [authentication password]
+  - Address [cluster address]
+  - Port [default: 9042]
+  - Replication [optional] [default: 1]
 
 ### Setup guide
+
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                             |
-|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
-| 0.1.3  | 2022-08-10 | [153999](https://github.com/airbytehq/airbyte/pull/15399) | handling per-stream state                                                   |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                   |
+| :------ | :--------- | :-------------------------------------------------------- | :------------------------ |
+| 0.1.3   | 2022-08-10 | [153999](https://github.com/airbytehq/airbyte/pull/15399) | handling per-stream state |
+
+</details>

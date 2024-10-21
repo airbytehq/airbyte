@@ -3,14 +3,10 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_okta/spec.json"
+      - spec_path: "source_okta/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/config_api_token.json"
-        status: "succeed"
-      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -22,9 +18,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -11,7 +11,7 @@
   "retargeting_in_app_events": {
     "event_time": "2050-01-01T00:00:00+00:00"
   },
-  "retargeting_conversions": {
+  "retargeting_installs": {
     "install_time": "2050-01-01T00:00:00+00:00"
   },
   "partners_report": {

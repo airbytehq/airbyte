@@ -1,0 +1,43 @@
+.badges {
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.badge {
+  background: var(--color-grey-40);
+  color: var(--color-grey-400);
+  padding: 3px 8px;
+  border-radius: 32px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.badge:hover {
+  text-decoration: none;
+}
+
+.withAddon {
+  font-weight: 600;
+}
+
+.available {
+  background:var(--color-green-50);
+  color: var(--ifm-font-color-base);
+}
+
+.helpIcon {
+  color: var(--color-grey-400);
+  transition: color 0.2s ease;
+}
+
+.helpIcon:hover {
+  color: var(--ifm-color-primary);
+}
