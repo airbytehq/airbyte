@@ -126,15 +126,14 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         yield from super().read(logger, config, filtered_catalog, state)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        return AirbyteCatalog(
-            streams=[stream.as_airbyte_stream() for stream in self._concurrent_streams + self._synchronous_streams]
-        )
+        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in self._concurrent_streams + self._synchronous_streams])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         The `streams` method is used as part of the AbstractSource in the following cases:
         * ConcurrentDeclarativeSource.check -> ManifestDeclarativeSource.check -> AbstractSource.check -> DeclarativeSource.check_connection -> CheckStream.check_connection -> streams
         * ConcurrentDeclarativeSource.read -> AbstractSource.read -> streams (note that we filter for a specific catalog which excludes concurrent streams so not all streams actually read from all the streams returned by `streams`)
+        Note that `super.streams(config)` is also called when splitting the streams between concurrent or not in `_group_streams`.
 
         In both case, we will assume that calling the DeclarativeStream is perfectly fine as the result for these is the same regardless of if it is a DeclarativeStream or a DefaultStream (concurrent). This should simply be removed once we have moved away from the mentioned code paths above.
         """

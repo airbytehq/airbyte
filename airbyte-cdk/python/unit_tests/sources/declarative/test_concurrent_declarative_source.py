@@ -4,7 +4,7 @@
 import copy
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable, List, Mapping, Optional, Union, Dict
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import freezegun
 import isodate
@@ -21,8 +21,8 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     FailureType,
-    StreamDescriptor,
     Status,
+    StreamDescriptor,
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
@@ -36,7 +36,6 @@ from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.utils import AirbyteTracedException
 from deprecated.classic import deprecated
-
 
 _CONFIG = {
     "start_date": "2024-07-01T00:00:00.000Z"
