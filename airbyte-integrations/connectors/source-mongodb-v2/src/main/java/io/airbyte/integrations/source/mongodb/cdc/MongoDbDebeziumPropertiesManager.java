@@ -72,7 +72,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     if (config.has(ENABLE_SSL_KEY)) {
-      properties.setProperty(MONGODB_SSL_ENABLED_KEY, config.get(ENABLE_SSL_KEY).asText());
+      properties.setProperty(MONGODB_SSL_ENABLED_KEY, config.get(ENABLE_SSL_KEY).asBoolean());
     }
     //properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
     if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
