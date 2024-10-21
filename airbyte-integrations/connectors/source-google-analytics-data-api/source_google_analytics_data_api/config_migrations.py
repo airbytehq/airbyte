@@ -4,9 +4,11 @@
 
 
 import logging
+import orjson
 from typing import Any, List, Mapping
 
 import dpath.util
+from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -67,7 +69,7 @@ class MigratePropertyID:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository.consume_queue():
-            print(message.json(exclude_unset=True))
+            print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
     def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
@@ -145,7 +147,7 @@ class MigrateCustomReports:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository.consume_queue():
-            print(message.json(exclude_unset=True))
+            print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
     def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
@@ -215,7 +217,7 @@ class MigrateCustomReportsCohortSpec:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository.consume_queue():
-            print(message.json(exclude_unset=True))
+            print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
     def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
