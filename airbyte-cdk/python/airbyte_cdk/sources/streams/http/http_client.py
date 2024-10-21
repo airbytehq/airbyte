@@ -249,6 +249,8 @@ class HttpClient:
             self._request_attempt_count[request] = 1
         else:
             self._request_attempt_count[request] += 1
+            if isinstance(self._session.auth, AuthBase):
+                self._session.auth(request)
 
         self._logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
