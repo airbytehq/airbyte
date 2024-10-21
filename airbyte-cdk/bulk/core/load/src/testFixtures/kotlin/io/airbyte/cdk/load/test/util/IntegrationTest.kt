@@ -15,15 +15,13 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlin.test.fail
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
@@ -36,13 +34,6 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import uk.org.webcompere.systemstubs.jupiter.SystemStub
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 
-@MicronautTest(
-    // Manually add metadata.yaml as a property source so that we can use its
-    // values as injectable properties.
-    // This is _infinitely_ easier than trying to wire up
-    // MetadataYamlPropertySource to be available at test time.
-    propertySources = ["classpath:metadata.yaml"]
-)
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
@@ -70,7 +61,7 @@ abstract class IntegrationTest(
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    @Inject lateinit var destinationProcessFactory: DestinationProcessFactory
+    val destinationProcessFactory = DestinationProcessFactory.get()
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
@@ -104,13 +95,13 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
+        config: ConfigurationSpecification,
         canonicalExpectedRecords: List<OutputRecord>,
-        streamName: String,
-        streamNamespace: String?,
+        stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
     ) {
-        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(streamName, streamNamespace)
+        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
 
@@ -150,7 +141,7 @@ abstract class IntegrationTest(
                 catalog.asProtocolObject(),
             )
         return runBlocking {
-            val destinationCompletion = async { destination.run() }
+            launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
@@ -175,7 +166,6 @@ abstract class IntegrationTest(
                 }
             }
             destination.shutdown()
-            destinationCompletion.await()
             destination.readMessages()
         }
     }
