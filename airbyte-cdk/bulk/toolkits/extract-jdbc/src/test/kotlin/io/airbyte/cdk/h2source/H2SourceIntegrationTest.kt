@@ -100,6 +100,20 @@ class H2SourceIntegrationTest {
     }
 
     @Test
+    fun testDiscoverFakeCdc() {
+        H2TestFixture().use { h2: H2TestFixture ->
+            h2.createConnection().use(Companion::prelude)
+            val configPojo =
+                H2SourceConfigurationSpecification().apply {
+                    port = h2.port
+                    database = h2.database
+                    setCursorMethodValue(CdcCursor)
+                }
+            SyncsTestFixture.testDiscover(configPojo, "h2source/expected-fake-cdc-catalog.json")
+        }
+    }
+
+    @Test
     fun testReadStreams() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
