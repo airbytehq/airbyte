@@ -146,7 +146,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.textNode("2021-01-01T00:00:00Z"),
-                    TimestampType(true)
+                    TimestampTypeWithTimezone
                 )
         Assertions.assertTrue(value is TimestampValue)
         Assertions.assertEquals("2021-01-01T00:00:00Z", (value as TimestampValue).value)
@@ -156,7 +156,7 @@ class JsonToAirbyteValueTest {
     fun testTime() {
         val value =
             JsonToAirbyteValue()
-                .convert(JsonNodeFactory.instance.textNode("00:00:00"), TimeType(true))
+                .convert(JsonNodeFactory.instance.textNode("00:00:00"), TimeTypeWithTimezone)
         Assertions.assertTrue(value is TimeValue)
         Assertions.assertEquals("00:00:00", (value as TimeValue).value)
     }

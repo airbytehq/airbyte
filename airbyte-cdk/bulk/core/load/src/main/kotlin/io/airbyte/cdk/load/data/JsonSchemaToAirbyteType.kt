@@ -62,14 +62,17 @@ class JsonSchemaToAirbyteType {
         when (schema.get("format")?.asText()) {
             "date" -> DateType
             "time" ->
-                TimeType(
-                    hasTimezone = schema.get("airbyte_type")?.asText() != "time_without_timezone"
-                )
+                if (schema.get("airbyte_type")?.asText() == "time_without_timezone") {
+                    TimeTypeWithoutTimezone
+                } else {
+                    TimeTypeWithTimezone
+                }
             "date-time" ->
-                TimestampType(
-                    hasTimezone =
-                        schema.get("airbyte_type")?.asText() != "timestamp_without_timezone"
-                )
+                if (schema.get("airbyte_type")?.asText() == "timestamp_without_timezone") {
+                    TimestampTypeWithoutTimezone
+                } else {
+                    TimestampTypeWithTimezone
+                }
             null -> StringType
             else ->
                 throw IllegalArgumentException(
