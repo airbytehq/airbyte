@@ -5,15 +5,12 @@
 package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.check.DestinationChecker
-import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.exceptions.ConfigurationException
 import jakarta.inject.Singleton
 import java.io.OutputStream
 import kotlinx.coroutines.flow.toList
@@ -26,12 +23,6 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
 
     override fun check(config: S3V2Configuration<T>) {
         runBlocking {
-            if (
-                config.objectStorageFormatConfiguration !is JsonFormatConfiguration &&
-                    config.objectStorageFormatConfiguration !is CSVFormatConfiguration
-            ) {
-                throw ConfigurationException("Currently only JSON and CSV format is supported")
-            }
             val s3Client = S3ClientFactory.make(config)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
             val path = pathFactory.getStagingDirectory(mockStream())
