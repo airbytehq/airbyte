@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "ads-api.reddit.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-reddit-ads
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a96849e9-1d79-4276-b0c5-e17a191a52c9
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-reddit-ads
+  githubIssueLabel: source-reddit-ads
+  icon: icon.svg
+  license: MIT
+  name: Reddit Ads
+  releaseDate: 2024-10-21
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/reddit-ads
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
