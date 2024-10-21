@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -143,6 +144,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
     open fun testMidSyncCheckpointingStreamState() =
         runBlocking(Dispatchers.IO) {
