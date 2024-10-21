@@ -3,7 +3,7 @@
 #
 """Code moved to `run.py`. This file is now a placeholder for legacy reasons."""
 
-from destination_duckdb.run import run
+from destination_motherduck.run import run
 
 if __name__ == "__main__":
     run()

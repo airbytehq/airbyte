@@ -3,6 +3,6 @@
 #
 
 
-from .destination import DestinationDuckdb
+from .destination import DestinationMotherDuck
 
-__all__ = ["DestinationDuckdb"]
+__all__ = ["DestinationMotherDuck"]

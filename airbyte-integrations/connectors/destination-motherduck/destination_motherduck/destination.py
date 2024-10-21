@@ -11,7 +11,6 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 
 import duckdb
-import pyarrow as pa
 
 import logging
 from airbyte_cdk.destinations import Destination
@@ -54,7 +53,7 @@ def validated_sql_name(sql_name: Any) -> str:
     raise ValueError(f"Invalid SQL name: {sql_name}")
 
 
-class DestinationDuckdb(Destination):
+class DestinationMotherDuck(Destination):
     type_converter_class = SQLTypeConverter
     normalizer = LowerCaseNormalizer
 

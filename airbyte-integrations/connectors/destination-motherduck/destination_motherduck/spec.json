@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/duckdb",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/motherduck",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Duckdb",

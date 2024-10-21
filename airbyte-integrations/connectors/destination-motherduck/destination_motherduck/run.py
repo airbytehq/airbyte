@@ -2,11 +2,11 @@
 
 import sys
 
-from destination_duckdb import DestinationDuckdb
+from destination_motherduck import DestinationMotherDuck
 
 
 def run() -> None:
-    DestinationDuckdb().run(sys.argv[1:])
+    DestinationMotherDuck().run(sys.argv[1:])
 
 
 if __name__ == "__main__":
