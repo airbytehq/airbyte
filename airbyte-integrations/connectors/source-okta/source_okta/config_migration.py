@@ -81,8 +81,8 @@ class OktaConfigMigration:
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
                 )
-          
-    @classmethod      
+
+    @classmethod
     def airbyte_message_to_dict(cls, message):
         return {
             "type": message.type.value,
@@ -96,8 +96,6 @@ class OktaConfigMigration:
             "control": {
                 "type": message.control.type.value,
                 "emitted_at": message.control.emitted_at,
-                "connectorConfig": {
-                    "config": message.control.connectorConfig.config
-                }
-            }
+                "connectorConfig": {"config": message.control.connectorConfig.config},
+            },
         }

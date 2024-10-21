@@ -3,9 +3,9 @@
 #
 
 import json
-from typing import Any, Mapping
 import logging
 from enum import Enum
+from typing import Any, Mapping
 
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
