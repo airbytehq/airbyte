@@ -51,7 +51,7 @@ data class DestinationStream(
      * what actually exists, as many destinations have legacy data from before this schema was
      * adopted.
      */
-    val schemaWithMeta: AirbyteType
+    val schemaWithMeta: ObjectType
         get() =
             ObjectType(
                 linkedMapOf(
