@@ -6,13 +6,17 @@ package io.airbyte.integrations.destination.s3_v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.data.DestinationRecordToAirbyteValueWithMeta
+import io.airbyte.cdk.load.data.avro.toAvroRecord
+import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.data.toCsvRecord
 import io.airbyte.cdk.load.data.toJson
+import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
@@ -50,6 +54,12 @@ class S3V2Writer(
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
     inner class S3V2StreamLoader(override val stream: DestinationStream) : StreamLoader {
         private val partNumber = AtomicLong(0L) // TODO: Get from destination state
+        private val avroSchema =
+            if (formatConfig.objectStorageFormatConfiguration is AvroFormatConfiguration) {
+                stream.schemaWithMeta.toAvroSchema(stream.descriptor)
+            } else {
+                null
+            }
 
         override suspend fun processRecords(
             records: Iterator<DestinationRecord>,
@@ -78,6 +88,15 @@ class S3V2Writer(
                                         )
                                     }
                                 }
+                        }
+                        is AvroFormatConfiguration -> {
+                            outputStream.toAvroWriter(avroSchema!!).use { writer ->
+                                records.forEach {
+                                    writer.write(
+                                        recordDecorator.decorate(it).toAvroRecord(avroSchema)
+                                    )
+                                }
+                            }
                         }
                         else -> throw IllegalStateException("Unsupported format")
                     }

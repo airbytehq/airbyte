@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.file.TimeProvider
@@ -28,9 +29,12 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
         runBlocking {
             if (
                 config.objectStorageFormatConfiguration !is JsonFormatConfiguration &&
-                    config.objectStorageFormatConfiguration !is CSVFormatConfiguration
+                    config.objectStorageFormatConfiguration !is CSVFormatConfiguration &&
+                    config.objectStorageFormatConfiguration !is AvroFormatConfiguration
             ) {
-                throw ConfigurationException("Currently only JSON and CSV format is supported")
+                throw ConfigurationException(
+                    "Currently only JSON, CSV, and Avro formats are supported"
+                )
             }
             val s3Client = S3ClientFactory.make(config)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)

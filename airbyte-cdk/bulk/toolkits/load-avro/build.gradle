@@ -1,9 +1,8 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
-    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro')
 
-    api("org.apache.commons:commons-csv:1.10.0")
+    api("org.apache.avro:avro:1.11.0")
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 }
