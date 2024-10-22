@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -167,34 +167,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/recipients"
-    metrics_summary:
-      type: DeclarativeStream
-      name: metrics_summary
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/metrics/deliverability
-          http_method: GET
-          request_parameters:
-            from: "{{ config['from'] }}"
-            metrics: "{{ config['metrics'] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/metrics_summary"
     subaccounts:
       type: DeclarativeStream
       name: subaccounts
@@ -231,147 +203,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/subaccounts"
-    engagement_details:
-      type: DeclarativeStream
-      name: engagement_details
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/metrics/deliverability/link-name
-          http_method: GET
-          request_parameters:
-            from: "{{ config[\"from\"] }}"
-            metrics: "{{ config[\"metrics\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/engagement_details"
-    rejection_reason_metrics:
-      type: DeclarativeStream
-      name: rejection_reason_metrics
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/metrics/deliverability/rejection-reason
-          http_method: GET
-          request_parameters:
-            from: "{{ config[\"from\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/rejection_reason_metrics"
-    metrics:
-      type: DeclarativeStream
-      name: metrics
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/metrics/
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/metrics"
-    metrics_by_template:
-      type: DeclarativeStream
-      name: metrics_by_template
-      primary_key:
-        - template_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/metrics/deliverability/template
-          http_method: GET
-          request_parameters:
-            from: "{{ config[\"from\"] }}"
-            metrics: "{{ config[\"metrics\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response.get('links', []) | selectattr('rel', 'equalto',
-              'next') | map(attribute='href') | first }}
-            stop_condition: >-
-              {{ not response.get('links', []) | selectattr('rel', 'equalto',
-              'next') | list }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/metrics_by_template"
     snippets:
       type: DeclarativeStream
       name: snippets
@@ -402,7 +233,7 @@ definitions:
           $ref: "#/schemas/snippets"
   base_requester:
     type: HttpRequester
-    url_base: https://api{{ config['region'] }}sparkpost.com
+    url_base: https://{{ config['api_prefix'] }}.sparkpost.com
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -417,12 +248,7 @@ streams:
   - $ref: "#/definitions/streams/ab_test"
   - $ref: "#/definitions/streams/templates"
   - $ref: "#/definitions/streams/recipients"
-  - $ref: "#/definitions/streams/metrics_summary"
   - $ref: "#/definitions/streams/subaccounts"
-  - $ref: "#/definitions/streams/engagement_details"
-  - $ref: "#/definitions/streams/rejection_reason_metrics"
-  - $ref: "#/definitions/streams/metrics"
-  - $ref: "#/definitions/streams/metrics_by_template"
   - $ref: "#/definitions/streams/snippets"
 
 spec:
@@ -432,12 +258,8 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - events
-      - recipients
-      - templates
-      - from
-      - metrics
-      - region
+      - start_date
+      - api_prefix
     properties:
       api_key:
         type: string
@@ -445,32 +267,20 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      events:
+      start_date:
         type: string
         order: 1
-        title: Events
-      recipients:
-        type: string
-        order: 2
-        title: Recipients
-      templates:
-        type: string
-        order: 3
-        title: Templates
-      from:
-        type: string
-        order: 4
-        title: From
+        title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-      metrics:
-        type: array
-        order: 5
-        title: Metrics
-      region:
+      api_prefix:
         type: string
-        title: Region
-        order: 6
+        enum:
+          - api
+          - api.eu
+        order: 2
+        title: API Endpoint Prefix
+        default: api
     additionalProperties: true
 
 metadata:
@@ -480,98 +290,58 @@ metadata:
     ab_test: true
     templates: true
     recipients: true
-    metrics_summary: true
     subaccounts: true
-    engagement_details: true
-    rejection_reason_metrics: true
-    metrics: true
-    metrics_by_template: true
     snippets: true
   testedStreams:
     message_events:
-      streamHash: d824b049b9bce1d6a0a0fc37b1311f459aba491f
+      streamHash: 6cd8b91c732f2ab681e844b3e25daf5cad761597
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sending_domains:
-      streamHash: 596e40acc682042e4812880c62e12764d61d2729
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: d8823ac15a64e51058d00e7e6bebc7887818e003
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     ab_test:
-      streamHash: 9e2f54995aa4757283ec3c15a3529cf4cdaf5c8e
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: db57e56ed834e1a4cda14f9dffe59adb2e795ab8
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     templates:
-      streamHash: b9eb1ab5f9d4914434cf24e780cd36a2851e91ac
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: af4fa0d7513777398d2b1b2e319f29b09be339e8
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     recipients:
-      streamHash: d97968121492e325120da13259fdb1786cbcfbb0
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    metrics_summary:
-      streamHash: 8b7d0f40e03ee91cf101fc0a838d1f5b91aa2a3f
+      streamHash: 21516863cfcae0984c41b252d4f0699993a2fffb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     subaccounts:
-      streamHash: 235691adf0c8df9f0b9edf5f70155eda4d8b21e8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    engagement_details:
-      streamHash: 66be5c79b561d5b1046b2d0b697db5210add66a1
+      streamHash: ecd8e66247fac36849216f2525a91cf2604e7a10
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    rejection_reason_metrics:
-      streamHash: a5357d2c0357ac13e8808ccb538ffeec221d849d
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    metrics:
-      streamHash: 0c2fd38189b430f95afc49a108f66ee728011086
-      hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    metrics_by_template:
-      streamHash: 442e01db4bc70d8f13068d03c5f867d1869e3fc7
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
     snippets:
-      streamHash: 80d9aa18c15738f53d3ada527ab67ecbcff537f9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: df868d0af6d81748a476218d04e9e0858dc5d5df
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developers.sparkpost.com/api/
 
@@ -957,45 +727,6 @@ schemas:
           - "null"
     required:
       - id
-  metrics_summary:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      links:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            href:
-              type:
-                - string
-                - "null"
-            method:
-              type:
-                - string
-                - "null"
-            rel:
-              type:
-                - string
-                - "null"
-      results:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            count_clicked:
-              type:
-                - number
-                - "null"
   subaccounts:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1021,80 +752,6 @@ schemas:
           - "null"
     required:
       - id
-  engagement_details:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      results:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            count_clicked:
-              type:
-                - number
-                - "null"
-            link_name:
-              type:
-                - string
-                - "null"
-  rejection_reason_metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      results:
-        type:
-          - array
-          - "null"
-  metrics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      links:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            href:
-              type:
-                - string
-                - "null"
-            method:
-              type:
-                - string
-                - "null"
-            rel:
-              type:
-                - string
-                - "null"
-      results:
-        type:
-          - object
-          - "null"
-  metrics_by_template:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      count_clicked:
-        type:
-          - number
-          - "null"
-      template_id:
-        type: string
-    required:
-      - template_id
   snippets:
     type: object
     $schema: http://json-schema.org/schema#
