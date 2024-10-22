@@ -17,8 +17,10 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeType
-import io.airbyte.cdk.load.data.TimestampType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import org.apache.avro.Schema
@@ -57,9 +59,11 @@ class AirbyteTypeToAvroSchema {
             is ObjectTypeWithoutSchema ->
                 throw IllegalArgumentException("Object type without schema is not supported")
             is StringType -> return SchemaBuilder.builder().stringType()
-            is TimeType ->
+            is TimeTypeWithTimezone,
+            is TimeTypeWithoutTimezone ->
                 throw IllegalArgumentException("String-based time types are not supported")
-            is TimestampType ->
+            is TimestampTypeWithTimezone,
+            is TimestampTypeWithoutTimezone ->
                 throw IllegalArgumentException("String-based timestamp types are not supported")
             is UnionType ->
                 return Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
