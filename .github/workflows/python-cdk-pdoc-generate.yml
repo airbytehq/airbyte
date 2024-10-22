@@ -24,7 +24,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: cd airbyte-cdk/python && poetry install
+        run: cd airbyte-cdk/python && poetry install --all-extras
 
       - name: Generate documentation
         run: |
