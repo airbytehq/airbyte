@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.14.0
+Fix yielding parent records in SubstreamPartitionRouter
+
 ## 5.13.0
 Add extra fields to StreamSlice
 

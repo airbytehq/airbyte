@@ -37,6 +37,245 @@
         "title" : "S3 Bucket Region",
         "examples" : [ "us-east-1" ]
       },
+      "format" : {
+        "oneOf" : [ {
+          "title" : "JSON Lines: Newline-delimited JSON",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "JSONL" ],
+              "default" : "JSONL"
+            },
+            "compression" : {
+              "oneOf" : [ {
+                "title" : "No Compression",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "No Compression" ],
+                    "default" : "No Compression"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              }, {
+                "title" : "GZIP",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "GZIP" ],
+                    "default" : "GZIP"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              } ],
+              "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+              "title" : "Compression",
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type", "compression" ]
+        }, {
+          "title" : "CSV: Comma-Separated Values",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "CSV" ],
+              "default" : "CSV"
+            },
+            "compression" : {
+              "oneOf" : [ {
+                "title" : "No Compression",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "No Compression" ],
+                    "default" : "No Compression"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              }, {
+                "title" : "GZIP",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "GZIP" ],
+                    "default" : "GZIP"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              } ],
+              "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+              "title" : "Compression",
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type", "compression" ]
+        }, {
+          "title" : "Avro: Apache Avro",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "Avro" ],
+              "default" : "Avro"
+            },
+            "compression_codec" : {
+              "oneOf" : [ {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "no compression" ],
+                    "default" : "no compression"
+                  }
+                },
+                "title" : "no compression",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "Deflate" ],
+                    "default" : "Deflate"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Deflate Level"
+                  }
+                },
+                "title" : "Deflate",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "bzip2" ],
+                    "default" : "bzip2"
+                  }
+                },
+                "title" : "bzip2",
+                "required" : [ "codec" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "xz" ],
+                    "default" : "xz"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  }
+                },
+                "title" : "xz",
+                "required" : [ "codec", "compression_level" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "zstandard" ],
+                    "default" : "zstandard"
+                  },
+                  "compression_level" : {
+                    "type" : "integer",
+                    "title" : "Compression Level"
+                  },
+                  "include_checksum" : {
+                    "type" : "boolean",
+                    "title" : "Include Checksum"
+                  }
+                },
+                "title" : "zstandard",
+                "required" : [ "codec", "compression_level", "include_checksum" ]
+              }, {
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "codec" : {
+                    "type" : "string",
+                    "enum" : [ "snappy" ],
+                    "default" : "snappy"
+                  }
+                },
+                "title" : "snappy",
+                "required" : [ "codec" ]
+              } ],
+              "description" : "The compression algorithm used to compress data. Default to no compression.",
+              "title" : "Compression Codec",
+              "type" : "object"
+            }
+          },
+          "required" : [ "format_type", "compression_codec" ]
+        }, {
+          "title" : "Parquet: Columnar Storage",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "Parquet" ],
+              "default" : "Parquet"
+            },
+            "compression_codec" : {
+              "type" : "string",
+              "enum" : [ "UNCOMPRESSED", "SNAPPY", "GZIP", "LZO", "BROTLI", "LZ4", "ZSTD" ],
+              "description" : "The compression algorithm used to compress data pages.",
+              "title" : "Compression Codec"
+            },
+            "block_size_mb" : {
+              "type" : "integer",
+              "description" : "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
+              "title" : "Block Size (Row Group Size) (MB)"
+            },
+            "max_padding_size_mb" : {
+              "type" : "integer",
+              "description" : "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
+              "title" : "Max Padding Size (MB)"
+            },
+            "page_size_kb" : {
+              "type" : "integer",
+              "description" : "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
+              "title" : "Page Size (KB)"
+            },
+            "dictionary_page_size_kb" : {
+              "type" : "integer",
+              "description" : "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
+              "title" : "Dictionary Page Size (KB)"
+            },
+            "dictionary_encoding" : {
+              "type" : "boolean",
+              "description" : "Default: true.",
+              "title" : "Dictionary Encoding"
+            }
+          },
+          "required" : [ "format_type" ]
+        } ],
+        "description" : "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
+        "title" : "Output Format",
+        "type" : "object"
+      },
       "s3_endpoint" : {
         "type" : "string",
         "description" : "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
@@ -63,7 +302,7 @@
         "examples" : [ "__staging/data_sync/test" ]
       }
     },
-    "required" : [ "access_key_id", "secret_access_key", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region" ]
+    "required" : [ "access_key_id", "secret_access_key", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "format" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

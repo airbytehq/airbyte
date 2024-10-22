@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        MockDestinationSpecification(),
+        MockDestinationSpecification.CONFIG,
+        MockDestinationSpecification::class.java,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
@@ -21,5 +22,20 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
+    }
+
+    @Test
+    override fun testNamespaces() {
+        super.testNamespaces()
+    }
+
+    @Test
+    override fun testFunkyStreamAndColumnNames() {
+        super.testFunkyStreamAndColumnNames()
     }
 }
