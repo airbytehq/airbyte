@@ -524,7 +524,7 @@ def test_check():
     with HttpMocker() as http_mocker:
         http_mocker.get(
             HttpRequest("https://persona.metaverse.com/party_members?start=2024-07-01&end=2024-07-15"),
-            HttpResponse(json.dumps({"id": "party_member_1"})),
+            HttpResponse(json.dumps({"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"})),
         )
         http_mocker.get(
             HttpRequest("https://persona.metaverse.com/palaces"),
