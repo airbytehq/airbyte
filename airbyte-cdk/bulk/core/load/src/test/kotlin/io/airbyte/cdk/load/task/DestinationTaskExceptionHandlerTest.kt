@@ -125,7 +125,6 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
                 (stream, exception, kill) ->
                 stream to Pair(exception, kill)
             }
-        println(streamResults)
         catalog.streams.forEach { stream ->
             Assertions.assertTrue(streamResults[stream]!!.first is RuntimeException)
             Assertions.assertTrue(streamResults[stream]!!.second)

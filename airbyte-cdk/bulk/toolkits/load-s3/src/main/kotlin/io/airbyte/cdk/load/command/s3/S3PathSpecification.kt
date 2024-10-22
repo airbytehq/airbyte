@@ -10,6 +10,15 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 
+/**
+ * Mix-in to provide S3 path configuration fields as properties.
+ *
+ * NOTE: For legacy reasons, this is unnecessarily s3-specific. Future cloud storage solutions
+ * should create a single generic version of this in the `object-storage` toolkit and use that.
+ *
+ * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
+ * interface.
+ */
 interface S3PathSpecification {
     @get:JsonSchemaTitle("S3 Path Format")
     @get:JsonPropertyDescription(

@@ -164,7 +164,9 @@ async def run_connector_up_to_date_pipeline(
                 step_results.append(add_changelog_entry_result)
                 if add_changelog_entry_result.success:
                     # File path modified by the changelog entry step are relative to the repo root
-                    exported_modified_files = await add_changelog_entry.export_modified_files(Path("."))
+                    exported_modified_files = await add_changelog_entry.export_modified_files(
+                        context.connector.local_connector_documentation_directory
+                    )
                     context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
