@@ -2,15 +2,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import time
-from http import HTTPStatus
+# import time
+# from http import HTTPStatus
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
-import pytest
+# import pytest
 import requests
 from airbyte_cdk.sources.streams import Stream
-from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
+# from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
 from source_okta.source import SourceOkta
 
 
@@ -22,6 +22,7 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     return matches_by_name[0]
 
 
+# Removed tests as no equivalent methods in new sdk
 # class TestStatusCodes:
 #     @pytest.mark.parametrize(
 #         ("http_status", "should_retry"),
