@@ -15,10 +15,9 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DefaultCheckConnectionTestHarness
 @JvmOverloads
@@ -46,14 +45,15 @@ constructor(
             val jobOutput =
                 ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
 
-            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
             val connectionStatus =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())
+                    .stream()
                     .map { obj: AirbyteMessage -> obj.connectionStatus }
-                    .firstOrNull()
+                    .findFirst()
 
             if (input.actorId != null && input.actorType != null) {
                 val optionalConfigMsg =
@@ -86,7 +86,7 @@ constructor(
                     ConnectorJobOutput.OutputType.CHECK_CONNECTION,
                     messagesByType
                 )
-            failureReason.ifPresent { failureReason: FailureReason ->
+            failureReason.ifPresent { failureReason: FailureReason? ->
                 jobOutput.failureReason = failureReason
             }
 
@@ -95,16 +95,16 @@ constructor(
                 LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode)
             }
 
-            if (connectionStatus != null) {
+            if (connectionStatus.isPresent) {
                 val output =
                     StandardCheckConnectionOutput()
                         .withStatus(
                             Enums.convertTo(
-                                connectionStatus.status,
+                                connectionStatus.get().status,
                                 StandardCheckConnectionOutput.Status::class.java
                             )
                         )
-                        .withMessage(connectionStatus.message)
+                        .withMessage(connectionStatus.get().message)
                 LOGGER.info("Check connection job received output: {}", output)
                 jobOutput.checkConnection = output
             } else if (failureReason.isEmpty) {
@@ -124,5 +124,10 @@ constructor(
 
     override fun cancel() {
         TestHarnessUtils.cancelProcess(process)
+    }
+
+    companion object {
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(DefaultCheckConnectionTestHarness::class.java)
     }
 }

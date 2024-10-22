@@ -14,14 +14,14 @@ import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.sql.Timestamp
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * The base implementation takes care of the following:
  *
@@ -48,13 +48,13 @@ protected constructor(
         try {
             val bucket = config.bucketName
             if (!gcsBucketExist(s3Client, bucket)) {
-                LOGGER.info { "Bucket $bucket does not exist; creating..." }
+                LOGGER.info("Bucket {} does not exist; creating...", bucket)
                 s3Client.createBucket(bucket)
-                LOGGER.info { "Bucket $bucket has been created." }
+                LOGGER.info("Bucket {} has been created.", bucket)
             }
 
             if (syncMode == DestinationSyncMode.OVERWRITE) {
-                LOGGER.info { "Overwrite mode" }
+                LOGGER.info("Overwrite mode")
                 val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
                 val objects = s3Client.listObjects(bucket, outputPrefix).objectSummaries
                 for (`object` in objects) {
@@ -62,21 +62,24 @@ protected constructor(
                 }
 
                 if (keysToDelete.size > 0) {
-                    LOGGER.info {
-                        "Purging non-empty output path for stream '${stream.name}' under OVERWRITE mode..."
-                    }
+                    LOGGER.info(
+                        "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+                        stream.name
+                    )
                     // Google Cloud Storage doesn't accept request to delete multiple objects
                     for (keyToDelete in keysToDelete) {
                         s3Client.deleteObject(bucket, keyToDelete.key)
                     }
-                    LOGGER.info {
-                        "Deleted ${keysToDelete.size} file(s) for stream '${stream.name}'."
-                    }
+                    LOGGER.info(
+                        "Deleted {} file(s) for stream '{}'.",
+                        keysToDelete.size,
+                        stream.name
+                    )
                 }
-                LOGGER.info { "Overwrite is finished" }
+                LOGGER.info("Overwrite is finished")
             }
         } catch (e: Exception) {
-            LOGGER.error(e) { "Failed to initialize: " }
+            LOGGER.error("Failed to initialize: ", e)
             closeWhenFail()
             throw e
         }
@@ -99,13 +102,13 @@ protected constructor(
     @Throws(IOException::class)
     override fun close(hasFailed: Boolean) {
         if (hasFailed) {
-            LOGGER.warn { "Failure detected. Aborting upload of stream '${stream.name}'..." }
+            LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.name)
             closeWhenFail()
-            LOGGER.warn { "Upload of stream '${stream.name}' aborted." }
+            LOGGER.warn("Upload of stream '{}' aborted.", stream.name)
         } else {
-            LOGGER.info { "Uploading remaining data for stream '${stream.name}'." }
+            LOGGER.info("Uploading remaining data for stream '{}'.", stream.name)
             closeWhenSucceed()
-            LOGGER.info { "Upload completed for stream '${stream.name}'." }
+            LOGGER.info("Upload completed for stream '{}'.", stream.name)
         }
     }
 
@@ -122,6 +125,7 @@ protected constructor(
     }
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(BaseGcsWriter::class.java)
 
         // Filename: <upload-date>_<upload-millis>_0.<format-extension>
         fun getOutputFilename(timestamp: Timestamp, format: FileUploadFormat): String {

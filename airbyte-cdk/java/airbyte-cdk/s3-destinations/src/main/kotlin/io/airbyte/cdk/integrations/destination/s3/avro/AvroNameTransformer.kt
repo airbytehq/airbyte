@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3.avro
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
+import java.util.Arrays
 import java.util.Locale
 
 /**
@@ -29,12 +30,13 @@ class AvroNameTransformer : StandardNameTransformer() {
 
     override fun getNamespace(namespace: String): String {
         val tokens = namespace.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return tokens
+        return Arrays.stream(tokens)
             .map { name: String ->
                 this.getIdentifier(
                     name,
                 )
             }
+            .toList()
             .joinToString(separator = ".")
     }
 }

@@ -8,13 +8,14 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /** Collection of utility methods that support the generation of stream status updates. */
 object StreamStatusUtils {
+    private val LOGGER: Logger = LoggerFactory.getLogger(StreamStatusUtils::class.java)
 
     /**
      * Creates a new [Consumer] that wraps the provided [Consumer] with stream status reporting
@@ -87,8 +88,8 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
-            LOGGER.debug { "RUNNING -> $s" }
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            LOGGER.debug("RUNNING -> {}", s)
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
@@ -133,8 +134,8 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
-            LOGGER.debug { "STARTING -> $s" }
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            LOGGER.debug("STARTING -> {}", s)
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
@@ -179,8 +180,8 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
-            LOGGER.debug { "COMPLETE -> $s" }
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            LOGGER.debug("COMPLETE -> {}", s)
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
@@ -225,8 +226,8 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
-            LOGGER.debug { "INCOMPLETE -> $s" }
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            LOGGER.debug("INCOMPLETE -> {}", s)
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,

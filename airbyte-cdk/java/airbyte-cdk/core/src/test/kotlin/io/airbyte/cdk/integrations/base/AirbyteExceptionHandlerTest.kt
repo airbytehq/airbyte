@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.integrations.base
 
-import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.AirbyteMessage
@@ -204,11 +203,8 @@ class AirbyteExceptionHandlerTest {
             object : Thread() {
                 override fun run() {
                     val runner = Mockito.mock(IntegrationRunner::class.java)
-                    val exceptionHandler = ConnectorExceptionHandler()
-                    Mockito.doThrow(throwable)
-                        .`when`(runner)
-                        .run(arrayOf("write"), exceptionHandler)
-                    runner.run(arrayOf("write"), exceptionHandler)
+                    Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"))
+                    runner.run(arrayOf("write"))
                 }
             }
         thread.uncaughtExceptionHandler = airbyteExceptionHandler
@@ -236,7 +232,7 @@ class AirbyteExceptionHandlerTest {
                         .dropLastWhile { it.isEmpty() }
                         .toTypedArray()
                 )
-                .map { line: String ->
+                .map { line: String? ->
                     // these tests sometimes emit non-json stdout (e.g. log4j warnings)
                     // so we try-catch to handle those malformed lines.
                     try {

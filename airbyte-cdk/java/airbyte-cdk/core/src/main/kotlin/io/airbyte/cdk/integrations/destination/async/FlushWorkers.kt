@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
+import java.util.stream.Collectors
 
 private val logger = KotlinLogging.logger {}
 
@@ -152,10 +153,14 @@ constructor(
                     )
                     val stateIdToCount =
                         batch.data
+                            .stream()
                             .map(StreamAwareQueue.MessageWithMeta::stateId)
-                            .groupingBy { it }
-                            .eachCount()
-                            .mapValues { it.value.toLong() }
+                            .collect(
+                                Collectors.groupingBy(
+                                    { stateId: Long -> stateId },
+                                    Collectors.counting(),
+                                ),
+                            )
                     logger.info {
                         "Flush Worker (${humanReadableFlushWorkerId(
                                 flushWorkerId,
@@ -164,7 +169,14 @@ constructor(
                             )} bytes."
                     }
 
-                    flusher.flush(desc, batch.data.map { it.message }.stream())
+                    flusher.flush(
+                        desc,
+                        batch.data
+                            .stream()
+                            .map(
+                                StreamAwareQueue.MessageWithMeta::message,
+                            ),
+                    )
                     batch.flushStates(stateIdToCount, outputRecordCollector)
                 }
                 logger.info {
@@ -195,11 +207,21 @@ constructor(
         // wait for all buffers to be flushed.
         while (true) {
             val streamDescriptorToRemainingRecords =
-                bufferDequeue.bufferedStreams.associateWith { desc: StreamDescriptor ->
-                    bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()
-                }
+                bufferDequeue.bufferedStreams
+                    .stream()
+                    .collect(
+                        Collectors.toMap(
+                            { desc: StreamDescriptor -> desc },
+                            { desc: StreamDescriptor ->
+                                bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()
+                            },
+                        ),
+                    )
 
-            val anyRecordsLeft = streamDescriptorToRemainingRecords.values.any { it > 0 }
+            val anyRecordsLeft =
+                streamDescriptorToRemainingRecords.values.stream().anyMatch { size: Long ->
+                    size > 0
+                }
 
             if (!anyRecordsLeft) {
                 break
@@ -212,6 +234,7 @@ constructor(
                     )
                     .append(System.lineSeparator())
             streamDescriptorToRemainingRecords.entries
+                .stream()
                 .filter { entry: Map.Entry<StreamDescriptor, Long> -> entry.value > 0 }
                 .forEach { entry: Map.Entry<StreamDescriptor, Long> ->
                     workerInfo.append(

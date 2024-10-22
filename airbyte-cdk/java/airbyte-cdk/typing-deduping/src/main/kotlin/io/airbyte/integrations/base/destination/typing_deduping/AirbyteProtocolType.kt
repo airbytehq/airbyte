@@ -4,10 +4,8 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
  * Priority is given to wider scope types over narrower ones. (Note that because of dedup logic in
@@ -33,7 +31,13 @@ enum class AirbyteProtocolType : AirbyteType {
             try {
                 return valueOf(type.uppercase(Locale.getDefault()))
             } catch (e: IllegalArgumentException) {
-                LOGGER.error { "Could not find matching AirbyteProtocolType for \"$type\": $e" }
+                AirbyteType.Companion.LOGGER.error(
+                    String.format(
+                        "Could not find matching AirbyteProtocolType for \"%s\": %s",
+                        type,
+                        e
+                    )
+                )
                 return UNKNOWN
             }
         }

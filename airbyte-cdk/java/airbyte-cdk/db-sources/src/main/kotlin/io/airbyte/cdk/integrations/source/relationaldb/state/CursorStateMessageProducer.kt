@@ -11,10 +11,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class CursorStateMessageProducer(
     private val stateManager: StateManager?,
@@ -41,10 +40,10 @@ class CursorStateMessageProducer(
         val message = intermediateStateMessage
         intermediateStateMessage = null
         if (cursorOutOfOrderDetected) {
-            LOGGER.warn {
+            LOGGER.warn(
                 "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
                     "data loss can occur."
-            }
+            )
         }
         return message
     }
@@ -113,7 +112,7 @@ class CursorStateMessageProducer(
 
         // logging once every 100 messages to reduce log verbosity
         if (currentCursorRecordCount % LOG_FREQUENCY == 0) {
-            LOGGER.info { "State report for stream $pair: $cursorInfo" }
+            LOGGER.info("State report for stream {}: {}", pair, cursorInfo)
         }
 
         return stateMessage
@@ -132,7 +131,7 @@ class CursorStateMessageProducer(
     }
 
     companion object {
-
+        private val LOGGER: Logger = LoggerFactory.getLogger(CursorStateMessageProducer::class.java)
         private const val LOG_FREQUENCY = 100
     }
 }

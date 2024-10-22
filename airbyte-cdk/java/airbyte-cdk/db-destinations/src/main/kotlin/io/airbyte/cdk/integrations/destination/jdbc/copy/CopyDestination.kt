@@ -16,12 +16,10 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
-import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.sql.DataSource
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
-
-// TODO: Delete this class, this is only used in StarburstGalaxyDestination
 abstract class CopyDestination : BaseConnector, Destination {
     /**
      * The default database schema field in the destination config is "schema". To change it, pass
@@ -53,7 +51,7 @@ abstract class CopyDestination : BaseConnector, Destination {
         try {
             checkPersistence(config)
         } catch (e: Exception) {
-            LOGGER.error(e) { "Exception attempting to access the staging persistence: " }
+            LOGGER.error("Exception attempting to access the staging persistence: ", e)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -74,14 +72,14 @@ abstract class CopyDestination : BaseConnector, Destination {
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (ex: ConnectionErrorException) {
-            LOGGER.info { "Exception while checking connection: $ex" }
+            LOGGER.info("Exception while checking connection: ", ex)
             val message = getErrorMessage(ex.stateCode, ex.errorCode, ex.exceptionMessage, ex)
             emitConfigErrorTrace(ex, message)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(message)
         } catch (e: Exception) {
-            LOGGER.error(e) { "Exception attempting to connect to the warehouse: " }
+            LOGGER.error("Exception attempting to connect to the warehouse: ", e)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -94,14 +92,14 @@ abstract class CopyDestination : BaseConnector, Destination {
             try {
                 close(dataSource)
             } catch (e: Exception) {
-                LOGGER.warn(e) { "Unable to close data source." }
+                LOGGER.warn("Unable to close data source.", e)
             }
         }
     }
 
     @Throws(Exception::class)
     protected fun performCreateInsertTestOnDestination(
-        outputSchema: String,
+        outputSchema: String?,
         database: JdbcDatabase,
         nameTransformer: NamingConventionTransformer
     ) {
@@ -114,5 +112,7 @@ abstract class CopyDestination : BaseConnector, Destination {
         )
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(CopyDestination::class.java)
+    }
 }

@@ -6,6 +6,7 @@ package io.airbyte.commons.json
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.jayway.jsonpath.PathNotFoundException
+import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
@@ -15,19 +16,28 @@ internal class JsonPathsTest {
     fun testGetValues() {
         Assertions.assertEquals(
             listOf(0, 1, 2),
-            JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY).map { obj: JsonNode -> obj.asInt() }
+            JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY)
+                .stream()
+                .map { obj: JsonNode -> obj.asInt() }
+                .collect(Collectors.toList())
         )
         Assertions.assertEquals(
             listOf(1),
-            JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY).map { obj: JsonNode -> obj.asInt() }
+            JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY)
+                .stream()
+                .map { obj: JsonNode -> obj.asInt() }
+                .collect(Collectors.toList())
         )
         Assertions.assertEquals(
             listOf(10),
-            JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY).map { obj: JsonNode -> obj.asInt() }
+            JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY)
+                .stream()
+                .map { obj: JsonNode -> obj.asInt() }
+                .collect(Collectors.toList())
         )
         Assertions.assertEquals(
             JSON_NODE["two"],
-            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).firstOrNull()
+            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null)
         )
         Assertions.assertEquals(
             emptyList<Any>(),

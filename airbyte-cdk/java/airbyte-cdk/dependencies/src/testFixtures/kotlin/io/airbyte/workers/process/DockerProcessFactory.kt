@@ -15,7 +15,6 @@ import io.airbyte.configoss.AllowedHosts
 import io.airbyte.configoss.ResourceRequirements
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.exception.TestHarnessException
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,8 +22,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import org.apache.commons.lang3.StringUtils
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DockerProcessFactory(
     private val workspaceRoot: Path,
@@ -65,7 +64,7 @@ class DockerProcessFactory(
         jobMetadata: Map<String, String>,
         internalToExternalPorts: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String
+        vararg args: String?
     ): Process {
         try {
             if (!checkImageExists(imageName)) {
@@ -80,7 +79,7 @@ class DockerProcessFactory(
                 IOs.writeFile(jobRoot, key, value)
             }
 
-            val cmd: MutableList<String> =
+            val cmd: MutableList<String?> =
                 Lists.newArrayList(
                     "docker",
                     "run",
@@ -131,7 +130,7 @@ class DockerProcessFactory(
                 cmd.add("$key=$value")
             }
 
-            if (!entrypoint.isNullOrEmpty()) {
+            if (!Strings.isNullOrEmpty(entrypoint)) {
                 cmd.add("--entrypoint")
                 cmd.add(entrypoint)
             }
@@ -150,7 +149,7 @@ class DockerProcessFactory(
             }
 
             cmd.add(imageName)
-            cmd.addAll(args)
+            cmd.addAll(Arrays.asList(*args))
 
             LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd))
 
@@ -170,8 +169,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -186,7 +185,7 @@ class DockerProcessFactory(
     }
 
     companion object {
-
+        private val LOGGER: Logger = LoggerFactory.getLogger(DockerProcessFactory::class.java)
         private const val DOCKER_NAME_LEN_LIMIT = 128
 
         private val DATA_MOUNT_DESTINATION: Path = Path.of("/data")
@@ -227,12 +226,12 @@ class DockerProcessFactory(
          * @return A list with debugging arguments or an empty list
          * ```
          */
-        fun localDebuggingOptions(containerName: String): List<String> {
+        fun localDebuggingOptions(containerName: String): List<String?> {
             val shouldAddDebuggerOptions =
                 (Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE"))
-                    .filter { cs: String -> StringUtils.isNotEmpty(cs) }
+                    .filter { cs: String? -> StringUtils.isNotEmpty(cs) }
                     .map<Boolean>(
-                        Function<String, Boolean> { imageName: String ->
+                        Function<String, Boolean> { imageName: String? ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
                                 .startsWith(imageName!!)
                         }

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
-import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import java.io.IOException
 import java.io.InputStreamReader
@@ -21,7 +20,7 @@ import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
 abstract class S3BaseCsvDestinationAcceptanceTest :
-    S3DestinationAcceptanceTest(FileUploadFormat.CSV, supportsChangeCapture = false) {
+    S3DestinationAcceptanceTest(FileUploadFormat.CSV) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -82,15 +81,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
                 val entry = iterator.next()
                 val fieldValue = entry.value
                 val typeValue =
-                    if (fieldValue.has("type")) fieldValue["type"]
-                    else if (fieldValue.has("\$ref")) fieldValue["\$ref"]
-                    else if (fieldValue.has("oneOf")) {
-                        val typeArray = MoreMappers.initMapper().createArrayNode()
-                        fieldValue["oneOf"].forEach { typeArray.add(it["type"]) }
-                        typeArray
-                    } else {
-                        throw IllegalStateException("Field type $fieldValue not recognized.")
-                    }
+                    if (fieldValue["type"] == null) fieldValue["\$ref"] else fieldValue["type"]
                 fieldTypes[entry.key] = typeValue.asText()
             }
             return fieldTypes
@@ -102,51 +93,30 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
         ): JsonNode {
             val json: ObjectNode = MAPPER.createObjectNode()
 
+            if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
+                return Jsons.deserialize(input[JavaBaseConstants.COLUMN_NAME_DATA])
+            }
+
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||
-                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT) ||
-                        (key == JavaBaseConstants.COLUMN_NAME_AB_RAW_ID) ||
-                        (key == JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT) ||
-                        (key == JavaBaseConstants.COLUMN_NAME_AB_META) ||
-                        (key == JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID) ||
-                        (key == JavaBaseConstants.COLUMN_NAME_DATA)
+                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
                 ) {
-                    json.put(key, value)
+                    continue
                 }
-
-                val type = fieldTypes[key]
                 if (value == "") {
-                    when (type) {
-                        "WellKnownTypes.json#/definitions/Boolean" ->
-                            json.put(key, null as Boolean?)
-                        "WellKnownTypes.json#/definitions/Integer" -> json.put(key, null as Int?)
-                        "WellKnownTypes.json#/definitions/Number" -> json.put(key, null as Double?)
-                        "boolean" -> json.put(key, null as Boolean?)
-                        "integer" -> json.put(key, null as Int?)
-                        "number" -> json.put(key, null as Double?)
-                        "" -> addNoTypeValue(json, key, value)
-                        else -> json.put(key, value)
-                    }
-                } else {
-                    try {
-                        when (type) {
-                            "WellKnownTypes.json#/definitions/Boolean" ->
-                                json.put(key, value.toBoolean())
-                            "WellKnownTypes.json#/definitions/Integer" ->
-                                json.put(key, value.toInt())
-                            "WellKnownTypes.json#/definitions/Number" ->
-                                json.put(key, value.toDouble())
-                            "boolean" -> json.put(key, value.toBoolean())
-                            "integer" -> json.put(key, value.toInt())
-                            "number" -> json.put(key, value.toDouble())
-                            "" -> addNoTypeValue(json, key, value)
-                            else -> json.put(key, value)
-                        }
-                    } catch (e: Exception) {
-                        // We expect this to fail in the bad field case.
-                        json.put(key, value)
-                    }
+                    continue
+                }
+                val type = fieldTypes[key]
+                when (type) {
+                    "WellKnownTypes.json#/definitions/Boolean" -> json.put(key, value.toBoolean())
+                    "WellKnownTypes.json#/definitions/Integer" -> json.put(key, value.toInt())
+                    "WellKnownTypes.json#/definitions/Number" -> json.put(key, value.toDouble())
+                    "boolean" -> json.put(key, value.toBoolean())
+                    "integer" -> json.put(key, value.toInt())
+                    "number" -> json.put(key, value.toDouble())
+                    "" -> addNoTypeValue(json, key, value)
+                    else -> json.put(key, value)
                 }
             }
             return json

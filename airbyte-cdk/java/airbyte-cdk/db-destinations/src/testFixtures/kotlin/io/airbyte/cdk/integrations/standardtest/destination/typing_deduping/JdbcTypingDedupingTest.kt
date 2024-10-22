@@ -138,7 +138,6 @@ abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) 
                         ),
                     ),
                 )
-                .cascade()
                 .sql,
         )
         database!!.execute(dslContext.dropSchemaIfExists(name(streamNamespace)).cascade().sql)

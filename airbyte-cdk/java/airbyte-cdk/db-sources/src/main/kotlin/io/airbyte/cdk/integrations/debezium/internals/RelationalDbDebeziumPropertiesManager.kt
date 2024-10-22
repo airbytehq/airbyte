@@ -18,9 +18,8 @@ import org.codehaus.plexus.util.StringUtils
 class RelationalDbDebeziumPropertiesManager(
     properties: Properties,
     config: JsonNode,
-    catalog: ConfiguredAirbyteCatalog,
-    completedStreamNames: List<String>
-) : DebeziumPropertiesManager(properties, config, catalog, completedStreamNames) {
+    catalog: ConfiguredAirbyteCatalog
+) : DebeziumPropertiesManager(properties, config, catalog) {
     override fun getConnectionConfiguration(config: JsonNode): Properties {
         val properties = Properties()
 
@@ -43,24 +42,20 @@ class RelationalDbDebeziumPropertiesManager(
 
     override fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
-        config: JsonNode?,
-        streamNames: List<String>
+        config: JsonNode?
     ): Properties {
         val properties = Properties()
 
         // table selection
-        properties.setProperty("table.include.list", getTableIncludelist(catalog, streamNames))
+        properties.setProperty("table.include.list", getTableIncludelist(catalog))
         // column selection
-        properties.setProperty("column.include.list", getColumnIncludeList(catalog, streamNames))
+        properties.setProperty("column.include.list", getColumnIncludeList(catalog))
 
         return properties
     }
 
     companion object {
-        fun getTableIncludelist(
-            catalog: ConfiguredAirbyteCatalog,
-            completedStreamNames: List<String>
-        ): String {
+        fun getTableIncludelist(catalog: ConfiguredAirbyteCatalog): String {
             // Turn "stream": {
             // "namespace": "schema1"
             // "name": "table1
@@ -71,20 +66,17 @@ class RelationalDbDebeziumPropertiesManager(
             // } -------> info "schema1.table1, schema2.table2"
 
             return catalog.streams
+                .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
-                .map { stream: AirbyteStream -> stream.namespace + "." + stream.name }
-                .filter { streamName: String -> completedStreamNames.contains(streamName) }
-                // debezium needs commas escaped to split properly
-                .joinToString(",") { x: String ->
-                    StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,")
-                }
+                .map { stream: AirbyteStream ->
+                    stream.namespace + "." + stream.name
+                } // debezium needs commas escaped to split properly
+                .map { x: String -> StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,") }
+                .collect(Collectors.joining(","))
         }
 
-        fun getColumnIncludeList(
-            catalog: ConfiguredAirbyteCatalog,
-            completedStreamNames: List<String>
-        ): String {
+        fun getColumnIncludeList(catalog: ConfiguredAirbyteCatalog): String {
             // Turn "stream": {
             // "namespace": "schema1"
             // "name": "table1"
@@ -99,17 +91,16 @@ class RelationalDbDebeziumPropertiesManager(
             // } -------> info "schema1.table1.(column1 | column2)"
 
             return catalog.streams
+                .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
-                .filter { stream: AirbyteStream ->
-                    completedStreamNames.contains(stream.namespace + "." + stream.name)
-                }
                 .map { s: AirbyteStream ->
                     val fields = parseFields(s.jsonSchema["properties"].fieldNames())
                     Pattern.quote(s.namespace + "." + s.name) +
                         (if (StringUtils.isNotBlank(fields)) "\\.$fields" else "")
                 }
-                .joinToString(",") { x: String -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
+                .map { x: String? -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
+                .collect(Collectors.joining(","))
         }
 
         private fun parseFields(fieldNames: Iterator<String>?): String {

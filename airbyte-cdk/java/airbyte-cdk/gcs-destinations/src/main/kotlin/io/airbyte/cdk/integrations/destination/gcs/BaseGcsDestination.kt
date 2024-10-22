@@ -20,11 +20,10 @@ import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Compan
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import java.util.function.Function
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 abstract class BaseGcsDestination : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = GcsNameTransformer()
@@ -47,16 +46,18 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: AmazonS3Exception) {
-            LOGGER.error(e) { "Exception attempting to access the Gcs bucket" }
+            LOGGER.error("Exception attempting to access the Gcs bucket", e)
             val message = getErrorMessage(e.errorCode, 0, e.message, e)
             emitConfigErrorTrace(e, message)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(message)
         } catch (e: Exception) {
-            LOGGER.error(e) {
-                "Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: $EXPECTED_ROLES"
-            }
+            LOGGER.error(
+                "Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " +
+                    EXPECTED_ROLES,
+                e
+            )
             emitConfigErrorTrace(e, e.message)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -89,7 +90,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
     }
 
     companion object {
-
+        private val LOGGER: Logger = LoggerFactory.getLogger(BaseGcsDestination::class.java)
         const val EXPECTED_ROLES: String =
             ("storage.multipartUploads.abort, storage.multipartUploads.create, " +
                 "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list")

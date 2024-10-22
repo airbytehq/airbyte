@@ -3,9 +3,6 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import io.github.oshai.kotlinlogging.KotlinLogging
-
-private val LOGGER = KotlinLogging.logger {}
 /**
  * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf: [{type: a},
  * {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
@@ -28,10 +25,12 @@ data class Union(val options: List<AirbyteType>) : AirbyteType {
      * @throws IllegalArgumentException if we cannot extract columns from this schema
      */
     fun asColumns(): LinkedHashMap<String, AirbyteType> {
-        LOGGER.warn { "asColumns options=$options" }
+        AirbyteType.LOGGER.warn("asColumns options=$options")
         val numObjectOptions = options.filterIsInstance<Struct>().count()
         if (numObjectOptions > 1) {
-            LOGGER.error { "Can't extract columns from a schema with multiple object options" }
+            AirbyteType.LOGGER.error(
+                "Can't extract columns from a schema with multiple object options"
+            )
             return LinkedHashMap()
         }
 
@@ -39,10 +38,10 @@ data class Union(val options: List<AirbyteType>) : AirbyteType {
         try {
             retVal = options.filterIsInstance<Struct>().first().properties
         } catch (_: NoSuchElementException) {
-            LOGGER.error { "Can't extract columns from a schema with no object options" }
+            AirbyteType.LOGGER.error("Can't extract columns from a schema with no object options")
             retVal = LinkedHashMap()
         }
-        LOGGER.warn { "asColumns retVal=$retVal" }
+        AirbyteType.LOGGER.warn("asColumns retVal=$retVal")
         return retVal
     }
 

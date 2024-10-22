@@ -3,10 +3,15 @@
  */
 package io.airbyte.cdk.integrations.source.relationaldb
 
+import java.util.stream.Collectors
+
 object InvalidCursorInfoUtil {
     fun getInvalidCursorConfigMessage(tablesWithInvalidCursor: List<InvalidCursorInfo>): String {
         return ("The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. " +
-            tablesWithInvalidCursor.joinToString(",") { obj: InvalidCursorInfo -> obj.toString() })
+            tablesWithInvalidCursor
+                .stream()
+                .map { obj: InvalidCursorInfo -> obj.toString() }
+                .collect(Collectors.joining(",")))
     }
 
     class InvalidCursorInfo(

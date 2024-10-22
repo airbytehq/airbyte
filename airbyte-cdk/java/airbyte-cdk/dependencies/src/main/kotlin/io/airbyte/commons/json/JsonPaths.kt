@@ -15,11 +15,12 @@ import com.jayway.jsonpath.spi.json.JsonProvider
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import com.jayway.jsonpath.spi.mapper.MappingProvider
 import io.airbyte.commons.util.MoreIterators
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.BiFunction
+import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * JSONPath is specification for querying JSON objects. More information about the specification can
  * be found here: https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will
@@ -38,6 +39,7 @@ private val LOGGER = KotlinLogging.logger {}
  * possible for a query to return more than one value.
  */
 object JsonPaths {
+    private val LOGGER: Logger = LoggerFactory.getLogger(JsonPaths::class.java)
 
     const val JSON_PATH_START_CHARACTER: String = "$"
     const val JSON_PATH_LIST_SPLAT: String = "[*]"
@@ -166,9 +168,10 @@ object JsonPaths {
      * specifically that said, we do expect that there will be no duplicates in the returned list.
      */
     fun getPaths(json: JsonNode?, jsonPath: String): List<String> {
-        return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath).map { obj: JsonNode ->
-            obj.asText()
-        }
+        return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
+            .stream()
+            .map { obj: JsonNode -> obj.asText() }
+            .collect(Collectors.toList())
     }
 
     /**
@@ -291,7 +294,7 @@ object JsonPaths {
         try {
             return replaceAtJsonNodeLoud(json, jsonPath, replacement)
         } catch (e: PathNotFoundException) {
-            LOGGER.debug(e) { "Path not found" }
+            LOGGER.debug("Path not found", e)
             return Jsons.clone(json) // defensive copy in failure case.
         }
     }

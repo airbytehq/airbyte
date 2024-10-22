@@ -9,15 +9,16 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
-import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.function.Function
+import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** This abstract class contains common methods for Performance tests. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -56,7 +57,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
      * Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
      * Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000) );
      */
-    protected abstract fun provideParameters(): Stream<Arguments>?
+    protected abstract fun provideParameters(): Stream<Arguments?>?
 
     @ParameterizedTest
     @MethodSource("provideParameters")
@@ -80,12 +81,21 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
 
     protected fun validateNumberOfReceivedMsgs(checkStatusMap: Map<String, Int>) {
         // Iterate through all streams map and check for streams where
-        val failedStreamsMap = checkStatusMap.filterValues { it != 0 }
+        val failedStreamsMap =
+            checkStatusMap.entries
+                .stream()
+                .filter { el: Map.Entry<String, Int> -> el.value != 0 }
+                .collect(
+                    Collectors.toMap(
+                        Function { obj: Map.Entry<String, Int> -> obj.key },
+                        Function { obj: Map.Entry<String, Int> -> obj.value }
+                    )
+                )
 
         if (failedStreamsMap.isNotEmpty()) {
             Assertions.fail<Any>("Non all messages were delivered. $failedStreamsMap")
         }
-        LOGGER.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
+        c.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
     }
 
     protected fun prepareMapWithExpectedRecords(
@@ -152,5 +162,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         return ConfiguredAirbyteCatalog().withStreams(streams)
     }
 
-    companion object {}
+    companion object {
+        protected val c: Logger = LoggerFactory.getLogger(AbstractSourcePerformanceTest::class.java)
+    }
 }

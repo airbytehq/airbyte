@@ -18,12 +18,7 @@ interface CsvSheetGenerator {
     // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized
     // recordStrings,
     // both for performance and lowers memory footprint
-    fun getDataRow(
-        id: UUID,
-        recordMessage: AirbyteRecordMessage,
-        generationId: Long = 0,
-        syncId: Long = 0
-    ): List<Any>
+    fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any>
 
     fun getDataRow(formattedData: JsonNode): List<Any>
 
@@ -31,21 +26,16 @@ interface CsvSheetGenerator {
         id: UUID,
         formattedString: String,
         emittedAt: Long,
-        formattedAirbyteMetaString: String,
-        generationId: Long,
+        formattedAirbyteMetaString: String
     ): List<Any>
 
     object Factory {
         @JvmStatic
-        fun create(
-            jsonSchema: JsonNode?,
-            formatConfig: UploadCsvFormatConfig,
-            useV2FieldNames: Boolean = false
-        ): CsvSheetGenerator {
+        fun create(jsonSchema: JsonNode?, formatConfig: UploadCsvFormatConfig): CsvSheetGenerator {
             return if (formatConfig.flattening == Flattening.NO) {
-                NoFlatteningSheetGenerator(useV2FieldNames)
+                NoFlatteningSheetGenerator()
             } else if (formatConfig.flattening == Flattening.ROOT_LEVEL) {
-                RootLevelFlatteningSheetGenerator(jsonSchema!!, useV2FieldNames)
+                RootLevelFlatteningSheetGenerator(jsonSchema!!)
             } else {
                 throw IllegalArgumentException(
                     "Unexpected flattening config: " + formatConfig.flattening
