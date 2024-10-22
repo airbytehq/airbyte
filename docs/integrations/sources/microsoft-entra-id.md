@@ -8,14 +8,12 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `type` | `string` | Type.  |  |
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `tenant_id` | `string` | Tenant Id.  |  |
 | `application_id_uri` | `string` | Application Id URI.  |  |
-| `user_id` | `string` | User Id.  |  |
-| `ids` | `array` | Ids.  |  |
-| `types` | `array` | Types.  |  |
+| `user_id` | `string` | ID of the owner.  |  |
+
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -26,7 +24,6 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 | user_owned_deleted_items | id | DefaultPaginator | ✅ |  ❌  |
 | directoryroles | id | No pagination | ✅ |  ❌  |
 | auditlogs | id | DefaultPaginator | ✅ |  ❌  |
-| directoryobjects | id | DefaultPaginator | ✅ |  ❌  |
 | directoryroletemplates | id | No pagination | ✅ |  ❌  |
 | directoryaudits | id | DefaultPaginator | ✅ |  ❌  |
 | serviceprincipals | id | DefaultPaginator | ✅ |  ❌  |
