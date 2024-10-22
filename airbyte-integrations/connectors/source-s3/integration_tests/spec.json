@@ -1,5 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "connectionSpecification": {
     "title": "Config",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.",
@@ -337,6 +339,19 @@
                     }
                   },
                   "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
+                  "required": ["filetype"]
+                },
+                {
+                  "title": "Excel Format",
+                  "type": "object",
+                  "properties": {
+                    "filetype": {
+                      "title": "Filetype",
+                      "default": "excel",
+                      "const": "excel",
+                      "type": "string"
+                    }
+                  },
                   "required": ["filetype"]
                 }
               ]

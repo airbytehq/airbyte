@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.14.0
+Fix yielding parent records in SubstreamPartitionRouter
+
+## 5.13.0
+Add extra fields to StreamSlice
+
+## 5.12.1
+Low Code: Removes deprecated  and 
+
+## 5.12.0
+Low Code: Adds  component
+
 ## 5.11.1
 Low Code: Consolidate manifest decoder selection under , , and 
 
