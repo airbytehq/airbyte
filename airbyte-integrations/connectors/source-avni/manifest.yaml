@@ -1,0 +1,1513 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - "content"
+  requester:
+    type: HttpRequester
+    url_base: "https://app.avniproject.org/api"
+    http_method: "GET"
+    authenticator:
+      class_name: source_declarative_manifest.components.CustomAuthenticator
+      username: "{{config['username']}}"
+      password: "{{config['password']}}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "content"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://app.avniproject.org/api"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        username: "{{config['username']}}"
+        password: "{{config['password']}}"
+  incremental_base:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+  transformations_base:
+  - type: AddFields
+    fields:
+    - path:
+      - "last_modified_at"
+      value: "{{ record['audit']['Last modified at'] }}"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "content"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://app.avniproject.org/api"
+        http_method: "GET"
+        authenticator:
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          username: "{{config['username']}}"
+          password: "{{config['password']}}"
+  subjects_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "content"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://app.avniproject.org/api"
+        http_method: "GET"
+        authenticator:
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          username: "{{config['username']}}"
+          password: "{{config['password']}}"
+    name: "subjects"
+    primary_key: "ID"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_modified_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        field_name: "lastModifiedDateTime"
+        inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "last_modified_at"
+        value: "{{ record['audit']['Last modified at'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          ID:
+            type: string
+          External ID:
+            type:
+            - 'null'
+            - string
+          Voided:
+            type: boolean
+          Subject type:
+            type:
+            - 'null'
+            - string
+          Registration location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+                example: 74.7364501
+          Registration date:
+            type:
+            - 'null'
+            - string
+          location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          relatives:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                Voided:
+                  type: boolean
+                Relationship type:
+                  type:
+                  - 'null'
+                  - string
+                Relative ID:
+                  type:
+                  - 'null'
+                  - string
+                Relative external ID:
+                  type:
+                  - 'null'
+                  - string
+                Enter date:
+                  type:
+                  - 'null'
+                  - string
+                Exit date:
+                  type:
+                  - 'null'
+                  - string
+          observations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          encounters:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+              format: uuid
+          enrolments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+              format: uuid
+          last_modified_at:
+            type: string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          catchments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          audit:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              Created at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Last modified at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Created by:
+                type:
+                - 'null'
+                - string
+              Last modified by:
+                type:
+                - 'null'
+                - string
+          Groups:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+  program_encounters_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "content"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://app.avniproject.org/api"
+        http_method: "GET"
+        authenticator:
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          username: "{{config['username']}}"
+          password: "{{config['password']}}"
+    name: "program_encounters"
+    primary_key: "ID"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_modified_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        field_name: "lastModifiedDateTime"
+        inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "last_modified_at"
+        value: "{{ record['audit']['Last modified at'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          ID:
+            type:
+            - 'null'
+            - string
+          External ID:
+            type:
+            - 'null'
+            - string
+          Voided:
+            type: boolean
+          Subject ID:
+            type:
+            - 'null'
+            - string
+          Subject type:
+            type:
+            - 'null'
+            - string
+          Subject external ID:
+            type:
+            - 'null'
+            - string
+          Enrolment ID:
+            type:
+            - 'null'
+            - string
+          Enrolment external ID:
+            type:
+            - 'null'
+            - string
+          Program:
+            type:
+            - 'null'
+            - string
+          Encounter type:
+            type:
+            - 'null'
+            - string
+          Encounter date time:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          Encounter location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+                example: 74.7364501
+          Earliest scheduled date:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          Max scheduled date:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          observations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          Cancel location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+                example: 74.7364501
+          Cancel date time:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          cancelObservations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          last_modified_at:
+            type: string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          audit:
+            type:
+            - 'null'
+            - object
+            properties:
+              Created at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Last modified at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Created by:
+                type:
+                - 'null'
+                - string
+              Last modified by:
+                type:
+                - 'null'
+                - string
+  program_enrolments_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "content"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://app.avniproject.org/api"
+        http_method: "GET"
+        authenticator:
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          username: "{{config['username']}}"
+          password: "{{config['password']}}"
+    name: "program_enrolments"
+    primary_key: "ID"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_modified_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        field_name: "lastModifiedDateTime"
+        inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "last_modified_at"
+        value: "{{ record['audit']['Last modified at'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          ID:
+            type: string
+          External ID:
+            type:
+            - 'null'
+            - string
+          Voided:
+            type: boolean
+          Subject ID:
+            type: string
+          Subject type:
+            type: string
+          Subject external ID:
+            type:
+            - 'null'
+            - string
+          Program:
+            type:
+            - 'null'
+            - string
+          Enrolment datetime:
+            type:
+            - 'null'
+            - string
+          Enrolment location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+          Exit datetime:
+            type:
+            - 'null'
+            - string
+          Exit location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+          observations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          exitObservations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          encounters:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          last_modified_at:
+            type: string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          audit:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              Created at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Last modified at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Created by:
+                type:
+                - 'null'
+                - string
+              Last modified by:
+                type:
+                - 'null'
+                - string
+  encounters_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "content"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://app.avniproject.org/api"
+        http_method: "GET"
+        authenticator:
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          username: "{{config['username']}}"
+          password: "{{config['password']}}"
+    name: "encounters"
+    primary_key: "ID"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_modified_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        field_name: "lastModifiedDateTime"
+        inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "last_modified_at"
+        value: "{{ record['audit']['Last modified at'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          ID:
+            type: string
+          External ID:
+            type:
+            - 'null'
+            - string
+          Voided:
+            type: boolean
+          Encounter type:
+            type:
+            - 'null'
+            - string
+          Subject ID:
+            type: string
+          Subject type:
+            type: string
+          Subject external ID:
+            type:
+            - 'null'
+            - string
+          Encounter date time:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          Encounter location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+          Earliest scheduled date:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          Max scheduled date:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          observations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          Cancel location:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              X:
+                type:
+                - 'null'
+                - number
+              Y:
+                type:
+                - 'null'
+                - number
+                example: 74.7364501
+          Cancel date time:
+            type:
+            - 'null'
+            - string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          cancelObservations:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          last_modified_at:
+            type: string
+            format: YYYY-MM-DDTHH:mm:ss.sssZ
+          audit:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              Created at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Last modified at:
+                type:
+                - 'null'
+                - string
+                format: YYYY-MM-DDTHH:mm:ss.sssZ
+              Created by:
+                type:
+                - 'null'
+                - string
+              Last modified by:
+                type:
+                - 'null'
+                - string
+streams:
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "content"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://app.avniproject.org/api"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        username: "{{config['username']}}"
+        password: "{{config['password']}}"
+        type: CustomAuthenticator
+      path: "/subjects"
+  name: "subjects"
+  primary_key: "ID"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      type: MinMaxDatetime
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+      type: RequestOption
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "last_modified_at"
+      value: "{{ record['audit']['Last modified at'] }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        ID:
+          type: string
+        External ID:
+          type:
+          - 'null'
+          - string
+        Voided:
+          type: boolean
+        Subject type:
+          type:
+          - 'null'
+          - string
+        Registration location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+              example: 74.7364501
+        Registration date:
+          type:
+          - 'null'
+          - string
+        location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        relatives:
+          type:
+          - 'null'
+          - array
+          items:
+            type: object
+            additionalProperties: true
+            properties:
+              Voided:
+                type: boolean
+              Relationship type:
+                type:
+                - 'null'
+                - string
+              Relative ID:
+                type:
+                - 'null'
+                - string
+              Relative external ID:
+                type:
+                - 'null'
+                - string
+              Enter date:
+                type:
+                - 'null'
+                - string
+              Exit date:
+                type:
+                - 'null'
+                - string
+        observations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        encounters:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+            format: uuid
+        enrolments:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+            format: uuid
+        last_modified_at:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        catchments:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        audit:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            Created at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Last modified at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Created by:
+              type:
+              - 'null'
+              - string
+            Last modified by:
+              type:
+              - 'null'
+              - string
+        Groups:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "content"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://app.avniproject.org/api"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        username: "{{config['username']}}"
+        password: "{{config['password']}}"
+        type: CustomAuthenticator
+      path: "/programEnrolments"
+  name: "program_enrolments"
+  primary_key: "ID"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      type: MinMaxDatetime
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+      type: RequestOption
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "last_modified_at"
+      value: "{{ record['audit']['Last modified at'] }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        ID:
+          type: string
+        External ID:
+          type:
+          - 'null'
+          - string
+        Voided:
+          type: boolean
+        Subject ID:
+          type: string
+        Subject type:
+          type: string
+        Subject external ID:
+          type:
+          - 'null'
+          - string
+        Program:
+          type:
+          - 'null'
+          - string
+        Enrolment datetime:
+          type:
+          - 'null'
+          - string
+        Enrolment location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+        Exit datetime:
+          type:
+          - 'null'
+          - string
+        Exit location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+        observations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        exitObservations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        encounters:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        last_modified_at:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        audit:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            Created at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Last modified at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Created by:
+              type:
+              - 'null'
+              - string
+            Last modified by:
+              type:
+              - 'null'
+              - string
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "content"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://app.avniproject.org/api"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        username: "{{config['username']}}"
+        password: "{{config['password']}}"
+        type: CustomAuthenticator
+      path: "/programEncounters"
+  name: "program_encounters"
+  primary_key: "ID"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      type: MinMaxDatetime
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+      type: RequestOption
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "last_modified_at"
+      value: "{{ record['audit']['Last modified at'] }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        ID:
+          type:
+          - 'null'
+          - string
+        External ID:
+          type:
+          - 'null'
+          - string
+        Voided:
+          type: boolean
+        Subject ID:
+          type:
+          - 'null'
+          - string
+        Subject type:
+          type:
+          - 'null'
+          - string
+        Subject external ID:
+          type:
+          - 'null'
+          - string
+        Enrolment ID:
+          type:
+          - 'null'
+          - string
+        Enrolment external ID:
+          type:
+          - 'null'
+          - string
+        Program:
+          type:
+          - 'null'
+          - string
+        Encounter type:
+          type:
+          - 'null'
+          - string
+        Encounter date time:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        Encounter location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+              example: 74.7364501
+        Earliest scheduled date:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        Max scheduled date:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        observations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        Cancel location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+              example: 74.7364501
+        Cancel date time:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        cancelObservations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        last_modified_at:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        audit:
+          type:
+          - 'null'
+          - object
+          properties:
+            Created at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Last modified at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Created by:
+              type:
+              - 'null'
+              - string
+            Last modified by:
+              type:
+              - 'null'
+              - string
+- type: DeclarativeStream
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "content"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://app.avniproject.org/api"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        username: "{{config['username']}}"
+        password: "{{config['password']}}"
+        type: CustomAuthenticator
+      path: "/encounters"
+  name: "encounters"
+  primary_key: "ID"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      type: MinMaxDatetime
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+      type: RequestOption
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "last_modified_at"
+      value: "{{ record['audit']['Last modified at'] }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        ID:
+          type: string
+        External ID:
+          type:
+          - 'null'
+          - string
+        Voided:
+          type: boolean
+        Encounter type:
+          type:
+          - 'null'
+          - string
+        Subject ID:
+          type: string
+        Subject type:
+          type: string
+        Subject external ID:
+          type:
+          - 'null'
+          - string
+        Encounter date time:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        Encounter location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+        Earliest scheduled date:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        Max scheduled date:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        observations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        Cancel location:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            X:
+              type:
+              - 'null'
+              - number
+            Y:
+              type:
+              - 'null'
+              - number
+              example: 74.7364501
+        Cancel date time:
+          type:
+          - 'null'
+          - string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        cancelObservations:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        last_modified_at:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        audit:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            Created at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Last modified at:
+              type:
+              - 'null'
+              - string
+              format: YYYY-MM-DDTHH:mm:ss.sssZ
+            Created by:
+              type:
+              - 'null'
+              - string
+            Last modified by:
+              type:
+              - 'null'
+              - string
+check:
+  type: CheckStream
+  stream_names:
+  - "subjects"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/avni
+  connection_specification:
+    title: Avni Spec
+    type: object
+    required:
+    - username
+    - password
+    - start_date
+    additionalProperties: true
+    properties:
+      username:
+        type: string
+        description: Your avni platform Username
+      password:
+        type: string
+        description: Your avni platform password
+        airbyte_secret: true
+      start_date:
+        type: string
+        default: "2000-06-23T01:30:00.000Z"
+        description: Specify Date and time from which you want to fetch data
+        examples:
+        - "2000-10-31T01:30:00.000Z"
+type: DeclarativeSource
