@@ -46,7 +46,7 @@ class S3Client(
     val bucketConfig: S3BucketConfiguration,
     private val uploadConfig: ObjectStorageUploadConfiguration?,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null,
-) : ObjectStorageClient<S3Object, S3MultipartUpload<*>.Writer> {
+) : ObjectStorageClient<S3Object> {
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
@@ -114,7 +114,7 @@ class S3Client(
 
     override suspend fun streamingUpload(
         key: String,
-        block: suspend (S3MultipartUpload<*>.Writer) -> Unit
+        block: suspend (OutputStream) -> Unit
     ): S3Object {
         return streamingUpload(key, compressionConfig?.compressor ?: NoopProcessor, block)
     }
@@ -122,7 +122,7 @@ class S3Client(
     override suspend fun <U : OutputStream> streamingUpload(
         key: String,
         streamProcessor: StreamProcessor<U>,
-        block: suspend (S3MultipartUpload<*>.Writer) -> Unit
+        block: suspend (OutputStream) -> Unit
     ): S3Object {
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
@@ -137,11 +137,7 @@ class S3Client(
                 streamProcessor,
                 uploadConfig
             )
-        log.info {
-            "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
-        }
-        block(upload.Writer())
-        upload.complete()
+        upload.runUsing(block)
         return S3Object(key, bucketConfig)
     }
 }
