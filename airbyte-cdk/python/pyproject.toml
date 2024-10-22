@@ -69,6 +69,7 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
+sqlalchemy = {version = "^2.0,!=2.0.36", optional = true }
 xmltodict = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -88,6 +89,7 @@ requests-mock = "*"
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "python-snappy"]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
+sql = ["sqlalchemy"]
 
 [tool.ruff]
 # Setting python version to at least 3.10 avoids `from __future__ import annotations`.
