@@ -287,6 +287,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return f"s3://{self.config.bucket}/{file_uri.split('#')[0]}"
 
+    def file_size(self, file: RemoteFile) -> int:
+        """Returns the size of the file in bytes."""
+        file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
+        return int(file_size)
+
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
     """
