@@ -350,6 +350,13 @@ def _run_read(
                         "votes": [{"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"}],
                     },
                 ),
+                # Fetch votes for comment 12 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/12/votes?per_page=100&start_time=2024-01-15T00:00:00Z",
+                    {
+                        "votes": [],
+                    },
+                ),
                 # Fetch votes for comment 20 of post 2
                 (
                     "https://api.example.com/community/posts/2/comments/20/votes?per_page=100&start_time=2024-01-12T00:00:00Z",
@@ -453,10 +460,44 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
         for url, response in mock_requests:
             m.get(url, json=response)
 
+        # Run the initial read
         output = _run_read(manifest, config, _stream_name, initial_state)
         output_data = [message.record.data for message in output if message.record]
 
+        # Assert that output_data equals expected_records
         assert output_data == expected_records
+
+        # Collect the intermediate states and records produced before each state
+        cumulative_records = []
+        intermediate_states = []
+        for message in output:
+            if message.type.value == "RECORD":
+                record_data = message.record.data
+                cumulative_records.append(record_data)
+            elif message.type.value == "STATE":
+                # Record the state and the records produced before this state
+                state = message.state
+                records_before_state = cumulative_records.copy()
+                intermediate_states.append((state, records_before_state))
+
+        # For each intermediate state, perform another read starting from that state
+        for state, records_before_state in intermediate_states[:-1]:
+            output_intermediate = _run_read(manifest, config, _stream_name, [state])
+            records_from_state = [message.record.data for message in output_intermediate if message.record]
+
+            # Combine records produced before the state with records from the new read
+            cumulative_records_state = records_before_state + records_from_state
+
+            # Duplicates may occur because the state matches the cursor of the last record, causing it to be re-emitted in the next sync.
+            cumulative_records_state_deduped = list({orjson.dumps(record): record for record in cumulative_records_state}.values())
+
+            # Compare the cumulative records with the expected records
+            expected_records_set = list({orjson.dumps(record): record for record in expected_records}.values())
+            assert sorted(cumulative_records_state_deduped, key=lambda x: orjson.dumps(x)) == sorted(
+                expected_records_set, key=lambda x: orjson.dumps(x)
+            ), f"Records mismatch with intermediate state {state}. Expected {expected_records}, got {cumulative_records_state_deduped}"
+
+        # Assert that the final state matches the expected state
         final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
 
@@ -690,14 +731,14 @@ def test_incremental_parent_state_no_slices(test_name, manifest, mock_requests, 
                 (
                     "https://api.example.com/community/posts/2/comments?per_page=100",
                     {
-                        "comments": [],
+                        "comments": [{"id": 20, "post_id": 2, "updated_at": "2024-01-22T00:00:00Z"}],
                         "next_page": "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
                     },
                 ),
                 # Fetch the second page of comments for post 2
                 (
                     "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
-                    {"comments": []},
+                    {"comments": [{"id": 21, "post_id": 2, "updated_at": "2024-01-21T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 20 of post 2
                 (
@@ -712,7 +753,7 @@ def test_incremental_parent_state_no_slices(test_name, manifest, mock_requests, 
                 # Fetch the first page of comments for post 3
                 (
                     "https://api.example.com/community/posts/3/comments?per_page=100",
-                    {"comments": []},
+                    {"comments": [{"id": 30, "post_id": 3, "updated_at": "2024-01-09T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 30 of post 3
                 (
@@ -789,44 +830,10 @@ def test_incremental_parent_state_no_records(test_name, manifest, mock_requests,
         for url, response in mock_requests:
             m.get(url, json=response)
 
-        # Run the initial read
         output = _run_read(manifest, config, _stream_name, initial_state)
         output_data = [message.record.data for message in output if message.record]
 
-        # Assert that output_data equals expected_records
         assert output_data == expected_records
-
-        # Collect the intermediate states and records produced before each state
-        cumulative_records = []
-        intermediate_states = []
-        for message in output:
-            if message.type.value == "RECORD":
-                record_data = message.record.data
-                cumulative_records.append(record_data)
-            elif message.type.value == "STATE":
-                # Record the state and the records produced before this state
-                state = message.state
-                records_before_state = cumulative_records.copy()
-                intermediate_states.append((state, records_before_state))
-
-        # For each intermediate state, perform another read starting from that state
-        for state, records_before_state in intermediate_states[:-1]:
-            output_intermediate = _run_read(manifest, config, _stream_name, [state])
-            records_from_state = [message.record.data for message in output_intermediate if message.record]
-
-            # Combine records produced before the state with records from the new read
-            cumulative_records_state = records_before_state + records_from_state
-
-            # Duplicates may occur because the state matches the cursor of the last record, causing it to be re-emitted in the next sync.
-            cumulative_records_state_deduped = list({orjson.dumps(record): record for record in cumulative_records_state}.values())
-
-            # Compare the cumulative records with the expected records
-            expected_records_set = list({orjson.dumps(record): record for record in expected_records}.values())
-            assert sorted(cumulative_records_state_deduped, key=lambda x: orjson.dumps(x)) == sorted(
-                expected_records_set, key=lambda x: orjson.dumps(x)
-            ), f"Records mismatch with intermediate state {state}. Expected {expected_records}, got {cumulative_records_state_deduped}"
-
-        # Assert that the final state matches the expected state
         final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
 

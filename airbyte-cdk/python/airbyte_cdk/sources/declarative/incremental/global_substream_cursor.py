@@ -202,10 +202,10 @@ class GlobalSubstreamCursor(DeclarativeCursor):
                 self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
-    def get_stream_state(self) -> StreamState:
+    def get_stream_state(self, partition: Optional[StreamSlice] = None) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
 
-        parent_state = self._partition_router.get_stream_state()
+        parent_state = self._partition_router.get_stream_state(partition=partition)
         if parent_state:
             state["parent_state"] = parent_state
 

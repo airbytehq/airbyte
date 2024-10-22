@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
@@ -66,6 +65,7 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._per_partition_cursor = PerPartitionCursor(cursor_factory, partition_router)
         self._global_cursor = GlobalSubstreamCursor(stream_cursor, partition_router)
         self._use_global_cursor = False
+        self._current_partition = None
 
     def _get_active_cursor(self) -> Union[PerPartitionCursor, GlobalSubstreamCursor]:
         return self._global_cursor if self._use_global_cursor else self._per_partition_cursor
@@ -76,11 +76,13 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         # Iterate through partitions and process slices
         for partition, is_last_partition in iterate_with_last_flag(self._partition_router.stream_slices()):
             # Generate slices for the current cursor and handle the last slice using the flag
+            self._current_partition = partition.partition
             for slice, is_last_slice in iterate_with_last_flag(
                 self._get_active_cursor().generate_slices_from_partition(partition=partition)
             ):
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
+        self._current_partition = None
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -107,9 +109,9 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
     def get_stream_state(self) -> StreamState:
         final_state = {"use_global_cursor": self._use_global_cursor}
 
-        final_state.update(self._global_cursor.get_stream_state())
+        final_state.update(self._global_cursor.get_stream_state(partition=self._current_partition))
         if not self._use_global_cursor:
-            final_state.update(self._per_partition_cursor.get_stream_state())
+            final_state.update(self._per_partition_cursor.get_stream_state(partition=self._current_partition))
 
         return final_state
 

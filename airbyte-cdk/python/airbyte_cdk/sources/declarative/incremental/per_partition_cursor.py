@@ -55,6 +55,7 @@ class PerPartitionCursor(DeclarativeCursor):
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
+        self._current_partition = None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
@@ -153,7 +154,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 f"we should only update state for partitions that were emitted during `stream_slices`"
             )
 
-    def get_stream_state(self) -> StreamState:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None) -> StreamState:
         states = []
         for partition_tuple, cursor in self._cursor_per_partition.items():
             cursor_state = cursor.get_stream_state()
@@ -166,7 +167,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 )
         state: dict[str, Any] = {"states": states}
 
-        parent_state = self._partition_router.get_stream_state()
+        parent_state = self._partition_router.get_stream_state(partition=partition)
         if parent_state:
             state["parent_state"] = parent_state
         return state
