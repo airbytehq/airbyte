@@ -28,7 +28,6 @@ data:
     oss:
       enabled: true
   releases:
-    isReleaseCandidate: false
     breakingChanges:
       1.0.0:
         message:

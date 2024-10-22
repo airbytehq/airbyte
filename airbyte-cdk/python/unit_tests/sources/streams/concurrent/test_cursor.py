@@ -344,6 +344,73 @@ class ConcurrentCursorStateTest(TestCase):
         ]
 
     @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_small_slice_range_with_granularity_when_generate_slices_then_create_many_slices(self):
+        start = datetime.fromtimestamp(1, timezone.utc)
+        small_slice_range = timedelta(seconds=10)
+        granularity = timedelta(seconds=1)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 1, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
+                ],
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            small_slice_range,
+            granularity,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(29, timezone.utc)),
+            (datetime.fromtimestamp(30, timezone.utc), datetime.fromtimestamp(39, timezone.utc)),
+            (datetime.fromtimestamp(40, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
+        ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_difference_between_slices_match_slice_range_and_cursor_granularity_when_generate_slices_then_create_one_slice(self):
+        start = datetime.fromtimestamp(1, timezone.utc)
+        small_slice_range = timedelta(seconds=10)
+        granularity = timedelta(seconds=1)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 1, EpochValueConcurrentStreamStateConverter.END_KEY: 30},
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 41, EpochValueConcurrentStreamStateConverter.END_KEY: 50},
+                ],
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            small_slice_range,
+            granularity,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(31, timezone.utc), datetime.fromtimestamp(40, timezone.utc)),  # FIXME there should probably be the granularity at the beginning too
+        ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
     def test_given_non_continuous_state_when_generate_slices_then_create_slices_between_gaps_and_after(self):
         cursor = ConcurrentCursor(
             _A_STREAM_NAME,

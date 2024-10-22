@@ -46,7 +46,7 @@ async def cache_latest_cdk(context: ConnectorContext) -> None:
         .from_("python:3.9-slim")
         .with_mounted_cache(consts.PIP_CACHE_PATH, context.dagger_client.cache_volume(consts.PIP_CACHE_VOLUME_NAME))
         .with_env_variable("CACHEBUSTER", cachebuster_value)
-        .with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"])
+        .with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"], use_entrypoint=True)
         .sync()
     )
 
@@ -71,7 +71,7 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     """
 
     def never_fail_exec_inner(container: Container) -> Container:
-        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
 
     return never_fail_exec_inner
 

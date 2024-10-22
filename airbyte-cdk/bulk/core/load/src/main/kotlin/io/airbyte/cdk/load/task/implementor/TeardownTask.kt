@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ShutdownScope
+import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.setOnce
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -16,7 +16,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 
-interface TeardownTask : SyncLevel, ShutdownScope
+interface TeardownTask : SyncLevel, ImplementorScope
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -27,13 +27,10 @@ class DefaultTeardownTask(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
+    private val teardownHasRun: AtomicBoolean,
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
-
-    companion object {
-        private val teardownHasRun = AtomicBoolean(false)
-    }
 
     override suspend fun execute() {
         // Run the task exactly once, and only after all streams have closed.
@@ -69,8 +66,15 @@ class DefaultTeardownTaskFactory(
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
 ) : TeardownTaskFactory {
+    private val teardownHasRun = AtomicBoolean(false)
 
     override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
+        return DefaultTeardownTask(
+            checkpointManager,
+            syncManager,
+            destination,
+            taskLauncher,
+            teardownHasRun
+        )
     }
 }

@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union, Tuple
 
 import freezegun
 import isodate
@@ -71,11 +72,6 @@ _LOCATIONS_RESPONSE = HttpResponse(json.dumps([
     {"id": "aoyama", "name": "Aoyama-itchome", "updated_at": "2024-08-10"},
     {"id": "shin123", "name": "Shinjuku", "updated_at": "2024-08-10"},
 ]))
-_PARTY_MEMBERS_RESPONSE = HttpResponse(json.dumps([
-    {"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"},
-    {"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"},
-    {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"},
-]))
 _PALACES_RESPONSE = HttpResponse(json.dumps([
     {"id": "0", "world": "castle", "owner": "kamoshida"},
     {"id": "1", "world": "museum", "owner": "madarame"},
@@ -92,15 +88,13 @@ _PARTY_MEMBERS_SKILLS_RESPONSE = HttpResponse(json.dumps([
 ]))
 _EMPTY_RESPONSE = HttpResponse(json.dumps([]))
 _NOW = "2024-09-10T00:00:00"
-_DECLARATIVE_CURSOR_PARTY_MEMBERS_SLICES = [
-    {"start": "2024-06-26", "end": "2024-07-10"},
-    {"start": "2024-07-11", "end": "2024-07-25"},
-    {"start": "2024-07-26", "end": "2024-08-09"},
-    {"start": "2024-08-10", "end": "2024-08-24"},
-    {"start": "2024-08-25", "end": "2024-09-08"},
-    {"start": "2024-09-09", "end": "2024-09-10"},
-]  # FIXME can be removed/updated once the declarative cursor is updated to match the concurrent cursor behavior on lookback windows
-
+_NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES = [
+    ({"start": "2024-07-01", "end": "2024-07-15"}, HttpResponse(json.dumps([{"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"}]))),
+    ({"start": "2024-07-16", "end": "2024-07-30"}, _EMPTY_RESPONSE),
+    ({"start": "2024-07-31", "end": "2024-08-14"}, HttpResponse(json.dumps([{"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"}, ]))),
+    ({"start": "2024-08-15", "end": "2024-08-29"}, _EMPTY_RESPONSE),
+    ({"start": "2024-08-30", "end": "2024-09-10"}, HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}]))),
+]
 _MANIFEST = {
   "version": "5.0.0",
   "definitions": {
@@ -529,7 +523,7 @@ def test_check():
     """
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            HttpRequest("https://persona.metaverse.com/party_members?start=2024-06-26&end=2024-07-10"),
+            HttpRequest("https://persona.metaverse.com/party_members?start=2024-07-01&end=2024-07-15"),
             HttpResponse(json.dumps({"id": "party_member_1"})),
         )
         http_mocker.get(
@@ -537,7 +531,7 @@ def test_check():
             HttpResponse(json.dumps({"id": "palace_1"})),
         )
         http_mocker.get(
-            HttpRequest("https://persona.metaverse.com/locations?m=active&i=1&g=country&start=2024-06-26&end=2024-07-25"),
+            HttpRequest("https://persona.metaverse.com/locations?m=active&i=1&g=country&start=2024-07-01&end=2024-07-31"),
             HttpResponse(json.dumps({"id": "location_1"})),
         )
         source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=None, state=None)
@@ -571,13 +565,17 @@ def _mock_requests(http_mocker: HttpMocker, url: str, query_params: List[Dict[st
         http_mocker.get(HttpRequest(url, query_params=query_params[i]), responses[i])
 
 
-def _mock_party_members_requests(http_mocker: HttpMocker, slices: List[Dict[str, str]]) -> None:
+def _mock_party_members_requests(http_mocker: HttpMocker, slices_and_responses: List[Tuple[Dict[str, str], HttpResponse]]) -> None:
+    slices = list(map(lambda slice_and_response: slice_and_response[0], slices_and_responses))
+    responses = list(map(lambda slice_and_response: slice_and_response[1], slices_and_responses))
+
     _mock_requests(
         http_mocker,
         "https://persona.metaverse.com/party_members",
         slices,
-        [_PARTY_MEMBERS_RESPONSE] * len(slices),
+        responses,
     )
+
 
 def _mock_locations_requests(http_mocker: HttpMocker, slices: List[Dict[str, str]]) -> None:
     locations_query_params = list(map(lambda _slice: _slice | {"m": "active", "i": "1", "g": "country"}, slices))
@@ -590,19 +588,9 @@ def _mock_locations_requests(http_mocker: HttpMocker, slices: List[Dict[str, str
 
 
 def _mock_party_members_skills_requests(http_mocker: HttpMocker) -> None:
-    _mock_requests(
-        http_mocker,
-        "https://persona.metaverse.com/party_members",
-        _DECLARATIVE_CURSOR_PARTY_MEMBERS_SLICES,
-        [
-            HttpResponse(json.dumps([{"id": "amamiya", "first_name": "ren", "last_name": "amamiya", "updated_at": "2024-07-10"}])),
-            _EMPTY_RESPONSE,
-            _EMPTY_RESPONSE,
-            HttpResponse(json.dumps([{"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"}, ])),
-            _EMPTY_RESPONSE,
-            HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}])),
-        ],
-    )
+    """
+    This method assumes _mock_party_members_requests has been called before else the stream won't work.
+    """
     http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/amamiya/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
     http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/nijima/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
     http_mocker.get(HttpRequest("https://persona.metaverse.com/party_members/yoshizawa/skills"), _PARTY_MEMBERS_SKILLS_RESPONSE)
@@ -613,38 +601,31 @@ def test_read_with_concurrent_and_synchronous_streams():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams followed by synchronous streams
     """
-    concurrent_cursor_party_members_slices = [
-        {"start": "2024-07-01", "end": "2024-07-15"},
-        {"start": "2024-07-16", "end": "2024-07-30"},
-        {"start": "2024-07-31", "end": "2024-08-14"},
-        {"start": "2024-08-15", "end": "2024-08-29"},
-        {"start": "2024-08-30", "end": "2024-09-09"},
-    ]
     location_slices = [
         {"start": "2024-07-01", "end": "2024-07-31"},
         {"start": "2024-08-01", "end": "2024-08-31"},
-        {"start": "2024-09-01", "end": "2024-09-09"},
+        {"start": "2024-09-01", "end": "2024-09-10"},
     ]
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=None)
     disable_emitting_sequential_state_messages(source=source)
 
     with HttpMocker() as http_mocker:
-        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_party_members_requests(http_mocker, _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES)
         _mock_locations_requests(http_mocker, location_slices)
         http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
         _mock_party_members_skills_requests(http_mocker)
 
         messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=[]))
 
-    # Expects 15 records, 5 slices, 3 records each slice
+    # See _mock_party_members_requests
     party_members_records = get_records_for_stream("party_members", messages)
-    assert len(party_members_records) == 15
+    assert len(party_members_records) == 3
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
     assert len(party_members_states) == 6
     assert party_members_states[5].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
     # Expects 12 records, 3 slices, 4 records each slice
@@ -657,7 +638,7 @@ def test_read_with_concurrent_and_synchronous_streams():
     assert len(locations_states) == 4
     assert locations_states[3].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -693,7 +674,6 @@ def test_read_with_concurrent_and_synchronous_streams():
         ]
     }
 
-
 @freezegun.freeze_time(_NOW)
 def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     """
@@ -719,7 +699,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
                     state_type="date-range",
                     slices=[
                         {"start": "2024-07-16", "end": "2024-07-30"},
-                        {"start": "2024-08-15", "end": "2024-08-29"},
+                        {"start": "2024-07-31", "end": "2024-08-14"},
                         {"start": "2024-08-30", "end": "2024-09-09"},
                     ]
                 ),
@@ -727,22 +707,19 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
         ),
     ]
 
-    concurrent_cursor_party_members_slices = [
-        {"start": "2024-07-01", "end": "2024-07-15"},
-        {"start": "2024-07-30", "end": "2024-08-13"},  # FIXME this is an interesting case where we restart from that top boundary. I'm wondering if we need to change that because if this was within one sync, we would start from 2024-08-01 and not 2024-07-30
-        {"start": "2024-08-14", "end": "2024-08-14"},
-        {"start": "2024-09-04", "end": "2024-09-09"},  # considering lookback window
+    party_members_slices_and_responses = _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES + [
+        ({"start": "2024-09-04", "end": "2024-09-10"}, HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}]))) # considering lookback window
     ]
     location_slices = [
         {"start": "2024-07-26", "end": "2024-08-25"},
-        {"start": "2024-08-26", "end": "2024-09-09"},
+        {"start": "2024-08-26", "end": "2024-09-10"},
     ]
 
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
     disable_emitting_sequential_state_messages(source=source)
 
     with HttpMocker() as http_mocker:
-        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_party_members_requests(http_mocker, party_members_slices_and_responses)
         _mock_locations_requests(http_mocker, location_slices)
         http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
         _mock_party_members_skills_requests(http_mocker)
@@ -757,18 +734,20 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     assert len(locations_states) == 3
     assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
-    # Expects 12 records, skip successful intervals and are left with 4 slices, 3 records each slice
+    # slices to sync are:
+    # * {"start": "2024-07-01", "end": "2024-07-15"}: one record in _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES
+    # * {"start": "2024-09-04", "end": "2024-09-10"}: one record from the lookback window defined in this test
     party_members_records = get_records_for_stream("party_members", messages)
-    assert len(party_members_records) == 12
+    assert len(party_members_records) == 2
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
-    assert len(party_members_states) == 5
-    assert party_members_states[4].stream.stream_state.__dict__ == AirbyteStateBlob(
+    assert len(party_members_states) == 4
+    assert party_members_states[3].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]  # weird, why'd this end up as 2024-09-10 is it because of cursor granularity?
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -798,7 +777,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name="party_members", namespace=None),
-                stream_state=AirbyteStateBlob(updated_at="2024-08-20"),
+                stream_state=AirbyteStateBlob(updated_at="2024-08-21"),
             ),
         )
     ]
@@ -806,17 +785,17 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
     disable_emitting_sequential_state_messages(source=source)
 
-    concurrent_cursor_party_members_slices = [
-        {"start": "2024-08-15", "end": "2024-08-29"},
-        {"start": "2024-08-30", "end": "2024-09-09"},
+    party_members_slices_and_responses = _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES + [
+        ({"start": "2024-08-16", "end": "2024-08-30"}, HttpResponse(json.dumps([{"id": "nijima", "first_name": "makoto", "last_name": "nijima", "updated_at": "2024-08-10"}]))),  # considering lookback window
+        ({"start": "2024-08-31", "end": "2024-09-10"}, HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}]))),
     ]
     location_slices = [
         {"start": "2024-08-01", "end": "2024-08-31"},
-        {"start": "2024-09-01", "end": "2024-09-09"},
+        {"start": "2024-09-01", "end": "2024-09-10"},
     ]
 
     with HttpMocker() as http_mocker:
-        _mock_party_members_requests(http_mocker, concurrent_cursor_party_members_slices)
+        _mock_party_members_requests(http_mocker, party_members_slices_and_responses)
         _mock_locations_requests(http_mocker, location_slices)
         http_mocker.get(HttpRequest("https://persona.metaverse.com/palaces"), _PALACES_RESPONSE)
         _mock_party_members_skills_requests(http_mocker)
@@ -831,18 +810,18 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     assert len(locations_states) == 3
     assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
-    # Expects 6 records, skip successful intervals and are left with 2 slices, 3 records each slice
+    # From extra slices defined in party_members_slices_and_responses
     party_members_records = get_records_for_stream("party_members", messages)
-    assert len(party_members_records) == 6
+    assert len(party_members_records) == 2
 
     party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
     assert len(party_members_states) == 3
     assert party_members_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -867,7 +846,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     location_slices = [
         {"start": "2024-07-01", "end": "2024-07-31"},
         # missing slice `{"start": "2024-08-01", "end": "2024-08-31"}` here
-        {"start": "2024-09-01", "end": "2024-09-09"},
+        {"start": "2024-09-01", "end": "2024-09-10"},
     ]
     expected_stream_state = {
         "state_type": "date-range",
@@ -890,7 +869,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     location_slices = [
         {"start": "2024-07-01", "end": "2024-07-31"},
         # missing slice `{"start": "2024-08-01", "end": "2024-08-31"}` here
-        {"start": "2024-09-01", "end": "2024-09-09"},
+        {"start": "2024-09-01", "end": "2024-09-10"},
     ]
 
     with HttpMocker() as http_mocker:
@@ -930,7 +909,7 @@ def test_read_concurrent_skip_streams_not_in_catalog():
         location_slices = [
             {"start": "2024-07-01", "end": "2024-07-31"},
             {"start": "2024-08-01", "end": "2024-08-31"},
-            {"start": "2024-09-01", "end": "2024-09-09"},
+            {"start": "2024-09-01", "end": "2024-09-10"},
         ]
         locations_query_params = list(map(lambda _slice: _slice | {"m": "active", "i": "1", "g": "country"}, location_slices))
         _mock_requests(

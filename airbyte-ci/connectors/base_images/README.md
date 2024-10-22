@@ -94,6 +94,9 @@ poetry run mypy base_images --check-untyped-defs
 ```
 ## CHANGELOG
 
+### 1.0.4
+- Upgrade Dagger to `0.13.3`
+
 ### 1.0.2
 
 - Improved support for images with non-semantic-versioned tags.
