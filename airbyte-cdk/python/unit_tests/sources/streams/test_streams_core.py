@@ -7,7 +7,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from unittest import mock
 
 import pytest
-import requests
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint import (
@@ -19,8 +18,6 @@ from airbyte_cdk.sources.streams.checkpoint import (
     ResumableFullRefreshCheckpointReader,
     ResumableFullRefreshCursor,
 )
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.types import StreamSlice
 
 logger = logging.getLogger("airbyte")
 
@@ -124,59 +121,6 @@ class StreamStubLegacyStateInterface(Stream):
         return {}
 
 
-class StreamStubIncrementalEmptyNamespace(Stream):
-    """
-    Stub full incremental class, with empty namespace, to assist with testing.
-    """
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        pass
-
-    cursor_field = "test_cursor"
-    primary_key = "primary_key"
-    namespace = ""
-
-
-class HttpSubStreamStubFullRefreshLegacySlices(HttpSubStream):
-    """
-    Stub substream full refresh class to assist with testing.
-    """
-
-    primary_key = "primary_key"
-
-    @property
-    def url_base(self) -> str:
-        return "https://airbyte.io/api/v1"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
-
-    def path(
-        self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return "/stub"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        return []
-
-
 class CursorBasedStreamStubFullRefresh(StreamStubFullRefresh):
     def get_cursor(self) -> Optional[Cursor]:
         return ResumableFullRefreshCursor()
@@ -187,84 +131,6 @@ class LegacyCursorBasedStreamStubFullRefresh(CursorBasedStreamStubFullRefresh):
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from [{}]
-
-
-class MultipleSlicesStreamStub(HttpStream):
-    """
-    Stub full refresh class that returns multiple StreamSlice instances to assist with testing.
-    """
-
-    primary_key = "primary_key"
-
-    @property
-    def url_base(self) -> str:
-        return "https://airbyte.io/api/v1"
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [
-            StreamSlice(partition={"parent_id": "korra"}, cursor_slice={}),
-            StreamSlice(partition={"parent_id": "asami"}, cursor_slice={}),
-        ]
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
-
-    def path(
-        self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return "/stub"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        return []
-
-
-class ParentHttpStreamStub(HttpStream):
-    primary_key = "primary_key"
-    url_base = "https://airbyte.io/api/v1"
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        return [{"id": 400, "name": "a_parent_record"}]
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def path(
-        self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return "/parent"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        return []
 
 
 def test_as_airbyte_stream_full_refresh(mocker):
