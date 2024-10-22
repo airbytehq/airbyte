@@ -42,7 +42,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from textwrap import indent
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 NEW_ISSUE_URL = "https://github.com/airbytehq/airbyte/issues/new/choose"
 DOCS_URL_BASE = "https://https://docs.airbyte.com/"
