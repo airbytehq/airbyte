@@ -74,10 +74,10 @@ class AirbyteValueToJsonTest {
                             true
                         ),
                     "date" to FieldType(DateType, false),
-                    "time" to FieldType(TimeType(false), false),
-                    "timestamp" to FieldType(TimestampType(false), false),
-                    "time_without_timezone" to FieldType(TimeType(true), false),
-                    "timestamp_without_timezone" to FieldType(TimestampType(true), false)
+                    "time" to FieldType(TimeTypeWithoutTimezone, false),
+                    "timestamp" to FieldType(TimestampTypeWithoutTimezone, false),
+                    "time_without_timezone" to FieldType(TimeTypeWithTimezone, false),
+                    "timestamp_without_timezone" to FieldType(TimestampTypeWithTimezone, false)
                 )
             )
         val jsonValue = AirbyteValueToJson().convert(airbyteValue)
