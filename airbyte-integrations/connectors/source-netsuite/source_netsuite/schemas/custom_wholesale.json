@@ -40,6 +40,9 @@
       "itemname": {
         "type": ["null", "string"]
       },
+      "itemid": {
+        "type": ["null", "string"]
+      },      
       "market": {
         "type": ["null", "string"]
       },

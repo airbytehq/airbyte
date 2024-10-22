@@ -11,6 +11,7 @@ SELECT
 	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.quantity * -1 END AS Quantity
 	,CASE WHEN tl.itemtype = 'ShipItem' THEN tl.rateamount ELSE NULL END AS ShippingCost
 	,CASE WHEN tl.itemtype = 'Discount' THEN tl.rateamount ELSE NULL END AS Discount
+	,i.ItemId
 	,tl.ItemType
 	,ml.TranDate	
 	,ml.InternalId
@@ -80,6 +81,7 @@ SELECT
 	,NULL AS Quantity
 	,NULL AS ShippingCost
 	,CASE WHEN BUILTIN.DF(tal.account) = '50500 Discounts Allowed' THEN tl.netamount * -1 ELSE NULL END AS Discount
+	,i.ItemId
 	,tl.ItemType
 	,t.trandate AS TranDate	
 	,t.id AS InternalId
@@ -129,6 +131,7 @@ SELECT
 	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.quantity * -1 END AS Quantity
 	,CASE WHEN tl.itemtype = 'ShipItem' THEN tl.rateamount ELSE NULL END AS ShippingCost
 	,CASE WHEN tl.itemtype = 'Discount' THEN tl.rateamount ELSE NULL END AS Discount
+	,i.ItemId
 	,tl.ItemType
 	,t.trandate AS TranDate	
 	,t.id AS InternalId
@@ -178,6 +181,7 @@ SELECT
 	,NULL AS Quantity
 	,NULL ShippingCost
 	,CASE WHEN t.type = 'CustPymt' THEN tl.netamount * -1 ELSE tl.rateamount * -1 END AS Discount
+	,i.ItemId
 	,tl.ItemType
 	,t.trandate AS TranDate	
 	,t.id AS InternalId
@@ -209,4 +213,3 @@ WHERE
 	AND BUILTIN.DF(tal.account) = '50500 Discounts Allowed'	
 	-- No historical record of this type.
 	AND t.trandate >= '1/1/2022'	
-	
