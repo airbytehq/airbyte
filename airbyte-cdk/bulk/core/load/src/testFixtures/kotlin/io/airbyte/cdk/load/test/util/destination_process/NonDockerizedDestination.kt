@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.test.util.destination_process
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -17,15 +16,17 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import javax.inject.Singleton
+import kotlinx.coroutines.CompletableDeferred
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
+    private val destinationComplete = CompletableDeferred<Unit>()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -40,7 +41,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
@@ -53,6 +54,7 @@ class NonDockerizedDestination(
         } catch (e: ConnectorUncleanExitException) {
             throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
         }
+        destinationComplete.complete(Unit)
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -63,6 +65,7 @@ class NonDockerizedDestination(
 
     override suspend fun shutdown() {
         destinationStdinPipe.close()
+        destinationComplete.join()
     }
 }
 
@@ -74,11 +77,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, *featureFlags)
+        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
     }
 }
