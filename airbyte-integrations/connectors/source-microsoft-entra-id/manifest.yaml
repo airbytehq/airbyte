@@ -128,7 +128,6 @@ definitions:
           path: /directory/deletedItems/getUserOwnedObjects
           http_method: POST
           request_body_json:
-            type: "{{ config['type'] }}"
             userId: "{{ config['user_id'] }}"
         record_selector:
           type: RecordSelector
@@ -148,6 +147,16 @@ definitions:
               {{ response.get("@odata.nextLink") |
               regex_search('\$skiptoken=([^&]+)') }}
             stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - Group
+            - Application
+          cursor_field: type
+          request_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: type
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -208,42 +217,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/auditlogs"
-    directoryobjects:
-      type: DeclarativeStream
-      name: directoryobjects
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /directoryObjects/getByIds
-          http_method: POST
-          request_body_json:
-            ids: "{{ config['ids'] }}"
-            types: "{{ config['types'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - value
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: $skiptoken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response.get("@odata.nextLink") |
-              regex_search('\$skiptoken=([^&]+)') }}
-            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/directoryobjects"
     directoryroletemplates:
       type: DeclarativeStream
       name: directoryroletemplates
@@ -413,7 +386,6 @@ streams:
   - $ref: "#/definitions/streams/user_owned_deleted_items"
   - $ref: "#/definitions/streams/directoryroles"
   - $ref: "#/definitions/streams/auditlogs"
-  - $ref: "#/definitions/streams/directoryobjects"
   - $ref: "#/definitions/streams/directoryroletemplates"
   - $ref: "#/definitions/streams/directoryaudits"
   - $ref: "#/definitions/streams/serviceprincipals"
@@ -431,14 +403,7 @@ spec:
       - tenant_id
       - application_id_uri
       - user_id
-      - type
-      - ids
-      - types
     properties:
-      type:
-        type: string
-        order: 5
-        title: Type
       client_id:
         type: string
         order: 0
@@ -464,14 +429,6 @@ spec:
         order: 4
         title: User Id
         airbyte_secret: true
-      ids:
-        type: array
-        order: 6
-        title: Ids
-      types:
-        type: array
-        order: 7
-        title: Types
     additionalProperties: true
 
 metadata:
@@ -482,7 +439,6 @@ metadata:
     user_owned_deleted_items: true
     directoryroles: true
     auditlogs: true
-    directoryobjects: true
     directoryroletemplates: true
     directoryaudits: true
     serviceprincipals: true
@@ -526,13 +482,6 @@ metadata:
       primaryKeysAreUnique: true
     auditlogs:
       streamHash: d49fef83c93794e449409ac2a45685458e45ca57
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    directoryobjects:
-      streamHash: 22d4dde3bc7da84a81a12725cafd068fd4942054
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1250,43 +1199,6 @@ schemas:
               type:
                 - array
                 - "null"
-    required:
-      - id
-  directoryobjects:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      "@odata.type":
-        type:
-          - string
-          - "null"
-      businessPhones:
-        type:
-          - array
-          - "null"
-      displayName:
-        type:
-          - string
-          - "null"
-      givenName:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      preferredLanguage:
-        type:
-          - string
-          - "null"
-      surname:
-        type:
-          - string
-          - "null"
-      userPrincipalName:
-        type:
-          - string
-          - "null"
     required:
       - id
   directoryroletemplates:
