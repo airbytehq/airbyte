@@ -47,21 +47,21 @@ class AirbyteTypeToJsonSchema {
                 unionNode
             }
             is DateType -> ofType("string").put("format", "date")
-            is TimeType -> {
+            is TimeTypeWithTimezone -> {
                 val timeNode = ofType("string").put("format", "time")
-                if (airbyteType.hasTimezone) {
-                    timeNode.put("airbyte_type", "time_with_timezone")
-                } else {
-                    timeNode.put("airbyte_type", "time_without_timezone")
-                }
+                timeNode.put("airbyte_type", "time_with_timezone")
             }
-            is TimestampType -> {
+            is TimeTypeWithoutTimezone -> {
+                val timeNode = ofType("string").put("format", "time")
+                timeNode.put("airbyte_type", "time_without_timezone")
+            }
+            is TimestampTypeWithTimezone -> {
                 val timestampNode = ofType("string").put("format", "date-time")
-                if (airbyteType.hasTimezone) {
-                    timestampNode.put("airbyte_type", "timestamp_with_timezone")
-                } else {
-                    timestampNode.put("airbyte_type", "timestamp_without_timezone")
-                }
+                timestampNode.put("airbyte_type", "timestamp_with_timezone")
+            }
+            is TimestampTypeWithoutTimezone -> {
+                val timestampNode = ofType("string").put("format", "date-time")
+                timestampNode.put("airbyte_type", "timestamp_without_timezone")
             }
             else -> throw IllegalArgumentException("Unknown type: $airbyteType")
         }
