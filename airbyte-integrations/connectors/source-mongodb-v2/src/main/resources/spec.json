@@ -148,7 +148,7 @@
                 "default": true,
                 "type": "boolean",
                 "always_show": true,
-                "order": 7
+                "order": 8
               }
             }
           }
