@@ -3,7 +3,7 @@
 #
 import pytest
 from airbyte_cdk.sources.types import Record, StreamSlice
-from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
+from components import CustomFieldTransformation, IncrementalSingleSliceCursor
 
 
 @pytest.mark.parametrize(
