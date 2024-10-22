@@ -8,7 +8,6 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.file.MockTempFileProvider
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -16,13 +15,15 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.nio.file.Path
+import java.nio.file.Files
+import kotlin.io.path.outputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -91,10 +92,7 @@ class ProcessRecordsTaskTest {
         val byteSize = 999L
         val recordCount = 1024L
 
-        val mockFile =
-            MockTempFileProvider()
-                .createTempFile(directory = Path.of("tmp/"), prefix = "test", suffix = ".json")
-                as MockTempFileProvider.MockLocalFile
+        val mockFile = Files.createTempFile("test", ".jsonl")
         val file =
             SpilledRawMessagesLocalFile(
                 localFile = mockFile,
@@ -107,7 +105,9 @@ class ProcessRecordsTaskTest {
                 stream = MockDestinationCatalogFactory.stream1,
                 file = file
             )
-        mockFile.linesToRead = (0 until recordCount).map { "$it" }.toMutableList()
+        mockFile.outputStream().use { outputStream ->
+            (0 until recordCount).forEach { outputStream.write("$it\n") }
+        }
 
         syncManager.registerStartedStreamLoader(MockStreamLoader())
         task.execute()
@@ -118,5 +118,6 @@ class ProcessRecordsTaskTest {
         Assertions.assertEquals(999, batch.reportedByteSize)
         Assertions.assertEquals(recordCount, batch.recordCount)
         Assertions.assertEquals((0 until recordCount).sum(), batch.pmChecksum)
+        Assertions.assertFalse(Files.exists(mockFile), "ensure task deleted file")
     }
 }
