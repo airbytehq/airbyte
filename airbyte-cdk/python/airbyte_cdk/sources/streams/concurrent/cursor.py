@@ -334,7 +334,9 @@ class ConcurrentCursor(Cursor):
             return lower_boundary - self._lookback_window
         return lower_boundary
 
-    def _split_per_slice_range(self, lower: CursorValueType, upper: CursorValueType, upper_is_end: bool) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
+    def _split_per_slice_range(
+        self, lower: CursorValueType, upper: CursorValueType, upper_is_end: bool
+    ) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
         if lower >= upper:
             return
 
