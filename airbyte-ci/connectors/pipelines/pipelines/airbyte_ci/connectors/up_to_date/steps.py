@@ -67,12 +67,14 @@ class PoetryUpdate(StepModifyingFiles):
             for package, version in self.specified_versions.items():
                 if not self.dev:
                     self.logger.info(f"Add {package} {version} to main dependencies")
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}"])
+                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}"], use_entrypoint=True)
                 else:
                     self.logger.info(f"Add {package} {version} to dev dependencies")
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}", "--group=dev"])
+                    connector_container = await connector_container.with_exec(
+                        ["poetry", "add", f"{package}{version}", "--group=dev"], use_entrypoint=True
+                    )
 
-            connector_container = await connector_container.with_exec(["poetry", "update"])
+            connector_container = await connector_container.with_exec(["poetry", "update"], use_entrypoint=True)
             self.logger.info(await connector_container.stdout())
         except dagger.ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
@@ -128,7 +130,7 @@ class GetDependencyUpdates(Step):
 
     async def get_sbom_from_latest_image(self) -> str:
         syft_container = self.get_syft_container()
-        return await syft_container.with_exec([self.latest_connector_docker_image_address, "-o", "syft-json"]).stdout()
+        return await syft_container.with_exec([self.latest_connector_docker_image_address, "-o", "syft-json"], use_entrypoint=True).stdout()
 
     async def get_sbom_from_container(self, container: dagger.Container) -> str:
         oci_tarball_path = Path(f"/tmp/{self.context.connector.technical_name}-{self.context.connector.version}.tar")
@@ -136,7 +138,7 @@ class GetDependencyUpdates(Step):
         syft_container = self.get_syft_container()
         container_sbom = await (
             syft_container.with_mounted_file("/tmp/oci.tar", self.dagger_client.host().file(str(oci_tarball_path)))
-            .with_exec(["/tmp/oci.tar", "-o", "syft-json"])
+            .with_exec(["/tmp/oci.tar", "-o", "syft-json"], use_entrypoint=True)
             .stdout()
         )
         oci_tarball_path.unlink()

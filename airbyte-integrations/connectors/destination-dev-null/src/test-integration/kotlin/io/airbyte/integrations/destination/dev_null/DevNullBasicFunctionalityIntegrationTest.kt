@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test
 
 class DevNullBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        DevNullTestUtils.loggingConfig,
+        DevNullTestUtils.loggingConfigContents,
+        DevNullSpecificationOss::class.java,
         DevNullDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
@@ -20,5 +21,10 @@ class DevNullBasicFunctionalityIntegrationTest :
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
     }
 }

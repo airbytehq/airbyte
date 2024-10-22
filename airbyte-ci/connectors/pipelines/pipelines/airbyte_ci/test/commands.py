@@ -113,7 +113,7 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
     """
     poetry_package_paths = await get_packages_to_run(pipeline_context)
     click.echo(f"Running poe tasks of the following packages: {', '.join([str(package_path) for package_path in poetry_package_paths])}")
-    dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Internal poetry packages CI")
+    dagger_client = await pipeline_context.get_dagger_client()
 
     poetry_package_poe_tasks_results: List[Tuple[Path, asyncer.SoonValue]] = []
     async with asyncer.create_task_group() as poetry_packages_task_group:
