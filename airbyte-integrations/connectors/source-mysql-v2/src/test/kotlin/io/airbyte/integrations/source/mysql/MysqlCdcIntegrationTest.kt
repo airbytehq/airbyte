@@ -114,7 +114,7 @@ class MysqlCdcIntegrationTest {
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
-                    .withCursorField(listOf(CommonMetaField.CDC_LSN.id))
+                    .withCursorField(listOf(MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id))
             ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
         }
 
