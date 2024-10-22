@@ -1,0 +1,794 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: "API Documentation: https://docs.etherscan.io/api-endpoints/accounts"
+
+check:
+  type: CheckStream
+  stream_names:
+    - stats
+
+definitions:
+  streams:
+    stats:
+      type: DeclarativeStream
+      name: stats
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: ethsupply
+            module: stats
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats"
+    gas_tracker:
+      type: DeclarativeStream
+      name: gas_tracker
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: gasoracle
+            module: gastracker
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/gas_tracker"
+    eth_blocknumber:
+      type: DeclarativeStream
+      name: eth_blocknumber
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: eth_blockNumber
+            module: proxy
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/eth_blocknumber"
+    account_balance:
+      type: DeclarativeStream
+      name: account_balance
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            tag: latest
+            action: balance
+            module: account
+            address: "{{ stream_partition[\"eth_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"eth_address\"] }}"
+          cursor_field: eth_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_balance"
+    contracts_abi:
+      type: DeclarativeStream
+      name: contracts_abi
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: getabi
+            module: contract
+            address: "{{ stream_partition[\"eth_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"eth_address\"] }}"
+          cursor_field: eth_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contracts_abi"
+    transaction_exec_status:
+      type: DeclarativeStream
+      name: transaction_exec_status
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: getstatus
+            module: transaction
+            txhash: "{{ stream_partition[\"txn_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"transaction_hash\"] }}"
+          cursor_field: txn_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transaction_exec_status"
+    transaction_reciept_status:
+      type: DeclarativeStream
+      name: transaction_reciept_status
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: gettxreceiptstatus
+            module: transaction
+            txhash: "{{ stream_partition[\"txn_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"transaction_hash\"] }}"
+          cursor_field: txn_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transaction_reciept_status"
+    block_and_uncle_rewards:
+      type: DeclarativeStream
+      name: block_and_uncle_rewards
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: getblockreward
+            module: block
+            blockno: "{{ stream_partition[\"block_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"block_list\"] }}"
+          cursor_field: block_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/block_and_uncle_rewards"
+    block_countdown_time:
+      type: DeclarativeStream
+      name: block_countdown_time
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api
+          http_method: GET
+          request_parameters:
+            action: getblockcountdown
+            module: block
+            blockno: "{{ stream_partition[\"block_list\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"block_list\"] }}"
+          cursor_field: block_list
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/block_countdown_time"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.etherscan.io/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apikey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/stats"
+  - $ref: "#/definitions/streams/gas_tracker"
+  - $ref: "#/definitions/streams/eth_blocknumber"
+  - $ref: "#/definitions/streams/account_balance"
+  - $ref: "#/definitions/streams/contracts_abi"
+  - $ref: "#/definitions/streams/transaction_exec_status"
+  - $ref: "#/definitions/streams/transaction_reciept_status"
+  - $ref: "#/definitions/streams/block_and_uncle_rewards"
+  - $ref: "#/definitions/streams/block_countdown_time"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - eth_address
+      - transaction_hash
+      - block_list
+    properties:
+      api_key:
+        type: string
+        description: Found at `https://etherscan.io/myapikey`
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      eth_address:
+        type: array
+        description: ETH address
+        order: 1
+        title: ETH Address
+      transaction_hash:
+        type: array
+        description: For transactions stream
+        order: 2
+        title: Transaction hash
+      block_list:
+        type: array
+        description: Blocks number list
+        order: 3
+        title: Block number list
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    stats: true
+    gas_tracker: true
+    eth_blocknumber: true
+    account_balance: true
+    contracts_abi: true
+    transaction_exec_status: true
+    transaction_reciept_status: true
+    block_and_uncle_rewards: true
+    block_countdown_time: true
+  testedStreams:
+    stats:
+      hasRecords: true
+      streamHash: 76cb10a9f58cf1f0b8764bf1a3411372a9490b40
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    gas_tracker:
+      hasRecords: true
+      streamHash: c7d8229db9918a3ab622f7d6f9f7412c7e84b695
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    eth_blocknumber:
+      hasRecords: true
+      streamHash: 48ef8bc52b36404a40de45907a19852afe1000d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account_balance:
+      hasRecords: true
+      streamHash: 33ea1a343b8fc66ef46f71d2e7150c00aa589c11
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contracts_abi:
+      hasRecords: true
+      streamHash: bfa7bba46036eb3fab4d85881d6ba74fdb67dcf5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transaction_exec_status:
+      hasRecords: true
+      streamHash: 339196b68bfda6ecf0f1ead31aec00e06ed8cc2c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transaction_reciept_status:
+      hasRecords: true
+      streamHash: 121ecbe69e9473f3aa3483dad940c702f1c39db4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    block_and_uncle_rewards:
+      hasRecords: true
+      streamHash: 433609ccb34e925538d2f8599da026e49757eba8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    block_countdown_time:
+      hasRecords: true
+      streamHash: ec0e49c45ece3c54c4b01489e58dd1f4a4f01e7c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  stats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  gas_tracker:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      FastGasPrice:
+        type:
+          - string
+          - "null"
+      LastBlock:
+        type:
+          - string
+          - "null"
+      ProposeGasPrice:
+        type:
+          - string
+          - "null"
+      SafeGasPrice:
+        type:
+          - string
+          - "null"
+      gasUsedRatio:
+        type:
+          - string
+          - "null"
+      suggestBaseFee:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  eth_blocknumber:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      jsonrpc:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  account_balance:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  contracts_abi:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  transaction_exec_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - object
+          - "null"
+        properties:
+          errDescription:
+            type:
+              - string
+              - "null"
+          isError:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  transaction_reciept_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  block_and_uncle_rewards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blockMiner:
+        type:
+          - string
+          - "null"
+      blockNumber:
+        type:
+          - string
+          - "null"
+      blockReward:
+        type:
+          - string
+          - "null"
+      timeStamp:
+        type:
+          - string
+          - "null"
+      uncleInclusionReward:
+        type:
+          - string
+          - "null"
+      uncles:
+        type:
+          - array
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  block_countdown_time:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
