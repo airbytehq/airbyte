@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-    - "*"
+      - "*"
   registryOverrides:
     oss:
       enabled: true
@@ -13,8 +13,7 @@ data:
       packageName: airbyte-source-avni
   connectorSubtype: api
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorType: source
   definitionId: 5d297ac7-355e-4a04-be75-a5e7e175fc4e
   dockerImageTag: 0.2.0
@@ -28,15 +27,15 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/avni
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-AVNI__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AVNI__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
