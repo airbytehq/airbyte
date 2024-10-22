@@ -1,0 +1,180 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: Get a list of movies ordered by popularity from TMDB.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Popular Movie List
+
+definitions:
+  streams:
+    Popular Movie List:
+      type: DeclarativeStream
+      name: Popular Movie List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /3/movie/popular
+          http_method: GET
+          request_parameters:
+            "\"language\"": "{{ config['language'] }}"
+          request_headers:
+            Accept: application/json
+            x-api-key: "{{ config[\"x_api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Popular Movie List"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.themoviedb.org
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Popular Movie List"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+      - language
+      - x_api_key
+    properties:
+      token:
+        type: string
+        order: 0
+        title: Token
+        airbyte_secret: true
+      language:
+        type: string
+        order: 1
+        title: language
+      x_api_key:
+        type: string
+        title: x-api-key
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Popular Movie List: true
+  testedStreams:
+    Popular Movie List:
+      streamHash: 0c3dbe6cfbb8aa110ffadb787c379059f4feda0f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Popular Movie List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      page:
+        type:
+          - number
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            adult:
+              type:
+                - boolean
+                - "null"
+            backdrop_path:
+              type:
+                - string
+                - "null"
+            genre_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+            id:
+              type:
+                - number
+                - "null"
+            original_language:
+              type:
+                - string
+                - "null"
+            original_title:
+              type:
+                - string
+                - "null"
+            overview:
+              type:
+                - string
+                - "null"
+            popularity:
+              type:
+                - number
+                - "null"
+            poster_path:
+              type:
+                - string
+                - "null"
+            release_date:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            video:
+              type:
+                - boolean
+                - "null"
+            vote_average:
+              type:
+                - number
+                - "null"
+            vote_count:
+              type:
+                - number
+                - "null"
+      total_pages:
+        type:
+          - number
+          - "null"
+      total_results:
+        type:
+          - number
+          - "null"
