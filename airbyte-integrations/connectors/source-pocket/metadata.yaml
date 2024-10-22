@@ -3,8 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorSubtype: api
   connectorType: source
   definitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
@@ -27,19 +26,19 @@ data:
       packageName: airbyte-source-pocket
   supportLevel: community
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: pocket_config_dev_null
-      id: 40715200-70aa-481b-be17-5d4a87ce0a22
-  - suite: unitTests
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-POCKET__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: pocket_config_dev_null
+          id: 40715200-70aa-481b-be17-5d4a87ce0a22
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POCKET__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
