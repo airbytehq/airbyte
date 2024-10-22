@@ -7,7 +7,7 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPostâ
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `start_date` | `string` | Start Date.  |  |
-| `api_prefix` | `string` | API Endpoint Prefix.  | api |
+| `api_prefix` | `string` | API Endpoint Prefix (`api` or `api.eu`)  | api |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
