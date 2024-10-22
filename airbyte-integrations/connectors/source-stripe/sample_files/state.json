@@ -7,6 +7,7 @@
   "invoices": { "created": 1617490175 },
   "invoice_items": { "date": 1594946981 },
   "transfers": { "created": 1610995824 },
+  "shipping_rates": { "created": 1599686873 },
   "subscriptions": { "created": 1599686873 },
   "subscription_schedule": { "created": 1678454575 },
   "balance_transactions": { "created": 1617067556 },

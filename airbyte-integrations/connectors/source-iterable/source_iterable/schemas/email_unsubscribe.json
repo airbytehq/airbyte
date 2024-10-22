@@ -1,52 +1,70 @@
 {
   "properties": {
     "unsubSource": {
+      "description": "The source from which the email unsubscribe request originated.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The timestamp indicating when the email unsubscribe data was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "campaignId": {
+      "description": "The unique identifier for the campaign associated with the email unsubscribe data.",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Internal properties specific to Iterable.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "The timestamp indicating when the document was created within Iterable.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "The timestamp indicating when the document was last updated within Iterable.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "emailListId": {
+      "description": "The unique identifier for the email list associated with the email unsubscribe data.",
       "type": ["null", "integer"]
     },
     "emailListIds": {
+      "description": "The list of unique identifiers for multiple email lists associated with the email unsubscribe data.",
       "type": ["null", "array"],
       "items": {}
     },
     "workflowId": {
+      "description": "The unique identifier for the workflow associated with the email unsubscribe data.",
       "type": ["null", "integer"]
     },
     "messageId": {
+      "description": "The unique identifier for the message associated with the email unsubscribe data.",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "The unique identifier for the template associated with the email unsubscribe data.",
       "type": ["null", "integer"]
     },
     "channelIds": {
+      "description": "The list of unique identifiers for multiple channels associated with the email unsubscribe data.",
       "type": ["null", "array"],
       "items": {}
     },
     "email": {
+      "description": "The email address for which the user unsubscribed.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The unique identifier for the user who unsubscribed from the email list.",
       "type": ["null", "string"]
     },
     "channelId": {
+      "description": "The unique identifier for the channel associated with the email unsubscribe data.",
       "type": ["null", "integer"]
     }
   },

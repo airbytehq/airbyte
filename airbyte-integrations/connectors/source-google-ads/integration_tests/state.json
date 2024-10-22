@@ -1,0 +1,73 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_groups"
+      },
+      "stream_state": {
+        "4651612872": {
+          "segments.date": "2022-04-09"
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns"
+      },
+      "stream_state": {
+        "4651612872": {
+          "segments.date": "2022-04-09"
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_group_criterion"
+      },
+      "stream_state": {
+        "change_status": {
+          "4651612872": {
+            "change_status.last_change_date_time": "2023-11-01 13:20:01.003295"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_listing_group_criterion"
+      },
+      "stream_state": {
+        "change_status": {
+          "4651612872": {
+            "change_status.last_change_date_time": "2023-11-01 13:20:01.003295"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaign_criterion"
+      },
+      "stream_state": {
+        "change_status": {
+          "4651612872": {
+            "change_status.last_change_date_time": "2023-11-01 13:20:01.003295"
+          }
+        }
+      }
+    }
+  }
+]

@@ -8,13 +8,17 @@ data:
   icon: chargify.svg
   license: MIT
   name: Chargify (Keen)
-  registries:
+  registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/keen
   tags:
     - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
 metadataSpecVersion: "1.0"

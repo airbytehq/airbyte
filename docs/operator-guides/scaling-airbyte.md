@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Scaling Airbyte
 
 As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood: 1. Scheduler 2. Server 3. Temporal 4. Webapp 5. Database
@@ -31,7 +35,6 @@ You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` an
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
 
-
 ### Disk Space
 
 Airbyte uses backpressure to try to read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
@@ -57,7 +60,7 @@ Temporal maintains multiple idle connections. By the default value is `20` and y
 that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable of the `docker.compose.yaml` file
 might end up allowing 4-5 times more connections than expected.
 
-If you want to increase the amount of allowed idle connexion, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
+If you want to increase the amount of allowed idle connections, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
 is capped by `SQL_MAX_CONNS`.
 
 ## Feedback
@@ -65,44 +68,3 @@ is capped by `SQL_MAX_CONNS`.
 The advice here is best-effort and by no means comprehensive. Please reach out on Slack if anything doesn't make sense or if something can be improved.
 
 If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
-
-## Metrics
-Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https://docs.airbyte.com/operator-guides/collecting-metrics/)
-
-### Key Metrics 
-
-| Key Metrics                     | Description                                                                                                                                      |
-|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| ``oldest_pending_job_age_secs`` | Shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.           |
-| ``oldest_running_job_age_secs`` | Shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime. |
-| ``job_failed_by_release_stage`` | Shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.                                                           |
-      
-:::note 
-    
-Metrics with ``by_release_stage`` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
-
-:::
-
-### Recommended Metrics
-
-| Recommended Metrics          | Description                                                                                                                           |
-|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| ``num_running_jobs & num_pending_jobs`` | Shows how many jobs are currently running and how many jobs are in pending state. These metrics help you understand the general system state. |
-| ``job_succeeded_by_release_stage``      | Shows successful jobs in that release stage and is tagged as alpha, beta, or GA.                                                      |
-| ``job_created_by_release_stage``        | Shows the jobs created in that release stage and is tagged as alpha, beta, or GA.                                                     |
-
-### Example  
-If a job was created for an Alpha source to a Beta destination and the outcome of the job is a success, the following metrics are displayed:
-
-```
-job_created_by_release_stage[“alpha”] = 1;  
-job_created_by_release_stage[“beta”] = 1;  
-job_failed_by_release_stage[“alpha”] = 1;  
-job_succeeded_by_release_stage[“beta”] = 1;  
-```
-
-:::note 
-    
-Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
-
-:::

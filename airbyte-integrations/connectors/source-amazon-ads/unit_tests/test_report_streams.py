@@ -11,6 +11,7 @@ from unittest import mock
 
 import pendulum
 import pytest
+import requests_mock
 import responses
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
@@ -22,12 +23,14 @@ from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsCampaigns,
     SponsoredBrandsReportStream,
+    SponsoredBrandsV3ReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
+from source_amazon_ads.streams.report_streams.display_report import TACTICS
 from source_amazon_ads.streams.report_streams.report_streams import (
     RecordType,
     ReportGenerationFailure,
@@ -195,14 +198,14 @@ def test_display_report_stream(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map) * len(TACTICS)
 
     profiles = make_profiles(profile_type="vendor")
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice["profile"] = profiles[0]
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     # Skip asins record for vendor profiles
-    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1)
+    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1) * len(TACTICS)
 
 
 @pytest.mark.parametrize(
@@ -296,6 +299,22 @@ def test_brands_report_stream(config):
 
 
 @responses.activate
+def test_brands_v3_report_stream(config):
+    setup_responses(
+        init_response_products=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles(profile_type="vendor")
+
+    stream = SponsoredBrandsV3ReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+
+@responses.activate
 def test_brands_video_report_stream(config):
     setup_responses(
         init_response_brands=REPORT_INIT_RESPONSE,
@@ -359,15 +378,15 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     [
         (
             [
-                (lambda x: x <= 5, "SUCCESS", None),
+                (lambda x: x <= 10, "SUCCESS", None),
             ],
-            5,
+            10,
         ),
         (
             [
-                (lambda x: x > 5, "SUCCESS", None),
+                (lambda x: x > 10, "SUCCESS", None),
             ],
-            10,
+            20,
         ),
         (
             [
@@ -381,7 +400,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
                 (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
                 (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
             ],
-            15,
+            20,
         ),
         (
             [
@@ -690,30 +709,6 @@ def test_read_incremental_with_records_start_date(config):
     [
         (
             ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            None,
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            None,
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
             SponsoredDisplayCampaigns,
         ),
         (
@@ -737,28 +732,51 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
     else:
         assert state_filter is None
 
+@pytest.mark.parametrize(
+    "state_filter, stream_class",
+    [
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            None,
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            None,
+            SponsoredProductCampaigns,
+        ),
+    ],
+)
+def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state_filter, stream_class):
+    profiles = make_profiles()
+    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = stream_class(config, profiles)
+    request_body = stream.request_body_json(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in request_body:
+        assert request_body["stateFilter"]["include"] == state_filter
+    else:
+        assert state_filter is None
+
 
 @responses.activate
 @pytest.mark.parametrize(
     "custom_record_types, flag_match_error",
-    [
-        (
-                ["campaigns"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                True
-        )
-    ]
+    [(["campaigns"], True), (["campaigns", "adGroups"], True), ([], False), (["invalid_record_type"], True)],
 )
 def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
     setup_responses(
@@ -773,7 +791,7 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
-        if record['recordType'] not in custom_record_types:
+        if record["recordType"] not in custom_record_types:
             if flag_match_error:
                 assert False
 
@@ -782,37 +800,13 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins_keywords"],
-                ["asins_keywords"],
-                True
-        ),
-        (
-                ["asins_targets"],
-                ["asins_targets"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins_keywords"], ["asins_keywords"], True),
+        (["asins_targets"], ["asins_targets"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_products_report_stream_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -828,7 +822,7 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
 
@@ -837,32 +831,12 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins"],
-                ["asins"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins"], ["asins"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -878,6 +852,42 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
+
+
+@pytest.mark.parametrize(
+    "metric_object, record_type",
+    [
+        ({"campaignId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}, "campaigns"),
+        ({"campaignId": ""}, "campaigns"),
+        ({"campaignId": None}, "campaigns"),
+    ],
+)
+def test_get_record_id_by_report_type(config, metric_object, record_type):
+    """
+    Test if a `recordId` is allways non-empty for any given `metric_object`.
+    `recordId` is not a contant key for every report.
+    We define suitable key for every report by its type and normally it should not be empty.
+    It may be `campaignId` or `adGroupId` or any other key depending on report type (See METRICS_TYPE_TO_ID_MAP).
+    In case when it is not defined or empty (sometimes we get one record with missing data while others are populated)
+        we must return `recordId` anyway so we generate it manually.
+    """
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_record_id(metric_object, record_type), "recordId must be non-empty value"
+
+
+def test_sponsored_products_report_stream_send_http_request_on_download_not_use_headers(config):
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredProductsReportStream(config,profiles, authenticator=mock.MagicMock())
+    download_url = "https://download/url"
+
+    with requests_mock.Mocker() as m:
+        request_mock = m.get(download_url, status_code=200)
+        stream._send_http_request(download_url, None, None, True)
+
+    assert request_mock.called is True
+    assert "Authorization" not in request_mock.request_history[0].matcher.last_request._request.headers.keys()
+

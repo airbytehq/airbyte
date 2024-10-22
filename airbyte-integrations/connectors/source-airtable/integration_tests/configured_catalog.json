@@ -13,7 +13,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    }, 
+    },
     {
       "stream": {
         "name": "users/table_2/tblCjIgm5yveWC4X5",

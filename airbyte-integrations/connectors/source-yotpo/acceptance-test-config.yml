@@ -4,7 +4,7 @@ connector_image: airbyte/source-yotpo:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_yotpo/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: 
+        empty_streams:
           - name: "raw_data"
             bypass_reason: "Sandbox account cannot seed the endpoint"
           - name: "unsubscribers"
@@ -29,15 +29,13 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the endpoint"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
-  incremental: 
-   tests:
-     - config_path: "secrets/config.json"
-       configured_catalog_path: "integration_tests/configured_catalog.json"
-       future_state:
-         future_state_path: "integration_tests/abnormal_state.json"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

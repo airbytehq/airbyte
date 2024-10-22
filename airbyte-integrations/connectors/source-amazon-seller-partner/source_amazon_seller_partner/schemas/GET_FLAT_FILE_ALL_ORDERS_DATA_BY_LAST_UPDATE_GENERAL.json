@@ -5,99 +5,143 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "amazon-order-id": {
+      "description": "The unique identifier for the Amazon order.",
       "type": "string"
     },
-    "asin": {
-      "type": ["null", "string"]
-    },
-    "currency": {
-      "type": ["null", "string"]
-    },
-    "fulfillment-channel": {
-      "type": ["null", "string"]
-    },
-    "gift-wrap-price": {
-      "type": ["null", "string"]
-    },
-    "gift-wrap-tax": {
-      "type": ["null", "string"]
-    },
-    "is-business-order": {
-      "type": ["null", "string"]
-    },
-    "item-price": {
-      "type": ["null", "string"]
-    },
-    "item-promotion-discount": {
-      "type": ["null", "string"]
-    },
-    "item-status": {
-      "type": ["null", "string"]
-    },
-    "item-tax": {
-      "type": ["null", "string"]
-    },
-    "last-updated-date": {
-      "type": "string",
-      "format": "date-time"
-    },
     "merchant-order-id": {
-      "type": ["null", "string"]
-    },
-    "order-channel": {
-      "type": ["null", "string"]
-    },
-    "order-status": {
-      "type": ["null", "string"]
-    },
-    "price-designation": {
-      "type": ["null", "string"]
-    },
-    "product-name": {
-      "type": ["null", "string"]
-    },
-    "promotion-ids": {
-      "type": ["null", "string"]
+      "description": "The unique identifier for the merchant's order.",
+      "type": "string"
     },
     "purchase-date": {
+      "description": "The date and time of the order purchase.",
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "purchase-order-number": {
+    "last-updated-date": {
+      "description": "The date and time of the last update to the order.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "order-status": {
+      "description": "The status of the order.",
       "type": ["null", "string"]
     },
-    "quantity": {
+    "fulfillment-channel": {
+      "description": "The channel through which the order was fulfilled.",
       "type": ["null", "string"]
     },
     "sales-channel": {
+      "description": "The channel through which the sale was made.",
       "type": ["null", "string"]
     },
-    "ship-city": {
-      "type": ["null", "string"]
-    },
-    "ship-country": {
-      "type": ["null", "string"]
-    },
-    "ship-postal-code": {
-      "type": ["null", "string"]
-    },
-    "ship-promotion-discount": {
+    "order-channel": {
+      "description": "The channel through which the order was placed.",
       "type": ["null", "string"]
     },
     "ship-service-level": {
+      "description": "The service level of the shipping method.",
       "type": ["null", "string"]
     },
-    "ship-state": {
-      "type": ["null", "string"]
-    },
-    "shipping-price": {
-      "type": ["null", "string"]
-    },
-    "shipping-tax": {
+    "product-name": {
+      "description": "The name of the product in the order.",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "The Stock Keeping Unit for the product.",
       "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "The Amazon Standard Identification Number for the product.",
+      "type": ["null", "string"]
+    },
+    "item-status": {
+      "description": "The status of the item in the order.",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "The quantity of the product in the order.",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "The currency used in the order transaction.",
+      "type": ["null", "string"]
+    },
+    "item-price": {
+      "description": "The price of the item in the order.",
+      "type": ["null", "string"]
+    },
+    "item-tax": {
+      "description": "The tax applied to the item.",
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "description": "The price of shipping for the order.",
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "description": "The tax applied to shipping.",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-price": {
+      "description": "The price of gift wrapping for the order.",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-tax": {
+      "description": "The tax applied to gift wrapping.",
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "description": "The discount applied to the item.",
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "description": "The discount applied to the shipping.",
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "description": "The city to which the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "description": "The state to which the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "description": "The postal code of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "description": "The country to which the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "promotion-ids": {
+      "description": "The IDs of any promotions applied to the order.",
+      "type": ["null", "string"]
+    },
+    "cpf": {
+      "description": "The taxpayer identification number for the customer.",
+      "type": ["null", "string"]
+    },
+    "is-business-order": {
+      "description": "Indicates if the order is a business order.",
+      "type": ["null", "string"]
+    },
+    "purchase-order-number": {
+      "description": "The purchase order number.",
+      "type": ["null", "string"]
+    },
+    "price-designation": {
+      "description": "The designation of the price.",
+      "type": ["null", "string"]
+    },
+    "signature-confirmation-recommended": {
+      "description": "Indicates if signature confirmation is recommended.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data update.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

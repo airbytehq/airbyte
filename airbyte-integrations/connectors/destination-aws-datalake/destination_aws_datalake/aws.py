@@ -4,21 +4,22 @@
 
 import logging
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import awswrangler as wr
 import boto3
+import botocore
 import pandas as pd
 from airbyte_cdk.destinations import Destination
 from awswrangler import _data_types
+from botocore.credentials import AssumeRoleCredentialFetcher, CredentialResolver, DeferredRefreshableCredentials, JSONFileCache
 from botocore.exceptions import ClientError
 from retrying import retry
 
 from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, OutputFormat
+from .constants import BOOLEAN_VALUES, EMPTY_VALUES
 
 logger = logging.getLogger("airbyte")
-
-null_values = ["", " ", "#N/A", "#N/A N/A", "#NA", "<NA>", "N/A", "NA", "NULL", "none", "None", "NaN", "n/a", "nan", "null"]
 
 
 def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_type: str) -> pd.DataFrame:
@@ -32,13 +33,13 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
         # First cast to string
         df = _cast_pandas_column(df=df, col=col, current_type=current_type, desired_type="string")
         # Then cast to decimal
-        df[col] = df[col].apply(lambda x: Decimal(str(x)) if str(x) not in null_values else None)
+        df[col] = df[col].apply(lambda x: Decimal(str(x)) if str(x) not in EMPTY_VALUES else None)
     elif desired_type.lower() in ["float64", "int64"]:
         df[col] = df[col].fillna("")
         df[col] = pd.to_numeric(df[col])
     elif desired_type in ["boolean", "bool"]:
         if df[col].dtype in ["string", "O"]:
-            df[col] = df[col].fillna("false").apply(lambda x: str(x).lower() in ["true", "1", "1.0", "t", "y", "yes"])
+            df[col] = df[col].fillna("false").apply(lambda x: str(x).lower() in BOOLEAN_VALUES)
 
         df[col] = df[col].astype(bool)
     else:
@@ -53,7 +54,7 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
                 "which may cause precision loss.",
                 UserWarning,
             )
-            df[col] = df[col].apply(lambda x: int(x) if str(x) not in null_values else None).astype(desired_type)
+            df[col] = df[col].apply(lambda x: int(x) if str(x) not in EMPTY_VALUES else None).astype(desired_type)
     return df
 
 
@@ -65,8 +66,34 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
 _data_types._cast_pandas_column = _cast_pandas_column
 
 
+# This class created to support refreshing sts role assumption credentials for long running syncs
+class AssumeRoleProvider(object):
+    METHOD = "assume-role"
+
+    def __init__(self, fetcher):
+        self._fetcher = fetcher
+
+    def load(self):
+        return DeferredRefreshableCredentials(self._fetcher.fetch_credentials, self.METHOD)
+
+    @staticmethod
+    def assume_role_refreshable(
+        session: botocore.session.Session, role_arn: str, duration: int = 3600, session_name: str = None
+    ) -> botocore.session.Session:
+        fetcher = AssumeRoleCredentialFetcher(
+            session.create_client,
+            session.get_credentials(),
+            role_arn,
+            extra_args={"DurationSeconds": duration, "RoleSessionName": session_name},
+            cache=JSONFileCache(),
+        )
+        role_session = botocore.session.Session()
+        role_session.register_component("credential_provider", CredentialResolver([AssumeRoleProvider(fetcher)]))
+        return role_session
+
+
 class AwsHandler:
-    def __init__(self, connector_config: ConnectorConfig, destination: Destination):
+    def __init__(self, connector_config: ConnectorConfig, destination: Destination) -> None:
         self._config: ConnectorConfig = connector_config
         self._destination: Destination = destination
         self._session: boto3.Session = None
@@ -79,7 +106,7 @@ class AwsHandler:
         self._table_type = "GOVERNED" if self._config.lakeformation_governed_tables else "EXTERNAL_TABLE"
 
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
-    def create_session(self):
+    def create_session(self) -> None:
         if self._config.credentials_type == CredentialsType.IAM_USER:
             self._session = boto3.Session(
                 aws_access_key_id=self._config.aws_access_key,
@@ -88,18 +115,10 @@ class AwsHandler:
             )
 
         elif self._config.credentials_type == CredentialsType.IAM_ROLE:
-            client = boto3.client("sts")
-            role = client.assume_role(
-                RoleArn=self._config.role_arn,
-                RoleSessionName="airbyte-destination-aws-datalake",
+            botocore_session = AssumeRoleProvider.assume_role_refreshable(
+                session=botocore.session.Session(), role_arn=self._config.role_arn, session_name="airbyte-destination-aws-datalake"
             )
-            creds = role.get("Credentials", {})
-            self._session = boto3.Session(
-                aws_access_key_id=creds.get("AccessKeyId"),
-                aws_secret_access_key=creds.get("SecretAccessKey"),
-                aws_session_token=creds.get("SessionToken"),
-                region_name=self._config.region,
-            )
+            self._session = boto3.session.Session(region_name=self._config.region, botocore_session=botocore_session)
 
     def _get_s3_path(self, database: str, table: str) -> str:
         bucket = f"s3://{self._config.bucket_name}"
@@ -108,7 +127,7 @@ class AwsHandler:
 
         return f"{bucket}/{database}/{table}/"
 
-    def _get_compression_type(self, compression: CompressionCodec):
+    def _get_compression_type(self, compression: CompressionCodec) -> Optional[str]:
         if compression == CompressionCodec.GZIP:
             return "gzip"
         elif compression == CompressionCodec.SNAPPY:
@@ -127,14 +146,16 @@ class AwsHandler:
         mode: str,
         dtype: Optional[Dict[str, str]],
         partition_cols: list = None,
-    ):
+    ) -> Any:
         return wr.s3.to_parquet(
             df=df,
             path=path,
             dataset=True,
             database=database,
             table=table,
-            table_type=self._table_type,
+            glue_table_settings={
+                "table_type": self._table_type,
+            },
             mode=mode,
             use_threads=False,  # True causes s3 NoCredentialsError error
             catalog_versioning=True,
@@ -153,14 +174,16 @@ class AwsHandler:
         mode: str,
         dtype: Optional[Dict[str, str]],
         partition_cols: list = None,
-    ):
+    ) -> Any:
         return wr.s3.to_json(
             df=df,
             path=path,
             dataset=True,
             database=database,
             table=table,
-            table_type=self._table_type,
+            glue_table_settings={
+                "table_type": self._table_type,
+            },
             mode=mode,
             use_threads=False,  # True causes s3 NoCredentialsError error
             orient="records",
@@ -172,7 +195,9 @@ class AwsHandler:
             compression=self._get_compression_type(self._config.compression_codec),
         )
 
-    def _write(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Dict[str, str], partition_cols: list = None):
+    def _write(
+        self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Dict[str, str], partition_cols: list = None
+    ) -> Any:
         self._create_database_if_not_exists(database)
 
         if self._config.format_type == OutputFormat.JSONL:
@@ -184,7 +209,7 @@ class AwsHandler:
         else:
             raise Exception(f"Unsupported output format: {self._config.format_type}")
 
-    def _create_database_if_not_exists(self, database: str):
+    def _create_database_if_not_exists(self, database: str) -> None:
         tag_key = self._config.lakeformation_database_default_tag_key
         tag_values = self._config.lakeformation_database_default_tag_values
 

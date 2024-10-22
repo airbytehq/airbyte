@@ -29,9 +29,9 @@ Just pass the generated API key and Movie ID for establishing the connection.
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-4. Enter your `api_key`.
-5. Enter params `movie_id, query, language` (if needed).
-6. Click **Set up source**.
+3. Enter your `api_key`.
+4. Enter params `movie_id, query, language` (if needed).
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -81,7 +81,6 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 - Search_people
 - Search_tv_shows
 
-
 ## API method example
 
 GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={api_key}
@@ -92,6 +91,26 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)| Initial commit |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject        |
+| :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.1.0 | 2024-08-14 | [44057](https://github.com/airbytehq/airbyte/pull/44057) | Refactor connector to manifest-only format |
+| 1.0.5 | 2024-08-12 | [43816](https://github.com/airbytehq/airbyte/pull/43816) | Update dependencies |
+| 1.0.4 | 2024-08-10 | [43650](https://github.com/airbytehq/airbyte/pull/43650) | Update dependencies |
+| 1.0.3 | 2024-08-03 | [43259](https://github.com/airbytehq/airbyte/pull/43259) | Update dependencies |
+| 1.0.2 | 2024-07-27 | [42811](https://github.com/airbytehq/airbyte/pull/42811) | Update dependencies |
+| 1.0.1 | 2024-07-20 | [42257](https://github.com/airbytehq/airbyte/pull/42257) | Update dependencies |
+| 1.0.0 | 2024-07-15 | [39109](https://github.com/airbytehq/airbyte/pull/39109) | Make compatible with builder, fix schema |
+| 0.1.7 | 2024-07-13 | [41511](https://github.com/airbytehq/airbyte/pull/41511) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41181](https://github.com/airbytehq/airbyte/pull/41181) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40959](https://github.com/airbytehq/airbyte/pull/40959) | Update dependencies |
+| 0.1.4 | 2024-06-26 | [40273](https://github.com/airbytehq/airbyte/pull/40273) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40095](https://github.com/airbytehq/airbyte/pull/40095) | Update dependencies |
+| 0.1.2 | 2024-06-06 | [39305](https://github.com/airbytehq/airbyte/pull/39305) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-21 | [38496](https://github.com/airbytehq/airbyte/pull/38496) | [autopull] base image + poetry + up_to_date |
+|  0.1.0  | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)  | Initial commit |
+
+</details>

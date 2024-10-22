@@ -25,12 +25,12 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 
 #### Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
-| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             | No                   |                                                                                              |
-| Incremental - Append Sync     | Yes                  |                                                                                              |
-| Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    | Yes                  |                                                                                              |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | No                   |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -90,8 +90,13 @@ You should now have all the requirements needed to configure Pulsar as a destina
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
 | 0.1.3   | 2022-08-05 | [15349](https://github.com/airbytehq/airbyte/pull/15349) | Update Pulsar destination to use outputRecordCollector to properly store state |
+
+</details>

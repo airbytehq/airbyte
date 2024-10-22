@@ -3,17 +3,17 @@
 #
 
 
+import logging
 from abc import ABC
 from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -58,7 +58,6 @@ class CloseComStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = {}
         if self.number_of_items_per_page:
             params.update({"_limit": self.number_of_items_per_page})
@@ -87,8 +86,26 @@ class CloseComStream(HttpStream, ABC):
         return backoff_time
 
 
-class IncrementalCloseComStream(CloseComStream):
+class CloseComStreamCustomFields(CloseComStream):
+    """Class to get custom fields for close objects that support them."""
 
+    def get_custom_field_schema(self) -> Mapping[str, Any]:
+        """Get custom field schema if it exists."""
+        resp = requests.request(
+            "GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.config["authenticator"].get_auth_header()
+        )
+        resp.raise_for_status()
+        resp_json: Mapping[str, Any] = resp.json()["data"]
+        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
+
+    def get_json_schema(self):
+        """Override default get_json_schema method to add custom fields to schema."""
+        schema = super().get_json_schema()
+        schema["properties"].update(self.get_custom_field_schema())
+        return schema
+
+
+class IncrementalCloseComStream(CloseComStream):
     cursor_field = "date_updated"
 
     def get_updated_state(
@@ -103,6 +120,10 @@ class IncrementalCloseComStream(CloseComStream):
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+
+class IncrementalCloseComStreamCustomFields(CloseComStreamCustomFields, IncrementalCloseComStream):
+    """Class to get custom fields for close objects using incremental stream."""
 
 
 class CloseComActivitiesStream(IncrementalCloseComStream):
@@ -233,7 +254,7 @@ class Events(IncrementalCloseComStream):
         return params
 
 
-class Leads(IncrementalCloseComStream):
+class Leads(IncrementalCloseComStreamCustomFields):
     """
     Get leads on a specific date
     API Docs: https://developer.close.com/#leads
@@ -404,7 +425,7 @@ class Users(CloseComStream):
         return "user"
 
 
-class Contacts(CloseComStream):
+class Contacts(CloseComStreamCustomFields):
     """
     Get contacts for Close.com account organization
     API Docs: https://developer.close.com/#contacts
@@ -416,7 +437,7 @@ class Contacts(CloseComStream):
         return "contact"
 
 
-class Opportunities(IncrementalCloseComStream):
+class Opportunities(IncrementalCloseComStreamCustomFields):
     """
     Get opportunities on a specific date
     API Docs: https://developer.close.com/#opportunities
@@ -668,7 +689,7 @@ class Base64HttpAuthenticator(TokenAuthenticator):
 
 
 class SourceCloseCom(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"

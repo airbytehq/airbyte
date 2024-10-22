@@ -2,11 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from functools import lru_cache
 from typing import Any, Dict, Mapping
 
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
+
+DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
 
 
 class CustomQueryMixin:
@@ -52,6 +55,8 @@ class CustomQueryMixin:
             "STRING": "string",
             "BOOLEAN": "boolean",
             "DATE": "string",
+            "MESSAGE": "string",
+            "ENUM": "string",
         }
         fields = list(self.config["query"].fields)
         if self.cursor_field:
@@ -62,25 +67,17 @@ class CustomQueryMixin:
             node = google_schema.get(field)
             # Data type return in enum format: "GoogleAdsFieldDataType.<data_type>"
             google_data_type = node.data_type.name
+            field_value = {"type": [google_datatype_mapping.get(google_data_type, "string"), "null"]}
+
+            # Google Ads doesn't differentiate between DATE and DATETIME, so we need to manually check for fields with known type
+            if google_data_type == "DATE" and field in DATE_TYPES:
+                field_value["format"] = "date"
+
             if google_data_type == "ENUM":
                 field_value = {"type": "string", "enum": list(node.enum_values)}
-                if node.is_repeated:
-                    field_value = {"type": ["null", "array"], "items": field_value}
-            elif google_data_type == "MESSAGE":
-                # Represents protobuf message and could be anything, set custom
-                # attribute "protobuf_message" to convert it to a string (or
-                # array of strings) later.
-                # https://developers.google.com/google-ads/api/reference/rpc/v11/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
-                if node.is_repeated:
-                    output_type = ["array", "null"]
-                else:
-                    output_type = ["string", "null"]
-                field_value = {"type": output_type, "protobuf_message": True}
-            else:
-                output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
-                field_value = {"type": output_type}
-                if google_data_type == "DATE":
-                    field_value["format"] = "date"
+
+            if node.is_repeated:
+                field_value = {"type": ["null", "array"], "items": field_value}
 
             local_json_schema["properties"][field] = field_value
 

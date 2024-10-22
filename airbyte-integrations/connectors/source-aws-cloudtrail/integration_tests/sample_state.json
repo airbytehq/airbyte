@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "EventTime": 1623346856.0 },
+      "stream_descriptor": { "name": "management_events" }
+    }
+  }
+]

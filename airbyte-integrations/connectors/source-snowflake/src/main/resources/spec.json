@@ -15,6 +15,7 @@
             "title": "OAuth2.0",
             "order": 0,
             "required": ["client_id", "client_secret", "auth_type"],
+            "airbyte_hidden": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -52,10 +53,45 @@
             }
           },
           {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["username", "private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "order": 0
+              },
+              "username": {
+                "description": "The username you created to allow Airbyte to access the database.",
+                "examples": ["AIRBYTE_USER"],
+                "type": "string",
+                "title": "Username",
+                "order": 1
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/sources/snowflake#key-pair-authentication\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true,
+                "order": 3
+              }
+            }
+          },
+          {
             "title": "Username and Password",
             "type": "object",
             "required": ["username", "password", "auth_type"],
-            "order": 1,
+            "order": 2,
             "properties": {
               "auth_type": {
                 "type": "string",

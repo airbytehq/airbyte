@@ -1,0 +1,23 @@
+{
+  "before": null,
+  "after": null,
+  "source": {
+    "version": "2.2.0.Final",
+    "connector": "mongodb",
+    "name": "public",
+    "ts_ms": 1693598277000,
+    "snapshot": "false",
+    "db": "public",
+    "sequence": null,
+    "rs": "replica-set",
+    "collection": "names",
+    "ord": 1,
+    "lsid": null,
+    "txnNumber": null,
+    "wallTime": null
+  },
+  "op": "d",
+  "ts_ms": 1693599528047,
+  "transaction": null,
+  "updateDescription": null
+}

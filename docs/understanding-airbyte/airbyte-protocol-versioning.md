@@ -11,15 +11,16 @@ We need a compromise between frequent breaking changes that are heavy on operati
 We are using a `<MAJOR>.<MINOR>.<PATCH>` scheme for the Protocol Versioning. (see [SemVer](https://semver.org/)).
 
 We increment the
-* MAJOR version when you make incompatible protocol changes
-* MINOR version when you add functionality in a backwards compatible manner
-* PATCH version when you make backwards compatible bug fixes
+
+- MAJOR version when you make incompatible protocol changes
+- MINOR version when you add functionality in a backwards compatible manner
+- PATCH version when you make backwards compatible bug fixes
 
 ## Development Guidelines
 
 1. We will continue to do our best effort to avoid introducing breaking changes to the Airbyte Protocol.
 2. When introducing a new minor version of the Airbyte Protocol, new fields must come with sensible defaults for backward compatibility within the same major version, or be entirely optional.
-3. When introducing a new major version of the Airbyte Protocol, all connectors from the previous major version will continue to work.  This requires the ability to “translate” messages between 1 major version of the Airbyte Protocol.
+3. When introducing a new major version of the Airbyte Protocol, all connectors from the previous major version will continue to work. This requires the ability to “translate” messages between 1 major version of the Airbyte Protocol.
 
 ## Safeguards
 

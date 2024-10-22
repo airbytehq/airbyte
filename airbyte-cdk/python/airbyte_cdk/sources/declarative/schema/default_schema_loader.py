@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -24,7 +24,7 @@ class DefaultSchemaLoader(SchemaLoader):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
         self.default_loader = JsonFileSchemaLoader(parameters=parameters, config=self.config)
 

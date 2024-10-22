@@ -3,15 +3,30 @@
 #
 
 import ast
-from typing import Optional
+from functools import cache
+from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from jinja2 import meta
+from jinja2.environment import Template
 from jinja2.exceptions import UndefinedError
-from jinja2.sandbox import Environment
+from jinja2.sandbox import SandboxedEnvironment
+
+
+class StreamPartitionAccessEnvironment(SandboxedEnvironment):
+    """
+    Currently, source-jira is setting an attribute to StreamSlice specific to its use case which because of the PerPartitionCursor is set to
+    StreamSlice._partition but not exposed through StreamSlice.partition. This is a patch to still allow source-jira to have access to this
+    parameter
+    """
+
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if attr in ["_partition"]:
+            return True
+        return super().is_safe_attribute(obj, attr, value)  # type: ignore  # for some reason, mypy says 'Returning Any from function declared to return "bool"'
 
 
 class JinjaInterpolation(Interpolation):
@@ -48,8 +63,8 @@ class JinjaInterpolation(Interpolation):
     # Please add a unit test to test_jinja.py when adding a restriction.
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
-    def __init__(self):
-        self._environment = Environment()
+    def __init__(self) -> None:
+        self._environment = StreamPartitionAccessEnvironment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
@@ -58,7 +73,14 @@ class JinjaInterpolation(Interpolation):
         for builtin in self.RESTRICTED_BUILTIN_FUNCTIONS:
             self._environment.globals.pop(builtin, None)
 
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
+    def eval(
+        self,
+        input_str: str,
+        config: Config,
+        default: Optional[str] = None,
+        valid_types: Optional[Tuple[Type[Any]]] = None,
+        **additional_parameters: Any,
+    ) -> Any:
         context = {"config": config, **additional_parameters}
 
         for alias, equivalent in self.ALIASES.items():
@@ -74,30 +96,47 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    return self._literal_eval(result)
+                    return self._literal_eval(result, valid_types)
             else:
                 # If input is not a string, return it as is
-                raise Exception(f"Expected a string. got {input_str}")
+                raise Exception(f"Expected a string, got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._literal_eval(self._eval(default, context))
+        return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result):
+    def _literal_eval(self, result: Optional[str], valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
-            return ast.literal_eval(result)
+            evaluated = ast.literal_eval(result)  # type: ignore # literal_eval is able to handle None
         except (ValueError, SyntaxError):
             return result
+        if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
+            return evaluated
+        return result
 
-    def _eval(self, s: str, context):
+    def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
-            ast = self._environment.parse(s)
-            undeclared = meta.find_undeclared_variables(ast)
+            undeclared = self._find_undeclared_variables(s)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
                 raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context)
+            return self._compile(s).render(context)  # type: ignore # from_string is able to handle None
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
             return s
+
+    @cache
+    def _find_undeclared_variables(self, s: Optional[str]) -> Template:
+        """
+        Find undeclared variables and cache them
+        """
+        ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
+        return meta.find_undeclared_variables(ast)
+
+    @cache
+    def _compile(self, s: Optional[str]) -> Template:
+        """
+        We must cache the Jinja Template ourselves because we're using `from_string` instead of a template loader
+        """
+        return self._environment.from_string(s)

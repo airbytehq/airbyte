@@ -1,0 +1,5 @@
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: integration_tests/spec.json
+connector_image: airbyte/destination-snowflake-cortex:dev
