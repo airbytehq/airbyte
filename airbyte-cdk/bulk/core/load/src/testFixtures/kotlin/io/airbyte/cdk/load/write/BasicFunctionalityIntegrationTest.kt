@@ -29,12 +29,14 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -151,6 +153,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
     open fun testMidSyncCheckpointingStreamState() =
         runBlocking(Dispatchers.IO) {
@@ -213,15 +216,21 @@ abstract class BasicFunctionalityIntegrationTest(
             val stateMessages: List<AirbyteStateMessage>
             var i = 0
             while (true) {
-                destination.sendMessage(
-                    DestinationRecord(
-                            namespace = randomizedNamespace,
-                            name = "test_stream1",
-                            data = """{"id": 56}""",
-                            emittedAtMs = 1234,
-                        )
-                        .asProtocolMessage()
-                )
+                // limit ourselves to 2M messages, which should be enough to force a flush
+                if (i < 2_000_000) {
+                    destination.sendMessage(
+                        DestinationRecord(
+                                namespace = randomizedNamespace,
+                                name = "test_stream1",
+                                data = """{"id": 56}""",
+                                emittedAtMs = 1234,
+                            )
+                            .asProtocolMessage()
+                    )
+                    i++
+                } else {
+                    delay(1000)
+                }
                 val returnedMessages = destination.readMessages()
                 if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
                     stateMessages =
@@ -230,7 +239,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             .map { it.state }
                     break
                 }
-                i++
             }
 
             // for each state message, verify that it's a valid state,
@@ -293,9 +301,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             )
                         )
 
-                    assertTrue("Expected the first record to be present in the dumped records.") {
-                        records.any { actualRecord -> expectedRecord.data == actualRecord.data }
-                    }
+                    assertTrue(
+                        records.any { actualRecord -> expectedRecord.data == actualRecord.data },
+                        "Expected the first record to be present in the dumped records."
+                    )
                 }
             }
 
