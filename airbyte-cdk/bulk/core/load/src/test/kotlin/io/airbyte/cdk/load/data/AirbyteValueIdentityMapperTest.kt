@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.test.util.Root
+import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import org.junit.jupiter.api.Assertions
@@ -14,7 +16,7 @@ class AirbyteValueIdentityMapperTest {
     @Test
     fun testIdentityMapping() {
         val (inputValues, inputSchema, expectedValues) =
-            ValueTestBuilder()
+            ValueTestBuilder<SchemaRecordBuilder<Root>>()
                 .with(StringValue("a"), StringType)
                 .with(IntegerValue(1), IntegerType)
                 .with(BooleanValue(true), BooleanType)
@@ -47,7 +49,7 @@ class AirbyteValueIdentityMapperTest {
     @Test
     fun testIdentityMappingWithBadSchema() {
         val (inputValues, inputSchema, _) =
-            ValueTestBuilder()
+            ValueTestBuilder<SchemaRecordBuilder<Root>>()
                 .with(StringValue("a"), StringType)
                 .with(
                     TimestampValue("2021-01-01T12:00:00Z"),
