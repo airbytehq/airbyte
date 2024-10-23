@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-import source_adjust.model
+import model
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 
 
@@ -18,7 +18,7 @@ class AdjustSchemaLoader(JsonFileSchemaLoader):
         """
         Prune the schema to only include selected fields to synchronize.
         """
-        schema = source_adjust.model.Report.schema()
+        schema = model.Report.schema()
         properties = schema["properties"]
 
         required = schema["required"]
