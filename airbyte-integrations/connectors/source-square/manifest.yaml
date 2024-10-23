@@ -1,0 +1,4007 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - locations
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+          request_parameters:
+            sort_field: CREATED_AT
+            sort_order: ASC
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['cursor'] }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locations
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['cursor'] }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    shifts:
+      type: DeclarativeStream
+      name: shifts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labor/shifts/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - shifts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shifts"
+    team_members:
+      type: DeclarativeStream
+      name: team_members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /team-members/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - team_members
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_members"
+    team_member_wages:
+      type: DeclarativeStream
+      name: team_member_wages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /labor/team-member-wages
+          http_method: GET
+          request_parameters:
+            sort_field: CREATED_AT
+            sort_order: ASC
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - team_member_wages
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_member_wages"
+    items:
+      type: DeclarativeStream
+      name: items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /catalog/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            object_types: ITEM
+            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+            include_related_objects: "{{ False }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /catalog/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            object_types: CATEGORY
+            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+            include_related_objects: "{{ False }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    discounts:
+      type: DeclarativeStream
+      name: discounts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /catalog/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            object_types: DISCOUNT
+            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+            include_related_objects: "{{ False }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discounts"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /catalog/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            object_types: TAX
+            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+            include_related_objects: "{{ False }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+    modifier_list:
+      type: DeclarativeStream
+      name: modifier_list
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /catalog/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            object_types: MODIFIER_LIST
+            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+            include_related_objects: "{{ False }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/modifier_list"
+    refunds:
+      type: DeclarativeStream
+      name: refunds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /refunds
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            sort_field: CREATED_AT
+            sort_order: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - refunds
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/refunds"
+    inventory:
+      type: DeclarativeStream
+      name: inventory
+      primary_key:
+        - catalog_object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inventory/counts/batch-retrieve
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            limit: "{{ 500 }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - counts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inventory"
+    payments:
+      type: DeclarativeStream
+      name: payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /payments
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            sort_field: CREATED_AT
+            sort_order: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: P30D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payments"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            sort:
+              sort_field: UPDATED_AT
+              sort_order: ASC
+            limit: "{{ 500 }}"
+            filter:
+              date_time_filter:
+                updated_at:
+                  start_at: "{{ stream_slice.start_time }}"
+            location_ids: "{{ [ stream_slice.location_ids ] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: location_ids
+              stream:
+                $ref: "#/definitions/streams/locations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    bank_accounts:
+      type: DeclarativeStream
+      name: bank_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank-accounts
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bank_accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['cursor'] }}"
+            stop_condition: "{{ 'cursor' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bank_accounts"
+    cash_drawers:
+      type: DeclarativeStream
+      name: cash_drawers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cash-drawers/shifts
+          http_method: GET
+          request_parameters:
+            location_id: "{{ stream_partition.location_id }}"
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cash_drawer_shifts
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: location_id
+              stream:
+                $ref: "#/definitions/streams/locations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cash_drawers"
+    loyalty:
+      type: DeclarativeStream
+      name: loyalty
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /loyalty/accounts/search
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            Square-Version: "2022-10-19"
+          request_body_json:
+            limit: "{{ 200 }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 403
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Failed to authorize request. Please update your access
+                      token to continue using the source.
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - loyalty_accounts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/loyalty"
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else
+      'https://connect.squareup.com/v2' }}
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticators:
+        OAuth:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          expires_in_name: expires_at
+          token_refresh_endpoint: https://connect.squareup.com/oauth2/token
+          token_expiry_date_format: YYYY-MM-DDTHH:mm:ss[Z]
+        API Key:
+          type: BearerAuthenticator
+          api_token: "{{ config['credentials']['api_key'] }}"
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/shifts"
+  - $ref: "#/definitions/streams/team_members"
+  - $ref: "#/definitions/streams/team_member_wages"
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/discounts"
+  - $ref: "#/definitions/streams/taxes"
+  - $ref: "#/definitions/streams/modifier_list"
+  - $ref: "#/definitions/streams/refunds"
+  - $ref: "#/definitions/streams/inventory"
+  - $ref: "#/definitions/streams/payments"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/bank_accounts"
+  - $ref: "#/definitions/streams/cash_drawers"
+  - $ref: "#/definitions/streams/loyalty"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - is_sandbox
+    properties:
+      credentials:
+        type: object
+        description: Choose how to authenticate to Square.
+        oneOf:
+          - type: object
+            title: Oauth authentication
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: OAuth
+                order: 0
+              client_id:
+                type: string
+                description: The Square-issued ID of your application
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: The Square-issued application secret for your application
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: A refresh token generated using the above client ID and secret
+                title: Refresh Token
+                airbyte_secret: true
+          - type: object
+            title: API key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              api_key:
+                type: string
+                description: The API key for a Square application
+                title: API key token
+                airbyte_secret: true
+              auth_type:
+                type: string
+                const: API Key
+                order: 1
+        order: 0
+        title: Authentication
+      is_sandbox:
+        type: boolean
+        description: Determines whether to use the sandbox or production environment.
+        order: 1
+        title: Sandbox
+        default: false
+      start_date:
+        type: string
+        description: >-
+          UTC date in the format YYYY-MM-DD. Any data before this date will not
+          be replicated. If not set, all data will be replicated.
+        order: 2
+        title: Start Date
+        format: date
+        default: "2021-01-01"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      include_deleted_objects:
+        type: boolean
+        description: >-
+          In some streams there is an option to include deleted objects (Items,
+          Categories, Discounts, Taxes)
+        order: 3
+        title: Include Deleted Objects
+        default: false
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: false
+    locations: false
+    shifts: false
+    team_members: false
+    team_member_wages: false
+    items: false
+    categories: false
+    discounts: false
+    taxes: false
+    modifier_list: false
+    refunds: false
+    inventory: false
+    payments: false
+    orders: false
+    bank_accounts: false
+    cash_drawers: false
+    loyalty: false
+  yamlComponents:
+    streams:
+      customers:
+        - errorHandler
+      locations:
+        - errorHandler
+      shifts:
+        - errorHandler
+      team_members:
+        - errorHandler
+      team_member_wages:
+        - errorHandler
+      items:
+        - errorHandler
+      categories:
+        - errorHandler
+      discounts:
+        - errorHandler
+      taxes:
+        - errorHandler
+      modifier_list:
+        - errorHandler
+      refunds:
+        - errorHandler
+      inventory:
+        - errorHandler
+      payments:
+        - errorHandler
+      orders:
+        - errorHandler
+      bank_accounts:
+        - errorHandler
+      cash_drawers:
+        - errorHandler
+      loyalty:
+        - errorHandler
+    global:
+      - authenticator
+  testedStreams:
+    customers:
+      streamHash: 512f6c0efa25012a95ae404d59b34f51381d63ea
+    locations:
+      streamHash: d4582c3b8bac1a5cb02bb2a3969ae5d61715072f
+    shifts:
+      streamHash: 2543e0b1511dfcfb93100f892701b86d7df41b2e
+    team_members:
+      streamHash: 27e584f390cd72f919397e5c38cd87b19543327c
+    team_member_wages:
+      streamHash: df7b36ae383488e650e7915068e3043ee07461ac
+    items:
+      streamHash: bd3ab876b289b4dba7065b913910b8045d3fb747
+    categories:
+      streamHash: 00e5efbf9ca77b0980b2bfa9588f2b96aa360af8
+    discounts:
+      streamHash: 115de6f88c47141c141e6b40de20775da3815a06
+    taxes:
+      streamHash: 98f52a1e47bf1a68b2e1c195405dacbb7dd86ed8
+    modifier_list:
+      streamHash: e430f0c3735e10a7715a7e8950a477bc0a2a218c
+    refunds:
+      streamHash: 3e3ef3b42273620897faeff5f34df0bc35d0d6fa
+    inventory:
+      streamHash: b799f598deb52190117f2e3626d87e62b8987c6a
+    payments:
+      streamHash: 3f9c6b9f4894d778bfe4214b1a3155cc3eda24aa
+    orders:
+      streamHash: 2c6311a34808057dd827658bb191672270b7d957
+    bank_accounts:
+      streamHash: d39a65b099ab01b638df8abb13106e054a776942
+    cash_drawers:
+      streamHash: 7a857ae17a85d3b6387fe58a4b300b40cd85c66e
+    loyalty:
+      streamHash: 59b9bdbd762fef15515bcedbe6e2b2bc8f2b27dd
+  assist: {}
+
+schemas:
+  customers:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      address:
+        type:
+          - "null"
+          - object
+        properties:
+          address_line_1:
+            type:
+              - "null"
+              - string
+          address_line_2:
+            type:
+              - "null"
+              - string
+          administrative_district_level_1:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+      birthday:
+        type:
+          - "null"
+          - string
+      cards:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            billing_address:
+              type:
+                - "null"
+                - object
+              properties:
+                postal_code:
+                  type:
+                    - "null"
+                    - string
+            card_brand:
+              type:
+                - "null"
+                - string
+            cardholder_name:
+              type:
+                - "null"
+                - string
+            exp_month:
+              type:
+                - "null"
+                - integer
+            exp_year:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - string
+            last_4:
+              type:
+                - "null"
+                - string
+      company_name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      creation_source:
+        type:
+          - "null"
+          - string
+      email_address:
+        type:
+          - "null"
+          - string
+      family_name:
+        type:
+          - "null"
+          - string
+      given_name:
+        type:
+          - "null"
+          - string
+      group_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      id:
+        type:
+          - "null"
+          - string
+      phone_number:
+        type:
+          - "null"
+          - string
+      preferences:
+        type:
+          - "null"
+          - object
+        properties:
+          email_unsubscribed:
+            type: boolean
+      reference_id:
+        type:
+          - "null"
+          - string
+      segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  locations:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      address:
+        type:
+          - "null"
+          - object
+        properties:
+          address_line_1:
+            type:
+              - "null"
+              - string
+          administrative_district_level_1:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+      business_email:
+        type:
+          - "null"
+          - string
+      business_hours:
+        type:
+          - "null"
+          - object
+      business_name:
+        type:
+          - "null"
+          - string
+      capabilities:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      country:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      facebook_url:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      instagram_username:
+        type:
+          - "null"
+          - string
+      language_code:
+        type:
+          - "null"
+          - string
+      mcc:
+        type:
+          - "null"
+          - string
+      merchant_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      phone_number:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      timezone:
+        type:
+          - "null"
+          - string
+      twitter_username:
+        type:
+          - "null"
+          - string
+      website_url:
+        type:
+          - "null"
+          - string
+  shifts:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      breaks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            break_type_id:
+              type:
+                - "null"
+                - string
+            end_at:
+              type:
+                - "null"
+                - string
+            expected_duration:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            is_paid:
+              type:
+                - "null"
+                - boolean
+            name:
+              type:
+                - "null"
+                - string
+            start_at:
+              type:
+                - "null"
+                - string
+      created_at:
+        type:
+          - "null"
+          - string
+      employee_id:
+        type:
+          - "null"
+          - string
+      end_at:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      location_id:
+        type:
+          - "null"
+          - string
+      start_at:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      team_member_id:
+        type:
+          - "null"
+          - string
+      timezone:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      wage:
+        type:
+          - "null"
+          - object
+        properties:
+          hourly_rate:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          title:
+            type:
+              - "null"
+              - string
+  team_members:
+    type: object
+    additionalProperties: true
+    properties:
+      assigned_locations:
+        type:
+          - "null"
+          - object
+        properties:
+          assignment_type:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+      email_address:
+        type:
+          - "null"
+          - string
+      family_name:
+        type:
+          - "null"
+          - string
+      given_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      is_owner:
+        type:
+          - "null"
+          - boolean
+      phone_number:
+        type:
+          - "null"
+          - string
+      reference_id:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  team_member_wages:
+    type: object
+    additionalProperties: true
+    properties:
+      hourly_rate:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      team_member_id:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+  items:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      custom_attribute_values:
+        type:
+          - "null"
+          - object
+      id:
+        type:
+          - "null"
+          - string
+      image_id:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      item_data:
+        type:
+          - "null"
+          - object
+        properties:
+          description:
+            type:
+              - "null"
+              - string
+          category_id:
+            type:
+              - "null"
+              - string
+          ecom_visibility:
+            type:
+              - "null"
+              - string
+          item_options:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                item_option_id:
+                  type:
+                    - "null"
+                    - string
+          modifier_list_info:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                enabled:
+                  type:
+                    - "null"
+                    - boolean
+                max_selected_modifiers:
+                  type:
+                    - "null"
+                    - integer
+                min_selected_modifiers:
+                  type:
+                    - "null"
+                    - integer
+                modifier_list_id:
+                  type:
+                    - "null"
+                    - string
+                visibility:
+                  type:
+                    - "null"
+                    - string
+          name:
+            type:
+              - "null"
+              - string
+          product_type:
+            type:
+              - "null"
+              - string
+          skip_modifier_screen:
+            type:
+              - "null"
+              - boolean
+          tax_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          variations:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                version:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                is_deleted:
+                  type:
+                    - "null"
+                    - boolean
+                item_variation_data:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    item_id:
+                      type:
+                        - "null"
+                        - string
+                    item_option_values:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          item_option_id:
+                            type:
+                              - "null"
+                              - string
+                          item_option_value_id:
+                            type:
+                              - "null"
+                              - string
+                    location_overrides:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          location_id:
+                            type:
+                              - "null"
+                              - string
+                          track_inventory:
+                            type:
+                              - "null"
+                              - boolean
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    ordinal:
+                      type:
+                        - "null"
+                        - integer
+                    price_money:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                    pricing_type:
+                      type:
+                        - "null"
+                        - string
+                    sku:
+                      type:
+                        - "null"
+                        - string
+                present_at_all_locations:
+                  type:
+                    - "null"
+                    - boolean
+                present_at_location_ids:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+          visibility:
+            type:
+              - "null"
+              - string
+      present_at_all_locations:
+        type:
+          - "null"
+          - boolean
+      present_at_location_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  categories:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      category_data:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      present_at_all_locations:
+        type:
+          - "null"
+          - boolean
+      updated_at:
+        type:
+          - "null"
+          - string
+  discounts:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      discount_data:
+        type:
+          - "null"
+          - object
+        properties:
+          amount_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          application_method:
+            type:
+              - "null"
+              - string
+          discount_type:
+            type:
+              - "null"
+              - string
+          modify_tax_basis:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          percentage:
+            type:
+              - "null"
+              - string
+          pin_required:
+            type:
+              - "null"
+              - boolean
+      id:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      present_at_all_locations:
+        type:
+          - "null"
+          - boolean
+      present_at_location_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  taxes:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      absent_at_location_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      id:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      present_at_all_locations:
+        type:
+          - "null"
+          - boolean
+      tax_data:
+        type:
+          - "null"
+          - object
+        properties:
+          applies_to_custom_amounts:
+            type:
+              - "null"
+              - boolean
+          calculation_phase:
+            type:
+              - "null"
+              - string
+          enabled:
+            type:
+              - "null"
+              - boolean
+          inclusion_type:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          percentage:
+            type:
+              - "null"
+              - string
+          tax_type_id:
+            type:
+              - "null"
+              - string
+          tax_type_name:
+            type:
+              - "null"
+              - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  modifier_list:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      modifier_list_data:
+        type:
+          - "null"
+          - object
+        properties:
+          modifiers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                version:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                is_deleted:
+                  type:
+                    - "null"
+                    - boolean
+                modifier_data:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    modifier_list_id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    on_by_default:
+                      type:
+                        - "null"
+                        - boolean
+                    ordinal:
+                      type:
+                        - "null"
+                        - integer
+                    price_money:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                present_at_all_locations:
+                  type:
+                    - "null"
+                    - boolean
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+          name:
+            type:
+              - "null"
+              - string
+          selection_type:
+            type:
+              - "null"
+              - string
+      present_at_all_locations:
+        type:
+          - "null"
+          - boolean
+      updated_at:
+        type:
+          - "null"
+          - string
+  refunds:
+    type: object
+    additionalProperties: true
+    properties:
+      amount_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+        required:
+          - amount
+          - currency
+      created_at:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      location_id:
+        type:
+          - "null"
+          - string
+      order_id:
+        type:
+          - "null"
+          - string
+      payment_id:
+        type:
+          - "null"
+          - string
+      processing_fee:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            amount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            effective_at:
+              type:
+                - "null"
+                - string
+      reason:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  inventory:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      calculated_at:
+        type:
+          - string
+          - "null"
+      catalog_object_id:
+        type:
+          - string
+          - "null"
+      catalog_object_type:
+        type:
+          - string
+          - "null"
+      location_id:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+    title: Inventory Schema
+  payments:
+    type: object
+    additionalProperties: true
+    properties:
+      amount_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      approved_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      card_details:
+        type:
+          - "null"
+          - object
+        properties:
+          avs_status:
+            type:
+              - "null"
+              - string
+          card:
+            type:
+              - "null"
+              - object
+            properties:
+              bin:
+                type:
+                  - "null"
+                  - string
+              card_brand:
+                type:
+                  - "null"
+                  - string
+              card_type:
+                type:
+                  - "null"
+                  - string
+              exp_month:
+                type:
+                  - "null"
+                  - integer
+              exp_year:
+                type:
+                  - "null"
+                  - integer
+              fingerprint:
+                type:
+                  - "null"
+                  - string
+              last_4:
+                type:
+                  - "null"
+                  - string
+              prepaid_type:
+                type:
+                  - "null"
+                  - string
+          card_payment_timeline:
+            type:
+              - "null"
+              - object
+            properties:
+              authorized_at:
+                type:
+                  - "null"
+                  - string
+              captured_at:
+                type:
+                  - "null"
+                  - string
+              voided_at:
+                type:
+                  - "null"
+                  - string
+          cvv_status:
+            type:
+              - "null"
+              - string
+          entry_method:
+            type:
+              - "null"
+              - string
+          statement_description:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+      customer_id:
+        type:
+          - "null"
+          - string
+      delay_action:
+        type:
+          - "null"
+          - string
+      delay_duration:
+        type:
+          - "null"
+          - string
+      delayed_until:
+        type:
+          - "null"
+          - string
+      employee_id:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      location_id:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      order_id:
+        type:
+          - "null"
+          - string
+      processing_fee:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            amount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            effective_at:
+              type:
+                - "null"
+                - string
+      receipt_number:
+        type:
+          - "null"
+          - string
+      receipt_url:
+        type:
+          - "null"
+          - string
+      refund_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      refunded_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      risk_evaluation:
+        type:
+          - "null"
+          - object
+        properties:
+          created_at:
+            type:
+              - "null"
+              - string
+          risk_level:
+            type:
+              - "null"
+              - string
+      source_type:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      total_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      version_token:
+        type:
+          - "null"
+          - string
+  orders:
+    type: object
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      closed_at:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      customer_id:
+        type:
+          - "null"
+          - string
+      discounts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            applied_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            name:
+              type:
+                - "null"
+                - string
+            percentage:
+              type:
+                - "null"
+                - string
+            scope:
+              type:
+                - "null"
+                - string
+            uid:
+              type:
+                - "null"
+                - string
+      fulfillments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            pickup_details:
+              type:
+                - "null"
+                - object
+              properties:
+                accepted_at:
+                  type:
+                    - "null"
+                    - string
+                auto_complete_duration:
+                  type:
+                    - "null"
+                    - string
+                expires_at:
+                  type:
+                    - "null"
+                    - string
+                note:
+                  type:
+                    - "null"
+                    - string
+                picked_up_at:
+                  type:
+                    - "null"
+                    - string
+                pickup_at:
+                  type:
+                    - "null"
+                    - string
+                placed_at:
+                  type:
+                    - "null"
+                    - string
+                ready_at:
+                  type:
+                    - "null"
+                    - string
+                recipient:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    display_name:
+                      type:
+                        - "null"
+                        - string
+                    phone_number:
+                      type:
+                        - "null"
+                        - string
+                schedule_type:
+                  type:
+                    - "null"
+                    - string
+            shipment_details:
+              type:
+                - "null"
+                - object
+              properties:
+                carrier:
+                  type:
+                    - "null"
+                    - string
+                expected_shipped_at:
+                  type:
+                    - "null"
+                    - string
+                in_progress_at:
+                  type:
+                    - "null"
+                    - string
+                packaged_at:
+                  type:
+                    - "null"
+                    - string
+                placed_at:
+                  type:
+                    - "null"
+                    - string
+                recipient:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    address:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        address_line_1:
+                          type:
+                            - "null"
+                            - string
+                        administrative_district_level_1:
+                          type:
+                            - "null"
+                            - string
+                        locality:
+                          type:
+                            - "null"
+                            - string
+                        postal_code:
+                          type:
+                            - "null"
+                            - string
+                    display_name:
+                      type:
+                        - "null"
+                        - string
+                    phone_number:
+                      type:
+                        - "null"
+                        - string
+                shipped_at:
+                  type:
+                    - "null"
+                    - string
+                tracking_number:
+                  type:
+                    - "null"
+                    - string
+            state:
+              type:
+                - "null"
+                - string
+            uid:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - string
+      line_items:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            applied_discounts:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  applied_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  discount_uid:
+                    type:
+                      - "null"
+                      - string
+                  uid:
+                    type:
+                      - "null"
+                      - string
+            applied_taxes:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  applied_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  tax_uid:
+                    type:
+                      - "null"
+                      - string
+                  uid:
+                    type:
+                      - "null"
+                      - string
+            base_price_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            catalog_object_id:
+              type:
+                - "null"
+                - string
+            gross_sales_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            item_type:
+              type:
+                - "null"
+                - string
+            modifiers:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  base_price_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  catalog_object_id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  total_price_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  uid:
+                    type:
+                      - "null"
+                      - string
+            name:
+              type:
+                - "null"
+                - string
+            note:
+              type:
+                - "null"
+                - string
+            quantity:
+              type:
+                - "null"
+                - string
+            total_discount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            total_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            total_tax_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            uid:
+              type:
+                - "null"
+                - string
+            variation_name:
+              type:
+                - "null"
+                - string
+            variation_total_price_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+      location_id:
+        type:
+          - "null"
+          - string
+      net_amounts:
+        type:
+          - "null"
+          - object
+        properties:
+          discount_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          service_charge_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          tax_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          tip_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          total_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+      refunds:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            amount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            created_at:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            location_id:
+              type:
+                - "null"
+                - string
+            reason:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            tender_id:
+              type:
+                - "null"
+                - string
+            transaction_id:
+              type:
+                - "null"
+                - string
+      return_amounts:
+        type:
+          - "null"
+          - object
+        properties:
+          discount_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          service_charge_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          tax_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          tip_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          total_money:
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+      returns:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            return_line_items:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  base_price_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  gross_return_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  item_type:
+                    type:
+                      - "null"
+                      - string
+                  quantity:
+                    type:
+                      - "null"
+                      - string
+                  total_discount_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  total_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  total_tax_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                  uid:
+                    type:
+                      - "null"
+                      - string
+                  variation_total_price_money:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - integer
+                      currency:
+                        type:
+                          - "null"
+                          - string
+            source_order_id:
+              type:
+                - "null"
+                - string
+            uid:
+              type:
+                - "null"
+                - string
+      service_charges:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            amount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            applied_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            calculation_phase:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            taxable:
+              type:
+                - "null"
+                - boolean
+            total_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            total_tax_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            uid:
+              type:
+                - "null"
+                - string
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+      state:
+        type:
+          - "null"
+          - string
+      taxes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            applied_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            catalog_object_id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            percentage:
+              type:
+                - "null"
+                - string
+            scope:
+              type:
+                - "null"
+                - string
+            uid:
+              type:
+                - "null"
+                - string
+      tenders:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            amount_money:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  type:
+                    - "null"
+                    - string
+            card_details:
+              type:
+                - "null"
+                - object
+              properties:
+                card:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    card_brand:
+                      type:
+                        - "null"
+                        - string
+                    fingerprint:
+                      type:
+                        - "null"
+                        - string
+                    last_4:
+                      type:
+                        - "null"
+                        - string
+                entry_method:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+            cash_details:
+              type:
+                - "null"
+                - object
+              properties:
+                buyer_tendered_money:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                change_back_money:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+            created_at:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            location_id:
+              type:
+                - "null"
+                - string
+            note:
+              type:
+                - "null"
+                - string
+            payment_id:
+              type:
+                - "null"
+                - string
+            transaction_id:
+              type:
+                - "null"
+                - string
+      total_discount_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      total_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      total_service_charge_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      total_tax_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      total_tip_money:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+      updated_at:
+        type:
+          - "null"
+          - string
+  bank_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - integer
+      account_number_suffix:
+        type:
+          - "null"
+          - string
+      account_type:
+        type:
+          - "null"
+          - string
+      bank_name:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      creditable:
+        type:
+          - "null"
+          - boolean
+      currency:
+        type:
+          - "null"
+          - string
+      debitable:
+        type:
+          - "null"
+          - boolean
+      holder_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      location_id:
+        type:
+          - "null"
+          - string
+      primary_bank_identification_number:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+  cash_drawers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      closed_at:
+        type:
+          - string
+          - "null"
+      closed_cash_money:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      ended_at:
+        type:
+          - string
+          - "null"
+      expected_cash_money:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      opened_at:
+        type:
+          - string
+          - "null"
+      opened_cash_money:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      state:
+        type:
+          - string
+          - "null"
+    title: Cash Drawer Shifts Schema
+  loyalty:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      balance:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      lifetime_points:
+        type:
+          - number
+          - "null"
+      mapping:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+      program_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    title: Loyalty schema

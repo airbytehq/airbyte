@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 # State and Logging Storage
 
 Airbyte recommends using an object storage solution for such as S3 and GCS for storing [State](../../understanding-airbyte/airbyte-protocol/#state--checkpointing) and [Logging information](../../operator-guides/browsing-output-logs).
-You must select which type of blob store that you wish to use. Currently, S3 and GCS are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
+You must select which type of blob store that you wish to use. Currently, S3, GCS, and Azure are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
 
 Adding external storage details to your `values.yaml` disables the default internal Minio instance (`airbyte/minio`). While there are three separate buckets presented in the Values section below, Airbyte recommends that you use a single bucket across all three values.
 
@@ -52,6 +52,20 @@ stringData:
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
 }
+```
+</TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  # Azure Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
 ```
 
 </TabItem>
@@ -101,6 +115,22 @@ global:
       credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
+</TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
 </TabItem>
 
 </Tabs>

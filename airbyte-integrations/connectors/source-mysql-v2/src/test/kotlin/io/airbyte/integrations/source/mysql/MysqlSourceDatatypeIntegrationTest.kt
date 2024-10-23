@@ -4,8 +4,8 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.data.AirbyteType
-import io.airbyte.cdk.data.LeafAirbyteType
+import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -125,9 +125,9 @@ class MysqlSourceDatatypeIntegrationTest {
             actualStream!!.supportedSyncModes.contains(SyncMode.INCREMENTAL)
         val jsonSchema: JsonNode = actualStream.jsonSchema?.get("properties")!!
         if (streamName == testCase.tableName) {
-            val actualSchema: JsonNode? = jsonSchema[testCase.columnName]
+            val actualSchema: JsonNode = jsonSchema[testCase.columnName]
             Assertions.assertNotNull(actualSchema)
-            val expectedSchema: JsonNode = testCase.airbyteType.asJsonSchema()
+            val expectedSchema: JsonNode = testCase.airbyteSchemaType.asJsonSchema()
             Assertions.assertEquals(expectedSchema, actualSchema)
             if (testCase.cursor) {
                 Assertions.assertTrue(isIncrementalSupported)
@@ -145,6 +145,7 @@ class MysqlSourceDatatypeIntegrationTest {
             Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
 
         val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: listOf()
+
         val actual: JsonNode = sortedRecordData(actualRecords.mapNotNull { it.data })
         log.info { "test case $streamName: emitted records $actual" }
         val expected: JsonNode = sortedRecordData(allStreamNamesAndRecordData[streamName]!!)
@@ -155,11 +156,23 @@ class MysqlSourceDatatypeIntegrationTest {
     companion object {
         lateinit var dbContainer: MySQLContainer<*>
 
-        fun config(): MysqlSourceConfigurationJsonObject = MysqlContainerFactory.config(dbContainer)
+        fun config(): MysqlSourceConfigurationSpecification =
+            MysqlContainerFactory.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))
         }
+
+        val bitValues =
+            mapOf(
+                "b'1'" to "true",
+                "b'0'" to "false",
+            )
+
+        val longBitValues =
+            mapOf(
+                "b'10101010'" to """-86""",
+            )
 
         val stringValues =
             mapOf(
@@ -168,9 +181,215 @@ class MysqlSourceDatatypeIntegrationTest {
                 "'OXBEEF'" to """"OXBEEF"""",
             )
 
+        val jsonValues = mapOf("""'{"col1": "v1"}'""" to """"{\"col1\": \"v1\"}"""")
+
+        val yearValues =
+            mapOf(
+                "1992" to """1992""",
+                "2002" to """2002""",
+                "70" to """1970""",
+            )
+
+        val decimalValues =
+            mapOf(
+                "0.2" to """0.2""",
+            )
+
+        val zeroPrecisionDecimalValues =
+            mapOf(
+                "2" to """2""",
+            )
+
+        val tinyintValues =
+            mapOf(
+                "10" to "10",
+                "4" to "4",
+                "2" to "2",
+            )
+
+        val intValues =
+            mapOf(
+                "10" to "10",
+                "100000000" to "100000000",
+                "200000000" to "200000000",
+            )
+
+        val dateValues =
+            mapOf(
+                "'2022-01-01'" to """"2022-01-01"""",
+            )
+
+        val timeValues =
+            mapOf(
+                "'14:30:00'" to """"14:30:00.000000"""",
+            )
+
+        val dateTimeValues =
+            mapOf(
+                "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
+                "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000""""
+            )
+
+        val timestampValues =
+            mapOf(
+                "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
+                "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
+                    """"2024-09-12T21:30:00.000000Z"""",
+            )
+
+        val booleanValues =
+            mapOf(
+                "TRUE" to "true",
+                "FALSE" to "false",
+            )
+
+        val enumValues =
+            mapOf(
+                "'a'" to """"a"""",
+                "'b'" to """"b"""",
+                "'c'" to """"c"""",
+            )
+
+        // Encoded into base64
+        val binaryValues =
+            mapOf(
+                "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUg=="""",
+            )
+
         val testCases: List<TestCase> =
             listOf(
-                TestCase("VARCHAR(10)", stringValues),
+                TestCase(
+                    "BOOLEAN",
+                    booleanValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
+                    cursor = false
+                ),
+                TestCase(
+                    "VARCHAR(10)",
+                    stringValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING
+                ),
+                TestCase(
+                    "DECIMAL(10,2)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "DECIMAL(10,2) UNSIGNED",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "DECIMAL UNSIGNED",
+                    zeroPrecisionDecimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("FLOAT", decimalValues, airbyteSchemaType = LeafAirbyteSchemaType.NUMBER),
+                TestCase(
+                    "FLOAT(7,4)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "FLOAT(53,8)",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase("DOUBLE", decimalValues, airbyteSchemaType = LeafAirbyteSchemaType.NUMBER),
+                TestCase(
+                    "DOUBLE UNSIGNED",
+                    decimalValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                ),
+                TestCase(
+                    "TINYINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "TINYINT UNSIGNED",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "SMALLINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "MEDIUMINT",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("BIGINT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+                TestCase(
+                    "SMALLINT UNSIGNED",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "MEDIUMINT UNSIGNED",
+                    tinyintValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "BIGINT UNSIGNED",
+                    intValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("INT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+                TestCase(
+                    "INT UNSIGNED",
+                    intValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase("DATE", dateValues, airbyteSchemaType = LeafAirbyteSchemaType.DATE),
+                TestCase(
+                    "TIMESTAMP",
+                    timestampValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                TestCase(
+                    "DATETIME",
+                    dateTimeValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
+                TestCase(
+                    "TIME",
+                    timeValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                TestCase("YEAR", yearValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+                TestCase(
+                    "VARBINARY(255)",
+                    binaryValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BINARY,
+                    cursor = false,
+                    noPK = true
+                ),
+                TestCase(
+                    "BIT",
+                    bitValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
+                    cursor = false
+                ),
+                TestCase(
+                    "BIT(8)",
+                    longBitValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                ),
+                TestCase(
+                    "JSON",
+                    jsonValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING,
+                    noPK = true
+                ),
+                TestCase(
+                    "ENUM('a', 'b', 'c')",
+                    enumValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.STRING,
+                    noPK = true
+                ),
             )
 
         val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =
@@ -202,7 +421,7 @@ class MysqlSourceDatatypeIntegrationTest {
     data class TestCase(
         val sqlType: String,
         val sqlToAirbyte: Map<String, String>,
-        val airbyteType: AirbyteType = LeafAirbyteType.STRING,
+        val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
         val cursor: Boolean = true,
         val noPK: Boolean = false,
         val customDDL: List<String>? = null,

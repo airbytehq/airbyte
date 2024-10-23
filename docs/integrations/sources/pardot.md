@@ -61,6 +61,11 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 0.2.0  | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only  |
+| 0.1.22 | 2024-10-12 | [46778](https://github.com/airbytehq/airbyte/pull/46778) | Update dependencies |
+| 0.1.21 | 2024-10-05 | [46441](https://github.com/airbytehq/airbyte/pull/46441) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [46109](https://github.com/airbytehq/airbyte/pull/46109) | Update dependencies |
+| 0.1.19 | 2024-09-21 | [45799](https://github.com/airbytehq/airbyte/pull/45799) | Update dependencies |
 | 0.1.18 | 2024-09-14 | [45509](https://github.com/airbytehq/airbyte/pull/45509) | Update dependencies |
 | 0.1.17 | 2024-09-07 | [45307](https://github.com/airbytehq/airbyte/pull/45307) | Update dependencies |
 | 0.1.16 | 2024-08-31 | [45005](https://github.com/airbytehq/airbyte/pull/45005) | Update dependencies |

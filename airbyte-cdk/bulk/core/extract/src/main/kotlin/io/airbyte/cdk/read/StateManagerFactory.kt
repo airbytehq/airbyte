@@ -3,15 +3,16 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.EmptyInputState
 import io.airbyte.cdk.command.GlobalInputState
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.StreamInputState
-import io.airbyte.cdk.data.AirbyteType
-import io.airbyte.cdk.data.ArrayAirbyteType
-import io.airbyte.cdk.data.LeafAirbyteType
-import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.MetaField
@@ -27,10 +28,8 @@ import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 
@@ -76,13 +75,15 @@ class StateManagerFactory(
         inputState: GlobalInputState? = null,
     ) =
         StateManager(
-            global = Global(streams.filter { it.configuredSyncMode == SyncMode.INCREMENTAL }),
+            global =
+                Global(streams.filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }),
             initialGlobalState = inputState?.global,
             initialStreamStates =
                 streams.associateWith { stream: Stream ->
                     when (stream.configuredSyncMode) {
-                        SyncMode.INCREMENTAL -> inputState?.globalStreams?.get(stream.namePair)
-                        SyncMode.FULL_REFRESH -> inputState?.nonGlobalStreams?.get(stream.namePair)
+                        ConfiguredSyncMode.INCREMENTAL -> inputState?.globalStreams?.get(stream.id)
+                        ConfiguredSyncMode.FULL_REFRESH ->
+                            inputState?.nonGlobalStreams?.get(stream.id)
                     }
                 },
         )
@@ -93,9 +94,7 @@ class StateManagerFactory(
     ) =
         StateManager(
             initialStreamStates =
-                streams.associateWith { stream: Stream ->
-                    inputState?.streams?.get(stream.namePair)
-                },
+                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
         )
 
     private fun toStream(
@@ -104,16 +103,16 @@ class StateManagerFactory(
     ): Stream? {
         val stream: AirbyteStream = configuredStream.stream
         val jsonSchemaProperties: JsonNode = stream.jsonSchema["properties"]
-        val name: String = stream.name!!
-        val namespace: String? = stream.namespace
-        val streamDescriptor = StreamDescriptor().withName(name).withNamespace(namespace)
-        val streamLabel: String = AirbyteStreamNameNamespacePair(name, namespace).toString()
-        when (metadataQuerier.streamNames(namespace).filter { it == name }.size) {
+        val streamID: StreamIdentifier = StreamIdentifier.from(configuredStream.stream)
+        val name: String = streamID.name
+        val namespace: String? = streamID.namespace
+        val streamLabel: String = streamID.toString()
+        when (metadataQuerier.streamNames(namespace).filter { it.name == name }.size) {
             0 -> {
-                handler.accept(StreamNotFound(name, namespace))
+                handler.accept(StreamNotFound(streamID))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamDescriptor)
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Stream '$streamLabel' not found or not accessible in source.")
                 )
@@ -121,10 +120,10 @@ class StateManagerFactory(
             }
             1 -> Unit
             else -> {
-                handler.accept(MultipleStreamsFound(name, namespace))
+                handler.accept(MultipleStreamsFound(streamID))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamDescriptor)
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Multiple streams '$streamLabel' found in source.")
                 )
@@ -132,12 +131,12 @@ class StateManagerFactory(
             }
         }
 
-        val expectedSchema: Map<String, AirbyteType> =
+        val expectedSchema: Map<String, AirbyteSchemaType> =
             jsonSchemaProperties.properties().associate { (id: String, schema: JsonNode) ->
                 id to airbyteTypeFromJsonSchema(schema)
             }
         val actualDataColumns: Map<String, Field> =
-            metadataQuerier.fields(name, namespace).associateBy { it.id }
+            metadataQuerier.fields(streamID).associateBy { it.id }
 
         fun dataColumnOrNull(id: String): Field? {
             if (MetaField.isMetaFieldID(id)) {
@@ -147,19 +146,18 @@ class StateManagerFactory(
             }
             val actualColumn: Field? = actualDataColumns[id]
             if (actualColumn == null) {
-                handler.accept(FieldNotFound(name, namespace, id))
+                handler.accept(FieldNotFound(streamID, id))
                 return null
             }
-            val expectedAirbyteType: AirbyteType = expectedSchema[id] ?: return null
-            val actualAirbyteType: AirbyteType = actualColumn.type.airbyteType
-            if (expectedAirbyteType != actualAirbyteType) {
+            val expectedAirbyteSchemaType: AirbyteSchemaType = expectedSchema[id] ?: return null
+            val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
+            if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
                 handler.accept(
                     FieldTypeMismatch(
-                        name,
-                        namespace,
+                        streamID,
                         id,
-                        expectedAirbyteType,
-                        actualAirbyteType,
+                        expectedAirbyteSchemaType,
+                        actualAirbyteSchemaType,
                     ),
                 )
                 return null
@@ -171,10 +169,10 @@ class StateManagerFactory(
                 dataColumnOrNull(it) ?: return@toStream null
             }
         if (streamFields.isEmpty()) {
-            handler.accept(StreamHasNoFields(name, namespace))
+            handler.accept(StreamHasNoFields(streamID))
             outputConsumer.accept(
                 AirbyteErrorTraceMessage()
-                    .withStreamDescriptor(streamDescriptor)
+                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                     .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                     .withMessage("Stream '$streamLabel' has no accessible fields.")
             )
@@ -189,7 +187,7 @@ class StateManagerFactory(
                 pkColumnIDComponents.map { it.joinToString(separator = ".") }
             val pk: List<Field> = pkColumnIDs.mapNotNull(::dataColumnOrNull)
             if (pk.size < pkColumnIDComponents.size) {
-                handler.accept(InvalidPrimaryKey(name, namespace, pkColumnIDs))
+                handler.accept(InvalidPrimaryKey(streamID, pkColumnIDs))
                 return null
             }
             return pk
@@ -199,30 +197,30 @@ class StateManagerFactory(
             if (cursorColumnIDComponents.isEmpty()) {
                 return null
             }
+
             val cursorColumnID: String = cursorColumnIDComponents.joinToString(separator = ".")
-            if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
-                return CommonMetaField.CDC_LSN
-            }
-            return dataColumnOrNull(cursorColumnID)
+            val maybeCursorField: FieldOrMetaField? =
+                metadataQuerier.commonCursorOrNull(cursorColumnID)
+            return maybeCursorField ?: dataColumnOrNull(cursorColumnID)
         }
+
         val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
-        val configuredSyncMode: SyncMode =
+        val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
                     if (configuredCursor == null) {
-                        handler.accept(InvalidIncrementalSyncMode(name, namespace))
-                        SyncMode.FULL_REFRESH
+                        handler.accept(InvalidIncrementalSyncMode(streamID))
+                        ConfiguredSyncMode.FULL_REFRESH
                     } else {
-                        SyncMode.INCREMENTAL
+                        ConfiguredSyncMode.INCREMENTAL
                     }
-                else -> SyncMode.FULL_REFRESH
+                else -> ConfiguredSyncMode.FULL_REFRESH
             }
         return Stream(
-            name,
-            namespace,
+            streamID,
             streamFields,
             configuredSyncMode,
             configuredPrimaryKey,
@@ -231,44 +229,44 @@ class StateManagerFactory(
     }
 
     /**
-     * Recursively re-generates the original [AirbyteType] from a catalog stream field's JSON
+     * Recursively re-generates the original [AirbyteSchemaType] from a catalog stream field's JSON
      * schema.
      */
-    private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteType {
+    private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteSchemaType {
         fun value(key: String): String = jsonSchema[key]?.asText() ?: ""
         return when (value("type")) {
-            "array" -> ArrayAirbyteType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
-            "null" -> LeafAirbyteType.NULL
-            "boolean" -> LeafAirbyteType.BOOLEAN
+            "array" -> ArrayAirbyteSchemaType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
+            "null" -> LeafAirbyteSchemaType.NULL
+            "boolean" -> LeafAirbyteSchemaType.BOOLEAN
             "number" ->
                 when (value("airbyte_type")) {
                     "integer",
-                    "big_integer", -> LeafAirbyteType.INTEGER
-                    else -> LeafAirbyteType.NUMBER
+                    "big_integer", -> LeafAirbyteSchemaType.INTEGER
+                    else -> LeafAirbyteSchemaType.NUMBER
                 }
             "string" ->
                 when (value("format")) {
-                    "date" -> LeafAirbyteType.DATE
+                    "date" -> LeafAirbyteSchemaType.DATE
                     "date-time" ->
                         if (value("airbyte_type") == "timestamp_with_timezone") {
-                            LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
                         } else {
-                            LeafAirbyteType.TIMESTAMP_WITHOUT_TIMEZONE
+                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
                         }
                     "time" ->
                         if (value("airbyte_type") == "time_with_timezone") {
-                            LeafAirbyteType.TIME_WITH_TIMEZONE
+                            LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
                         } else {
-                            LeafAirbyteType.TIME_WITHOUT_TIMEZONE
+                            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
                         }
                     else ->
                         if (value("contentEncoding") == "base64") {
-                            LeafAirbyteType.BINARY
+                            LeafAirbyteSchemaType.BINARY
                         } else {
-                            LeafAirbyteType.STRING
+                            LeafAirbyteSchemaType.STRING
                         }
                 }
-            else -> LeafAirbyteType.JSONB
+            else -> LeafAirbyteSchemaType.JSONB
         }
     }
 }
