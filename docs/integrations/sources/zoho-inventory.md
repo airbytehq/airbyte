@@ -5,11 +5,11 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `domain` | `string` | Domain. The domain suffix for the Zoho Inventory API based on your data center location (e.g., &#39;com&#39;, &#39;eu&#39;, &#39;in&#39;, etc.) | com |
 | `client_id` | `string` | OAuth Client ID.  |  |
-| `start_date` | `string` | Start date.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
+| `domain` | `string` | Domain. The domain suffix for the Zoho Inventory API based on your data center location (e.g., `com`, `eu`, `in`, etc.) | com |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
