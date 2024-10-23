@@ -16,19 +16,27 @@ class SchemaTestBuilder(
     val parent: SchemaTestBuilder? = null
 ) {
 
-    fun with(given: FieldType, expected: FieldType = given): SchemaTestBuilder {
-        val name = UUID.randomUUID().toString()
+    fun with(
+        given: FieldType,
+        expected: FieldType = given,
+        nameOverride: String? = null
+    ): SchemaTestBuilder {
+        val name = nameOverride ?: UUID.randomUUID().toString()
         inputSchema.properties[name] = given
         expectedSchema.properties[name] = expected
         return this
     }
 
-    fun with(given: AirbyteType, expected: AirbyteType = given): SchemaTestBuilder {
-        return with(FieldType(given, false), FieldType(expected, false))
+    fun with(
+        given: AirbyteType,
+        expected: AirbyteType = given,
+        nameOverride: String? = null
+    ): SchemaTestBuilder {
+        return with(FieldType(given, false), FieldType(expected, false), nameOverride)
     }
 
-    fun withRecord(nullable: Boolean = false): SchemaTestBuilder {
-        val name = UUID.randomUUID().toString()
+    fun withRecord(nullable: Boolean = false, nameOverride: String? = null): SchemaTestBuilder {
+        val name = nameOverride ?: UUID.randomUUID().toString()
         val inputRecord = ObjectType(properties = LinkedHashMap())
         val outputRecord = ObjectType(properties = LinkedHashMap())
         inputSchema.properties[name] = FieldType(inputRecord, nullable = nullable)
