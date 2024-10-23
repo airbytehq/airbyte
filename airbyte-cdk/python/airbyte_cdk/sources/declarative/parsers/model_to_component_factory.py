@@ -520,6 +520,7 @@ class ModelToComponentFactory:
             if evaluated_lookback_window:
                 lookback_window = parse_duration(evaluated_lookback_window)
 
+        connector_state_converter: DateTimeStreamStateConverter
         if datetime_format != "%s":
             connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
                 datetime_format=datetime_format,
