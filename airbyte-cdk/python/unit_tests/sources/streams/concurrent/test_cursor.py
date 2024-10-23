@@ -10,6 +10,7 @@ from unittest.mock import Mock
 
 import freezegun
 import pytest
+
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
@@ -500,6 +501,78 @@ class ConcurrentCursorStateTest(TestCase):
             (datetime.fromtimestamp(0, timezone.utc), datetime.fromtimestamp(10, timezone.utc)),
             (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
         ]
+
+    def test_slices_with_records_when_close_then_most_recent_cursor_value_from_most_recent_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        second_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 10, _UPPER_SLICE_BOUNDARY_FIELD: 20})
+        cursor.observe(_record(5, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.observe(_record(15, partition=second_partition))
+        cursor.close_partition(second_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 20, "start": 0, "most_recent_cursor_value": 15}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_last_slice_without_records_when_close_then_most_recent_cursor_value_is_from_previous_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        second_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 10, _UPPER_SLICE_BOUNDARY_FIELD: 20})
+        cursor.observe(_record(5, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.close_partition(second_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 20, "start": 0, "most_recent_cursor_value": 5}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_most_recent_cursor_value_outside_of_boundaries_when_close_then_most_recent_cursor_value_still_considered(self) -> None:
+        """
+        Not sure what is the value of this behavior but I'm simply documenting how it is today
+        """
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        cursor.observe(_record(15, partition=partition))
+        cursor.close_partition(partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 10, "start": 0, "most_recent_cursor_value": 15}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_most_recent_cursor_value_on_sequential_state_when_close_then_cursor_value_is_most_recent_cursor_value(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=True)
+        partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        cursor.observe(_record(7, partition=partition))
+        cursor.close_partition(partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            _A_CURSOR_FIELD_KEY: 7
+        }
+
+    def test_non_continuous_slices_on_sequential_state_when_close_then_cursor_value_is_most_recent_cursor_value_of_first_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=True)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        third_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 20, _UPPER_SLICE_BOUNDARY_FIELD: 30})  # second partition has failed
+        cursor.observe(_record(7, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.close_partition(third_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            _A_CURSOR_FIELD_KEY: 7
+        }
 
 
 @freezegun.freeze_time(time_to_freeze=datetime(2024, 4, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
