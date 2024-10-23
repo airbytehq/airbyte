@@ -77,7 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| 2.2.0 | 2024-10-23 | [x](https://github.com/airbytehq/airbyte/pull/x) | Migrate to Manifest-only |
+| 2.2.0 | 2024-10-23 | [47310](https://github.com/airbytehq/airbyte/pull/47310) | Migrate to Manifest-only |
 | 2.1.4 | 2024-08-17 | [44201](https://github.com/airbytehq/airbyte/pull/44201) | Add boards name to the `items` stream |
 | 2.1.3 | 2024-06-04 | [38958](https://github.com/airbytehq/airbyte/pull/38958) | [autopull] Upgrade base image to v1.2.1 |
 | 2.1.2 | 2024-04-30 | [37722](https://github.com/airbytehq/airbyte/pull/37722) | Fetch `display_value` field for column values of `Mirror`, `Dependency` and `Connect Board` types |
