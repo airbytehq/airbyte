@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.9.0"
+version = "5.0.0-rc.1"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -22,10 +22,15 @@ wcmatch = "==8.4"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^5.7.4"}
+numpy = "<2.0.0"  # TODO: Remove after CDK is published
 
-[tool.poetry.scripts]
-source-s3 = "source_s3.run:run"
+[tool.poetry.dependencies.airbyte-cdk]
+extras = ["file-based",]
+version = "^5.7.4"
+# Toggle on/off the following to switch between local CDK or the published version.
+# Use `path` and `develop` for local CDK dev, or `version` for release.
+# path = "../../../airbyte-cdk/python"
+# develop = true
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
@@ -37,4 +42,6 @@ moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pandas = "^2.0.3"
+
+[tool.poetry.scripts]
+source-s3 = "source_s3.run:run"

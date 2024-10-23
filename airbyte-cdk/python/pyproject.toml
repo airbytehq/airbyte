@@ -70,6 +70,7 @@ pytz = "2024.1"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
 xmltodict = "^0.13.0"
+numpy = "<2.0"  # Major version needs to be deterministic and one of our extras requires <2.0.
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"

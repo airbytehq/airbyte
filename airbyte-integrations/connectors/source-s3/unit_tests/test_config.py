@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from __future__ import annotations
 
 import logging
 
 import pytest
 from pydantic.v1.error_wrappers import ValidationError
-from source_s3.v4.config import Config
+from source_s3.config import Config
+
 
 logger = logging.Logger("")
 
@@ -41,7 +42,7 @@ logger = logging.Logger("")
     ],
 )
 def test_config(mocker, kwargs, is_cloud, expected_error):
-    mocker.patch("source_s3.v4.config.is_cloud_environment", lambda: is_cloud)
+    mocker.patch("source_s3.config.is_cloud_environment", lambda: is_cloud)
 
     if expected_error:
         with pytest.raises(expected_error):
