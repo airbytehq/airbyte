@@ -4,11 +4,10 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-    - ${subdomain}.zendesk.com
-    - zendesk.com
+      - ${subdomain}.zendesk.com
+      - zendesk.com
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
@@ -43,26 +42,26 @@ data:
           please reset your source  before resuming syncs. For more information, see
           our migration documentation for source Zendesk Talk.
   tags:
-  - language:manifest-only
-  - cdk:low-code
+    - language:manifest-only
+    - cdk:low-code
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: zendesk-talk_config_dev_null
-      id: 22e00a6c-7c05-4a2a-bbbe-2b74dd788b7b
-    - name: zendesk-talk_config_old_dev_null
-      id: 7bfa51b9-6c79-43fa-8b5b-291d979dd710
-  - suite: unitTests
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-ZENDESK-TALK_OLD__CREDS
-      fileName: config_old.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-ZENDESK-TALK__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-talk_config_dev_null
+          id: 22e00a6c-7c05-4a2a-bbbe-2b74dd788b7b
+        - name: zendesk-talk_config_old_dev_null
+          id: 7bfa51b9-6c79-43fa-8b5b-291d979dd710
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENDESK-TALK_OLD__CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-ZENDESK-TALK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
