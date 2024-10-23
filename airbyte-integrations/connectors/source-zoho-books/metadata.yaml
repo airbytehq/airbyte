@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "zohoapis."
+      - "https://www.zohoapis.*"
   registryOverrides:
     oss:
       enabled: true
