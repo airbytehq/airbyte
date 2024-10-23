@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class S3V2WriteTest(path: String) :
@@ -18,16 +18,15 @@ abstract class S3V2WriteTest(path: String) :
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
     ) {
-    private val log = KotlinLogging.logger {}
-
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
 
+    @Disabled
     @Test
     override fun testMidSyncCheckpointingStreamState() {
-        log.warn { "Disabled until it doesn't block." }
+        super.testMidSyncCheckpointingStreamState()
     }
 }
 

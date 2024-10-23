@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -25,6 +24,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -155,7 +155,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
-    open fun testMidSyncCheckpointingStreamState() =
+    open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
             fun makeStream(name: String) =
                 DestinationStream(
@@ -178,7 +178,14 @@ abstract class BasicFunctionalityIntegrationTest(
                         )
                         .asProtocolObject(),
                 )
-            launch { destination.run() }
+            launch {
+                try {
+                    destination.run()
+                } catch (e: DestinationUncleanExitException) {
+                    // swallow exception - we'll kill the destination,
+                    // so it's expected to exit uncleanly
+                }
+            }
 
             // Send one record+state to each stream
             destination.sendMessages(
@@ -241,87 +248,82 @@ abstract class BasicFunctionalityIntegrationTest(
                 }
             }
 
-            // for each state message, verify that it's a valid state,
-            // and that we actually wrote the data
-            stateMessages.forEach { stateMessage ->
-                val streamName = stateMessage.stream.streamDescriptor.name
-                val streamNamespace = stateMessage.stream.streamDescriptor.namespace
-                // basic state message checks - this is mostly just exercising the CDK itself,
-                // but is cheap and easy to do.
-                assertAll(
-                    { assertEquals(randomizedNamespace, streamNamespace) },
-                    {
-                        assertTrue(
-                            streamName == "test_stream1" || streamName == "test_stream2",
-                            "Expected stream name to be test_stream1 or test_stream2, got $streamName"
-                        )
-                    },
-                    {
-                        assertEquals(
-                            1.0,
-                            stateMessage.destinationStats.recordCount,
-                            "Expected destination stats to show 1 record"
-                        )
-                    },
-                    {
-                        when (streamName) {
-                            "test_stream1" -> {
-                                assertEquals(
-                                    Jsons.readTree("""{"foo": "bar1"}"""),
-                                    stateMessage.stream.streamState,
-                                )
-                            }
-                            "test_stream2" -> {
-                                assertEquals(
-                                    Jsons.readTree("""{"foo": "bar2"}"""),
-                                    stateMessage.stream.streamState
-                                )
-                            }
-                            else ->
-                                throw IllegalStateException("Unexpected stream name: $streamName")
-                        }
-                    }
-                )
-                if (verifyDataWriting) {
-                    val records = dataDumper.dumpRecords(parsedConfig, makeStream(streamName))
-                    val expectedId =
-                        when (streamName) {
-                            "test_stream1" -> 12
-                            "test_stream2" -> 34
-                            else ->
-                                throw IllegalStateException("Unexpected stream name: $streamName")
-                        }
-                    val expectedRecord =
-                        recordMangler.mapRecord(
-                            OutputRecord(
-                                extractedAt = 1234,
-                                generationId = 0,
-                                data = mapOf("id" to expectedId),
-                                airbyteMeta =
-                                    OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
+            try {
+                // for each state message, verify that it's a valid state,
+                // and that we actually wrote the data
+                stateMessages.forEach { stateMessage ->
+                    val streamName = stateMessage.stream.streamDescriptor.name
+                    val streamNamespace = stateMessage.stream.streamDescriptor.namespace
+                    // basic state message checks - this is mostly just exercising the CDK itself,
+                    // but is cheap and easy to do.
+                    assertAll(
+                        { assertEquals(randomizedNamespace, streamNamespace) },
+                        {
+                            assertTrue(
+                                streamName == "test_stream1" || streamName == "test_stream2",
+                                "Expected stream name to be test_stream1 or test_stream2, got $streamName"
                             )
+                        },
+                        {
+                            assertEquals(
+                                1.0,
+                                stateMessage.destinationStats.recordCount,
+                                "Expected destination stats to show 1 record"
+                            )
+                        },
+                        {
+                            when (streamName) {
+                                "test_stream1" -> {
+                                    assertEquals(
+                                        Jsons.readTree("""{"foo": "bar1"}"""),
+                                        stateMessage.stream.streamState,
+                                    )
+                                }
+                                "test_stream2" -> {
+                                    assertEquals(
+                                        Jsons.readTree("""{"foo": "bar2"}"""),
+                                        stateMessage.stream.streamState
+                                    )
+                                }
+                                else ->
+                                    throw IllegalStateException(
+                                        "Unexpected stream name: $streamName"
+                                    )
+                            }
+                        }
+                    )
+                    if (verifyDataWriting) {
+                        val records = dataDumper.dumpRecords(parsedConfig, makeStream(streamName))
+                        val expectedId =
+                            when (streamName) {
+                                "test_stream1" -> 12
+                                "test_stream2" -> 34
+                                else ->
+                                    throw IllegalStateException(
+                                        "Unexpected stream name: $streamName"
+                                    )
+                            }
+                        val expectedRecord =
+                            recordMangler.mapRecord(
+                                OutputRecord(
+                                    extractedAt = 1234,
+                                    generationId = 0,
+                                    data = mapOf("id" to expectedId),
+                                    airbyteMeta = OutputRecord.Meta(syncId = 42)
+                                )
+                            )
+
+                        assertTrue(
+                            records.any { actualRecord ->
+                                expectedRecord.data == actualRecord.data
+                            },
+                            "Expected the first record to be present in the dumped records.",
                         )
-
-                    assertTrue(
-                        records.any { actualRecord -> expectedRecord.data == actualRecord.data },
-                        "Expected the first record to be present in the dumped records."
-                    )
+                    }
                 }
+            } finally {
+                destination.kill()
             }
-
-            destination.sendMessages(
-                DestinationStreamComplete(
-                        DestinationStream.Descriptor(randomizedNamespace, "test_stream1"),
-                        System.currentTimeMillis()
-                    )
-                    .asProtocolMessage(),
-                DestinationStreamComplete(
-                        DestinationStream.Descriptor(randomizedNamespace, "test_stream2"),
-                        System.currentTimeMillis()
-                    )
-                    .asProtocolMessage()
-            )
-            destination.shutdown()
         }
 
     @Test
@@ -370,7 +372,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             extractedAt = 1234,
                             generationId = 0,
                             data = mapOf("id" to 1234),
-                            airbyteMeta = OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
                         )
                     ),
                     stream1,
@@ -386,7 +388,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             extractedAt = 1234,
                             generationId = 0,
                             data = mapOf("id" to 5678),
-                            airbyteMeta = OutputRecord.Meta(changes = mutableListOf(), syncId = 42)
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
                         )
                     ),
                     stream2,
