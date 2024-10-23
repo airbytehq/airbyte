@@ -52,8 +52,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -80,6 +80,8 @@ definitions:
     shipping_fee:
       type: DeclarativeStream
       name: shipping_fee
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -90,7 +92,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -99,8 +102,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -135,8 +138,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -185,8 +188,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -235,8 +238,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -285,8 +288,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -335,8 +338,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -385,8 +388,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -435,8 +438,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -485,8 +488,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -535,8 +538,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -571,8 +574,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -622,8 +625,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -672,8 +675,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -722,8 +725,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -772,8 +775,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -808,8 +811,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -844,8 +847,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -894,8 +897,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -944,8 +947,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -1046,14 +1049,14 @@ metadata:
     materials: true
   testedStreams:
     customers:
+      hasRecords: true
       streamHash: 454c1117bf4d661cdee691f8cbac31ee362aaced
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     shipping_fee:
-      streamHash: 007588051b40b60a953d4ae485b8e791dc6cad04
+      streamHash: 7796e366b0e2705f72b9bc210be40d5db354e61e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1081,12 +1084,12 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tax_rates:
+      hasRecords: true
       streamHash: 87db8ae371165a35a2e3c3d62b6b0e72c961ae44
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     suppliers:
       streamHash: 42f46708c7c4e26f5e65847056d250479f449235
       hasResponse: true
@@ -1123,61 +1126,61 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sales_order_addresses:
+      hasRecords: true
       streamHash: 6ef6e2c2d8e34ffbdfa72ad0c98c3ceedad02348
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     recipes:
+      hasRecords: true
       streamHash: 2b9f9081cf0facd2fd78075082669c777cce2f2a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchase_orders:
+      hasRecords: true
       streamHash: 6528c4d49258a91aea17aa24d72c144dda306bdf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: 20e5da0fbd06051fc77acfd72a630ee854548f18
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     price_lists:
+      hasRecords: true
       streamHash: f8a7c0996c09284930ebf64380b4241b3748db7c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     inventory:
+      hasRecords: true
       streamHash: 011a58739ce7f433884593b3555252cda25b6f3c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     locations:
+      hasRecords: true
       streamHash: 9183932bcb55a77f2e636b449f01f579386e1816
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     manufacturing_orders:
+      hasRecords: true
       streamHash: 65396ca42c0d5120ccfcb374856bcaab802e1d45
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     materials:
       hasRecords: true
       streamHash: f4325ceee52e02fe2748b3f7b795d7bfdb600111
@@ -1321,6 +1324,7 @@ schemas:
   shipping_fee:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -1351,10 +1355,10 @@ schemas:
               type:
                 - number
                 - "null"
-    additionalProperties: true
   costs:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       created_at:
         type:
@@ -1371,7 +1375,6 @@ schemas:
     required:
       - id
       - updated_at
-    additionalProperties: true
   customer_addresses:
     type: object
     $schema: http://json-schema.org/schema#
