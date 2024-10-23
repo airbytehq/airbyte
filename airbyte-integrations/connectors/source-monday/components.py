@@ -2,49 +2,33 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Union
-
-import dpath.util
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.incremental import Cursor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
-
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
-from typing import Any, List, Mapping, Union
+from functools import partial
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import dpath.util
 import requests
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
-
-from dataclasses import dataclass
-from datetime import datetime
-from functools import partial
-from typing import Any, Mapping, MutableMapping, Optional, Type, Union
-
+from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-
-from typing import Any, List, Mapping, Optional, Tuple
-
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
 logger = logging.getLogger("airbyte")
+
 
 class ItemPaginationStrategy(PageIncrement):
     """
@@ -84,6 +68,7 @@ class ItemPaginationStrategy(PageIncrement):
                 return None
 
         return self._page, self._sub_page
+
 
 class ItemCursorPaginationStrategy(PageIncrement):
     """
@@ -133,6 +118,7 @@ class ItemCursorPaginationStrategy(PageIncrement):
         else:
             self._page += 1
             return self._page, None
+
 
 @dataclass
 class MondayGraphqlRequester(HttpRequester):
@@ -334,6 +320,7 @@ class MondayGraphqlRequester(HttpRequester):
     def __hash__(self):
         return hash(tuple(self.__dict__))
 
+
 @dataclass
 class MondayActivityExtractor(RecordExtractor):
     """
@@ -375,6 +362,7 @@ class MondayActivityExtractor(RecordExtractor):
                 result.append(new_record)
 
         return result
+
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
@@ -430,6 +418,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                     values["text"] = display_value
 
         return result
+
 
 @dataclass
 class IncrementalSingleSlice(Cursor):
@@ -517,6 +506,7 @@ class IncrementalSingleSlice(Cursor):
             return True
         else:
             return False
+
 
 @dataclass
 class IncrementalSubstreamSlicer(IncrementalSingleSlice):
