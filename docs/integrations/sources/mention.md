@@ -8,25 +8,23 @@ Docs: https://dev.mention.com/current/
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `from` | `string` | from. stats are to be fetched for mentions retrieved after that date |  |
-| `to` | `string` | to. stats are fetched for mentions retrieved before that date |  |
-| `interval` | `string` | interval. Periodicity of statistics returned. it may be daily(P1D), weekly(P1W) or monthly(P1M). | P1D |
+| `stats_interval` | `string` | Statistics Interval. Periodicity of statistics returned. it may be daily(P1D), weekly(P1W) or monthly(P1M). | P1D |
+| `stats_start_date` | `string` | Statistics Start Date.  |  |
+| `stats_end_date` | `string` | Statistics End Date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Alerts | id | DefaultPaginator | ✅ |  ❌  |
-| Alert | id | No pagination | ✅ |  ❌  |
-| Mentions | id | DefaultPaginator | ✅ |  ❌  |
-| Mention | id | No pagination | ✅ |  ❌  |
-| Mention Children |  | DefaultPaginator | ✅ |  ❌  |
-| Accounts | id | No pagination | ✅ |  ❌  |
-| Account | id | No pagination | ✅ |  ❌  |
-| Tags |  | No pagination | ✅ |  ❌  |
-| Alert Authors |  | DefaultPaginator | ✅ |  ❌  |
-| Alert Tasks |  | DefaultPaginator | ✅ |  ❌  |
-| Statistics |  | No pagination | ✅ |  ❌  |
-| Tasks | id | No pagination | ✅ |  ❌  |
+| alert | id | DefaultPaginator | ✅ |  ❌  |
+| mention | id | DefaultPaginator | ✅ |  ❌  |
+| mention_children | id | DefaultPaginator | ✅ |  ❌  |
+| account_me | id | No pagination | ✅ |  ❌  |
+| account | id | No pagination | ✅ |  ❌  |
+| alert_tag | id | No pagination | ✅ |  ❌  |
+| alert_author |  | DefaultPaginator | ✅ |  ❌  |
+| alert_tasks | id | DefaultPaginator | ✅ |  ❌  |
+| statistics |  | No pagination | ✅ |  ✅  |
+| mention_tasks | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -35,6 +33,6 @@ Docs: https://dev.mention.com/current/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-12 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-23 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
