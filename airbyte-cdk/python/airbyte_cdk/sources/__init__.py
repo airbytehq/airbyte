@@ -2,11 +2,26 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import TYPE_CHECKING
+
 import dpath.options
 
 from .abstract_source import AbstractSource
 from .config import BaseConfig
 from .source import Source
+
+if TYPE_CHECKING:
+    # Hack to register these in pydoc without causing a circular import
+    from . import (
+        concurrent_source,
+        connector_state_manager,
+        declarative,
+        file_based,
+        message,
+        streams,
+        types,
+        utils,
+    )
 
 # As part of the CDK sources, we do not control what the APIs return and it is possible that a key is empty.
 # Reasons why we are doing this at the airbyte_cdk level:
@@ -19,4 +34,17 @@ from .source import Source
 # this will not be thread-safe.
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-__all__ = ["AbstractSource", "BaseConfig", "Source"]
+__all__ = [
+    "AbstractSource",
+    "BaseConfig",
+    "Source",
+    # Submodules
+    "concurrent_source",
+    "connector_state_manager",
+    "declarative",
+    "file_based",
+    "message",
+    "streams",
+    "types",
+    "utils",
+]
