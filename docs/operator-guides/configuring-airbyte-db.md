@@ -9,7 +9,7 @@ Airbyte uses different objects to store internal state and metadata. This data i
 - Using the default Postgres database that Airbyte spins-up as part of the Docker service described in the `docker-compose.yml` file: `airbyte/db`.
 - Through a dedicated custom Postgres instance \(the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file\). It's not a good practice to deploy mission-critical databases on Docker or Kubernetes.
   Using a dedicated instance will provide more reliability to your Airbyte deployment.
-  Moreover, using a Cloud-managed Postgres instance (such as AWS RDS our GCP Cloud SQL), you will benefit from automatic backup and fine-grained sizing. You can start with a pretty small instance, but according to your Airbyte usage, the job database might grow and require more storage if you are not truncating the job history.
+  Moreover, using a Cloud-managed Postgres instance (such as AWS RDS or GCP Cloud SQL), you will benefit from automatic backup and fine-grained sizing. You can start with a pretty small instance, but according to your Airbyte usage, the job database might grow and require more storage if you are not truncating the job history.
 
 The various entities are persisted in two internal databases:
 
