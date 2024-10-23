@@ -1,0 +1,770 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for Eventzilla enables seamless integration between
+  Eventzilla and various data destinations. It automates the extraction of event
+  management data, such as attendee details, ticket sales, and event performance
+  metrics, and syncs it with your preferred data warehouses or analytics tools.
+  This connector helps organizations centralize and analyze their Eventzilla
+  data for reporting, monitoring, and strategic insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - tickets
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    events:
+      type: DeclarativeStream
+      name: events
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/{{ stream_partition.event_id }}/tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tickets
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events"
+              parent_key: id
+              partition_field: event_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+    attendees:
+      type: DeclarativeStream
+      name: attendees
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/{{ stream_partition.event_id }}/attendees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attendees
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events"
+              parent_key: id
+              partition_field: event_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attendees"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/{{ stream_partition.event_id }}/transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transactions
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events"
+              parent_key: id
+              partition_field: event_id
+      primary_key:
+        - refno
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.eventzillaapi.net/api/v2
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"x-api-key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/attendees"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/transactions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - x-api-key
+    properties:
+      x-api-key:
+        type: string
+        description: >-
+          API key to use. Generate it by creating a new application within your
+          Eventzilla account settings under Settings > App Management.
+        name: x-api-key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.eventzilla.net/docs/
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 36e02d511453abc071ab086736ee7fe061b37bc3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      hasRecords: true
+      streamHash: 2f83dbb203ddcbe62179952490a0a4cce9938e40
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tickets:
+      hasRecords: true
+      streamHash: 502cdb83195fec4afe3d295cd36a512a808de64d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attendees:
+      hasRecords: true
+      streamHash: d1b26490b356c28fb1888b371d955e9459fa35bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories:
+      hasRecords: true
+      streamHash: 1e934ce454587a1aeffd96ef3e6716dff78e3eb4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transactions:
+      hasRecords: true
+      streamHash: 5d664f17e991b555a68cdf58250c2108a19c4240
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: false
+    events: true
+    tickets: false
+    attendees: false
+    categories: false
+    transactions: false
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      email:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      zip_code:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      last_seen:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+      avatar_url:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      twitter_id:
+        type:
+          - string
+          - "null"
+      facebook_id:
+        type:
+          - string
+          - "null"
+      address_line1:
+        type:
+          - string
+          - "null"
+      address_line2:
+        type:
+          - string
+          - "null"
+      phone_primary:
+        type:
+          - string
+          - "null"
+      address_region:
+        type:
+          - string
+          - "null"
+      address_country:
+        type:
+          - string
+          - "null"
+      address_locality:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - string
+          - "null"
+      dateid:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      end_time:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      logo_url:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      categories:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      start_time:
+        type:
+          - string
+          - "null"
+      utc_offset:
+        type:
+          - string
+          - "null"
+      bgimage_url:
+        type:
+          - string
+          - "null"
+      invite_code:
+        type:
+          - string
+          - "null"
+      tickets_sold:
+        type:
+          - number
+          - "null"
+      tickets_total:
+        type:
+          - number
+          - "null"
+      timezone_code:
+        type:
+          - string
+          - "null"
+      show_remaining:
+        type:
+          - boolean
+          - "null"
+      twitter_hashtag:
+        type:
+          - string
+          - "null"
+      description_html:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      price:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      is_visible:
+        type:
+          - boolean
+          - "null"
+      group_price:
+        type:
+          - number
+          - "null"
+      ticket_type:
+        type:
+          - string
+          - "null"
+      unlock_code:
+        type:
+          - string
+          - "null"
+      limit_maximum:
+        type:
+          - number
+          - "null"
+      limit_minimum:
+        type:
+          - number
+          - "null"
+      boxoffice_only:
+        type:
+          - boolean
+          - "null"
+      group_discount:
+        type:
+          - number
+          - "null"
+      quantity_total:
+        type:
+          - number
+          - "null"
+      sales_end_date:
+        type:
+          - string
+          - "null"
+      sales_end_time:
+        type:
+          - string
+          - "null"
+      group_percentage:
+        type:
+          - number
+          - "null"
+      sales_start_date:
+        type:
+          - string
+          - "null"
+      sales_start_time:
+        type:
+          - string
+          - "null"
+      allow_partial_payment:
+        type:
+          - boolean
+          - "null"
+      partial_payment_amount:
+        type:
+          - number
+          - "null"
+      additional_instructions:
+        type:
+          - string
+          - "null"
+      partial_payment_frequency:
+        type:
+          - string
+          - "null"
+      partial_payment_installments:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  attendees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      email:
+        type:
+          - string
+          - "null"
+      refno:
+        type:
+          - string
+          - "null"
+      bar_code:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      questions:
+        type:
+          - array
+          - "null"
+      event_date:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      is_attended:
+        type:
+          - string
+          - "null"
+      ticket_type:
+        type:
+          - string
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      buyer_last_name:
+        type:
+          - string
+          - "null"
+      buyer_first_name:
+        type:
+          - string
+          - "null"
+      transaction_date:
+        type:
+          - string
+          - "null"
+      transaction_amount:
+        type:
+          - number
+          - "null"
+      transaction_status:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - category
+    properties:
+      category:
+        type: string
+    additionalProperties: true
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - refno
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      refno:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      event_date:
+        type:
+          - string
+          - "null"
+      promo_code:
+        type:
+          - string
+          - "null"
+      checkout_id:
+        type:
+          - number
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      eventzilla_fee:
+        type:
+          - number
+          - "null"
+      buyer_last_name:
+        type:
+          - string
+          - "null"
+      transaction_tax:
+        type:
+          - number
+          - "null"
+      buyer_first_name:
+        type:
+          - string
+          - "null"
+      transaction_date:
+        type:
+          - string
+          - "null"
+      transaction_amount:
+        type:
+          - number
+          - "null"
+      transaction_status:
+        type:
+          - string
+          - "null"
+      transaction_discount:
+        type:
+          - number
+          - "null"
+      tickets_in_transaction:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
