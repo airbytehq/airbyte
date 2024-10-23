@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
@@ -481,7 +482,61 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testTruncateRefresh() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            configContents,
+            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
+        runSync(
+            configContents,
+            finalStream,
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "second_value"}""",
+                    emittedAtMs = 1234,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 13,
+                    data = mapOf("id" to 42, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     companion object {
         private val intType = FieldType(IntegerType, nullable = true)
+        private val stringType = FieldType(StringType, nullable = true)
     }
 }
