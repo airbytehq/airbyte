@@ -465,7 +465,14 @@ check:
   stream_names:
     - "event"
 
-# todo figure out how much concurrency
+# Chargebee offers three tiers of rate limits:
+# - Starter: 150 req/min (2.5 req/sec)
+# - Performance: 1000 req/min (16 req/sec)
+# - Enterprise: 3500 req/min (58 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limt.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: "{{ config.num_workers or 3 }}"
+  max_concurrency: 50
