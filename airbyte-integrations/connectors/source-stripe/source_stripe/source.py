@@ -540,10 +540,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             subscription_items,
-            StripeSubStream(
+            ParentIncrementalStipeSubStream(
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
+                cursor_field="created",
                 **args,
             ),
             StripeSubStream(

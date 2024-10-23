@@ -12863,9 +12863,11 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "is_resumable": true
     },
     {
       "name": "usage_records",
