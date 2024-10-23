@@ -237,6 +237,12 @@ class DestinationMotherDuck(Destination):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
+            # Add SaaS mode to prevent loading extensions
+            if path.endswith("?"):
+                path += "&saas_mode=true"
+            else:
+                path += "?saas_mode=true"
+
             duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
                 duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
