@@ -34,9 +34,9 @@ genson = "1.2.2"
 isodate = "~0.6.1"
 Jinja2 = "~3.1.2"
 jsonref = "~0.2"
-jsonschema = "~3.2.0"
+jsonschema = "^4.23.0"
 pandas = "2.2.2"
-pendulum = "<3.0.0"
+pendulum = {version = "^3.0.0", extras = ["test"]}
 pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
@@ -65,8 +65,8 @@ nltk = { version = "3.8.1", optional = true }
 unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true }
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 pyjwt = "^2.8.0"
-cryptography = "^42.0.5"
-pytz = "2024.1"
+cryptography = "^43.0.1"
+pytz = "2024.2"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
 xmltodict = "^0.13.0"
