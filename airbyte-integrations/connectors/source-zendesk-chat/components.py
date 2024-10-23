@@ -3,44 +3,20 @@
 #
 
 
-from dataclasses import dataclass
-from typing import Any, List, Mapping
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
-
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional, Union
-
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
-
-from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, Union
-
-import requests
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
-
-from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, Union
-
-import requests
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
-
-from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional, Union
-
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -87,6 +63,7 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
                 self._partition_field_start.eval(self.config)
             )
         return params
+
 
 @dataclass
 class ZendeskChatTimeOffsetIncrementPaginationStrategy(OffsetIncrement):
