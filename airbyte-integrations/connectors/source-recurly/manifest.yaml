@@ -4517,7 +4517,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_recurly.components.ExportDatesExtractor
+            class_name: source_declarative_manifest.components.ExportDatesExtractor
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -14008,7 +14008,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_recurly.components.ExportDatesExtractor
+        class_name: source_declarative_manifest.components.ExportDatesExtractor
   schema_loader:
     type: InlineSchemaLoader
     schema:
