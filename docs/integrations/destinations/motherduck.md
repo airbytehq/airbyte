@@ -59,7 +59,7 @@ This integration will be constrained by the speed at which your filesystem accep
 
 ## Working with local DuckDB files
 
-This connector is primarily designed to work with MotherDuck. If you would like to work with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
+This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
 
 
 ## Changelog
