@@ -898,7 +898,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
             assert error_message["level"] == "ERROR"
-            assert expected_error in error_message["message"]
+            assert expected_error in error_message["stacktrace"]
         else:
             page_records = output_data["slices"][0]["pages"][0]
             assert len(page_records) == len(MOCK_RESPONSE["result"])
@@ -956,7 +956,7 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
             assert error_message["level"] == "ERROR"
-            assert expected_error in error_message["message"]
+            assert expected_error in error_message["stacktrace"]
 
 
 def test_read_stream_exception_with_secrets():
