@@ -50,7 +50,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                             Instant.ofEpochMilli(System.currentTimeMillis()),
                             stream.generationId,
                             it.data as ObjectValue,
-                            OutputRecord.Meta(changes = it.meta?.changes, syncId = stream.syncId),
+                            OutputRecord.Meta(
+                                changes = it.meta?.changes ?: mutableListOf(),
+                                syncId = stream.syncId
+                            ),
                         )
                     )
                 }
