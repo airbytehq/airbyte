@@ -19,7 +19,7 @@ include = "source_google_analytics_data_api"
 python = "^3.10,<3.12"
 cryptography = "==42.0.5"
 requests = "==2.31.0"
-airbyte-cdk = "^5"
+airbyte-cdk = "^5.0.0"
 PyJWT = "==2.8.0"
 pandas = "^2.2.0"
 
