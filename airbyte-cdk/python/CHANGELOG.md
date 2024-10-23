@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.14.1
+HttpClient: Fixes issue where oauth authenticators would not refresh on backed off retries.
+
 ## 5.14.0
 Fix yielding parent records in SubstreamPartitionRouter
 
