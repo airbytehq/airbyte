@@ -38,7 +38,7 @@ None
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.1.0  | 2024-10-24 | [x](https://github.com/airbytehq/airbyte/pull/x) | Migrate to Manifest-only |
+| 1.1.0  | 2024-10-24 | [47326](https://github.com/airbytehq/airbyte/pull/47326) | Migrate to Manifest-only |
 | 1.0.22 | 2024-10-12 | [46793](https://github.com/airbytehq/airbyte/pull/46793) | Update dependencies |
 | 1.0.21 | 2024-10-05 | [46454](https://github.com/airbytehq/airbyte/pull/46454) | Update dependencies |
 | 1.0.20 | 2024-09-28 | [46185](https://github.com/airbytehq/airbyte/pull/46185) | Update dependencies |
