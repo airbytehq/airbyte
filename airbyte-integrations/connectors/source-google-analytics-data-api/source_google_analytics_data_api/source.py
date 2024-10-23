@@ -356,8 +356,8 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         date_range = {
-            "startDate": stream_slice.get("startDate"),
-            "endDate": stream_slice.get("endDate")
+            "startDate": stream_slice["startDate"],
+            "endDate": stream_slice["endDate"]
         }
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
