@@ -127,10 +127,12 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
+                parsed_config = self._get_parsed_config(config)
+                availability_method = stream.availability_strategy.check_availability if parsed_config.use_file_transfer else stream.availability_strategy.check_availability_and_parsability
                 (
                     stream_is_available,
                     reason,
-                ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
+                ) = availability_method(stream, logger, self)
             except AirbyteTracedException as ate:
                 errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
                 tracebacks.append(traceback.format_exc())
