@@ -27,4 +27,6 @@ interface MetadataQuerier : AutoCloseable {
         /** An implementation might open a connection to build a [MetadataQuerier] instance. */
         fun session(config: T): MetadataQuerier
     }
+
+    fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField?
 }
