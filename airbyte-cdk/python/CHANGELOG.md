@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.15.0
+Add new Error:
+No DBURL given
+
+sql [-hnr] [--table-size] [--db-size] [-p pass-through] [-s string] dburl [command] module for SQL-based destinations
+
 ## 5.14.1
 HttpClient: Fixes issue where oauth authenticators would not refresh on backed off retries.
 
