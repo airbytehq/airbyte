@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import datetime
 import json
@@ -12,6 +13,7 @@ from typing import Any, Dict, Iterable, List, Mapping
 from urllib.parse import urlparse
 
 import duckdb
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
@@ -21,6 +23,7 @@ from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
+
 
 logger = getLogger("airbyte")
 
@@ -241,8 +244,20 @@ class DestinationMotherDuck(Destination):
             if CONFIG_MOTHERDUCK_API_KEY in config:
                 duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
                 duckdb_config["custom_user_agent"] = "airbyte"
+                # Next, we want to specify 'saas_mode' for during check,
+                # to reduce memory usage from unnecessary extensions
+                if "?" in path:
+                    # There are already some query params; append to them.
+                    path += "&saas_mode=true"
+                else:
+                    # No query params yet; add one.
+                    path += "?saas_mode=true"
 
-            con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
+            con = duckdb.connect(
+                database=path,
+                read_only=False,
+                config=duckdb_config,
+            )
             con.execute("SELECT 1;")
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
