@@ -251,9 +251,9 @@ class HttpMockerTest(TestCase):
             decorated_function()
 
     def test_given_request_already_mocked_when_decorate_then_raise(self):
-        http_mocker = HttpMocker()
-        a_request = HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS)
-        http_mocker.get(a_request, _A_RESPONSE)
-
-        with pytest.raises(ValueError):
+        with HttpMocker() as http_mocker:
+            a_request = HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS)
             http_mocker.get(a_request, _A_RESPONSE)
+
+            with pytest.raises(ValueError):
+                http_mocker.get(a_request, _A_RESPONSE)
