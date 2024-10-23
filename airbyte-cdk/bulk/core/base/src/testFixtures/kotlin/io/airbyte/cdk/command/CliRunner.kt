@@ -33,14 +33,15 @@ data object CliRunner {
      */
     fun source(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
+        vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteSourceRunner(args, out.beanDefinition)
+                AirbyteSourceRunner(args, featureFlags.systemEnv, out.beanDefinition)
             }
         return CliRunnable(runnable, out.results)
     }
@@ -48,10 +49,11 @@ data object CliRunner {
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
+        vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
             RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
@@ -60,7 +62,12 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteDestinationRunner(args, inputBeanDefinition, out.beanDefinition)
+                AirbyteDestinationRunner(
+                    args,
+                    featureFlags.systemEnv,
+                    inputBeanDefinition,
+                    out.beanDefinition,
+                )
             }
         return CliRunnable(runnable, out.results)
     }
@@ -68,9 +75,10 @@ data object CliRunner {
     /** Same as the other [destination] but with [AirbyteMessage] input. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
+        featureFlags: Set<FeatureFlag> = setOf(),
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -82,12 +90,12 @@ data object CliRunner {
                 baos.toByteArray()
             }
         val inputStream: InputStream = ByteArrayInputStream(inputJsonBytes)
-        return destination(op, config, catalog, state, inputStream)
+        return destination(op, config, catalog, state, inputStream, *featureFlags.toTypedArray())
     }
 
     private fun makeRunnable(
         op: String,
-        config: ConfigurationJsonObjectBase?,
+        config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
         state: List<AirbyteStateMessage>?,
         connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,
@@ -113,6 +121,9 @@ data object CliRunner {
             }
         }
     }
+
+    private val Array<out FeatureFlag>.systemEnv: Map<String, String>
+        get() = toSet().map { it.envVar.name to it.requiredEnvVarValue }.toMap()
 
     private fun inputFile(contents: Any?): Path? =
         contents?.let {

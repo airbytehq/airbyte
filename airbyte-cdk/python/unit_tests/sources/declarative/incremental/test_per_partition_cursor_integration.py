@@ -480,7 +480,6 @@ def test_perpartition_with_fallback(caplog):
         'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"1"}. Over limit: 1.',
         'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"2"}. Over limit: 2.',
         'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"3"}. Over limit: 3.',
-        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"1"}. Over limit: 4.',
     ]
 
     logged_messages = [record.message for record in caplog.records if record.levelname == "WARNING"]

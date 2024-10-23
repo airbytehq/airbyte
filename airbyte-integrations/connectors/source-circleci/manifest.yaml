@@ -1,0 +1,1983 @@
+version: 5.7.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.circleci.com/
+  API Docs: 
+  - v1-https://circleci.com/docs/api/v1/index.html
+  - v2-https://circleci.com/docs/api/v2/index.html
+  API page: https://app.circleci.com/settings/user/tokens
+
+check:
+  type: CheckStream
+  stream_names:
+    - context
+
+definitions:
+  streams:
+    context:
+      type: DeclarativeStream
+      name: context
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/context
+          http_method: GET
+          request_parameters:
+            owner-id: "{{ config['org_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/context"
+    self_ids:
+      type: DeclarativeStream
+      name: self_ids
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/me
+          http_method: GET
+          request_parameters:
+            owner-id: "{{ config['org_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/self_ids"
+    self_collaborations:
+      type: DeclarativeStream
+      name: self_collaborations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/me/collaborations
+          http_method: GET
+          request_parameters:
+            owner-id: "{{ config['org_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/self_collaborations"
+    me:
+      type: DeclarativeStream
+      name: me
+      primary_key:
+        - analytics_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1.1/me
+          http_method: GET
+          request_parameters:
+            owner-id: "{{ config['org_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/me"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - vcs_url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1.1/projects
+          http_method: GET
+          request_parameters:
+            owner-id: "{{ config['org_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/pipeline
+          http_method: GET
+          request_parameters:
+            org-slug: circleci/{{ config["org_id"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    specific_project:
+      type: DeclarativeStream
+      name: specific_project
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/project/circleci/{{ config["org_id"] }}/{{ config['project_id']
+            }}
+          http_method: GET
+          request_parameters:
+            org-slug: circleci/{{ config["org_id"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/specific_project"
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      primary_key:
+        - number
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/project/circleci/{{ config["org_id"] }}/{{ config["project_id"]
+            }}/job/{{ config['job_number'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/jobs"
+    workflow:
+      type: DeclarativeStream
+      name: workflow
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/workflow/{{ config['workflow_id'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflow"
+    insights_metrics:
+      type: DeclarativeStream
+      name: insights_metrics
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/insights/pages/circleci/{{ config["org_id"] }}/{{
+            config["project_id"] }}/summary
+          http_method: GET
+          request_parameters:
+            org-slug: circleci/{{ config["org_id"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insights_metrics"
+    insights_branches:
+      type: DeclarativeStream
+      name: insights_branches
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/insights/circleci/{{ config["org_id"] }}/{{ config["project_id"]
+            }}/branches
+          http_method: GET
+          request_parameters:
+            org-slug: circleci/{{ config["org_id"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insights_branches"
+    workflow_jobs:
+      type: DeclarativeStream
+      name: workflow_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/workflow/{{ config['workflow_id'] }}/job
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page-token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflow_jobs"
+  base_requester:
+    type: HttpRequester
+    url_base: https://circleci.com/api/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: Circle-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/context"
+  - $ref: "#/definitions/streams/self_ids"
+  - $ref: "#/definitions/streams/self_collaborations"
+  - $ref: "#/definitions/streams/me"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/specific_project"
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/workflow"
+  - $ref: "#/definitions/streams/insights_metrics"
+  - $ref: "#/definitions/streams/insights_branches"
+  - $ref: "#/definitions/streams/workflow_jobs"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - org_id
+      - start_date
+      - project_id
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      org_id:
+        type: string
+        description: >-
+          The org ID found in
+          `https://app.circleci.com/settings/organization/circleci/xxxxx/overview`
+        order: 1
+        title: Organization ID
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      project_id:
+        type: string
+        description: Project ID found in the project settings
+        order: 3
+        title: Project ID
+      job_id:
+        type: string
+        description: Job ID for fetching information
+        order: 4
+        title: Job ID
+      workflow_id:
+        type: string
+        description: workflow ID of a project pipeline
+        order: 5
+        title: Workflow ID
+      workflow_name:
+        type: string
+        description: Workflow name for fetching information
+        order: 6
+        title: Workflow Name
+        default: build-and-test
+      job_number:
+        type: string
+        description: Job Number of the workflow
+        order: 7
+        title: Job Number
+        default: "2"
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    context: true
+    self_ids: true
+    self_collaborations: true
+    me: true
+    projects: true
+    pipelines: true
+    specific_project: true
+    jobs: true
+    workflow: true
+    insights_metrics: true
+    insights_branches: true
+    workflow_jobs: true
+  testedStreams:
+    context:
+      hasRecords: true
+      streamHash: 2db58db8647b6dbeb05e3040a85515adeba9c208
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    self_ids:
+      hasRecords: true
+      streamHash: 81183e512a17f46ff1b436e73de0539cbfe6273e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    self_collaborations:
+      hasRecords: true
+      streamHash: 65dfddfb9cf5a1846147a6925a9e6bfc82b2f8e1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    me:
+      hasRecords: true
+      streamHash: 8c378e8221bef781f6911329df100ab02e9fd4e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 39e7dd96dbfb02f9cf73f35c9e0c6600193cea08
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pipelines:
+      hasRecords: true
+      streamHash: 6fe654076efd6526c3fadc28c19f1353f6a9c88c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    specific_project:
+      hasRecords: true
+      streamHash: 99bd62345fe14caaffbdf0da10bab16f7540ecf2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    jobs:
+      hasRecords: true
+      streamHash: b511617fbc1ceebf2c437fa734235fb734596639
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflow:
+      hasRecords: true
+      streamHash: 6dd1bd7a73fbd4d3b13700520f202302440284a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    insights_metrics:
+      hasRecords: true
+      streamHash: 1704e974421625cfb99ba8a7111b7e8d0475a90d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    insights_branches:
+      hasRecords: true
+      streamHash: 818709056ee69d5ce1e90b4cdb798cf1db8ef6c4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflow_jobs:
+      hasRecords: true
+      streamHash: 3a91f3982bc42fc8b860f5f42ea217d2b46ecde1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  context:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  self_ids:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      login:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  self_collaborations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avatar_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      vcs_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      admin:
+        type:
+          - boolean
+          - "null"
+      all_emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      analytics_id:
+        type: string
+      basic_email_prefs:
+        type:
+          - string
+          - "null"
+      bitbucket_authorized:
+        type:
+          - boolean
+          - "null"
+      containers:
+        type:
+          - number
+          - "null"
+      created_at:
+        type: string
+      days_left_in_trial:
+        type:
+          - number
+          - "null"
+      dev_admin:
+        type:
+          - boolean
+          - "null"
+      email_authentication:
+        type:
+          - object
+          - "null"
+        properties:
+          email_verified:
+            type:
+              - boolean
+              - "null"
+          login:
+            type:
+              - string
+              - "null"
+      enrolled_betas:
+        type:
+          - array
+          - "null"
+      github_oauth_scopes:
+        type:
+          - array
+          - "null"
+      identities:
+        type:
+          - object
+          - "null"
+      in_beta_program:
+        type:
+          - boolean
+          - "null"
+      login:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      num_projects_followed:
+        type:
+          - number
+          - "null"
+      organization_prefs:
+        type:
+          - object
+          - "null"
+      parallelism:
+        type:
+          - number
+          - "null"
+      privacy_optout:
+        type:
+          - boolean
+          - "null"
+      projects:
+        type:
+          - object
+          - "null"
+        properties:
+          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/1bf14e34-a4d9-4e18-bfdf-20e74b13a7df:
+            type:
+              - object
+              - "null"
+            properties:
+              emails:
+                type:
+                  - string
+                  - "null"
+              on_dashboard:
+                type:
+                  - boolean
+                  - "null"
+          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/ac888fc0-0fe8-4382-a8dc-1850261359ce:
+            type:
+              - object
+              - "null"
+            properties:
+              emails:
+                type:
+                  - string
+                  - "null"
+              on_dashboard:
+                type:
+                  - boolean
+                  - "null"
+          //circleci.com/fd70effc-9850-4c06-bfda-2cd8f0aa7e84/cb29099f-feac-4587-8dcc-7c83b44fb0e3:
+            type:
+              - object
+              - "null"
+            properties:
+              emails:
+                type:
+                  - string
+                  - "null"
+              on_dashboard:
+                type:
+                  - boolean
+                  - "null"
+      pusher_id:
+        type:
+          - string
+          - "null"
+      selected_email:
+        type:
+          - string
+          - "null"
+      sign_in_count:
+        type:
+          - number
+          - "null"
+      student:
+        type:
+          - boolean
+          - "null"
+      trial_end:
+        type:
+          - string
+          - "null"
+      web_ui_pipelines_first_opt_in:
+        type:
+          - boolean
+          - "null"
+      web_ui_pipelines_optout:
+        type:
+          - string
+          - "null"
+    required:
+      - analytics_id
+      - created_at
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      branches:
+        type:
+          - object
+          - "null"
+        properties:
+          circleci-project-setup:
+            type:
+              - object
+              - "null"
+            properties:
+              is_using_workflows:
+                type:
+                  - boolean
+                  - "null"
+              last_success:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  added_at:
+                    type:
+                      - string
+                      - "null"
+                  build_num:
+                    type:
+                      - number
+                      - "null"
+                  is_2_0_job:
+                    type:
+                      - boolean
+                      - "null"
+                  is_workflow_job:
+                    type:
+                      - boolean
+                      - "null"
+                  outcome:
+                    type:
+                      - string
+                      - "null"
+                  pushed_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  vcs_revision:
+                    type:
+                      - string
+                      - "null"
+              latest_completed_workflows:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  build:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+              latest_workflows:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  build:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+              pusher_logins:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              recent_builds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    added_at:
+                      type:
+                        - string
+                        - "null"
+                    build_num:
+                      type:
+                        - number
+                        - "null"
+                    is_2_0_job:
+                      type:
+                        - boolean
+                        - "null"
+                    is_workflow_job:
+                      type:
+                        - boolean
+                        - "null"
+                    outcome:
+                      type:
+                        - string
+                        - "null"
+                    pushed_at:
+                      type:
+                        - string
+                        - "null"
+                    status:
+                      type:
+                        - string
+                        - "null"
+                    vcs_revision:
+                      type:
+                        - string
+                        - "null"
+              running_builds:
+                type:
+                  - array
+                  - "null"
+          main:
+            type:
+              - object
+              - "null"
+            properties:
+              is_using_workflows:
+                type:
+                  - boolean
+                  - "null"
+              last_success:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  added_at:
+                    type:
+                      - string
+                      - "null"
+                  build_num:
+                    type:
+                      - number
+                      - "null"
+                  is_2_0_job:
+                    type:
+                      - boolean
+                      - "null"
+                  is_workflow_job:
+                    type:
+                      - boolean
+                      - "null"
+                  outcome:
+                    type:
+                      - string
+                      - "null"
+                  pushed_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  vcs_revision:
+                    type:
+                      - string
+                      - "null"
+              latest_completed_workflows:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  generate_config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+              latest_workflows:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  generate_config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+              pusher_logins:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              recent_builds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    added_at:
+                      type:
+                        - string
+                        - "null"
+                    build_num:
+                      type:
+                        - number
+                        - "null"
+                    is_2_0_job:
+                      type:
+                        - boolean
+                        - "null"
+                    is_workflow_job:
+                      type:
+                        - boolean
+                        - "null"
+                    outcome:
+                      type:
+                        - string
+                        - "null"
+                    pushed_at:
+                      type:
+                        - string
+                        - "null"
+                    status:
+                      type:
+                        - string
+                        - "null"
+                    vcs_revision:
+                      type:
+                        - string
+                        - "null"
+              running_builds:
+                type:
+                  - array
+                  - "null"
+      default_branch:
+        type:
+          - string
+          - "null"
+      following:
+        type:
+          - boolean
+          - "null"
+      has_usable_key:
+        type:
+          - boolean
+          - "null"
+      oss:
+        type:
+          - boolean
+          - "null"
+      reponame:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      vcs_type:
+        type:
+          - string
+          - "null"
+      vcs_url:
+        type: string
+    required:
+      - vcs_url
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      errors:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      number:
+        type:
+          - number
+          - "null"
+      project_slug:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          actor:
+            type:
+              - object
+              - "null"
+            properties:
+              login:
+                type:
+                  - string
+                  - "null"
+          received_at:
+            type:
+              - string
+              - "null"
+      trigger_parameters:
+        type:
+          - object
+          - "null"
+        properties:
+          circleci:
+            type:
+              - object
+              - "null"
+            properties:
+              actor_id:
+                type:
+                  - string
+                  - "null"
+              event_time:
+                type:
+                  - string
+                  - "null"
+              event_type:
+                type:
+                  - string
+                  - "null"
+              provider_actor_id:
+                type:
+                  - string
+                  - "null"
+              provider_login:
+                type:
+                  - string
+                  - "null"
+              provider_name:
+                type:
+                  - string
+                  - "null"
+              trigger_type:
+                type:
+                  - string
+                  - "null"
+          event:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          git:
+            type:
+              - object
+              - "null"
+            properties:
+              branch:
+                type:
+                  - string
+                  - "null"
+              checkout_sha:
+                type:
+                  - string
+                  - "null"
+              checkout_url:
+                type:
+                  - string
+                  - "null"
+              ref:
+                type:
+                  - string
+                  - "null"
+              repo_url:
+                type:
+                  - string
+                  - "null"
+          github_app:
+            type:
+              - object
+              - "null"
+            properties:
+              branch:
+                type:
+                  - string
+                  - "null"
+              checkout_sha:
+                type:
+                  - string
+                  - "null"
+              commit_author_email:
+                type:
+                  - string
+                  - "null"
+              commit_author_name:
+                type:
+                  - string
+                  - "null"
+              commit_message:
+                type:
+                  - string
+                  - "null"
+              commit_sha:
+                type:
+                  - string
+                  - "null"
+              commit_timestamp:
+                type:
+                  - string
+                  - "null"
+              commit_title:
+                type:
+                  - string
+                  - "null"
+              content_ref:
+                type:
+                  - string
+                  - "null"
+              default_branch:
+                type:
+                  - string
+                  - "null"
+              forced:
+                type:
+                  - string
+                  - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
+              ref:
+                type:
+                  - string
+                  - "null"
+              repo_full_name:
+                type:
+                  - string
+                  - "null"
+              repo_id:
+                type:
+                  - string
+                  - "null"
+              repo_name:
+                type:
+                  - string
+                  - "null"
+              repo_url:
+                type:
+                  - string
+                  - "null"
+              total_commits_count:
+                type:
+                  - string
+                  - "null"
+              user_avatar:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+              user_name:
+                type:
+                  - string
+                  - "null"
+              user_username:
+                type:
+                  - string
+                  - "null"
+              web_url:
+                type:
+                  - string
+                  - "null"
+          webhook:
+            type:
+              - object
+              - "null"
+            properties:
+              body:
+                type:
+                  - string
+                  - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  specific_project:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
+      organization_name:
+        type:
+          - string
+          - "null"
+      organization_slug:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      vcs_info:
+        type:
+          - object
+          - "null"
+        properties:
+          default_branch:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          vcs_url:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contexts:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      executor:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          resource_class:
+            type:
+              - string
+              - "null"
+      latest_workflow:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      messages:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type: number
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      parallel_runs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            index:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      parallelism:
+        type:
+          - number
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          external_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      queued_at:
+        type:
+          - string
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stopped_at:
+        type:
+          - string
+          - "null"
+      web_url:
+        type:
+          - string
+          - "null"
+    required:
+      - number
+  workflow:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      pipeline_id:
+        type:
+          - string
+          - "null"
+      pipeline_number:
+        type:
+          - number
+          - "null"
+      project_slug:
+        type:
+          - string
+          - "null"
+      started_by:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stopped_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  insights_metrics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      all_branches:
+        type:
+          - array
+          - "null"
+      all_workflows:
+        type:
+          - array
+          - "null"
+      org_id:
+        type:
+          - string
+          - "null"
+      project_data:
+        type:
+          - object
+          - "null"
+        properties:
+          metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              success_rate:
+                type:
+                  - number
+                  - "null"
+              throughput:
+                type:
+                  - number
+                  - "null"
+              total_credits_used:
+                type:
+                  - number
+                  - "null"
+              total_duration_secs:
+                type:
+                  - number
+                  - "null"
+              total_runs:
+                type:
+                  - number
+                  - "null"
+          trends:
+            type:
+              - object
+              - "null"
+            properties:
+              success_rate:
+                type:
+                  - number
+                  - "null"
+              throughput:
+                type:
+                  - number
+                  - "null"
+              total_credits_used:
+                type:
+                  - number
+                  - "null"
+              total_duration_secs:
+                type:
+                  - number
+                  - "null"
+              total_runs:
+                type:
+                  - number
+                  - "null"
+      project_id:
+        type: string
+      project_workflow_branch_data:
+        type:
+          - array
+          - "null"
+      project_workflow_data:
+        type:
+          - array
+          - "null"
+    required:
+      - project_id
+  insights_branches:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      branches:
+        type:
+          - array
+          - "null"
+      org_id:
+        type:
+          - string
+          - "null"
+      project_id:
+        type: string
+    required:
+      - project_id
+  workflow_jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      dependencies:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      job_number:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project_slug:
+        type:
+          - string
+          - "null"
+      started_at:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      stopped_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - started_at

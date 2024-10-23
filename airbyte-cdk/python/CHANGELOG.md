@@ -1,5 +1,59 @@
 # Changelog
 
+## 5.13.0
+Add extra fields to StreamSlice
+
+## 5.12.1
+Low Code: Removes deprecated  and 
+
+## 5.12.0
+Low Code: Adds  component
+
+## 5.11.1
+Low Code: Consolidate manifest decoder selection under , , and 
+
+## 5.11.0
+concurrent-cdk: add per slice tracking of the most recent cursor
+
+## 5.10.3
+do not raise exception on missing stream by default
+
+## 5.10.2
+Remove PrintBuffer optimization due to dropped records
+
+## 5.10.1
+Async job component: improve memory usage
+
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
+## 5.9.0
+concurrent-cdk: change stream availability strategy to always available
+
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
+## 5.8.0
+Async job component: support Salesforce
+
+## 5.7.5
+Have headers match during HTTP cache hit
+
+## 5.7.4
+Always return a connection status even if an exception was raised
+
+## 5.7.3
+fix connector builder output serialization 
+
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
+## 5.7.1
+add python-snappy to file-based dependencies
+
+## 5.7.0
+concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
+
 ## 5.6.0
 Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
 

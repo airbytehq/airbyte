@@ -24,23 +24,20 @@ class CursorFactory:
 
 class PerPartitionCursor(DeclarativeCursor):
     """
-    Given a stream has many partitions, it is important to provide a state per partition.
+    Manages state per partition when a stream has many partitions, to prevent data loss or duplication.
 
-    Record | Stream Slice | Last Record | DatetimeCursorBased cursor
-    -- | -- | -- | --
-    1 | {"start_time": "2021-01-01","end_time": "2021-01-31","owner_resource": "1"''} | cursor_field: “2021-01-15” | 2021-01-15
-    2 | {"start_time": "2021-02-01","end_time": "2021-02-28","owner_resource": "1"''} | cursor_field: “2021-02-15” | 2021-02-15
-    3 | {"start_time": "2021-01-01","end_time": "2021-01-31","owner_resource": "2"''} | cursor_field: “2021-01-03” | 2021-01-03
-    4 | {"start_time": "2021-02-01","end_time": "2021-02-28","owner_resource": "2"''} | cursor_field: “2021-02-14” | 2021-02-14
+    **Partition Limitation and Limit Reached Logic**
 
-    Given the following errors, this can lead to some loss or duplication of records:
-    When | Problem | Affected Record
-    -- | -- | --
-    Between record #1 and #2 | Loss | #3
-    Between record #2 and #3 | Loss | #3, #4
-    Between record #3 and #4 | Duplication | #1, #2
+    - **DEFAULT_MAX_PARTITIONS_NUMBER**: The maximum number of partitions to keep in memory (default is 10,000).
+    - **_cursor_per_partition**: An ordered dictionary that stores cursors for each partition.
+    - **_over_limit**: A counter that increments each time an oldest partition is removed when the limit is exceeded.
 
-    Therefore, we need to manage state per partition.
+    The class ensures that the number of partitions tracked does not exceed the `DEFAULT_MAX_PARTITIONS_NUMBER` to prevent excessive memory usage.
+
+    - When the number of partitions exceeds the limit, the oldest partitions are removed from `_cursor_per_partition`, and `_over_limit` is incremented accordingly.
+    - The `limit_reached` method returns `True` when `_over_limit` exceeds `DEFAULT_MAX_PARTITIONS_NUMBER`, indicating that the global cursor should be used instead of per-partition cursors.
+
+    This approach avoids unnecessary switching to a global cursor due to temporary spikes in partition counts, ensuring that switching is only done when a sustained high number of partitions is observed.
     """
 
     DEFAULT_MAX_PARTITIONS_NUMBER = 10000
@@ -58,6 +55,7 @@ class PerPartitionCursor(DeclarativeCursor):
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
+        self._current_partition: Optional[Mapping[str, Any]] = None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
@@ -75,7 +73,7 @@ class PerPartitionCursor(DeclarativeCursor):
             self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
         for cursor_slice in cursor.stream_slices():
-            yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+            yield StreamSlice(partition=partition, cursor_slice=cursor_slice, extra_fields=partition.extra_fields)
 
     def _ensure_partition_limit(self) -> None:
         """
@@ -156,7 +154,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 f"we should only update state for partitions that were emitted during `stream_slices`"
             )
 
-    def get_stream_state(self) -> StreamState:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> StreamState:
         states = []
         for partition_tuple, cursor in self._cursor_per_partition.items():
             cursor_state = cursor.get_stream_state()
@@ -169,7 +167,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 )
         state: dict[str, Any] = {"states": states}
 
-        parent_state = self._partition_router.get_stream_state()
+        parent_state = self._partition_router.get_stream_state(partition=partition, last=last)
         if parent_state:
             state["parent_state"] = parent_state
         return state

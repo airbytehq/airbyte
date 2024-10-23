@@ -16,31 +16,28 @@ from connector_ops.utils import POETRY_LOCK_FILE_NAME, PYPROJECT_FILE_NAME  # ty
 from deepdiff import DeepDiff  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import Step, StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import List
 
 
-class PoetryUpdate(Step):
+class PoetryUpdate(StepModifyingFiles):
     context: ConnectorContext
     dev: bool
     specified_versions: dict[str, str]
-    modified_files: List[str]
     title = "Update versions of libraries in poetry."
 
     def __init__(
         self,
         context: PipelineContext,
+        connector_directory: dagger.Directory,
         dev: bool = False,
         specific_dependencies: List[str] | None = None,
-        connector_directory: dagger.Directory | None = None,
     ) -> None:
-        super().__init__(context)
+        super().__init__(context, connector_directory)
         self.dev = dev
         self.specified_versions = self.parse_specific_dependencies(specific_dependencies) if specific_dependencies else {}
-        self.connector_directory = connector_directory
-        self.modified_files = []
 
     @staticmethod
     def parse_specific_dependencies(specific_dependencies: List[str]) -> dict[str, str]:
@@ -56,7 +53,7 @@ class PoetryUpdate(Step):
         return versions
 
     async def _run(self) -> StepResult:
-        connector_directory = self.connector_directory or await self.context.get_connector_dir()
+        connector_directory = self.modified_directory
         if PYPROJECT_FILE_NAME not in await connector_directory.entries():
             return StepResult(step=self, status=StepStatus.SKIPPED, stderr=f"Connector does not have a {PYPROJECT_FILE_NAME}")
 
@@ -70,12 +67,14 @@ class PoetryUpdate(Step):
             for package, version in self.specified_versions.items():
                 if not self.dev:
                     self.logger.info(f"Add {package} {version} to main dependencies")
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}"])
+                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}"], use_entrypoint=True)
                 else:
                     self.logger.info(f"Add {package} {version} to dev dependencies")
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"{package}{version}", "--group=dev"])
+                    connector_container = await connector_container.with_exec(
+                        ["poetry", "add", f"{package}{version}", "--group=dev"], use_entrypoint=True
+                    )
 
-            connector_container = await connector_container.with_exec(["poetry", "update"])
+            connector_container = await connector_container.with_exec(["poetry", "update"], use_entrypoint=True)
             self.logger.info(await connector_container.stdout())
         except dagger.ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
@@ -84,6 +83,7 @@ class PoetryUpdate(Step):
             original_poetry_lock != await connector_container.file(POETRY_LOCK_FILE_NAME).contents()
             or original_pyproject_file != await connector_container.file(PYPROJECT_FILE_NAME).contents()
         ):
+            self.modified_directory = await connector_container.directory(".")
             self.modified_files = [POETRY_LOCK_FILE_NAME, PYPROJECT_FILE_NAME]
             return StepResult(step=self, status=StepStatus.SUCCESS, output=connector_container.directory("."))
 
@@ -106,7 +106,6 @@ class DependencyUpdate:
 
 
 class GetDependencyUpdates(Step):
-
     SYFT_DOCKER_IMAGE = "anchore/syft:v1.6.0"
     context: ConnectorContext
     title: str = "Get dependency updates"
@@ -131,7 +130,7 @@ class GetDependencyUpdates(Step):
 
     async def get_sbom_from_latest_image(self) -> str:
         syft_container = self.get_syft_container()
-        return await syft_container.with_exec([self.latest_connector_docker_image_address, "-o", "syft-json"]).stdout()
+        return await syft_container.with_exec([self.latest_connector_docker_image_address, "-o", "syft-json"], use_entrypoint=True).stdout()
 
     async def get_sbom_from_container(self, container: dagger.Container) -> str:
         oci_tarball_path = Path(f"/tmp/{self.context.connector.technical_name}-{self.context.connector.version}.tar")
@@ -139,7 +138,7 @@ class GetDependencyUpdates(Step):
         syft_container = self.get_syft_container()
         container_sbom = await (
             syft_container.with_mounted_file("/tmp/oci.tar", self.dagger_client.host().file(str(oci_tarball_path)))
-            .with_exec(["/tmp/oci.tar", "-o", "syft-json"])
+            .with_exec(["/tmp/oci.tar", "-o", "syft-json"], use_entrypoint=True)
             .stdout()
         )
         oci_tarball_path.unlink()
