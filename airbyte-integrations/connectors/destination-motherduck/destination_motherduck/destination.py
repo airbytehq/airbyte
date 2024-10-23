@@ -254,7 +254,7 @@ class DestinationMotherDuck(Destination):
                     path += "?saas_mode=true"
 
             con = duckdb.connect(
-                database="{path}&",
+                database=path,
                 read_only=False,
                 config=duckdb_config,
             )
