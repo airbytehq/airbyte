@@ -65,7 +65,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._per_partition_cursor = PerPartitionCursor(cursor_factory, partition_router)
         self._global_cursor = GlobalSubstreamCursor(stream_cursor, partition_router)
         self._use_global_cursor = False
-        self._current_partition = None
+        self._current_partition: Optional[Mapping[str, Any]] = None
+        self._last_slice: bool = False
 
     def _get_active_cursor(self) -> Union[PerPartitionCursor, GlobalSubstreamCursor]:
         return self._global_cursor if self._use_global_cursor else self._per_partition_cursor
@@ -83,6 +84,7 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
         self._current_partition = None
+        self._last_slice = True
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -109,9 +111,9 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
     def get_stream_state(self) -> StreamState:
         final_state = {"use_global_cursor": self._use_global_cursor}
 
-        final_state.update(self._global_cursor.get_stream_state(partition=self._current_partition))
+        final_state.update(self._global_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
         if not self._use_global_cursor:
-            final_state.update(self._per_partition_cursor.get_stream_state(partition=self._current_partition))
+            final_state.update(self._per_partition_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
 
         return final_state
 

@@ -72,6 +72,8 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._slice_semaphore = threading.Semaphore(0)  # Start with 0, indicating no slices being tracked
         self._all_slices_yielded = False
         self._lookback_window: Optional[int] = None
+        self._current_partition: Optional[Mapping[str, Any]] = None
+        self._last_slice: bool = False
 
     def start_slices_generation(self) -> None:
         self._timer.start()
@@ -99,8 +101,11 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
         self.start_slices_generation()
         for slice, last in iterate_with_last_flag(slice_generator):
+            self._current_partition = slice.partition
             self.register_slice(last)
             yield slice
+        self._current_partition = None
+        self._last_slice = True
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
@@ -202,10 +207,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
                 self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
-    def get_stream_state(self, partition: Optional[StreamSlice] = None) -> StreamState:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
 
-        parent_state = self._partition_router.get_stream_state(partition=partition)
+        parent_state = self._partition_router.get_stream_state(
+            partition=partition or self._current_partition, last=self._last_slice or last
+        )
         if parent_state:
             state["parent_state"] = parent_state
 
