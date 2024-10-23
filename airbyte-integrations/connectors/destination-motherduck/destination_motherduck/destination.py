@@ -13,7 +13,6 @@ from typing import Any, Dict, Iterable, List, Mapping
 from urllib.parse import urlparse
 
 import duckdb
-
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
@@ -23,7 +22,6 @@ from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
-
 
 logger = getLogger("airbyte")
 
