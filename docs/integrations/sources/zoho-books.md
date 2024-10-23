@@ -5,7 +5,7 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `region` | `string` | Region. The region code for the Zoho Books API, such as &#39;com&#39;, &#39;eu&#39;, &#39;in&#39;, etc. |  |
+| `region` | `string` | Region. The region code for the Zoho Books API, such as `com`, `eu`, `in`, etc. |  |
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
