@@ -7,7 +7,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -35,7 +35,7 @@ streams:
       path: "/accounts"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -826,7 +826,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -854,7 +854,7 @@ streams:
       path: "/calls"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -1075,7 +1075,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -1103,7 +1103,7 @@ streams:
       path: "/callDispositions"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -1171,7 +1171,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -1199,7 +1199,7 @@ streams:
       path: "/callPurposes"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -1259,7 +1259,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -1287,7 +1287,7 @@ streams:
       path: "/mailings"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -1626,7 +1626,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -1654,7 +1654,7 @@ streams:
       path: "/mailboxes"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -1933,7 +1933,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -1961,7 +1961,7 @@ streams:
       path: "/opportunities"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -2772,7 +2772,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -2800,7 +2800,7 @@ streams:
       path: "/personas"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -2852,7 +2852,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -2880,7 +2880,7 @@ streams:
       path: "/prospects"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -4143,7 +4143,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -4171,7 +4171,7 @@ streams:
       path: "/sequences"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -4455,7 +4455,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -4483,7 +4483,7 @@ streams:
       path: "/sequenceStates"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -4691,7 +4691,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -4719,7 +4719,7 @@ streams:
       path: "/sequenceSteps"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -4880,7 +4880,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -4908,7 +4908,7 @@ streams:
       path: "/snippets"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -4996,7 +4996,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -5024,7 +5024,7 @@ streams:
       path: "/stages"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -5096,7 +5096,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -5124,7 +5124,7 @@ streams:
       path: "/tasks"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -5425,7 +5425,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -5453,7 +5453,7 @@ streams:
       path: "/templates"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -5639,7 +5639,7 @@ streams:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -5667,7 +5667,7 @@ streams:
       path: "/users"
   incremental_sync:
     type: CustomIncrementalSync
-    class_name: source_outreach.components.CustomIncrementalSync
+    class_name: source_declarative_manifest.components.CustomIncrementalSync
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_field: updatedAt
     is_data_feed: true
@@ -6226,7 +6226,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: CustomRecordExtractor
-      class_name: source_outreach.components.CustomExtractor
+      class_name: source_declarative_manifest.components.CustomExtractor
   requester:
     type: HttpRequester
     url_base: https://api.outreach.io/api/v2/
@@ -6249,7 +6249,7 @@ definitions:
       type: RecordSelector
       extractor:
         type: CustomRecordExtractor
-        class_name: source_outreach.components.CustomExtractor
+        class_name: source_declarative_manifest.components.CustomExtractor
     paginator:
       type: DefaultPaginator
       page_token_option:
@@ -6282,7 +6282,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_outreach.components.CustomExtractor
+          class_name: source_declarative_manifest.components.CustomExtractor
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -6309,7 +6309,7 @@ definitions:
           grant_type: refresh_token
     incremental_sync:
       type: CustomIncrementalSync
-      class_name: source_outreach.components.CustomIncrementalSync
+      class_name: source_declarative_manifest.components.CustomIncrementalSync
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       cursor_field: updatedAt
       is_data_feed: true
