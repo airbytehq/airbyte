@@ -29,7 +29,7 @@ data class OutputRecord(
      * that we write to the destination.
      */
     data class Meta(
-        val changes: List<Change>? = null,
+        val changes: MutableList<Change> = mutableListOf(),
         val syncId: Long? = null,
     )
 
