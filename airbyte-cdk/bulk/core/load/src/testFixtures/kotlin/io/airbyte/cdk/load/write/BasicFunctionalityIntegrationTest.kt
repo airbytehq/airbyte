@@ -54,6 +54,15 @@ abstract class BasicFunctionalityIntegrationTest(
      * ever be disabled for test destinations (dev-null, etc.).
      */
     val verifyDataWriting: Boolean = true,
+    /**
+     * Whether a stream schema from a newer sync is also applied to older records. For example, in
+     * databases where we write records into a table, dropping a column from that table will also
+     * drop that column from older records.
+     *
+     * In contrast, file-based destinations where each sync creates a new file do _not_ have
+     * retroactive schemas: writing a new file without a column has no effect on older files.
+     */
+    val isStreamSchemaRetroactive: Boolean,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -76,7 +85,9 @@ abstract class BasicFunctionalityIntegrationTest(
                     DestinationRecord(
                         namespace = randomizedNamespace,
                         name = "test_stream",
-                        data = """{"id": 5678}""",
+                        // The `undeclared` field should be dropped by the destination, because it
+                        // is not present in the stream schema.
+                        data = """{"id": 5678, "undeclared": "asdf"}""",
                         emittedAtMs = 1234,
                         changes =
                             mutableListOf(
@@ -526,6 +537,143 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1234,
                     generationId = 13,
                     data = mapOf("id" to 42, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testAppend() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId,
+            )
+        runSync(
+            configContents,
+            makeStream(syncId = 42),
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream = makeStream(syncId = 43)
+        runSync(
+            configContents,
+            finalStream,
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "second_value"}""",
+                    emittedAtMs = 1234,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "name" to "first_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Intended to test for basic schema evolution. Runs two append syncs, where the second sync has
+     * a few changes
+     * * drop the `to_drop` column
+     * * add a `to_add` column
+     * * change the `to_change` column from int to string
+     */
+    @Test
+    open fun testAppendSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId,
+            )
+        runSync(
+            configContents,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
+            ),
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType)
+            )
+        runSync(
+            configContents,
+            finalStream,
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data =
+                        if (isStreamSchemaRetroactive)
+                        // the first sync's record has to_change modified to a string,
+                        // and to_drop is gone completely
+                        mapOf("id" to 42, "to_change" to "42")
+                        else mapOf("id" to 42, "to_drop" to "val1", "to_change" to 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
             ),

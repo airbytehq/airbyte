@@ -17,6 +17,7 @@ abstract class S3V2WriteTest(path: String) :
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
+        isStreamSchemaRetroactive = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -27,6 +28,18 @@ abstract class S3V2WriteTest(path: String) :
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
+    }
+
+    @Disabled("append mode doesn't yet work")
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
+    @Disabled("append mode doesn't yet work")
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
