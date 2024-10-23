@@ -165,7 +165,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                     #  Removing this may break single-threaded connectors that rely on stream_state so I've commented it
                     #  out, but left it in as a reminder to fix this once we've verified this is safe for data feed,
                     #  client side incremental, and single threaded streams that use stream_state
-                    # declarative_stream.cursor = None
+                    declarative_stream.retriever.cursor = None
 
                     partition_generator = CursorPartitionGenerator(
                         stream=declarative_stream,

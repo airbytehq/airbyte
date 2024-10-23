@@ -173,6 +173,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomOutputFormatConcurrentStreamStateConverter,
     DateTimeStreamStateConverter,
+    EpochValueConcurrentStreamStateConverter,
 )
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
@@ -519,12 +520,15 @@ class ModelToComponentFactory:
             if evaluated_lookback_window:
                 lookback_window = parse_duration(evaluated_lookback_window)
 
-        connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
-            datetime_format=datetime_format,
-            is_sequential_state=True,
-            cursor_granularity=cursor_granularity,
-            # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
-        )
+        if datetime_format != "%s":
+            connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
+                datetime_format=datetime_format,
+                is_sequential_state=True,
+                cursor_granularity=cursor_granularity,
+                # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+            )
+        else:
+            connector_state_converter = EpochValueConcurrentStreamStateConverter(is_sequential_state=True)
 
         start_date_runtime_value: Union[InterpolatedString, str, MinMaxDatetime]
         if isinstance(datetime_based_cursor_model.start_datetime, MinMaxDatetimeModel):

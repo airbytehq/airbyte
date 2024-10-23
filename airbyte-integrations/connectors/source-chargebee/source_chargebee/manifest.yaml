@@ -464,3 +464,8 @@ streams:
 check:
   stream_names:
     - "event"
+
+# todo figure out how much concurrency
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
