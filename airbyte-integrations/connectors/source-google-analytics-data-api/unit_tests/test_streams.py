@@ -84,7 +84,10 @@ def test_request_body_json(patch_base_class):
             {"name": "browser"},
         ],
         "keepEmptyRows": True,
-        "dateRanges": [request_body_params["stream_slice"]],
+        "dateRanges": [{
+            "startDate": request_body_params["stream_slice"]["startDate"],
+            "endDate": request_body_params["stream_slice"]["endDate"]
+        }],
         "returnPropertyQuota": True,
         "offset": str(0),
         "limit": "100000",
