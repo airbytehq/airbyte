@@ -238,7 +238,7 @@ class DestinationMotherDuck(Destination):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
             # Add SaaS mode to prevent loading extensions
-            if path.endswith("?"):
+            if path.contains("?"):
                 path += "&saas_mode=true"
             else:
                 path += "?saas_mode=true"
