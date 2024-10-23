@@ -1,28 +1,27 @@
-## What
-<!--
-* Describe what the change is solving. Link all GitHub issues related to this change.
--->
+## Description
 
-## How
-<!--
-* Describe how code changes achieve the solution.
--->
+Please include a summary of the changes.
 
-## Review guide
-<!--
-1. `x.py`
-2. `y.py`
--->
+## Changes Made
 
-## User Impact
-<!--
-* What is the end result perceived by the user?
-* If there are negative side effects, please list them. 
--->
+Describe the changes made.
 
-## Can this PR be safely reverted and rolled back?
-<!--
-* If unsure, leave it blank.
--->
-- [ ] YES 💚
-- [ ] NO ❌
+## How has this been tested?
+
+Describe the tests you ran to verify your changes.
+
+ - [ ] Test A
+ - [ ] Test B
+
+## Ticket Link
+
+[REV-](URL)
+
+## Checklist
+
+- [ ] My changes follow the guidelines for this project.
+- [ ] I have performed a self-review of my own code.
+- [ ] I have commented on my changes, particularly in hard-to-understand areas.
+- [ ] I have updated the README.md file with corresponding changes.
+- [ ] My changes generate no new warnings.
+- [ ] The ticket link is updated.
