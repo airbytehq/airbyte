@@ -3,9 +3,9 @@
 # Airbyte doesn't have a Fastbill test account to run tests
 connector_image: airbyte/source-fastbill:dev
 acceptance_tests:
-  # spec:
-  #   tests:
-  #     - spec_path: "source_fastbill/spec.yaml"
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       #     - config_path: "secrets/config.json"
