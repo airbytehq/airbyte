@@ -6,8 +6,6 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.types import Record
 
@@ -26,11 +24,10 @@ class PocketExtractor(RecordExtractor):
     """
 
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
     field_path: str = "list"
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
+        response_body = response.json()
         if self.field_path not in response_body:
             return []
         elif type(response_body[self.field_path]) is list:
