@@ -1,4 +1,4 @@
-version: 5.10.3
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -83,8 +83,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -118,8 +118,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -153,8 +153,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -188,8 +188,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -219,12 +219,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -254,12 +254,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -293,8 +293,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -328,8 +328,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -363,8 +363,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -398,8 +398,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -429,12 +429,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -464,12 +464,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -499,12 +499,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -532,12 +532,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -567,12 +567,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 50
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -614,7 +614,7 @@ spec:
       access_token:
         type: string
         description: API token obtained from your Float Account Settings page
-        name: access_token
+        name: float_access_token
         order: 0
         title: Float Access Token
         airbyte_secret: true
@@ -627,125 +627,125 @@ metadata:
     people: true
     roles: true
     public_holidays: true
-    holidays: false
-    projects: false
+    holidays: true
+    projects: true
     status: true
     time_off: true
     timeoff-types: true
     clients: true
-    phases: false
-    project-tasks: false
-    milestones: false
-    allocations: false
-    logged-time: false
+    phases: true
+    project-tasks: true
+    milestones: true
+    allocations: true
+    logged-time: true
   testedStreams:
     accounts:
-      streamHash: d32f62a37eb217784add9d441fbeb6fba48d769f
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: fa2a6932efdeae2cfc1b77f28fcc65f6ee93d068
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     departments:
-      streamHash: df9bb255574f557d0d40461597c8106dc5fa38a4
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c5fc3c01890a3dacdbbb934f51f734d4ac60a6b3
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     people:
-      streamHash: 07f2486a2e4e1cb7be4896e4a051e7fbfef76e99
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 288f1715e6acad0bcc01a33c88e6df0cc18a34a4
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     roles:
-      streamHash: dcc9e61f97ef759e5d632ee21ae81a1347cd9ac3
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: cf3ec88726a7a5926dc34880a299f3892651dc25
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     public_holidays:
-      streamHash: 5b1a4d5d27912eae96bbfb8aabde5cb46a62d734
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 0008ca595a34ff616d7052c513e3e54480c0719b
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     holidays:
-      streamHash: f2e46f81fdf12d28b729be6397c05eb4d3a8fb7c
+      streamHash: ca153e35c47cdc50ea8752f15361288f358f2c63
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     projects:
-      streamHash: 0499638779b50f8babf084dabaefe1ce45c1cf7b
+      streamHash: b03383c02e4cf12a36ade66aa1763e0b62fdf963
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     status:
-      streamHash: f8c7186a741d465f91975ee62e789687eb378357
+      streamHash: 676e93657ec96fdf0bb52ee7c0b1cf5307799ba4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     time_off:
-      streamHash: 4929765981baaec219dd91bc4637a64091941866
+      streamHash: 7a0336165ac1d08dc87a08e89ed139cd6bb1f269
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     timeoff-types:
-      streamHash: cdd8df45d1c97ff083e36a3e0243a5b4ffd4d2d4
+      streamHash: 8b628952d32ac5b7a818294db6153c98f6dcc908
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     clients:
-      streamHash: aaf2c451fc3b42dee2afb9f3ae9614d6fb6e2285
+      streamHash: 3314e778de58a14fe4f99e657267504fffb7b5af
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     phases:
-      streamHash: 3558ab1c79fa269471019a3460756f1a96ce74c8
+      streamHash: cfca0693e774e16fb8c746597be94c05a9b4ad45
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     project-tasks:
-      streamHash: d496f07c924fc8e92d5bb0f89508ad1a17b38d18
+      streamHash: d109daa1387110d3b3b357c147c7cdfc8efdab6a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     milestones:
-      streamHash: 2b9e81efdad91307b788a316988cacb088bf5b0c
+      streamHash: c5e1106e4359f31b0f47da824b620c33d717e7d1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     allocations:
-      streamHash: 4ff8b9089c5e88c5b54f418de8fce4887635eb6e
+      streamHash: 3b9b766ac0381acbe8c67a6f25e13d039f1541cd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     logged-time:
-      streamHash: c6737bfde32d551c89c4a7ba7b3ec2562b25066b
+      streamHash: 80580f269fab9b5f48f4dff77bd56e3a46532c80
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -976,14 +976,106 @@ schemas:
       - id
   holidays:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      holiday_id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - holiday_id
   projects:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      all_pms_schedule:
+        type:
+          - number
+          - "null"
+      budget_per_phase:
+        type:
+          - number
+          - "null"
+      budget_priority:
+        type:
+          - number
+          - "null"
+      budget_type:
+        type:
+          - number
+          - "null"
+      client_id:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      locked_task_list:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      non_billable:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      project_id:
+        type: number
+      project_manager:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tentative:
+        type:
+          - number
+          - "null"
+    required:
+      - project_id
   status:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1130,26 +1222,266 @@ schemas:
       - client_id
   phases:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      non_billable:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type: number
+      project_id:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      tentative:
+        type:
+          - number
+          - "null"
+    required:
+      - phase_id
     additionalProperties: true
-    properties: {}
   project-tasks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      count_logged_time:
+        type:
+          - number
+          - "null"
+      count_tasks:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      task_meta_id:
+        type: number
+      task_name:
+        type:
+          - string
+          - "null"
+    required:
+      - task_meta_id
     additionalProperties: true
-    properties: {}
   milestones:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      milestone_id:
+        type: number
+      modified:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+    required:
+      - milestone_id
   allocations:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      people_id:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      repeat_state:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      task_id:
+        type:
+          - number
+          - "null"
+      task_meta_id:
+        type:
+          - number
+          - "null"
     additionalProperties: true
-    properties: {}
   logged-time:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      billable:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      locked:
+        type:
+          - boolean
+          - "null"
+      logged_time_id:
+        type: string
+      modified:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      people_id:
+        type:
+          - number
+          - "null"
+      phase_id:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      task_id:
+        type:
+          - number
+          - "null"
+      task_meta_id:
+        type:
+          - number
+          - "null"
+      task_name:
+        type:
+          - string
+          - "null"
+    required:
+      - logged_time_id
     additionalProperties: true
-    properties: {}
