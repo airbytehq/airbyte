@@ -9,9 +9,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 
-# TODO: Before merge, revert to a pinned CDK verison:
-# airbyte-cdk = "^0.51.6"
-airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = [] }
+# NOTE: You can toggle between pinned and local CDK version for testing:
+airbyte-cdk = {version = "^5.15.0", extras = ["sql"] }
+# airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
 duckdb = "0.10.3"
 pyarrow = "15.0.2"
 sqlalchemy = ">=1.4.51,!=2.0.36,<3.0"
