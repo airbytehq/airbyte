@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination MotherDuck",
     "type": "object",
-    "required": ["destination_path"],
+    "required": ["motherduck_api_key"],
     "additionalProperties": true,
     "properties": {
       "motherduck_api_key": {
@@ -17,7 +17,8 @@
         "title": "Destination DB",
         "type": "string",
         "description": "Path to the .duckdb file, or the text 'md:' to connect to MotherDuck. The file will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/motherduck\">docs</a>",
-        "examples": ["/local/destination.duckdb", "md:", "motherduck:"]
+        "examples": ["/local/destination.duckdb", "md:", "motherduck:"],
+        "default": "md:"
       },
       "schema": {
         "title": "Destination Schema",
