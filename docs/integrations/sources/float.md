@@ -26,7 +26,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | phases | phase_id | DefaultPaginator | ✅ |  ❌  |
 | project-tasks | task_meta_id | DefaultPaginator | ✅ |  ❌  |
 | milestones | milestone_id | DefaultPaginator | ✅ |  ❌  |
-| allocations |  | DefaultPaginator | ✅ |  ❌  |
+| tasks | task_id | DefaultPaginator | ✅ |  ❌  |
 | logged-time | logged_time_id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog

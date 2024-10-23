@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
   connectorSubtype: api
   connectorType: source
-  definitionId: 50d3bce5-fb7a-4863-9e9f-0c8f401b2bd8
+  definitionId: 4f755eb9-6e1a-4b0e-bc1e-26b9f5d3ca4c
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-float
   githubIssueLabel: source-float

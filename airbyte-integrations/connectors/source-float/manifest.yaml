@@ -510,9 +510,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/milestones"
-    allocations:
+    tasks:
       type: DeclarativeStream
-      name: allocations
+      name: tasks
+      primary_key:
+        - task_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -542,7 +544,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/allocations"
+          $ref: "#/schemas/tasks"
     logged-time:
       type: DeclarativeStream
       name: logged-time
@@ -600,7 +602,7 @@ streams:
   - $ref: "#/definitions/streams/phases"
   - $ref: "#/definitions/streams/project-tasks"
   - $ref: "#/definitions/streams/milestones"
-  - $ref: "#/definitions/streams/allocations"
+  - $ref: "#/definitions/streams/tasks"
   - $ref: "#/definitions/streams/logged-time"
 
 spec:
@@ -636,44 +638,44 @@ metadata:
     phases: true
     project-tasks: true
     milestones: true
-    allocations: true
+    tasks: true
     logged-time: true
   testedStreams:
     accounts:
-      hasRecords: true
       streamHash: fa2a6932efdeae2cfc1b77f28fcc65f6ee93d068
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    departments:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    departments:
       streamHash: c5fc3c01890a3dacdbbb934f51f734d4ac60a6b3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    people:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
       streamHash: 288f1715e6acad0bcc01a33c88e6df0cc18a34a4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    roles:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
       streamHash: cf3ec88726a7a5926dc34880a299f3892651dc25
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    public_holidays:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    public_holidays:
       streamHash: 0008ca595a34ff616d7052c513e3e54480c0719b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     holidays:
       streamHash: ca153e35c47cdc50ea8752f15361288f358f2c63
       hasResponse: true
@@ -737,8 +739,8 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    allocations:
-      streamHash: 3b9b766ac0381acbe8c67a6f25e13d039f1541cd
+    tasks:
+      streamHash: 4a7e85d80f5505b18f5f985f7f84c5df8bf4764f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1339,9 +1341,10 @@ schemas:
           - "null"
     required:
       - milestone_id
-  allocations:
+  tasks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       billable:
         type:
@@ -1404,14 +1407,13 @@ schemas:
           - number
           - "null"
       task_id:
-        type:
-          - number
-          - "null"
+        type: number
       task_meta_id:
         type:
           - number
           - "null"
-    additionalProperties: true
+    required:
+      - task_id
   logged-time:
     type: object
     $schema: http://json-schema.org/schema#
