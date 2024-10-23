@@ -708,7 +708,16 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     ]
 
     party_members_slices_and_responses = _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES + [
-        ({"start": "2024-09-04", "end": "2024-09-10"}, HttpResponse(json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}]))) # considering lookback window
+        (
+            {"start": "2024-09-04", "end": "2024-09-10"},
+             HttpResponse(
+                 json.dumps(
+                     [
+                         {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}
+                     ]
+                 )
+             ),
+         )  # considering lookback window
     ]
     location_slices = [
         {"start": "2024-07-26", "end": "2024-08-25"},
@@ -839,7 +848,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
     """
 
-    most_recent_cursor_value = datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc)  # based on _LOCATIONS_RESPONSE, this value might be outside of the actual start/end of the slice
+    # most_recent_cursor_value = datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc)  # based on _LOCATIONS_RESPONSE, this value might be outside of the actual start/end of the slice
     # FIXME it seems like we yet don't consider `most_recent_cursor_value` as we ignore it during serialization [here](https://github.com/airbytehq/airbyte/blob/f07571f15f1bdbba86ad5e324e829a89b7d07cd6/airbyte-cdk/python/airbyte_cdk/sources/streams/concurrent/state_converters/abstract_stream_state_converter.py#L75-L78)
     #  Once this is added, this test will probably have to change because the generated slices (represented by `location_slices` here) will no longer match the `expected_stream_state`
     #  This is why `most_recent_cursor_value` is unused for now
