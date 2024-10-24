@@ -1,0 +1,1056 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Finnworlds provides data related to finance for globally traded instruments.
+
+  With this connector we can easily fetch data from various streams such as
+  Dividends , Stock Splits , Candle Sticks etc
+
+  Docs : https://finnworlds.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - Bonds List
+
+definitions:
+  streams:
+    Bonds List:
+      type: DeclarativeStream
+      name: Bonds List
+      primary_key:
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: bondslist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: "{{ config['list_countries_for_bonds'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bonds List"
+    Bonds:
+      type: DeclarativeStream
+      name: Bonds
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: bonds
+          http_method: GET
+          request_parameters:
+            type: "{{ config['type_of_bond_'] }}"
+            key: "{{ config[\"key\"] }}"
+            country: "{{ stream_partition.country}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country
+              partition_field: country
+              stream:
+                $ref: "#/definitions/streams/Bonds List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bonds"
+    Dividends List:
+      type: DeclarativeStream
+      name: Dividends List
+      primary_key:
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dividendslist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: "{{ config[\"list\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Dividends List"
+    Dividends:
+      type: DeclarativeStream
+      name: Dividends
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dividends
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            ticker: "{{ stream_partition.ticker}}"
+            date_to: "{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - dividends
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ticker
+              partition_field: ticker
+              stream:
+                $ref: "#/definitions/streams/Dividends List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Dividends"
+    Stock Splits List:
+      type: DeclarativeStream
+      name: Stock Splits List
+      primary_key:
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stocksplitslist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: "{{ config[\"list\"] }}"
+            date_to: "{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Splits List"
+    Stock Splits:
+      type: DeclarativeStream
+      name: Stock Splits
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stocksplits
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            ticker: "{{ stream_partition.ticker}}"
+            date_to: "{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - stocksplits
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ticker
+              partition_field: ticker
+              stream:
+                $ref: "#/definitions/streams/Stock Splits List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Splits"
+    CandleStick List:
+      type: DeclarativeStream
+      name: CandleStick List
+      primary_key:
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: candlesticklist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: "{{ config[\"list\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/CandleStick List"
+    Historical CandleStick:
+      type: DeclarativeStream
+      name: Historical CandleStick
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: historicalcandlestick
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            ticker: "{{ stream_partition.ticker}}"
+            date_from: "{{ config['from'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - daily_stock_data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ticker
+              partition_field: ticker
+              stream:
+                $ref: "#/definitions/streams/CandleStick List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Historical CandleStick"
+    Macro List:
+      type: DeclarativeStream
+      name: Macro List
+      primary_key:
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macrolist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: country
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Macro List"
+    Macro Calendar:
+      type: DeclarativeStream
+      name: Macro Calendar
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macrocalendar
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            country: "{{ stream_partition.country}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country
+              partition_field: country
+              stream:
+                $ref: "#/definitions/streams/Macro List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Macro Calendar"
+    Macro Indicator:
+      type: DeclarativeStream
+      name: Macro Indicator
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macroindicator
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            country: "{{ stream_partition.country}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country
+              partition_field: country
+              stream:
+                $ref: "#/definitions/streams/Macro List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Macro Indicator"
+    Commodities List:
+      type: DeclarativeStream
+      name: Commodities List
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commoditieslist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: name
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Commodities List"
+    Commodities:
+      type: DeclarativeStream
+      name: Commodities
+      primary_key:
+        - commodity_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commodities
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            commodity_name: "{{ stream_partition.name}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: name
+              partition_field: name
+              stream:
+                $ref: "#/definitions/streams/Commodities List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Commodities"
+    Benchmark List:
+      type: DeclarativeStream
+      name: Benchmark List
+      primary_key:
+        - benchmark
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: benchmarklist
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            list: benchmark
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Benchmark List"
+    Benchmark:
+      type: DeclarativeStream
+      name: Benchmark
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: benchmark
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            benchmark: "{{ stream_partition.benchmark}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: benchmark
+              partition_field: benchmark
+              stream:
+                $ref: "#/definitions/streams/Benchmark List"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Benchmark"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.finnworlds.com/api/v1/
+
+streams:
+  - $ref: "#/definitions/streams/Bonds List"
+  - $ref: "#/definitions/streams/Bonds"
+  - $ref: "#/definitions/streams/Dividends List"
+  - $ref: "#/definitions/streams/Dividends"
+  - $ref: "#/definitions/streams/Stock Splits List"
+  - $ref: "#/definitions/streams/Stock Splits"
+  - $ref: "#/definitions/streams/CandleStick List"
+  - $ref: "#/definitions/streams/Historical CandleStick"
+  - $ref: "#/definitions/streams/Macro List"
+  - $ref: "#/definitions/streams/Macro Calendar"
+  - $ref: "#/definitions/streams/Macro Indicator"
+  - $ref: "#/definitions/streams/Commodities List"
+  - $ref: "#/definitions/streams/Commodities"
+  - $ref: "#/definitions/streams/Benchmark List"
+  - $ref: "#/definitions/streams/Benchmark"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - key
+    properties:
+      list:
+        type: string
+        description: Choose isin, ticker, reg_lei or cik
+        order: 0
+        title: List
+        default: ticker
+      list_countries_for_bonds:
+        type: string
+        order: 1
+        title: List Countries for Bonds
+        default: country
+      key:
+        type: string
+        order: 2
+        title: API Key
+        airbyte_secret: true
+      from:
+        type: string
+        description: "The date you need candle sticks from "
+        order: 3
+        title: From
+        format: date
+        default: "2024-09-24"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      type_of_bond_:
+        type: string
+        description: For example 10y
+        title: "Type of bond "
+        default: 10y
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Bonds List: true
+    Bonds: true
+    Dividends List: true
+    Dividends: true
+    Stock Splits List: true
+    Stock Splits: true
+    CandleStick List: true
+    Historical CandleStick: true
+    Macro List: true
+    Macro Calendar: true
+    Macro Indicator: true
+    Commodities List: true
+    Commodities: true
+    Benchmark List: true
+    Benchmark: true
+  testedStreams:
+    Bonds List:
+      streamHash: f36b957928677ac309460a6da63e639e00843e3f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Bonds:
+      streamHash: 53c0f621dae8f010c0d137c4dd373a92b6183157
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Dividends List:
+      hasRecords: true
+      streamHash: 251b79fb6674029f6fa261958d05c0d4af8bb6ea
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Dividends:
+      hasRecords: true
+      streamHash: 5f5cb954e6fbae7423be9a6d0f0307d10cc2b2ec
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Stock Splits List:
+      hasRecords: true
+      streamHash: c3f35c7b853c2c7aa305835a3944f539dde7cba4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Stock Splits:
+      hasRecords: true
+      streamHash: 83050614a6a7711b7a416ccf2c3d132f25f236bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    CandleStick List:
+      hasRecords: true
+      streamHash: 9a8d9cfd59c233334b0ade66b5469c1dc46ab80d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Historical CandleStick:
+      streamHash: fc1870d5bf3ba61e1e12308772688fab61efadb8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Macro List:
+      streamHash: 9685b07ee0965c0e8304ffbcd820ef5c1e399ae4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Macro Calendar:
+      streamHash: 4cc311eb0e7f2a7c3467ab276a0b79f229e91021
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Macro Indicator:
+      streamHash: e62999e983e7e3d042934feea4e904fd02ce3a42
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Commodities List:
+      streamHash: 6f32c056b218406fd205943741112e727389aead
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Commodities:
+      streamHash: 831ff94ca46abe2199255b5e567f305d5f28f403
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Benchmark List:
+      streamHash: 7d5afa11218feaaaca90f876c858e72be555d564
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Benchmark:
+      streamHash: c19bcbaa045e034ff5df7c34e00c12ca46f548f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Bonds List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type: string
+    required:
+      - country
+  Bonds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      yield:
+        type:
+          - string
+          - "null"
+  Dividends List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ticker:
+        type: string
+    required:
+      - ticker
+  Dividends:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      dividend_rate:
+        type:
+          - string
+          - "null"
+  Stock Splits List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ticker:
+        type: string
+    required:
+      - ticker
+  Stock Splits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      stock_split:
+        type:
+          - string
+          - "null"
+  CandleStick List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ticker:
+        type: string
+    required:
+      - ticker
+  Historical CandleStick:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adjusted_close:
+        type:
+          - string
+          - "null"
+      close:
+        type:
+          - string
+          - "null"
+      closetime:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      dividend_rate:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - string
+          - "null"
+      low:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - string
+          - "null"
+      opentime:
+        type:
+          - number
+          - "null"
+      stock_split:
+        type:
+          - string
+          - "null"
+      trade_volume:
+        type:
+          - string
+          - "null"
+  Macro List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type: string
+    required:
+      - country
+  Macro Calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      output:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            actual:
+              type:
+                - string
+                - "null"
+            consensus:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            datetime:
+              type:
+                - string
+                - "null"
+            impact:
+              type:
+                - string
+                - "null"
+            iso_country_code:
+              type:
+                - string
+                - "null"
+            previous:
+              type:
+                - string
+                - "null"
+            report_date:
+              type:
+                - string
+                - "null"
+            report_name:
+              type:
+                - string
+                - "null"
+            unit:
+              type:
+                - string
+                - "null"
+  Macro Indicator:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      output:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            actual:
+              type:
+                - string
+                - "null"
+            previous:
+              type:
+                - string
+                - "null"
+            report_date:
+              type:
+                - string
+                - "null"
+            report_name:
+              type:
+                - string
+                - "null"
+            unit:
+              type:
+                - string
+                - "null"
+  Commodities List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type: string
+    required:
+      - name
+  Commodities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      commodity_name:
+        type: string
+      commodity_price:
+        type:
+          - string
+          - "null"
+      commodity_unit:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      percentage_day:
+        type:
+          - string
+          - "null"
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      quarter1_25:
+        type:
+          - string
+          - "null"
+      quarter2_25:
+        type:
+          - string
+          - "null"
+      quarter3_25:
+        type:
+          - string
+          - "null"
+      quarter4_24:
+        type:
+          - string
+          - "null"
+    required:
+      - commodity_name
+  Benchmark List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      benchmark:
+        type: string
+    required:
+      - benchmark
+  Benchmark:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      benchmark:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      percentage_day:
+        type:
+          - string
+          - "null"
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
