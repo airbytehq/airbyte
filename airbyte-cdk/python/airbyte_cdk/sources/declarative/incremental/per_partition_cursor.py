@@ -155,7 +155,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 f"we should only update state for partitions that were emitted during `stream_slices`"
             )
 
-    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = False) -> StreamState:
+    def get_stream_state(self) -> StreamState:
         states = []
         for partition_tuple, cursor in self._cursor_per_partition.items():
             cursor_state = cursor.get_stream_state()
@@ -168,7 +168,7 @@ class PerPartitionCursor(DeclarativeCursor):
                 )
         state: dict[str, Any] = {"states": states}
 
-        parent_state = self._partition_router.get_stream_state(last=last or self._last_partition)
+        parent_state = self._partition_router.get_stream_state(last=self._last_partition)
         if parent_state:
             state["parent_state"] = parent_state
         return state

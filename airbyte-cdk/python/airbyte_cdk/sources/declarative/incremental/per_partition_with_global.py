@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
@@ -76,13 +76,14 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._global_cursor.start_slices_generation()
 
         # Iterate through partitions and process slices
-        for partition, is_last_partition, parent_state in iterate_with_last_flag_and_state(self._partition_router.stream_slices(), self._partition_router.get_stream_state):
+        for partition, is_last_partition, parent_state in iterate_with_last_flag_and_state(
+            self._partition_router.stream_slices(), self._partition_router.get_stream_state
+        ):
             # Generate slices for the current cursor and handle the last slice using the flag
             self._parent_state = parent_state
             for slice, is_last_slice, _ in iterate_with_last_flag_and_state(
-                self._get_active_cursor().generate_slices_from_partition(partition=partition), lambda: None
+                self._get_active_cursor().generate_slices_from_partition(partition=partition), lambda x: None
             ):
-
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
         self._parent_state = self._partition_router.get_stream_state()
@@ -112,14 +113,15 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._global_cursor.close_slice(stream_slice, *args)
 
     def get_stream_state(self) -> StreamState:
-        final_state = {"use_global_cursor": self._use_global_cursor}
+        final_state: MutableMapping[str, Any] = {"use_global_cursor": self._use_global_cursor}
 
-        final_state.update(self._global_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
+        final_state.update(self._global_cursor.get_stream_state())
         if not self._use_global_cursor:
-            final_state.update(self._per_partition_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
+            final_state.update(self._per_partition_cursor.get_stream_state())
 
-        if self._parent_state:
-            final_state["parent_state"] = self._parent_state
+        final_state["parent_state"] = self._parent_state
+        if not final_state.get("parent_state"):
+            del final_state["parent_state"]
 
         return final_state
 

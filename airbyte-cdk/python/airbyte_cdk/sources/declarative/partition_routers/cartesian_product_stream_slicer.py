@@ -34,8 +34,9 @@ class CartesianProductStreamSlicer(PartitionRouter):
 
     stream_slicers: List[PartitionRouter]
     parameters: InitVar[Mapping[str, Any]]
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._initial_parent_state = {}
+        self._initial_parent_state: Mapping[str, Any] = {}
 
     def get_request_params(
         self,

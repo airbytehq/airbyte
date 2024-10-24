@@ -14,7 +14,9 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 T = TypeVar("T")
 
 
-def iterate_with_last_flag_and_state(generator: Iterable[T], get_stream_state_func: Callable[[T], Any]) -> Iterable[tuple[T, bool, Any]]:
+def iterate_with_last_flag_and_state(
+    generator: Iterable[T], get_stream_state_func: Callable[[bool], Optional[Mapping[str, StreamState]]]
+) -> Iterable[tuple[T, bool, Any]]:
     """
     Iterates over the given generator, yielding tuples containing the element, a flag
     indicating whether it's the last element in the generator, and the result of
@@ -33,16 +35,16 @@ def iterate_with_last_flag_and_state(generator: Iterable[T], get_stream_state_fu
 
     try:
         current = next(iterator)
-        state = get_stream_state_func()
+        state = get_stream_state_func(False)
     except StopIteration:
         return  # Return an empty iterator
 
     for next_item in iterator:
         yield current, False, state
         current = next_item
-        state = get_stream_state_func()
+        state = get_stream_state_func(False)
 
-    yield current, True, get_stream_state_func()
+    yield current, True, state
 
 
 class Timer:
@@ -220,7 +222,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
                 self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
-    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> StreamState:
+    def get_stream_state(self) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
 
         if self._parent_state:
