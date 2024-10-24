@@ -851,6 +851,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.41.7  | [#47316](https://github.com/airbytehq/airbyte/pull/47316)      | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
 | 4.41.6  | [#47308](https://github.com/airbytehq/airbyte/pull/47308)      | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
 | 4.41.5  | [#47255](https://github.com/airbytehq/airbyte/pull/47255)  | Fix `DisableProgressiveRollout`  following Dagger API change.                                                                |
 | 4.41.4  | [#47203](https://github.com/airbytehq/airbyte/pull/47203)  | Fix some `with_exec` and entrypoint usage following Dagger upgrade                                                           |
