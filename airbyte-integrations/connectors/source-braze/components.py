@@ -2,27 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
-
-import requests
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
-from airbyte_cdk.sources.declarative.types import Record
-
 import datetime
 import operator
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
+import dpath
+import requests
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.types import StreamSlice
-
-from dataclasses import dataclass
-from typing import Optional
-
-import dpath
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
@@ -45,6 +36,7 @@ class TransformToRecordComponent(AddFields):
             value = parsed_field.value.eval(config, **kwargs)
             dpath.util.new(_record, parsed_field.path, value)
         return _record
+
 
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
@@ -82,6 +74,7 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
             end_time = self._parser.parse(get_end_time(_slice), self.end_datetime.datetime_format)
             _slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
         return date_range
+
 
 @dataclass
 class EventsRecordExtractor(DpathExtractor):
