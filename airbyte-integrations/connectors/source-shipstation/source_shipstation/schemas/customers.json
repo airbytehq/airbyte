@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "customerId": {
+      "type": ["null", "number"]
+    },
+    "createDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "modifyDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "street1": {
+      "type": ["null", "string"]
+    },
+    "street2": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "postalCode": {
+      "type": ["null", "string"]
+    },
+    "countryCode": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "addressVerified": {
+      "type": ["null", "string"]
+    },
+    "marketplaceUsernames": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "customerUserId": {
+            "type": ["null", "number"]
+          },
+          "customerId": {
+            "type": ["null", "number"]
+          },
+          "createDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "modifyDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "marketplaceId": {
+            "type": ["null", "number"]
+          },
+          "marketplace": {
+            "type": ["null", "string"]
+          },
+          "username": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "tagId": {
+            "type": ["null", "number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
