@@ -1,0 +1,382 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the source connector for the Pinata API that ingests data from both
+  Pinata files and IPFS files https://pinata.cloud/
+
+
+  This API uses bearer tokens for authentication, in order to generate your
+  token create an account on pinata. Once logged in click on the API Keys button
+  in the left sidebar, then click “New Key” in the top right.
+
+  Create a new key and copy the JWT token, this will be used in your bearer
+  Auth  https://docs.pinata.cloud/quickstart
+
+check:
+  type: CheckStream
+  stream_names:
+    - files
+
+definitions:
+  streams:
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - files
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/files/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - groups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    ipfs_files:
+      type: DeclarativeStream
+      name: ipfs_files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: data/pinList
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageOffset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageLimit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ipfs_files"
+    ipfs_groups:
+      type: DeclarativeStream
+      name: ipfs_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ipfs_groups"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.pinata.cloud
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/ipfs_files"
+  - $ref: "#/definitions/streams/ipfs_groups"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    files: true
+    groups: true
+    ipfs_files: true
+    ipfs_groups: true
+  testedStreams:
+    files:
+      streamHash: 44ee0c811e5adcaa1b83d9ea722f2af26e413fee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: 21585fcdfa847d0efd07aadbb54d07e906fc4be3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ipfs_files:
+      streamHash: 4596cb8b91f81bac6ae9afc48b4f5fa8b02f184e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ipfs_groups:
+      streamHash: 49b99e50826686341d499b78d83a46124f85f322
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cid:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      keyvalues:
+        type:
+          - object
+          - "null"
+      mime_type:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number_of_files:
+        type:
+          - number
+          - "null"
+      size:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_public:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ipfs_files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      date_pinned:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      ipfs_pin_hash:
+        type:
+          - string
+          - "null"
+      mime_type:
+        type:
+          - string
+          - "null"
+      number_of_files:
+        type:
+          - number
+          - "null"
+      regions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            currentReplicationCount:
+              type:
+                - number
+                - "null"
+            desiredReplicationCount:
+              type:
+                - number
+                - "null"
+            regionId:
+              type:
+                - string
+                - "null"
+      size:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ipfs_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
