@@ -1,0 +1,401 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Google Forms is a free online tool from Google that allows users to create
+  custom surveys, quizzes, and forms. It enables easy collection and
+  organization of data by automating responses into a connected Google Sheets
+  spreadsheet. With Google Forms, you can design forms with various question
+  types, share them via email or links, and track responses in real-time, making
+  it ideal for feedback collection, event registration, or educational
+  assessments.
+
+check:
+  type: CheckStream
+  stream_names:
+    - forms
+
+definitions:
+  streams:
+    forms:
+      type: DeclarativeStream
+      name: forms
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{config[\"formId\"]}}"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    form_responses:
+      type: DeclarativeStream
+      name: form_responses
+      primary_key:
+        - responseId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['formId'] }}/responses"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - responses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_responses"
+  base_requester:
+    type: HttpRequester
+    url_base: https://forms.googleapis.com/v1/forms/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/form_responses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - formId
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      formId:
+        type: string
+        title: Form Id
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    forms: true
+    form_responses: false
+  testedStreams:
+    forms:
+      streamHash: 718f32f974cb535fbc07d45be4749c6d8f242336
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    form_responses:
+      streamHash: 449338ba7b011a287e9f909a6204004be1395dcf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/forms/api/reference/rest/?apix=true
+
+schemas:
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      formId:
+        type:
+          - string
+          - "null"
+      info:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          documentTitle:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            itemId:
+              type:
+                - string
+                - "null"
+            questionItem:
+              type:
+                - object
+                - "null"
+              properties:
+                question:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    choiceQuestion:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                    questionId:
+                      type:
+                        - string
+                        - "null"
+                    required:
+                      type:
+                        - boolean
+                        - "null"
+                    textQuestion:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        paragraph:
+                          type:
+                            - boolean
+                            - "null"
+            title:
+              type:
+                - string
+                - "null"
+      responderUri:
+        type:
+          - string
+          - "null"
+      revisionId:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+  form_responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      answers:
+        type:
+          - object
+          - "null"
+        properties:
+          137cf025:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          1cef0da8:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          346c97bf:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          5ede6594:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          651957f9:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+      createTime:
+        type:
+          - string
+          - "null"
+      lastSubmittedTime:
+        type:
+          - string
+          - "null"
+      responseId:
+        type: string
+    required:
+      - responseId
+    additionalProperties: true
