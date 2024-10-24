@@ -18,7 +18,7 @@ from braintree.plan import Plan as BPlan
 from braintree.subscription import Subscription as BSubscription
 from braintree.transaction import Transaction as BTransaction
 from braintree.util.xml_util import XmlUtil
-from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
+from schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
@@ -178,9 +178,3 @@ class DisputeExtractor(BraintreeExtractor):
         data = XmlUtil.dict_from_xml(response.text)["disputes"]
         disputes = self._extract_as_array(data, "dispute")
         return [Dispute(**self._get_json_from_resource(BDispute(dispute))).dict(exclude_unset=True) for dispute in disputes]
-
-
-# Declarative Source
-class SourceBraintree(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
