@@ -100,6 +100,7 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0, description="The percentage of users that should receive the new version initially."
     )
@@ -286,7 +287,6 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
     rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: Optional[ConnectorBreakingChanges] = None
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
@@ -334,6 +334,7 @@ class Data(BaseModel):
     remoteRegistries: Optional[RemoteRegistries] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
+    supportsFileTransfer: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

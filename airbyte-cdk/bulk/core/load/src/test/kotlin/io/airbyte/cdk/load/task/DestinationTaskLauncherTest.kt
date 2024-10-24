@@ -9,10 +9,8 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
-import io.airbyte.cdk.load.file.DefaultLocalFile
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -38,6 +36,7 @@ import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
@@ -167,7 +166,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         override fun make(
             taskLauncher: DestinationTaskLauncher,
             stream: DestinationStream,
-            fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>
+            file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
                 override val stream: DestinationStream = stream
@@ -276,6 +275,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     T : LeveledTask,
     T : ScopedTask {
         val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
+        val callbacks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
         inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
             override suspend fun execute() {
@@ -283,7 +283,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             }
         }
 
-        override fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+        override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
             runBlocking { wrappedTasks.send(task) }
             val innerTask =
                 object : InternalScope {
@@ -293,11 +293,15 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
                 }
             return IdentityWrapper(innerTask)
         }
+
+        override suspend fun setCallback(callback: suspend () -> Unit) {
+            callbacks.send(callback)
+        }
     }
 
     @Test
-    fun testStart() = runTest {
-        taskLauncher.start()
+    fun testRun() = runTest {
+        val job = launch { taskLauncher.run() }
 
         Assertions.assertTrue(
             mockInputConsumerTask.hasRun.receive(),
@@ -327,6 +331,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             mockSpillToDiskTaskFactory.streamHasRun.size,
             taskList.filterIsInstance<SpillToDiskTask>().size
         )
+        job.cancel()
     }
 
     @Test
@@ -348,10 +353,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
         taskLauncher.handleNewSpilledFile(
             MockDestinationCatalogFactory.stream1,
-            BatchEnvelope(
-                SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
-            ),
-            false
+            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0))
         )
 
         processRecordsTaskFactory.hasRun.receive()
@@ -365,10 +367,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         launch {
             taskLauncher.handleNewSpilledFile(
                 MockDestinationCatalogFactory.stream1,
-                BatchEnvelope(
-                    SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
-                ),
-                true
+                SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0), true)
             )
         }
 
@@ -431,7 +430,19 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Test
     fun testHandleTeardownComplete() = runTest {
         // This should close the scope provider.
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didClose)
+        }
         taskLauncher.handleTeardownComplete()
-        Assertions.assertTrue(mockScopeProvider.didClose)
+    }
+
+    @Test
+    fun testHandleCallbackWithFailure() = runTest {
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didKill)
+        }
+        mockExceptionHandler.callbacks.receive().invoke()
     }
 }

@@ -136,6 +136,9 @@
     "webpack-dev-server": "4.9.2",
     "yaml-loader": "^0.8.0"
   },
+  "resolutions": {
+    "dompurify": "3.1.6"
+  },
   "browserslist": {
     "production": [
       ">0.5%",
