@@ -97,7 +97,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._parent_state = stream_state.get("parent_state", {})
 
         self._global_cursor.set_initial_state(stream_state)
-        self._per_partition_cursor.set_initial_state(stream_state)
+        if not self._use_global_cursor:
+            self._per_partition_cursor.set_initial_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         if not self._use_global_cursor and self._per_partition_cursor.limit_reached():
