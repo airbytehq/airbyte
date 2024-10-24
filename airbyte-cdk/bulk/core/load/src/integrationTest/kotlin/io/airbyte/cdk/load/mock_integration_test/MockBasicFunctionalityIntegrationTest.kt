@@ -36,8 +36,8 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    override fun testFunkyStreamAndColumnNames() {
-        super.testFunkyStreamAndColumnNames()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 
     @Test

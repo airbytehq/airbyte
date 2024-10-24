@@ -9,12 +9,14 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
@@ -413,7 +415,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     @Disabled
-    open fun testFunkyStreamAndColumnNames() {
+    open fun testFunkyCharacters() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
             name: String,
@@ -427,7 +429,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        // Catalog with some weird schemas
+        // Catalog with some weird schemas.
+        // Every stream has an int `id`, and maybe some string fields.
         val catalog =
             DestinationCatalog(
                 listOf(
@@ -436,34 +439,39 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("STREAM_WITH_ALL_CAPS"),
                     makeStream("CapitalCase"),
                     makeStream(
-                        "stream_with_edge_case_field_names",
+                        "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
                             "id" to intType,
-                            "fieldWithCamelCase" to intType,
-                            "field_with_underscore" to intType,
-                            "FIELD_WITH_ALL_CAPS" to intType,
-                            "field_with_spécial_character" to intType,
+                            "fieldWithCamelCase" to stringType,
+                            "field_with_underscore" to stringType,
+                            "FIELD_WITH_ALL_CAPS" to stringType,
+                            "field_with_spécial_character" to stringType,
                             // "order" is a reserved word in many sql engines
-                            "order" to intType,
-                            "ProperCase" to intType,
+                            "order" to stringType,
+                            "ProperCase" to stringType,
                         )
                     ),
                     // this is apparently trying to test for reserved words?
                     // https://github.com/airbytehq/airbyte/pull/1753
-                    makeStream("groups", linkedMapOf("id" to intType, "authorization" to intType)),
+                    makeStream("groups", linkedMapOf("id" to intType, "authorization" to stringType)),
                 )
             )
-        // For each stream, generate a record containing every field in the schema
+        // For each stream, generate a record containing every field in the schema.
+        // The id field is always 42, and the string fields are always "foo\nbar".
         val messages =
-            catalog.streams.map {
+            catalog.streams.map { stream ->
                 DestinationRecord(
-                    it.descriptor,
+                    stream.descriptor,
                     ObjectValue(
-                        (it.schema as ObjectType).properties.mapValuesTo(linkedMapOf()) {
-                            IntegerValue(42)
+                        (stream.schema as ObjectType).properties.mapValuesTo(
+                            linkedMapOf<String, AirbyteValue>()
+                        ) {
+                            StringValue("foo\nbar")
+                        }.also {
+                            it["id"] = IntegerValue(42)
                         }
                     ),
-                    1234,
+                    emittedAtMs = 1234,
                     meta = null,
                     serialized = "",
                 )
@@ -480,8 +488,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                 generationId = 0,
                                 data =
                                     (stream.schema as ObjectType).properties.mapValuesTo(
-                                        linkedMapOf()
-                                    ) { 42 },
+                                        linkedMapOf<String, Any>()
+                                    ) { "foo\nbar" }.also {
+                                        it["id"] = 42
+                                    },
                                 airbyteMeta = OutputRecord.Meta(syncId = 42)
                             )
                         ),

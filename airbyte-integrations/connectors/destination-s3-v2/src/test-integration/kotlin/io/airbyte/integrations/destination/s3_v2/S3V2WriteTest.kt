@@ -24,6 +24,11 @@ abstract class S3V2WriteTest(path: String) :
         super.testBasicWrite()
     }
 
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
     @Disabled
     @Test
     override fun testMidSyncCheckpointingStreamState() {
