@@ -221,7 +221,7 @@ class ConcurrentCursor(Cursor):
                     self._connector_state_converter.END_KEY: self._extract_from_slice(
                         partition, self._slice_boundary_fields[self._END_BOUNDARY]
                     ),
-                    "most_recent_cursor_value": most_recent_cursor_value,
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
         elif most_recent_cursor_value:
@@ -245,7 +245,7 @@ class ConcurrentCursor(Cursor):
                 {
                     self._connector_state_converter.START_KEY: self.start,
                     self._connector_state_converter.END_KEY: most_recent_cursor_value,
-                    "most_recent_cursor_value": most_recent_cursor_value,
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
 
