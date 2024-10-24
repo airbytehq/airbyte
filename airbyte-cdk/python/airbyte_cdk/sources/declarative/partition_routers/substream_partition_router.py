@@ -3,6 +3,7 @@
 #
 import copy
 import logging
+from collections import OrderedDict
 from dataclasses import InitVar, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -12,6 +13,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -64,12 +66,19 @@ class SubstreamPartitionRouter(PartitionRouter):
     parent_stream_configs: List[ParentStreamConfig]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    MAX_PARTITIONS = 2  # Limit for the number of partitions
+    # Currently, there is a limitation of two partitions due to the logic of the global cursor,
+    # which identifies what slice is last and stores one slice in memory. Once substreams are added to concurrent CDK,
+    # we can expand this limit and update the logic for deleting processed partitions.
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
+        self._initial_parent_state: Dict[str, Any] = {}
         self._parent_state: Dict[str, Any] = {}
+        self._partition_serializer = PerPartitionKeySerializer()
+        self._parent_state_to_partition: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 
     def get_request_params(
         self,
@@ -173,18 +182,31 @@ class SubstreamPartitionRouter(PartitionRouter):
                     # Add extra fields
                     extracted_extra_fields = self._extract_extra_fields(parent_record, extra_fields)
 
-                    yield StreamSlice(
+                    stream_slice = StreamSlice(
                         partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
                         cursor_slice={},
                         extra_fields=extracted_extra_fields,
                     )
 
                     if incremental_dependency:
-                        self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
+                        partition_key = self._partition_serializer.to_partition_key(stream_slice.partition)
+
+                        # Limit the number of states to two and remove the oldest if necessary
+                        if len(self._parent_state_to_partition) >= self.MAX_PARTITIONS:
+                            self._parent_state_to_partition.popitem(last=False)  # Remove the oldest entry
+
+                        self._parent_state_to_partition[partition_key] = copy.deepcopy(self._parent_state)
+
+                    yield stream_slice
+
+                    if incremental_dependency:
+                        parent_state = copy.deepcopy(parent_stream.state)
+                        self._parent_state[parent_stream.name] = parent_state
 
                 # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
                 if incremental_dependency:
-                    self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
+                    parent_state = copy.deepcopy(parent_stream.state)
+                    self._parent_state[parent_stream.name] = parent_state
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
@@ -242,9 +264,10 @@ class SubstreamPartitionRouter(PartitionRouter):
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
-                self._parent_state[parent_config.stream.name] = parent_config.stream.state
+                self._initial_parent_state[parent_config.stream.name] = parent_config.stream.state
+        self._parent_state = copy.deepcopy(self._initial_parent_state)
 
-    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 
@@ -261,7 +284,14 @@ class SubstreamPartitionRouter(PartitionRouter):
             }
         }
         """
-        return copy.deepcopy(self._parent_state)
+        if not partition:
+            if last:
+                return copy.deepcopy(self._parent_state)
+            else:
+                return copy.deepcopy(self._initial_parent_state)
+        else:
+            partition_key = self._partition_serializer.to_partition_key(partition)
+            return self._parent_state_to_partition.get(partition_key)
 
     @property
     def logger(self) -> logging.Logger:
