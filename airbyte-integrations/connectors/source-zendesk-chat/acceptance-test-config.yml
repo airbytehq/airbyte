@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_zendesk_chat/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -30,7 +30,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
-          bypass_reason: "Unable to use 'future_state_path' because Zendesk Chat API returns an error when specifying a date in the future."
+          bypass_reason:
+            "Unable to use 'future_state_path' because Zendesk Chat API
+            returns an error when specifying a date in the future."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
