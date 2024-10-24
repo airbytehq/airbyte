@@ -335,7 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.7.10 | 2024-10-24 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Update dependencies |
+| 3.7.10 | 2024-10-24 | [47355](https://github.com/airbytehq/airbyte/pull/47355) | Update dependencies |
 | 3.7.9 | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic |
 | 3.7.8 | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies |
 | 3.7.7 | 2024-10-07 | [45852](https://github.com/airbytehq/airbyte/pull/45852) | Change to the objects serialization in lists to JSON |
