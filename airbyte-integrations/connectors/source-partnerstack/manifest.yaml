@@ -1,0 +1,1507 @@
+version: "4.3.2"
+definitions:
+  selector:
+    extractor:
+      field_path:
+      - "data"
+      - "items"
+  requester:
+    url_base: "https://api.partnerstack.com/api/v2/"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['public_key'] }}"
+      password: "{{ config['private_key'] }}"
+    request_parameters:
+      min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+  partition_router:
+    request_cursor_field: "min_updated"
+    cursor_field: "updated_at"
+    class_name: source_declarative_manifest.components.PartnerstackSlicer
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+  base_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+  customers_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+            - 'null'
+            - integer
+          customer_key:
+            type:
+            - 'null'
+            - string
+          email:
+            type:
+            - 'null'
+            - string
+          field_data:
+            type:
+            - 'null'
+            - object
+          fields:
+            type:
+            - 'null'
+            - array
+          key:
+            type:
+            - 'null'
+            - string
+          meta:
+            type:
+            - 'null'
+            - object
+          name:
+            type:
+            - 'null'
+            - string
+          partner_key:
+            type:
+            - 'null'
+            - string
+          partnership_key:
+            type:
+            - 'null'
+            - string
+          provider_key:
+            type:
+            - 'null'
+            - string
+          source_key:
+            type:
+            - 'null'
+            - string
+          source_type:
+            type:
+            - 'null'
+            - string
+          test:
+            type:
+            - 'null'
+            - boolean
+          updated_at:
+            type:
+            - 'null'
+            - integer
+  deals_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+            - 'null'
+            - integer
+          key:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - integer
+          account_name:
+            type:
+            - 'null'
+            - object
+          amount:
+            type:
+            - 'null'
+            - integer
+          close_date:
+            type:
+            - 'null'
+            - string
+          contact_first_name:
+            type:
+            - 'null'
+            - string
+          contact_last_name:
+            type:
+            - 'null'
+            - string
+          external_key:
+            type:
+            - 'null'
+            - string
+          field_data:
+            type:
+            - 'null'
+            - object
+          fields:
+            type:
+            - 'null'
+            - array
+          group_key:
+            type:
+            - 'null'
+            - string
+          lost_reason:
+            type:
+            - 'null'
+            - string
+          meta:
+            type:
+            - 'null'
+            - object
+          mold_key:
+            type:
+            - 'null'
+            - string
+          partner_key:
+            type:
+            - 'null'
+            - string
+          source:
+            type:
+            - 'null'
+            - string
+          stage:
+            type:
+            - 'null'
+            - string
+          team:
+            type:
+            - 'null'
+            - object
+          team_member:
+            type:
+            - 'null'
+            - object
+  groups_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          archived:
+            type:
+            - 'null'
+            - boolean
+          created_at:
+            type:
+            - 'null'
+            - integer
+          default:
+            type:
+            - 'null'
+            - boolean
+          features:
+            type:
+            - 'null'
+            - object
+          key:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+          slug:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - integer
+  leads_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - integer
+          approved:
+            type:
+            - 'null'
+            - boolean
+          created_at:
+            type:
+            - 'null'
+            - integer
+          external_key:
+            type:
+            - 'null'
+            - string
+          field_data:
+            type:
+            - 'null'
+            - object
+          fields:
+            type:
+            - 'null'
+            - array
+          group_key:
+            type:
+            - 'null'
+            - string
+          key:
+            type:
+            - 'null'
+            - string
+          meta:
+            type:
+            - 'null'
+            - object
+          mold_key:
+            type:
+            - 'null'
+            - string
+          partner_key:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - integer
+  partnerships_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+            - 'null'
+            - integer
+          email:
+            type:
+            - 'null'
+            - string
+          first_name:
+            type:
+            - 'null'
+            - string
+          group:
+            type:
+            - 'null'
+            - object
+          joined_at:
+            type:
+            - 'null'
+            - integer
+          key:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          manager:
+            type:
+            - 'null'
+            - object
+          m_data:
+            type:
+            - 'null'
+            - object
+          partner_key:
+            type:
+            - 'null'
+            - string
+          stats:
+            type:
+            - 'null'
+            - object
+          tags:
+            type:
+            - 'null'
+            - array
+          team:
+            type:
+            - 'null'
+            - object
+          updated_at:
+            type:
+            - 'null'
+            - integer
+  rewards_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          action:
+            type:
+            - 'null'
+            - object
+          amount:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - integer
+          customer:
+            type:
+            - 'null'
+            - object
+          description:
+            type:
+            - 'null'
+            - string
+          invoice:
+            type:
+            - 'null'
+            - object
+          key:
+            type:
+            - 'null'
+            - string
+          offer:
+            type:
+            - 'null'
+            - object
+          partnership:
+            type:
+            - 'null'
+            - object
+          reward_status:
+            type:
+            - 'null'
+            - string
+          transaction:
+            type:
+            - 'null'
+            - object
+          trigger:
+            type:
+            - 'null'
+            - object
+          updated_at:
+            type:
+            - 'null'
+            - integer
+  transactions_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "items"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ last_record['key'] }}"
+          stop_condition: "{{ response.data.has_more is false }}"
+          page_size: 250
+        page_size_option:
+          field_name: "limit"
+          inject_into: "request_parameter"
+        page_token_option:
+          type: RequestOption
+          field_name: "starting_after"
+          inject_into: "request_parameter"
+      requester:
+        url_base: "https://api.partnerstack.com/api/v2/"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['public_key'] }}"
+          password: "{{ config['private_key'] }}"
+        request_parameters:
+          min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      partition_router:
+        request_cursor_field: "min_updated"
+        cursor_field: "updated_at"
+        class_name: source_declarative_manifest.components.PartnerstackSlicer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - integer
+          amount_usd:
+            type:
+            - 'null'
+            - integer
+          approved:
+            type:
+            - 'null'
+            - boolean
+          category_key:
+            type:
+            - 'null'
+            - string
+          created_at:
+            type:
+            - 'null'
+            - integer
+          currency:
+            type:
+            - 'null'
+            - string
+          customer:
+            type:
+            - 'null'
+            - object
+          customer_key:
+            type:
+            - 'null'
+            - string
+          extension:
+            type:
+            - 'null'
+            - object
+          key:
+            type:
+            - 'null'
+            - string
+          product_key:
+            type:
+            - 'null'
+            - object
+          updated_at:
+            type:
+            - 'null'
+            - integer
+streams:
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/customers"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        created_at:
+          type:
+          - 'null'
+          - integer
+        customer_key:
+          type:
+          - 'null'
+          - string
+        email:
+          type:
+          - 'null'
+          - string
+        field_data:
+          type:
+          - 'null'
+          - object
+        fields:
+          type:
+          - 'null'
+          - array
+        key:
+          type:
+          - 'null'
+          - string
+        meta:
+          type:
+          - 'null'
+          - object
+        name:
+          type:
+          - 'null'
+          - string
+        partner_key:
+          type:
+          - 'null'
+          - string
+        partnership_key:
+          type:
+          - 'null'
+          - string
+        provider_key:
+          type:
+          - 'null'
+          - string
+        source_key:
+          type:
+          - 'null'
+          - string
+        source_type:
+          type:
+          - 'null'
+          - string
+        test:
+          type:
+          - 'null'
+          - boolean
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "customers"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/deals"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        created_at:
+          type:
+          - 'null'
+          - integer
+        key:
+          type:
+          - 'null'
+          - string
+        updated_at:
+          type:
+          - 'null'
+          - integer
+        account_name:
+          type:
+          - 'null'
+          - object
+        amount:
+          type:
+          - 'null'
+          - integer
+        close_date:
+          type:
+          - 'null'
+          - string
+        contact_first_name:
+          type:
+          - 'null'
+          - string
+        contact_last_name:
+          type:
+          - 'null'
+          - string
+        external_key:
+          type:
+          - 'null'
+          - string
+        field_data:
+          type:
+          - 'null'
+          - object
+        fields:
+          type:
+          - 'null'
+          - array
+        group_key:
+          type:
+          - 'null'
+          - string
+        lost_reason:
+          type:
+          - 'null'
+          - string
+        meta:
+          type:
+          - 'null'
+          - object
+        mold_key:
+          type:
+          - 'null'
+          - string
+        partner_key:
+          type:
+          - 'null'
+          - string
+        source:
+          type:
+          - 'null'
+          - string
+        stage:
+          type:
+          - 'null'
+          - string
+        team:
+          type:
+          - 'null'
+          - object
+        team_member:
+          type:
+          - 'null'
+          - object
+  type: DeclarativeStream
+  name: "deals"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/groups"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        archived:
+          type:
+          - 'null'
+          - boolean
+        created_at:
+          type:
+          - 'null'
+          - integer
+        default:
+          type:
+          - 'null'
+          - boolean
+        features:
+          type:
+          - 'null'
+          - object
+        key:
+          type:
+          - 'null'
+          - string
+        name:
+          type:
+          - 'null'
+          - string
+        slug:
+          type:
+          - 'null'
+          - string
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "groups"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/leads"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        amount:
+          type:
+          - 'null'
+          - integer
+        approved:
+          type:
+          - 'null'
+          - boolean
+        created_at:
+          type:
+          - 'null'
+          - integer
+        external_key:
+          type:
+          - 'null'
+          - string
+        field_data:
+          type:
+          - 'null'
+          - object
+        fields:
+          type:
+          - 'null'
+          - array
+        group_key:
+          type:
+          - 'null'
+          - string
+        key:
+          type:
+          - 'null'
+          - string
+        meta:
+          type:
+          - 'null'
+          - object
+        mold_key:
+          type:
+          - 'null'
+          - string
+        partner_key:
+          type:
+          - 'null'
+          - string
+        status:
+          type:
+          - 'null'
+          - string
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "leads"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/partnerships"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        created_at:
+          type:
+          - 'null'
+          - integer
+        email:
+          type:
+          - 'null'
+          - string
+        first_name:
+          type:
+          - 'null'
+          - string
+        group:
+          type:
+          - 'null'
+          - object
+        joined_at:
+          type:
+          - 'null'
+          - integer
+        key:
+          type:
+          - 'null'
+          - string
+        last_name:
+          type:
+          - 'null'
+          - string
+        manager:
+          type:
+          - 'null'
+          - object
+        m_data:
+          type:
+          - 'null'
+          - object
+        partner_key:
+          type:
+          - 'null'
+          - string
+        stats:
+          type:
+          - 'null'
+          - object
+        tags:
+          type:
+          - 'null'
+          - array
+        team:
+          type:
+          - 'null'
+          - object
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "partnerships"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/rewards"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        action:
+          type:
+          - 'null'
+          - object
+        amount:
+          type:
+          - 'null'
+          - integer
+        created_at:
+          type:
+          - 'null'
+          - integer
+        customer:
+          type:
+          - 'null'
+          - object
+        description:
+          type:
+          - 'null'
+          - string
+        invoice:
+          type:
+          - 'null'
+          - object
+        key:
+          type:
+          - 'null'
+          - string
+        offer:
+          type:
+          - 'null'
+          - object
+        partnership:
+          type:
+          - 'null'
+          - object
+        reward_status:
+          type:
+          - 'null'
+          - string
+        transaction:
+          type:
+          - 'null'
+          - object
+        trigger:
+          type:
+          - 'null'
+          - object
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "rewards"
+  primary_key: "key"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "items"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_record['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+    requester:
+      url_base: "https://api.partnerstack.com/api/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['public_key'] }}"
+        password: "{{ config['private_key'] }}"
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+      type: HttpRequester
+      path: "/transactions"
+    partition_router:
+      request_cursor_field: "min_updated"
+      cursor_field: "updated_at"
+      class_name: source_declarative_manifest.components.PartnerstackSlicer
+      type: CustomPartitionRouter
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        amount:
+          type:
+          - 'null'
+          - integer
+        amount_usd:
+          type:
+          - 'null'
+          - integer
+        approved:
+          type:
+          - 'null'
+          - boolean
+        category_key:
+          type:
+          - 'null'
+          - string
+        created_at:
+          type:
+          - 'null'
+          - integer
+        currency:
+          type:
+          - 'null'
+          - string
+        customer:
+          type:
+          - 'null'
+          - object
+        customer_key:
+          type:
+          - 'null'
+          - string
+        extension:
+          type:
+          - 'null'
+          - object
+        key:
+          type:
+          - 'null'
+          - string
+        product_key:
+          type:
+          - 'null'
+          - object
+        updated_at:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "transactions"
+  primary_key: "key"
+check:
+  stream_names:
+  - "groups"
+  type: CheckStream
+type: DeclarativeSource
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/partnerstack
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Partnerstack Spec
+    type: object
+    required:
+    - public_key
+    - private_key
+    additionalProperties: true
+    properties:
+      public_key:
+        type: string
+        title: Partnerstack Public key
+        description: The Live Public Key for a Partnerstack account.
+        airbyte_secret: true
+      private_key:
+        type: string
+        title: Partnerstack Private key
+        description: The Live Private Key for a Partnerstack account.
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+        examples:
+        - "2017-01-25T00:00:00Z"
