@@ -23,4 +23,5 @@ data:
     - language:java
   connectorTestSuitesOptions:
     - suite: integrationTests
+    - suite: unitTests
 metadataSpecVersion: "1.0"
