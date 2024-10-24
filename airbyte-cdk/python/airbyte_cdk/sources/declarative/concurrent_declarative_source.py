@@ -57,7 +57,11 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         self._concurrent_streams: List[AbstractStream]
         self._synchronous_streams: List[Stream]
 
-        self._concurrent_streams, self._synchronous_streams = self._group_streams(config=config or {})
+        if config:
+            self._concurrent_streams, self._synchronous_streams = self._group_streams(config=config or {})
+        else:
+            self._concurrent_streams = []
+            self._synchronous_streams = []
 
         concurrency_level_from_manifest = self._source_config.get("concurrency_level")
         if concurrency_level_from_manifest:

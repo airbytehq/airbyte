@@ -474,5 +474,5 @@ check:
 # customers can specify a higher concurrency level as needed up to the theoretical max rate limt.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.num_workers or 3 }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 50
