@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -7,11 +7,10 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_protocol.models import ConnectorSpecification
 from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
