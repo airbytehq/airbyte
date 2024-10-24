@@ -43,6 +43,9 @@ interface DestinationProcess {
      * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
+
+    /** Terminate the destination as immediately as possible. */
+    fun kill()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")

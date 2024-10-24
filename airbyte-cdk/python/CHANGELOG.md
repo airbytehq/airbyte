@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.16.0
+Better structured error log messages in connector_builder module, with message / internal_message / stacktrace split into separate fields
+
 ## 5.15.0
 Add new Error:
 No DBURL given
