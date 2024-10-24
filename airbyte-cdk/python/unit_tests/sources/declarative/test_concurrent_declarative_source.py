@@ -625,7 +625,7 @@ def test_read_with_concurrent_and_synchronous_streams():
     assert len(party_members_states) == 6
     assert party_members_states[5].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-09-10"}]
     ).__dict__
 
     # Expects 12 records, 3 slices, 4 records each slice
@@ -638,7 +638,7 @@ def test_read_with_concurrent_and_synchronous_streams():
     assert len(locations_states) == 4
     assert locations_states[3].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-08-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -740,7 +740,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     assert len(locations_states) == 3
     assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-08-10"}]
     ).__dict__
 
     # slices to sync are:
@@ -753,7 +753,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     assert len(party_members_states) == 4
     assert party_members_states[3].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-09-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -816,7 +816,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     assert len(locations_states) == 3
     assert locations_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-08-10"}]
     ).__dict__
 
     # From extra slices defined in party_members_slices_and_responses
@@ -827,7 +827,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     assert len(party_members_states) == 3
     assert party_members_states[2].stream.stream_state.__dict__ == AirbyteStateBlob(
         state_type="date-range",
-        slices=[{"start": "2024-07-01", "end": "2024-09-10"}]
+        slices=[{"start": "2024-07-01", "end": "2024-09-10", "most_recent_cursor_value": "2024-09-10"}]
     ).__dict__
 
     # Expects 7 records, 1 empty slice, 7 records in slice
@@ -844,11 +844,6 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     """
     Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
     """
-
-    # most_recent_cursor_value = datetime(2024, 8, 10, 0, 0, 0, tzinfo=timezone.utc)  # based on _LOCATIONS_RESPONSE, this value might be outside of the actual start/end of the slice
-    # FIXME it seems like we yet don't consider `most_recent_cursor_value` as we ignore it during serialization [here](https://github.com/airbytehq/airbyte/blob/f07571f15f1bdbba86ad5e324e829a89b7d07cd6/airbyte-cdk/python/airbyte_cdk/sources/streams/concurrent/state_converters/abstract_stream_state_converter.py#L75-L78)
-    #  Once this is added, this test will probably have to change because the generated slices (represented by `location_slices` here) will no longer match the `expected_stream_state`
-    #  This is why `most_recent_cursor_value` is unused for now
     location_slices = [
         {"start": "2024-07-01", "end": "2024-07-31"},
         # missing slice `{"start": "2024-08-01", "end": "2024-08-31"}` here
@@ -856,7 +851,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     ]
     expected_stream_state = {
         "state_type": "date-range",
-        "slices": location_slices,
+        "slices": [location_slice | {"most_recent_cursor_value": "2024-08-10"} for location_slice in location_slices],
     }
 
     catalog = ConfiguredAirbyteCatalog(
