@@ -68,7 +68,7 @@ definitions:
     description: >-
       Default Base Requester for Full Refresh streams
     type: HttpRequester
-    url_base: https://www.zopim.com/api/v2/
+    url_base: "https://{{ config['subdomain'] }}.zendesk.com/api/v2/chat/"
     path: "{{ parameters['path'] }}"
     http_method: GET
     authenticator:
