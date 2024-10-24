@@ -2,14 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.command
+package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.MergeUnions
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions

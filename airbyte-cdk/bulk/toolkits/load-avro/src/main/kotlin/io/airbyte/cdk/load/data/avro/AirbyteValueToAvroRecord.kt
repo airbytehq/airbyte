@@ -40,8 +40,13 @@ class AirbyteValueToAvroRecord {
             is BooleanValue -> return airbyteValue.value
             is DateValue ->
                 throw IllegalArgumentException("String-based date types are not supported")
-            is IntegerValue -> return airbyteValue.value
-            NullValue -> return null
+            is IntegerValue ->
+                return if (schema.type == Schema.Type.LONG) {
+                    airbyteValue.value
+                } else {
+                    airbyteValue.value.toInt()
+                }
+            is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
             is TimeValue ->
