@@ -107,8 +107,16 @@ class MessageGrouper:
                 log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
             elif isinstance(message_group, AirbyteTraceMessage):
                 if message_group.type == TraceType.ERROR:
-                    error_message = f"{message_group.error.message} - {message_group.error.stack_trace}"
-                    log_messages.append(LogMessage(**{"message": error_message, "level": "ERROR"}))
+                    log_messages.append(
+                        LogMessage(
+                            **{
+                                "message": message_group.error.message,
+                                "level": "ERROR",
+                                "internal_message": message_group.error.internal_message,
+                                "stacktrace": message_group.error.stack_trace,
+                            }
+                        )
+                    )
             elif isinstance(message_group, AirbyteControlMessage):
                 if not latest_config_update or latest_config_update.emitted_at <= message_group.emitted_at:
                     latest_config_update = message_group
@@ -300,6 +308,17 @@ class MessageGrouper:
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
             yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, state)
+        except AirbyteTracedException as traced_exception:
+            # Look for this message which indicates that it is the "final exception" raised by AbstractSource.
+            # If it matches, don't yield this as we don't need to show this in the Builder.
+            # This is somewhat brittle as it relies on the message string, but if they drift then the worst case
+            # is that this message will be shown in the Builder.
+            if (
+                traced_exception.message is not None
+                and "During the sync, the following streams did not sync successfully" in traced_exception.message
+            ):
+                return
+            yield traced_exception.as_airbyte_message()
         except Exception as e:
             error_message = f"{e.args[0] if len(e.args) > 0 else str(e)}"
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()
