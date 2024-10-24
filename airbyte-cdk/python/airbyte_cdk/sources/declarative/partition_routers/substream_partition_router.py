@@ -59,22 +59,11 @@ class SubstreamPartitionRouter(PartitionRouter):
 
     Attributes:
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
-
-    State Management:
-        - The state for each parent stream is stored in `_parent_state`, which is a dictionary mapping
-          stream names to their current states.
-        - The initial state is stored in `_initial_parent_state`, set during the first assignment via `set_initial_state`.
-        - The `_parent_state_to_partition` dictionary maps partition keys to parent states,
-          facilitating state retrieval based on partitions.
     """
 
     parent_stream_configs: List[ParentStreamConfig]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    MAX_PARTITIONS = 2  # Limit for the number of partitions
-    # Currently, there is a limitation of two partitions due to the logic of the global cursor,
-    # which identifies what slice is last and stores one slice in memory. Once substreams are added to concurrent CDK,
-    # we can increase this limit and update the logic for deleting processed partitions.
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.parent_stream_configs:
@@ -181,13 +170,11 @@ class SubstreamPartitionRouter(PartitionRouter):
                     # Add extra fields
                     extracted_extra_fields = self._extract_extra_fields(parent_record, extra_fields)
 
-                    stream_slice = StreamSlice(
+                    yield StreamSlice(
                         partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
                         cursor_slice={},
                         extra_fields=extracted_extra_fields,
                     )
-
-                    yield stream_slice
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
