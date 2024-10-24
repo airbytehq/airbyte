@@ -1,0 +1,124 @@
+{
+  "streams": [
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "workspace_members",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "objects",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "companies",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "companies_attributes",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "workspaces",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "workspaces_attributes",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "people",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "people_attributes",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    }
+  ]
+}
