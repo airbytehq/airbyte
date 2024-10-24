@@ -4,10 +4,9 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-    - api.zenloop.com
+      - api.zenloop.com
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
@@ -30,18 +29,18 @@ data:
       packageName: airbyte-source-zenloop
   supportLevel: community
   tags:
-  - language:manifest-only
-  - cdk:low-code
+    - language:manifest-only
+    - cdk:low-code
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: zenloop_config_dev_null
-      id: a01d7d51-5f99-46b1-9efb-b988ea042735
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-ZENLOOP__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: zenloop_config_dev_null
+          id: a01d7d51-5f99-46b1-9efb-b988ea042735
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENLOOP__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
