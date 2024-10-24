@@ -59,9 +59,8 @@ class PineconeIndexer(Indexer):
         for stream in catalog.streams:
             stream_identifier = create_stream_identifier(stream.stream)
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.delete_vectors(
-                    filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=stream.stream.namespace, prefix=stream_identifier
-                )
+                namespace = self._get_namespace(namespace=stream.stream.namespace)
+                self.delete_vectors(filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=namespace, prefix=stream_identifier)
 
     def post_sync(self):
         return []
@@ -125,6 +124,7 @@ class PineconeIndexer(Indexer):
         return result
 
     def index(self, document_chunks, namespace, streamName):
+        namespace = self._get_namespace(namespace=namespace)
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
@@ -145,6 +145,7 @@ class PineconeIndexer(Indexer):
             [async_result.result() for async_result in async_results]
 
     def delete(self, delete_ids, namespace, stream):
+        namespace = self._get_namespace(namespace=namespace)
         filter = {METADATA_RECORD_ID_FIELD: {"$in": delete_ids}}
         if len(delete_ids) > 0:
             if self._pod_type == "starter":
@@ -168,6 +169,11 @@ class PineconeIndexer(Indexer):
             actual_dimension = int(description.dimension)
             if actual_dimension != self.embedding_dimensions:
                 return f"Your embedding configuration will produce vectors with dimension {self.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
+
+            index_description = self.pinecone_index.describe_index_stats()
+            all_namespaces = index_description.namespaces.keys()
+            if self.config.namespace not in all_namespaces:
+                return f"Namespace {self.config.namespace} does not exist in index {self.config.index}."
         except Exception as e:
             if isinstance(e, urllib3.exceptions.MaxRetryError):
                 if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):
@@ -180,3 +186,10 @@ class PineconeIndexer(Indexer):
             formatted_exception = format_exception(e)
             return formatted_exception
         return None
+
+    def _get_namespace(self, namespace):
+        """
+        Gets the default namespace if one is not defined
+        """
+        default_namespace = self.config.namespace
+        return namespace if namespace else default_namespace
