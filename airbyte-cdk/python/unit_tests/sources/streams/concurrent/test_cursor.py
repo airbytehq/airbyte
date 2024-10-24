@@ -591,7 +591,7 @@ class ConcurrentCursorStateTest(TestCase):
                 (datetime(2024, 1, 21, 0, 0, tzinfo=timezone.utc), datetime(2024, 1, 30, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 1, 31, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 9, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 10, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 19, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc))
+                (datetime(2024, 2, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc))
             ],
             id="test_datetime_based_cursor_all_fields",
         ),
@@ -613,7 +613,7 @@ class ConcurrentCursorStateTest(TestCase):
             [
                 (datetime(2024, 2, 5, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 14, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 15, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 24, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 25, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc))
+                (datetime(2024, 2, 25, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc))
             ],
             id="test_datetime_based_cursor_with_state",
         ),
@@ -636,7 +636,7 @@ class ConcurrentCursorStateTest(TestCase):
                 (datetime(2024, 1, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 8, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 9, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 28, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 29, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 19, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 31, 23, 59, 59, tzinfo=timezone.utc)),
+                (datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 4, 1, 0, 0, 0, tzinfo=timezone.utc)),
             ],
             id="test_datetime_based_cursor_with_state_and_end_date",
         ),
@@ -649,7 +649,7 @@ class ConcurrentCursorStateTest(TestCase):
             {},
             [
                 (datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 1, 31, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc)),
+                (datetime(2024, 2, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc)),
             ],
             id="test_datetime_based_cursor_using_large_step_duration",
         ),
@@ -856,7 +856,7 @@ def test_close_partition_concurrent_cursor_from_datetime_based_cursor():
         "gods",
         _A_STREAM_NAMESPACE,
         {
-            "slices": [{"end": "2024-08-23T00:00:00.000Z", "start": "2024-08-01T00:00:00.000Z"}],
+            "slices": [{"end": "2024-08-23T00:00:00.000Z", "start": "2024-08-01T00:00:00.000Z", "most_recent_cursor_value": "2024-08-23T00:00:00.000Z"}],
             "state_type": "date-range"
         },
     )
@@ -934,9 +934,8 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
         _A_STREAM_NAMESPACE,
         {
             "slices": [
-                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-16T00:00:00.000Z"},
-                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-30T00:00:00.000Z"}
-
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-16T00:00:00.000Z", "most_recent_cursor_value": "2024-07-05T00:00:00.000Z"},
+                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-30T00:00:00.000Z", "most_recent_cursor_value": "2024-08-20T00:00:00.000Z"},
             ],
             "state_type": "date-range"
         },
@@ -1026,8 +1025,8 @@ def test_close_partition_with_slice_range_granularity_concurrent_cursor_from_dat
         _A_STREAM_NAMESPACE,
         {
             "slices": [
-                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z"},
-                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-29T00:00:00.000Z"}
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z", "most_recent_cursor_value": "2024-07-25T00:00:00.000Z"},
+                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-29T00:00:00.000Z", "most_recent_cursor_value": "2024-08-20T00:00:00.000Z"}
 
             ],
             "state_type": "date-range"
