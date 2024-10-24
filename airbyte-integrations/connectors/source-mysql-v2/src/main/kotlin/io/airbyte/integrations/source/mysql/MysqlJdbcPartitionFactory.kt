@@ -39,40 +39,30 @@ class MysqlJdbcPartitionFactory(
     private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-        if (sharedState.configuration.global) {
-            if (pkChosenFromCatalog.isEmpty()) {
-                if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                    return MysqlJdbcNonResumableSnapshotPartition(
-                        selectQueryGenerator,
-                        streamState,
-                    )
-                } else {
-                    throw ConfigErrorException(
-                        "CDC incremental sync requires having primary key in the table."
-                    )
-                }
-            }
 
-            // The difference between the following two partitions are just their final state
-            // representation.
-            // For FULL_REFRESH, the content of the state does not need to change.
-            // For INCREMENTAL, we need to change the state to indicate the snapshot is completed.
-            if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                return MysqlJdbcSnapshotPartition(
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            if (pkChosenFromCatalog.isEmpty()) {
+                return MysqlJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
-                    lowerBound = null,
-                    upperBound = null,
-                )
-            } else {
-                return MysqlJdbcCdcSnapshotPartition(
-                    selectQueryGenerator,
-                    streamState,
-                    pkChosenFromCatalog,
-                    lowerBound = null,
                 )
             }
+            return MysqlJdbcSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                pkChosenFromCatalog,
+                lowerBound = null,
+                upperBound = null,
+            )
+        }
+
+        if (sharedState.configuration.global) {
+            return MysqlJdbcCdcSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                pkChosenFromCatalog,
+                lowerBound = null,
+            )
         }
 
         val cursorChosenFromCatalog: Field =
