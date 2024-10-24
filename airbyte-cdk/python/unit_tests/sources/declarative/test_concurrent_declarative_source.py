@@ -674,6 +674,7 @@ def test_read_with_concurrent_and_synchronous_streams():
         ]
     }
 
+
 @freezegun.freeze_time(_NOW)
 def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     """
@@ -710,13 +711,13 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     party_members_slices_and_responses = _NO_STATE_PARTY_MEMBERS_SLICES_AND_RESPONSES + [
         (
             {"start": "2024-09-04", "end": "2024-09-10"},
-             HttpResponse(
-                 json.dumps(
-                     [
-                         {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}
-                     ]
-                 )
-             ),
+            HttpResponse(
+                json.dumps(
+                    [
+                        {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}
+                    ]
+                )
+            ),
          )  # considering lookback window
     ]
     location_slices = [
