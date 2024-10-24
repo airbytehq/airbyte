@@ -714,7 +714,7 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
             HttpResponse(
                 json.dumps([{"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa", "updated_at": "2024-09-10"}])
             ),
-         )
+        )
     ]
     location_slices = [
         {"start": "2024-07-26", "end": "2024-08-25"},
