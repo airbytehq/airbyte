@@ -3,7 +3,7 @@
 connector_image: airbyte/source-youtube-analytics:dev
 tests:
   spec:
-    - spec_path: "source_youtube_analytics/spec.json"
+    - spec_path: "source_youtube_analytics/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
