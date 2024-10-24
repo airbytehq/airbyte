@@ -27,6 +27,7 @@ from .streams import (
     TicketMetrics,
     Tickets,
     UserSettingsStream,
+    UserIdentities
 )
 
 logger = logging.getLogger("airbyte")
@@ -145,6 +146,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             PostVotes(**args),
             tickets,
             TicketMetrics(**args),
+            UserIdentities(**args)
         ]
         return streams
 

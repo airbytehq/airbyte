@@ -1035,6 +1035,26 @@ class UserFields(FullRefreshZendeskSupportStream):
         return "user_fields"
 
 
+class UserIdentities(CursorPaginationZendeskSupportStream, HttpSubStream):
+    """User Identities Stream: https://developer.zendesk.com/api-reference/ticketing/users/user_identities/"""
+
+    response_list_name = "identities"
+
+    def __init__(self, **kwargs):
+        parent = Users(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        user_id = stream_slice.get("parent").get("id")
+        return f"users/{user_id}/identities"
+
+
 class PostComments(CursorPaginationZendeskSupportStream, HttpSubStream):
     """Post Comments Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/"""
 
