@@ -35,6 +35,9 @@ class CartesianProductStreamSlicer(PartitionRouter):
     stream_slicers: List[PartitionRouter]
     parameters: InitVar[Mapping[str, Any]]
 
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._initial_parent_state: Mapping[str, Any] = {}
+
     def get_request_params(
         self,
         *,
@@ -136,15 +139,19 @@ class CartesianProductStreamSlicer(PartitionRouter):
             }
         }
         """
+        if "parent_state" in stream_state:
+            self._initial_parent_state = stream_state["parent_state"]
+
         for stream_slicer in self.stream_slicers:
             stream_slicer.set_initial_state(stream_state)
 
-    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self, last: bool = False) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 
-        This method returns the combined parent states from all stream slicers. If a stream slicer does not have parent streams,
-        this will be skipped due to the default StreamSlicer implementation.
+        This method returns the combined parent states from all stream slicers. It currently retrieves the final state only for the last partition processed. If a stream slicer does not have parent streams, this will be skipped due to the default StreamSlicer implementation.
+
+        TODO: Can be improved by tracking the state of every stream slicer and updating the state of the last stream slicer when all the partitions for other slicers have been produced.
 
         Returns:
             Optional[Mapping[str, StreamState]]: The current state of the parent streams in a dictionary format.
@@ -158,9 +165,13 @@ class CartesianProductStreamSlicer(PartitionRouter):
                      }
                  }
         """
+        if not last:
+            return self._initial_parent_state
+
         combined_state: dict[str, StreamState] = {}
         for s in self.stream_slicers:
-            parent_state = s.get_stream_state()
+            # Getting the initial state of the stream slicer
+            parent_state = s.get_stream_state(last=last)
             if parent_state:
                 combined_state.update(parent_state)
         return combined_state

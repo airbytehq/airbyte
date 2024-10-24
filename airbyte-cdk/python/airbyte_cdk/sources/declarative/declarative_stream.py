@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental import GlobalSubstreamCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import GlobalSubstreamCursor, PerPartitionCursor, PerPartitionWithGlobalCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
@@ -200,7 +200,7 @@ class DeclarativeStream(Stream):
         cursor = self.get_cursor()
         checkpoint_mode = self._checkpoint_mode
 
-        if isinstance(cursor, (GlobalSubstreamCursor, PerPartitionCursor)):
+        if isinstance(cursor, (GlobalSubstreamCursor, PerPartitionCursor, PerPartitionWithGlobalCursor)):
             self.has_multiple_slices = True
             return CursorBasedCheckpointReader(
                 stream_slices=mappings_or_slices,

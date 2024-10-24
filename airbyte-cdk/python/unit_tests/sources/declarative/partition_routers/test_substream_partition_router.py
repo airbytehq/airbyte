@@ -622,9 +622,9 @@ def test_substream_checkpoints_after_each_parent_partition():
     ]
 
     expected_parent_state = [
-        {},
         {"first_stream": {}},
         {"first_stream": {}},
+        {"first_stream": {"start_time": "2024-04-27", "end_time": "2024-05-27"}},
         {"first_stream": {"start_time": "2024-04-27", "end_time": "2024-05-27"}},
         {"first_stream": {"start_time": "2024-05-27", "end_time": "2024-06-27"}},
     ]
@@ -656,9 +656,9 @@ def test_substream_checkpoints_after_each_parent_partition():
     expected_counter = 0
     for actual_slice in partition_router.stream_slices():
         assert actual_slice == expected_slices[expected_counter]
-        assert partition_router._parent_state == expected_parent_state[expected_counter]
+        assert partition_router.get_stream_state() == expected_parent_state[expected_counter]
         expected_counter += 1
-    assert partition_router._parent_state == expected_parent_state[expected_counter]
+    assert partition_router.get_stream_state() == expected_parent_state[expected_counter]
 
 
 @pytest.mark.parametrize(
@@ -685,11 +685,11 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
     ]
 
     expected_parent_state = [
-        {},
         {"persona_3_characters": {}},
         {"persona_3_characters": {}},
         {"persona_3_characters": {"next_page_token": 2}},
         {"persona_3_characters": {"next_page_token": 2}},
+        {"persona_3_characters": {"next_page_token": 3}},
         {"persona_3_characters": {"next_page_token": 3}},
         {"persona_3_characters": {"__ab_full_refresh_sync_complete": True}},
     ]
@@ -731,10 +731,10 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
     for actual_slice in partition_router.stream_slices():
         assert actual_slice == expected_slices[expected_counter]
         if use_incremental_dependency:
-            assert partition_router._parent_state == expected_parent_state[expected_counter]
+            assert partition_router.get_stream_state() == expected_parent_state[expected_counter]
         expected_counter += 1
     if use_incremental_dependency:
-        assert partition_router._parent_state == expected_parent_state[expected_counter]
+        assert partition_router.get_stream_state() == expected_parent_state[expected_counter]
 
 
 @pytest.mark.parametrize(
@@ -761,11 +761,11 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
     ]
 
     expected_parent_state = [
-        {},
         {"persona_3_characters": {}},
         {"persona_3_characters": {}},
         {"persona_3_characters": {"next_page_token": 2}},
         {"persona_3_characters": {"next_page_token": 2}},
+        {"persona_3_characters": {"next_page_token": 3}},
         {"persona_3_characters": {"next_page_token": 3}},
         {"persona_3_characters": {"__ab_full_refresh_sync_complete": True}},
     ]
@@ -828,10 +828,10 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
         assert actual_slice == expected_parent_slices[expected_counter]
         # check for parent state
         if use_incremental_dependency:
-            assert substream_cursor_slicer._partition_router._parent_state == expected_parent_state[expected_counter]
+            assert substream_cursor_slicer._partition_router.get_stream_state() == expected_parent_state[expected_counter]
         expected_counter += 1
     if use_incremental_dependency:
-        assert substream_cursor_slicer._partition_router._parent_state == expected_parent_state[expected_counter]
+        assert substream_cursor_slicer._partition_router.get_stream_state() == expected_parent_state[expected_counter]
 
     # validate final state for closed substream slices
     final_state = substream_cursor_slicer.get_stream_state()
