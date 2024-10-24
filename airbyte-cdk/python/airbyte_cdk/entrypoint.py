@@ -107,7 +107,11 @@ class AirbyteEntrypoint(object):
 
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         try:
-            with tempfile.TemporaryDirectory() as temp_dir:
+            with tempfile.TemporaryDirectory(
+                # Cleanup can fail on Windows due to file locks. Ignore if so,
+                # rather than failing the whole process.
+                ignore_cleanup_errors=True,
+            ) as temp_dir:
                 os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir  # set this as default directory for request_cache to store *.sqlite files
                 if cmd == "spec":
                     message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
