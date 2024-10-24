@@ -320,10 +320,9 @@ def run_incremental_parent_state_test(manifest, mock_requests, expected_records,
             ]
             final_states.append(final_state_intermediate[-1])
 
-        # Assert that the final state matches one of the expected states for all runs
-        assert any(
-            final_state in expected_states for final_state in final_states
-        ), f"Final state mismatch. Expected one of {expected_states}, got {final_states}"
+        # Assert that the final state matches the expected state for all runs
+        for i, final_state in enumerate(final_states):
+            assert final_state in expected_states, f"Final state mismatch at run {i + 1}. Expected {expected_states}, got {final_state}"
 
 
 @pytest.mark.parametrize(
@@ -536,9 +535,7 @@ def run_incremental_parent_state_test(manifest, mock_requests, expected_records,
 def test_incremental_parent_state(test_name, manifest, mock_requests, expected_records, initial_state, expected_state):
     additional_expected_state = copy.deepcopy(expected_state)
     # State for empty partition (comment 12), when the global cursor is used for intermediate states
-    empty_state = (
-        {"cursor": {"created_at": "2024-01-15T00:00:00Z"}, "partition": {"id": 12, "parent_slice": {"id": 1, "parent_slice": {}}}},
-    )
+    empty_state = {"cursor": {"created_at": "2024-01-15T00:00:00Z"}, "partition": {"id": 12, "parent_slice": {"id": 1, "parent_slice": {}}}}
     additional_expected_state["states"].append(empty_state)
     run_incremental_parent_state_test(manifest, mock_requests, expected_records, initial_state, [expected_state, additional_expected_state])
 
