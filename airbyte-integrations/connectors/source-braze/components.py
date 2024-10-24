@@ -2,6 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
+
+import requests
+from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.types import Record
+
 import datetime
 import operator
 from dataclasses import dataclass
@@ -13,6 +19,32 @@ from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
+from dataclasses import dataclass
+from typing import Optional
+
+import dpath
+from airbyte_cdk.sources.declarative.transformations import AddFields
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+
+
+@dataclass
+class TransformToRecordComponent(AddFields):
+    def transform(
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Record:
+        """
+        Transforms incoming string to a dictionary record.
+        """
+        _record = {}
+        kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
+        for parsed_field in self._parsed_fields:
+            value = parsed_field.value.eval(config, **kwargs)
+            dpath.util.new(_record, parsed_field.path, value)
+        return _record
 
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
@@ -50,3 +82,13 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
             end_time = self._parser.parse(get_end_time(_slice), self.end_datetime.datetime_format)
             _slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
         return date_range
+
+@dataclass
+class EventsRecordExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> list[Record]:
+        response_body = self.decoder.decode(response)
+        events = response_body.get("events")
+        if events:
+            return [{"event_name": value} for value in events]
+        else:
+            return []

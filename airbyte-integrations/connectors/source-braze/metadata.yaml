@@ -2,6 +2,9 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: 
+      docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
   connectorSubtype: api
   connectorType: source
   definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
@@ -14,7 +17,7 @@ data:
   name: Braze
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-braze
   registryOverrides:
     cloud:
@@ -24,19 +27,19 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
-    - cdk:low-code
+  - language:manifest-only
+  - cdk:low-code
   connectorTestSuitesOptions:
-    - suite: liveTests
-      testConnections:
-        - name: braze_config_dev_null
-          id: 5df06901-b346-4401-81af-62b20deda255
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_BRAZE_INTEGRATION_TESTS_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  - suite: liveTests
+    testConnections:
+    - name: braze_config_dev_null
+      id: 5df06901-b346-4401-81af-62b20deda255
+  - suite: unitTests
+  - suite: acceptanceTests
+    testSecrets:
+    - name: SECRET_BRAZE_INTEGRATION_TESTS_CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
