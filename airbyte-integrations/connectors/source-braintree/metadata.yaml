@@ -25,23 +25,22 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
   releaseStage: alpha
   supportLevel: community
   tags:
-  - language:manifest-only
-  - cdk:low-code
+    - language:manifest-only
+    - cdk:low-code
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: braintree_config_dev_null
-      id: 8f679466-dfd0-4ebf-ac56-29516fdb7a84
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-BRAINTREE__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: braintree_config_dev_null
+          id: 8f679466-dfd0-4ebf-ac56-29516fdb7a84
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-BRAINTREE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
