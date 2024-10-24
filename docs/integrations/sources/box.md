@@ -1,6 +1,9 @@
 # Box
 The Box Connector enables seamless data extraction from Box, allowing users to list, access, and synchronize files or folders from their Box cloud storage. This connector helps automate workflows by integrating Box data with other tools, ensuring efficient file management and analysis
 
+## Authentication
+Follow [this](https://developer.box.com/guides/authentication/client-credentials/) guide to complete authentication.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
