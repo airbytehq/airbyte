@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.standardtest.source.performancetest
 
 import io.airbyte.cdk.db.Database
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.stream.Stream
 import org.jooq.DSLContext
@@ -13,8 +12,8 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** This abstract class contains common methods for Fill Db scripts. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -47,11 +46,11 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
     ) {
         val database = setupDatabase(dbName)
 
-        database.query<Any?> { ctx: DSLContext ->
+        database.query<Any?> { ctx: DSLContext? ->
             for (currentSteamNumber in 0 until numberOfStreams) {
                 val currentTableName = String.format(testStreamNameTemplate, currentSteamNumber)
 
-                ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName))
+                ctx!!.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName))
                 for (i in 0 until numberOfBatches) {
                     val insertQueryTemplate =
                         prepareInsertQueryTemplate(
@@ -63,7 +62,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                     ctx.fetch(String.format(insertQueryTemplate, currentTableName))
                 }
 
-                LOGGER.info { "Finished processing for stream $currentSteamNumber" }
+                c.info("Finished processing for stream $currentSteamNumber")
             }
             null
         }
@@ -82,7 +81,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
      *
      * Stream.of( Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000) );
      */
-    protected abstract fun provideParameters(): Stream<Arguments>?
+    protected abstract fun provideParameters(): Stream<Arguments?>?
 
     protected fun prepareCreateTableQuery(
         dbSchemaName: String?,
@@ -147,6 +146,9 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)"
         private const val INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s"
         private const val TEST_DB_FIELD_TYPE = "varchar(10)"
+
+        protected val c: Logger =
+            LoggerFactory.getLogger(AbstractSourceFillDbWithTestData::class.java)
         private const val TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'"
     }
 }

@@ -19,7 +19,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -32,8 +31,8 @@ import java.time.Instant
 import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 abstract class GcsStreamCopier(
     protected val stagingFolder: String,
@@ -55,7 +54,7 @@ abstract class GcsStreamCopier(
             GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
         )
     private val channels = HashMap<String, WriteChannel>()
-    private val csvPrinters = HashMap<String, CSVPrinter>()
+    private val csvPrinters = HashMap<String?, CSVPrinter>()
 
     private fun prepareGcsStagingFile(): String {
         return java.lang.String.join(
@@ -66,7 +65,7 @@ abstract class GcsStreamCopier(
         )
     }
 
-    override fun prepareStagingFile(): String {
+    override fun prepareStagingFile(): String? {
         val name = prepareGcsStagingFile()
         if (!gcsStagingFiles.contains(name)) {
             gcsStagingFiles.add(name)
@@ -105,21 +104,24 @@ abstract class GcsStreamCopier(
 
     @Throws(Exception::class)
     override fun closeStagingUploader(hasFailed: Boolean) {
-        LOGGER.info { "Uploading remaining data for $streamName stream." }
+        LOGGER.info("Uploading remaining data for {} stream.", streamName)
         for (csvPrinter in csvPrinters.values) {
             csvPrinter.close()
         }
         for (channel in channels.values) {
             channel.close()
         }
-        LOGGER.info { "All data for $streamName stream uploaded." }
+        LOGGER.info("All data for {} stream uploaded.", streamName)
     }
 
     @Throws(Exception::class)
     override fun copyStagingFileToTemporaryTable() {
-        LOGGER.info {
-            "Starting copy to tmp table: $tmpTableName in destination for stream: $streamName, schema: $schemaName."
-        }
+        LOGGER.info(
+            "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
+            tmpTableName,
+            streamName,
+            schemaName
+        )
         for (gcsStagingFile in gcsStagingFiles) {
             copyGcsCsvFileIntoTable(
                 db,
@@ -129,62 +131,72 @@ abstract class GcsStreamCopier(
                 gcsConfig
             )
         }
-        LOGGER.info {
-            "Copy to tmp table $tmpTableName in destination for stream $streamName complete."
-        }
+        LOGGER.info(
+            "Copy to tmp table {} in destination for stream {} complete.",
+            tmpTableName,
+            streamName
+        )
     }
 
     @Throws(Exception::class)
     override fun removeFileAndDropTmpTable() {
         for (gcsStagingFile in gcsStagingFiles) {
-            LOGGER.info { "Begin cleaning gcs staging file $gcsStagingFile." }
+            LOGGER.info("Begin cleaning gcs staging file {}.", gcsStagingFile)
             val blobId = BlobId.of(gcsConfig.bucketName, gcsStagingFile)
             if (storageClient[blobId].exists()) {
                 storageClient.delete(blobId)
             }
-            LOGGER.info { "GCS staging file $gcsStagingFile cleaned." }
+            LOGGER.info("GCS staging file {} cleaned.", gcsStagingFile)
         }
 
-        LOGGER.info { "Begin cleaning $tmpTableName tmp table in destination." }
+        LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName)
         sqlOperations.dropTableIfExists(db, schemaName, tmpTableName)
-        LOGGER.info { "$tmpTableName tmp table in destination cleaned." }
+        LOGGER.info("{} tmp table in destination cleaned.", tmpTableName)
     }
 
     @Throws(Exception::class)
     override fun createDestinationSchema() {
-        LOGGER.info { "Creating schema in destination if it doesn't exist: $schemaName" }
+        LOGGER.info("Creating schema in destination if it doesn't exist: {}", schemaName)
         sqlOperations.createSchemaIfNotExists(db, schemaName)
     }
 
     @Throws(Exception::class)
     override fun createTemporaryTable() {
-        LOGGER.info {
-            "Preparing tmp table in destination for stream: $streamName, schema: $schemaName, tmp table name: $tmpTableName."
-        }
+        LOGGER.info(
+            "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+            streamName,
+            schemaName,
+            tmpTableName
+        )
         sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName)
     }
 
     @Throws(Exception::class)
-    override fun createDestinationTable(): String {
+    override fun createDestinationTable(): String? {
         val destTableName = @Suppress("deprecation") nameTransformer.getRawTableName(streamName)
-        LOGGER.info { "Preparing table $destTableName in destination." }
+        LOGGER.info("Preparing table {} in destination.", destTableName)
         sqlOperations.createTableIfNotExists(db, schemaName, destTableName)
-        LOGGER.info { "Table $tmpTableName in destination prepared." }
+        LOGGER.info("Table {} in destination prepared.", tmpTableName)
 
         return destTableName
     }
 
     @Throws(Exception::class)
-    override fun generateMergeStatement(destTableName: String): String {
-        LOGGER.info {
-            "Preparing to merge tmp table $tmpTableName to dest table: $destTableName, schema: $schemaName, in destination."
-        }
+    override fun generateMergeStatement(destTableName: String?): String {
+        LOGGER.info(
+            "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+            tmpTableName,
+            destTableName,
+            schemaName
+        )
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
             queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName))
-            LOGGER.info {
-                "Destination OVERWRITE mode detected. Dest table: $destTableName, schema: $schemaName, will be truncated."
-            }
+            LOGGER.info(
+                "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.",
+                destTableName,
+                schemaName
+            )
         }
         queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName))
         return queries.toString()
@@ -204,6 +216,7 @@ abstract class GcsStreamCopier(
     )
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(GcsStreamCopier::class.java)
 
         // It is optimal to write every 10,000,000 records (BATCH_SIZE * MAX_PER_FILE_PART_COUNT) to
         // a new

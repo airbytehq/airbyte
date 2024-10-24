@@ -15,10 +15,7 @@ constructor(
     val pathFormat: String,
     val fullOutputPath: String,
     val syncMode: DestinationSyncMode,
-    val generationId: Long,
-    val minimumGenerationId: Long,
     val storedFiles: MutableList<String> = arrayListOf(),
-    val objectsFromOldGeneration: MutableList<String> = arrayListOf()
 ) {
 
     fun addStoredFile(file: String) {
@@ -30,6 +27,13 @@ constructor(
     }
 
     override fun toString(): String {
-        return "WriteConfig(namespace=$namespace, streamName='$streamName', outputBucketPath='$outputBucketPath', pathFormat='$pathFormat', fullOutputPath='$fullOutputPath', syncMode=$syncMode, generationId=$generationId, minimumGenerationId=$minimumGenerationId)"
+        return "WriteConfig{" +
+            "streamName=$streamName" +
+            ", namespace=$namespace" +
+            ", outputBucketPath=$outputBucketPath" +
+            ", pathFormat=$pathFormat" +
+            ", fullOutputPath=$fullOutputPath" +
+            ", syncMode=$syncMode" +
+            '}'
     }
 }

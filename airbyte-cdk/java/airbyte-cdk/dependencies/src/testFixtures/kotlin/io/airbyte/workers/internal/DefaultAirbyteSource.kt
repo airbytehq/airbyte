@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.process.IntegrationLauncher
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -29,8 +28,8 @@ import kotlin.collections.Iterator
 import kotlin.collections.Set
 import kotlin.collections.contains
 import kotlin.collections.setOf
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DefaultAirbyteSource
 @VisibleForTesting
@@ -42,7 +41,7 @@ internal constructor(
     featureFlags: FeatureFlags
 ) : AirbyteSource {
     private var sourceProcess: Process? = null
-    private var messageIterator: Iterator<AirbyteMessage>? = null
+    private var messageIterator: Iterator<AirbyteMessage?>? = null
 
     private var exitValueIsSet = false
     @get:Throws(IllegalStateException::class)
@@ -111,7 +110,7 @@ internal constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             sourceProcess!!.errorStream,
-            { msg: String -> LOGGER.error(msg) },
+            { msg: String? -> LOGGER.error(msg) },
             "airbyte-source",
             CONTAINER_LOG_MDC_BUILDER
         )
@@ -128,7 +127,7 @@ internal constructor(
         messageIterator =
             streamFactory
                 .create(IOs.newBufferedReader(sourceProcess!!.inputStream))
-                .peek { message: AirbyteMessage -> heartbeatMonitor.beat() }
+                .peek { message: AirbyteMessage? -> heartbeatMonitor.beat() }
                 .filter { message: AirbyteMessage -> acceptedMessageTypes.contains(message.type) }
                 .iterator()
     }
@@ -201,6 +200,7 @@ internal constructor(
     }
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteSource::class.java)
 
         private val HEARTBEAT_FRESH_DURATION: Duration = Duration.of(5, ChronoUnit.MINUTES)
         private val GRACEFUL_SHUTDOWN_DURATION: Duration = Duration.of(1, ChronoUnit.MINUTES)

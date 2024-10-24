@@ -158,7 +158,7 @@ object FailureHelper {
             }
         val compareByTimestamp = Comparator.comparing { obj: FailureReason -> obj.timestamp }
         val compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp)
-        return failures.sortedWith(compareByTraceAndTimestamp)
+        return failures.stream().sorted(compareByTraceAndTimestamp).toList()
     }
 
     enum class ConnectorCommand(private val value: String) {

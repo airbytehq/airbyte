@@ -19,14 +19,13 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class S3JsonlWriter(
     config: S3DestinationConfig,
@@ -52,9 +51,12 @@ class S3JsonlWriter(
             )
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
-        LOGGER.info {
-            "Full S3 path for stream '${stream.name}': s3://${config.bucketName}/$outputPath"
-        }
+        LOGGER.info(
+            "Full S3 path for stream '{}': s3://{}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
         this.uploadManager = create(config.bucketName, outputPath, s3Client).get()
@@ -93,6 +95,7 @@ class S3JsonlWriter(
     }
 
     companion object {
+        protected val LOGGER: Logger = LoggerFactory.getLogger(S3JsonlWriter::class.java)
 
         private val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }

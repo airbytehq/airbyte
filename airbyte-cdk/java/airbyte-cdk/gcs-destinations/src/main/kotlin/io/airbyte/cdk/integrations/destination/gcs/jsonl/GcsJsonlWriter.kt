@@ -18,14 +18,13 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class GcsJsonlWriter(
     config: GcsDestinationConfig,
@@ -45,9 +44,12 @@ class GcsJsonlWriter(
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
-        LOGGER.info {
-            "Full GCS path for stream '${stream.name}': ${config.bucketName}/$outputPath"
-        }
+        LOGGER.info(
+            "Full GCS path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
         this.uploadManager = create(config.bucketName, outputPath, s3Client).get()
 
@@ -86,6 +88,7 @@ class GcsJsonlWriter(
         get() = FileUploadFormat.JSONL
 
     companion object {
+        protected val LOGGER: Logger = LoggerFactory.getLogger(GcsJsonlWriter::class.java)
 
         private val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }

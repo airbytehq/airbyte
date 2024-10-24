@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
+import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -185,7 +186,9 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .stream()
+                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .collect(Collectors.toList())
                 )
         val expectedFirstEmission =
             createStreamState(
@@ -226,7 +229,9 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .stream()
+                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .collect(Collectors.toList())
                 )
         val expectedSecondEmission =
             createStreamState(
@@ -390,7 +395,9 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .stream()
+                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
+                        .collect(Collectors.toList())
                 )
 
         val expectedFirstEmission =
@@ -435,7 +442,7 @@ class StreamStateManagerTest {
     private fun createStreamState(
         name: String?,
         namespace: String?,
-        cursorFields: List<String>?,
+        cursorFields: List<String?>?,
         cursorValue: String?,
         cursorRecordCount: Long
     ): AirbyteStateMessage {

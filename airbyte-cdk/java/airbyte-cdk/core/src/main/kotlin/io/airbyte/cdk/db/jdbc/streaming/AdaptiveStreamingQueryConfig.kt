@@ -3,10 +3,9 @@
  */
 package io.airbyte.cdk.db.jdbc.streaming
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
     private val fetchSizeEstimator: FetchSizeEstimator = TwoStageSizeEstimator.Companion.instance
@@ -21,7 +20,7 @@ open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
         connection.autoCommit = false
         statement.fetchSize = FetchSizeConstants.INITIAL_SAMPLE_SIZE
         currentFetchSize = FetchSizeConstants.INITIAL_SAMPLE_SIZE
-        LOGGER.info { "Set initial fetch size: ${statement.fetchSize} rows" }
+        LOGGER.info("Set initial fetch size: {} rows", statement.fetchSize)
     }
 
     @Throws(SQLException::class)
@@ -30,9 +29,14 @@ open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
         val newFetchSize = fetchSizeEstimator.fetchSize
 
         if (newFetchSize.isPresent && currentFetchSize != newFetchSize.get()) {
-            LOGGER.info { "Set new fetch size: ${newFetchSize.get()} rows" }
+            LOGGER.info("Set new fetch size: {} rows", newFetchSize.get())
             resultSet.fetchSize = newFetchSize.get()
             currentFetchSize = newFetchSize.get()
         }
+    }
+
+    companion object {
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(AdaptiveStreamingQueryConfig::class.java)
     }
 }
