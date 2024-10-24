@@ -5,7 +5,7 @@ from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
-from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag
+from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag_and_state
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
@@ -67,6 +67,7 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._use_global_cursor = False
         self._current_partition: Optional[Mapping[str, Any]] = None
         self._last_slice: bool = False
+        self._parent_state: Optional[Mapping[str, Any]] = None
 
     def _get_active_cursor(self) -> Union[PerPartitionCursor, GlobalSubstreamCursor]:
         return self._global_cursor if self._use_global_cursor else self._per_partition_cursor
@@ -75,22 +76,24 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._global_cursor.start_slices_generation()
 
         # Iterate through partitions and process slices
-        for partition, is_last_partition in iterate_with_last_flag(self._partition_router.stream_slices()):
+        for partition, is_last_partition, parent_state in iterate_with_last_flag_and_state(self._partition_router.stream_slices(), self._partition_router.get_stream_state):
             # Generate slices for the current cursor and handle the last slice using the flag
-            self._current_partition = partition.partition
-            for slice, is_last_slice in iterate_with_last_flag(
-                self._get_active_cursor().generate_slices_from_partition(partition=partition)
+            self._parent_state = parent_state
+            for slice, is_last_slice, _ in iterate_with_last_flag_and_state(
+                self._get_active_cursor().generate_slices_from_partition(partition=partition), lambda: None
             ):
+
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
-        self._current_partition = None
-        self._last_slice = True
+        self._parent_state = self._partition_router.get_stream_state()
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
         Set the initial state for the cursors.
         """
         self._use_global_cursor = stream_state.get("use_global_cursor", False)
+
+        self._parent_state = stream_state.get("parent_state", {})
 
         self._global_cursor.set_initial_state(stream_state)
         self._per_partition_cursor.set_initial_state(stream_state)
@@ -114,6 +117,9 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         final_state.update(self._global_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
         if not self._use_global_cursor:
             final_state.update(self._per_partition_cursor.get_stream_state(partition=self._current_partition, last=self._last_slice))
+
+        if self._parent_state:
+            final_state["parent_state"] = self._parent_state
 
         return final_state
 

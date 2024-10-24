@@ -41,7 +41,7 @@ class PartitionRouter(StreamSlicer):
         """
 
     @abstractmethod
-    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = False) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self, last: bool = False) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 

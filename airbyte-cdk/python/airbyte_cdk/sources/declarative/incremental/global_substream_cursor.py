@@ -4,7 +4,7 @@
 
 import threading
 import time
-from typing import Any, Iterable, Mapping, Optional, TypeVar, Union
+from typing import Any, Callable, Iterable, Mapping, Optional, TypeVar, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
@@ -14,22 +14,35 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 T = TypeVar("T")
 
 
-def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[T, bool]]:
+def iterate_with_last_flag_and_state(generator: Iterable[T], get_stream_state_func: Callable[[T], Any]) -> Iterable[tuple[T, bool, Any]]:
     """
-    Iterates over the given generator and returns a tuple containing the element and a flag
-    indicating whether it's the last element in the generator. If the generator is empty,
-    it returns an empty iterator.
+    Iterates over the given generator, yielding tuples containing the element, a flag
+    indicating whether it's the last element in the generator, and the result of
+    `get_stream_state_func` applied to the element.
+
+    Args:
+        generator: The iterable to iterate over.
+        get_stream_state_func: A function that takes an element from the generator and
+            returns its state.
+
+    Returns:
+        An iterator that yields tuples of the form (element, is_last, state).
     """
+
     iterator = iter(generator)
+
     try:
         current = next(iterator)
+        state = get_stream_state_func()
     except StopIteration:
         return  # Return an empty iterator
 
     for next_item in iterator:
-        yield current, False
+        yield current, False, state
         current = next_item
-    yield current, True
+        state = get_stream_state_func()
+
+    yield current, True, get_stream_state_func()
 
 
 class Timer:
@@ -74,6 +87,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._lookback_window: Optional[int] = None
         self._current_partition: Optional[Mapping[str, Any]] = None
         self._last_slice: bool = False
+        self._parent_state: Optional[Mapping[str, Any]] = None
 
     def start_slices_generation(self) -> None:
         self._timer.start()
@@ -100,12 +114,11 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         )
 
         self.start_slices_generation()
-        for slice, last in iterate_with_last_flag(slice_generator):
-            self._current_partition = slice.partition
+        for slice, last, state in iterate_with_last_flag_and_state(slice_generator, self._partition_router.get_stream_state):
+            self._parent_state = state
             self.register_slice(last)
             yield slice
-        self._current_partition = None
-        self._last_slice = True
+        self._parent_state = self._partition_router.get_stream_state()
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
@@ -210,11 +223,8 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
 
-        parent_state = self._partition_router.get_stream_state(
-            partition=partition or self._current_partition, last=self._last_slice or last
-        )
-        if parent_state:
-            state["parent_state"] = parent_state
+        if self._parent_state:
+            state["parent_state"] = self._parent_state
 
         if self._lookback_window is not None:
             state["lookback_window"] = self._lookback_window
