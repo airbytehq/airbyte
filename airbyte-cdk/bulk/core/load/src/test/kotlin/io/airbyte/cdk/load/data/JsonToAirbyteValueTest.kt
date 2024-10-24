@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -159,5 +160,25 @@ class JsonToAirbyteValueTest {
                 .convert(JsonNodeFactory.instance.textNode("00:00:00"), TimeTypeWithTimezone)
         Assertions.assertTrue(value is TimeValue)
         Assertions.assertEquals("00:00:00", (value as TimeValue).value)
+    }
+
+    @Test
+    fun testMissingObjectField() {
+        val value =
+            JsonToAirbyteValue()
+                .convert(
+                    Jsons.readTree("""{"foo": 1}"""),
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "foo" to FieldType(IntegerType, nullable = true),
+                                "bar" to FieldType(IntegerType, nullable = true),
+                            )
+                    )
+                )
+        Assertions.assertEquals(
+            ObjectValue(linkedMapOf("foo" to IntegerValue(1))),
+            value,
+        )
     }
 }
