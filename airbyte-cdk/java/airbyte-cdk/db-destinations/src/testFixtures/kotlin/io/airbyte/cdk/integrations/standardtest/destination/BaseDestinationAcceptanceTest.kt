@@ -14,6 +14,7 @@ import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
@@ -215,7 +216,11 @@ abstract class BaseDestinationAcceptanceTest(
             }
         }
 
-        destination.close()
+        try {
+            destination.close()
+        } catch (e: TestHarnessException) {
+            throw TestHarnessException(e.message, e, destinationOutput)
+        }
 
         return destinationOutput
     }
@@ -258,6 +263,7 @@ abstract class BaseDestinationAcceptanceTest(
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
+                fileTransferMountSource,
                 "host",
                 getConnectorEnv()
             )

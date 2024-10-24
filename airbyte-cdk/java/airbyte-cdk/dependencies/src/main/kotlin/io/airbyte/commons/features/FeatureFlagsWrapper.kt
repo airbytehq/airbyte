@@ -3,6 +3,8 @@
  */
 package io.airbyte.commons.features
 
+import java.nio.file.Path
+
 open class FeatureFlagsWrapper(private val wrapped: FeatureFlags) : FeatureFlags {
     override fun autoDetectSchema(): Boolean {
         return wrapped.autoDetectSchema()
@@ -34,6 +36,14 @@ open class FeatureFlagsWrapper(private val wrapped: FeatureFlags) : FeatureFlags
 
     override fun deploymentMode(): String? {
         return wrapped.deploymentMode()
+    }
+
+    override fun airbyteStagingDirectory(): Path? {
+        return wrapped.airbyteStagingDirectory()
+    }
+
+    override fun useFileTransfer(): Boolean {
+        return wrapped.useFileTransfer()
     }
 
     companion object {

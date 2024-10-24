@@ -22,8 +22,7 @@ import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFact
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -194,15 +193,32 @@ open class S3StorageOperations(
         } while (objectNameByPrefix.getValue(objectPath).contains(fullObjectKey))
         return fullObjectKey
     }
+
     @Throws(IOException::class)
     private fun loadDataIntoBucket(
         objectPath: String,
         recordsData: SerializableBuffer,
         generationId: Long
     ): String {
+        val fullObjectKey: String = getFileName(objectPath, recordsData)
+        return loadDataIntoBucket(
+            fullObjectKey,
+            recordsData.filename,
+            recordsData.inputStream!!,
+            generationId
+        )
+    }
+
+    @Throws(IOException::class)
+    public fun loadDataIntoBucket(
+        fullObjectKey: String,
+        fileName: String,
+        fileContent: InputStream,
+        generationId: Long
+    ): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
         val bucket: String? = s3Config.bucketName
-        val fullObjectKey: String = getFileName(objectPath, recordsData)
+
         val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
@@ -232,13 +248,13 @@ open class S3StorageOperations(
 
         try {
             rawOutputStream.use { outputStream ->
-                recordsData.inputStream!!.use { dataStream ->
+                fileContent.use { dataStream ->
                     dataStream.transferTo(outputStream)
                     succeeded = true
                 }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Failed to load data into storage $objectPath" }
+            logger.error(e) { "Failed to load data into storage $fullObjectKey" }
             throw RuntimeException(e)
         } finally {
             if (!succeeded) {
@@ -253,7 +269,7 @@ open class S3StorageOperations(
         }
         val newFilename: String = getFilename(fullObjectKey)
         logger.info {
-            "Uploaded buffer file to storage: ${recordsData.filename} -> $fullObjectKey (filename: $newFilename)"
+            "Uploaded buffer file to storage: $fileName -> $fullObjectKey (filename: $newFilename)"
         }
         return newFilename
     }
@@ -611,7 +627,7 @@ open class S3StorageOperations(
         private const val FORMAT_VARIABLE_EPOCH: String = "\${EPOCH}"
         private const val FORMAT_VARIABLE_UUID: String = "\${UUID}"
         private const val GZ_FILE_EXTENSION: String = "gz"
-        private const val GENERATION_ID_USER_META_KEY = "ab-generation-id"
+        const val GENERATION_ID_USER_META_KEY = "ab-generation-id"
         @VisibleForTesting
         @JvmStatic
         fun getFilename(fullPath: String): String {
