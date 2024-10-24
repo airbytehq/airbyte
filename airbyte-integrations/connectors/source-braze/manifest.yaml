@@ -1,0 +1,4195 @@
+version: "4.3.2"
+definitions:
+  base_selector:
+    extractor:
+      field_path:
+      - "data"
+  list_selector:
+    extractor:
+      field_path:
+      - "{{ parameters['name'] }}"
+  event_selector:
+    extractor:
+      class_name: source_declarative_manifest.components.EventsRecordExtractor
+      field_path:
+      - events
+  requester:
+    url_base: "{{ config['url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  paginated_retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "{{ parameters['name'] }}"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
+  event_retriever:
+    record_selector:
+      extractor:
+        class_name: source_declarative_manifest.components.EventsRecordExtractor
+        field_path:
+        - events
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+  list_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "{{ parameters['name'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+  campaigns_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "{{ parameters['name'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - 'null'
+            - string
+          last_edited:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          name:
+            type:
+            - 'null'
+            - string
+          is_api_campaign:
+            type:
+            - 'null'
+            - boolean
+          tags:
+            type:
+            - 'null'
+            - array
+  canvases_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "{{ parameters['name'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - 'null'
+            - string
+          last_edited:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          name:
+            type:
+            - 'null'
+            - string
+          tags:
+            type:
+            - 'null'
+            - array
+  cards_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "{{ parameters['name'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - 'null'
+            - string
+          type:
+            type:
+            - 'null'
+            - string
+          title:
+            type:
+            - 'null'
+            - string
+          tags:
+            type:
+            - 'null'
+            - array
+  segments_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "{{ parameters['name'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+          analytics_tracking_enabled:
+            type:
+            - 'null'
+            - boolean
+          tags:
+            type:
+            - 'null'
+            - array
+  custom_events_stream:
+    retriever:
+      record_selector:
+        extractor:
+          class_name: source_declarative_manifest.components.EventsRecordExtractor
+          field_path:
+          - events
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 2
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            type:
+            - 'null'
+            - string
+  datetime_100d_incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  datetime_14d_incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P14D"
+    cursor_granularity: "P1D"
+  non_paginated_retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+  kpi_daily_new_users_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+            - 'null'
+            - string
+          new_users:
+            type:
+            - 'null'
+            - integer
+  kpi_daily_active_users_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+            - 'null'
+            - string
+          dau:
+            type:
+            - 'null'
+            - integer
+  kpi_daily_app_uninstalls_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+            - 'null'
+            - string
+          uninstalls:
+            type:
+            - 'null'
+            - integer
+  campaigns_analytics_substream_config:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  is_api_campaign:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "campaign_id"
+          request_option:
+            field_name: "campaign_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "campaign_id"
+        value: "{{ stream_slice.campaign_id }}"
+  canvases_analytics_substream_config:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P14D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "stats"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          include_variant_breakdown: "true"
+          include_step_breakdown: "true"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "canvas_id"
+          request_option:
+            field_name: "canvas_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "canvas_id"
+        value: "{{ stream_slice.canvas_id }}"
+  cards_analytics_substream_config:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  type:
+                    type:
+                    - 'null'
+                    - string
+                  title:
+                    type:
+                    - 'null'
+                    - string
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "card_id"
+          request_option:
+            field_name: "card_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "card_id"
+        value: "{{ stream_slice.card_id }}"
+  segments_analytics_substream_config:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  analytics_tracking_enabled:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "segment_id"
+          request_option:
+            field_name: "segment_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "segment_id"
+        value: "{{ stream_slice.segment_id }}"
+  events_analytics_substream_config:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          unit: "day"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  class_name: source_declarative_manifest.components.EventsRecordExtractor
+                  field_path:
+                  - events
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  event_name:
+                    type:
+                    - 'null'
+                    - string
+          parent_key: "event_name"
+          partition_field: "event"
+          request_option:
+            field_name: "event"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "event_id"
+        value: "{{ stream_slice.event }}"
+  campaigns_analytics_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  is_api_campaign:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "campaign_id"
+          request_option:
+            field_name: "campaign_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "campaign_id"
+        value: "{{ stream_slice.campaign_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          campaign_id:
+            type:
+            - 'null'
+            - string
+          time:
+            type:
+            - 'null'
+            - string
+          messages:
+            type:
+            - 'null'
+            - object
+            properties:
+              ios_push:
+                type:
+                - 'null'
+                - array
+              android_push:
+                type:
+                - 'null'
+                - array
+              webhook:
+                type:
+                - 'null'
+                - array
+              email:
+                type:
+                - 'null'
+                - array
+              sms:
+                type:
+                - 'null'
+                - array
+          conversions_by_send_time:
+            type:
+            - 'null'
+            - integer
+          conversions1_by_send_time:
+            type:
+            - 'null'
+            - integer
+          conversions2_by_send_time:
+            type:
+            - 'null'
+            - integer
+          conversions3_by_send_time:
+            type:
+            - 'null'
+            - integer
+          conversions:
+            type:
+            - 'null'
+            - integer
+          conversions1:
+            type:
+            - 'null'
+            - integer
+          conversions2:
+            type:
+            - 'null'
+            - integer
+          conversions3:
+            type:
+            - 'null'
+            - integer
+          unique_recipients:
+            type:
+            - 'null'
+            - integer
+          revenue:
+            type:
+            - 'null'
+            - number
+  canvases_analytics_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P14D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+          - "stats"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          include_variant_breakdown: "true"
+          include_step_breakdown: "true"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "canvas_id"
+          request_option:
+            field_name: "canvas_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "canvas_id"
+        value: "{{ stream_slice.canvas_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          canvas_id:
+            type:
+            - 'null'
+            - string
+          time:
+            type:
+            - 'null'
+            - string
+          total_stats:
+            type:
+            - 'null'
+            - object
+            properties:
+              revenue:
+                type:
+                - 'null'
+                - number
+              conversions:
+                type:
+                - 'null'
+                - integer
+              conversions_by_entry_time:
+                type:
+                - 'null'
+                - integer
+              entries:
+                type:
+                - 'null'
+                - integer
+          variant_stats:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          step_stats:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+  cards_analytics_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  type:
+                    type:
+                    - 'null'
+                    - string
+                  title:
+                    type:
+                    - 'null'
+                    - string
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "card_id"
+          request_option:
+            field_name: "card_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "card_id"
+        value: "{{ stream_slice.card_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          card_id:
+            type:
+            - 'null'
+            - string
+          time:
+            type:
+            - 'null'
+            - string
+          clicks:
+            type:
+            - 'null'
+            - integer
+          impressions:
+            type:
+            - 'null'
+            - integer
+          unique_clicks:
+            type:
+            - 'null'
+            - integer
+          unique_impressions:
+            type:
+            - 'null'
+            - integer
+  segments_analytics_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  analytics_tracking_enabled:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "segment_id"
+          request_option:
+            field_name: "segment_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "segment_id"
+        value: "{{ stream_slice.segment_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          segment_id:
+            type:
+            - 'null'
+            - string
+          time:
+            type:
+            - 'null'
+            - string
+          size:
+            type:
+            - 'null'
+            - number
+  events_analytics_stream:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    retriever:
+      record_selector:
+        extractor:
+          field_path:
+          - "data"
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          unit: "day"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+        cursor_field: "time"
+        start_datetime:
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        end_time_option:
+          field_name: "ending_at"
+          inject_into: "request_parameter"
+        step_option:
+          field_name: "length"
+          inject_into: "request_parameter"
+        datetime_format: "%Y-%m-%d"
+        step: "P100D"
+        cursor_granularity: "P1D"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  class_name: source_declarative_manifest.components.EventsRecordExtractor
+                  field_path:
+                  - events
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  event_name:
+                    type:
+                    - 'null'
+                    - string
+          parent_key: "event_name"
+          partition_field: "event"
+          request_option:
+            field_name: "event"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "event_id"
+        value: "{{ stream_slice.event }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            type:
+            - 'null'
+            - string
+          time:
+            type:
+            - 'null'
+            - string
+          count:
+            type:
+            - 'null'
+            - integer
+  segments_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  analytics_tracking_enabled:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "segment_id"
+          request_option:
+            field_name: "segment_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "segment_id"
+        value: "{{ stream_slice.segment_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            type: string
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          name:
+            type:
+            - 'null'
+            - string
+          description:
+            type:
+            - 'null'
+            - string
+          text_description:
+            type:
+            - 'null'
+            - string
+          segment_id:
+            type:
+            - 'null'
+            - string
+          tags:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+  campaigns_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  is_api_campaign:
+                    type:
+                    - 'null'
+                    - boolean
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "campaign_id"
+          request_option:
+            field_name: "campaign_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "campaign_id"
+        value: "{{ stream_slice.campaign_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            type: string
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          archived:
+            type:
+            - 'null'
+            - boolean
+          draft:
+            type:
+            - 'null'
+            - boolean
+          name:
+            type:
+            - 'null'
+            - string
+          description:
+            type:
+            - 'null'
+            - string
+          schedule_type:
+            type:
+            - 'null'
+            - string
+          first_sent:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          last_sent:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          campaign_id:
+            type:
+            - 'null'
+            - string
+          channels:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          conversion_behaviors:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties: {}
+          messages:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties: {}
+          enabled:
+            type:
+            - 'null'
+            - boolean
+          tags:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+  canvases_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        url_base: "{{ config['url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              record_selector:
+                extractor:
+                  field_path:
+                  - "{{ parameters['name'] }}"
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: PageIncrement
+                  page_size: 2
+                page_token_option:
+                  type: RequestOption
+                  inject_into: "request_parameter"
+                  field_name: "page"
+              requester:
+                url_base: "{{ config['url'] }}"
+                http_method: "GET"
+                authenticator:
+                  type: BearerAuthenticator
+                  api_token: "{{ config['api_key'] }}"
+                request_parameters:
+                  last_edit.time[gt]: "{{ config['start_date'] }}"
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                  last_edited:
+                    type:
+                    - 'null'
+                    - string
+                    format: date-time
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  tags:
+                    type:
+                    - 'null'
+                    - array
+          parent_key: "id"
+          partition_field: "canvas_id"
+          request_option:
+            field_name: "canvas_id"
+            inject_into: "request_parameter"
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - "canvas_id"
+        value: "{{ stream_slice.canvas_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          name:
+            type:
+            - 'null'
+            - string
+          description:
+            type:
+            - 'null'
+            - string
+          archived:
+            type:
+            - 'null'
+            - boolean
+          draft:
+            type:
+            - 'null'
+            - boolean
+          schedule_type:
+            type:
+            - 'null'
+            - string
+          first_entry:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          last_entry:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          message:
+            type: string
+          canvas_id:
+            type:
+            - 'null'
+            - string
+          channels:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+          steps:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties: {}
+          variants:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties: {}
+          enabled:
+            type:
+            - 'null'
+            - boolean
+          tags:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+streams:
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "{{ parameters['name'] }}"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
+      type: HttpRequester
+      path: "/campaigns/list"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+        last_edited:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        name:
+          type:
+          - 'null'
+          - string
+        is_api_campaign:
+          type:
+          - 'null'
+          - boolean
+        tags:
+          type:
+          - 'null'
+          - array
+  type: DeclarativeStream
+  name: "campaigns"
+  primary_key: "id"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/campaigns/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/campaigns/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                last_edited:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                name:
+                  type:
+                  - 'null'
+                  - string
+                is_api_campaign:
+                  type:
+                  - 'null'
+                  - boolean
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "campaigns"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "campaign_id"
+        request_option:
+          field_name: "campaign_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "campaign_id"
+      value: "{{ stream_slice.campaign_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        campaign_id:
+          type:
+          - 'null'
+          - string
+        time:
+          type:
+          - 'null'
+          - string
+        messages:
+          type:
+          - 'null'
+          - object
+          properties:
+            ios_push:
+              type:
+              - 'null'
+              - array
+            android_push:
+              type:
+              - 'null'
+              - array
+            webhook:
+              type:
+              - 'null'
+              - array
+            email:
+              type:
+              - 'null'
+              - array
+            sms:
+              type:
+              - 'null'
+              - array
+        conversions_by_send_time:
+          type:
+          - 'null'
+          - integer
+        conversions1_by_send_time:
+          type:
+          - 'null'
+          - integer
+        conversions2_by_send_time:
+          type:
+          - 'null'
+          - integer
+        conversions3_by_send_time:
+          type:
+          - 'null'
+          - integer
+        conversions:
+          type:
+          - 'null'
+          - integer
+        conversions1:
+          type:
+          - 'null'
+          - integer
+        conversions2:
+          type:
+          - 'null'
+          - integer
+        conversions3:
+          type:
+          - 'null'
+          - integer
+        unique_recipients:
+          type:
+          - 'null'
+          - integer
+        revenue:
+          type:
+          - 'null'
+          - number
+  type: DeclarativeStream
+  name: "campaigns_analytics"
+- retriever:
+    record_selector:
+      extractor:
+        field_path: []
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/campaigns/details"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/campaigns/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                last_edited:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                name:
+                  type:
+                  - 'null'
+                  - string
+                is_api_campaign:
+                  type:
+                  - 'null'
+                  - boolean
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "campaigns"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "campaign_id"
+        request_option:
+          field_name: "campaign_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "campaign_id"
+      value: "{{ stream_slice.campaign_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        message:
+          type: string
+        created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        updated_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        archived:
+          type:
+          - 'null'
+          - boolean
+        draft:
+          type:
+          - 'null'
+          - boolean
+        name:
+          type:
+          - 'null'
+          - string
+        description:
+          type:
+          - 'null'
+          - string
+        schedule_type:
+          type:
+          - 'null'
+          - string
+        first_sent:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        last_sent:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        campaign_id:
+          type:
+          - 'null'
+          - string
+        channels:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        conversion_behaviors:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties: {}
+        messages:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties: {}
+        enabled:
+          type:
+          - 'null'
+          - boolean
+        tags:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+  type: DeclarativeStream
+  name: "campaigns_details"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "{{ parameters['name'] }}"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
+      type: HttpRequester
+      path: "/canvas/list"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+        last_edited:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        name:
+          type:
+          - 'null'
+          - string
+        tags:
+          type:
+          - 'null'
+          - array
+  type: DeclarativeStream
+  name: "canvases"
+  primary_key: "id"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P14D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        - "stats"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        include_variant_breakdown: "true"
+        include_step_breakdown: "true"
+      type: HttpRequester
+      path: "/canvas/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/canvas/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                last_edited:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                name:
+                  type:
+                  - 'null'
+                  - string
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "canvases"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "canvas_id"
+        request_option:
+          field_name: "canvas_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "canvas_id"
+      value: "{{ stream_slice.canvas_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        canvas_id:
+          type:
+          - 'null'
+          - string
+        time:
+          type:
+          - 'null'
+          - string
+        total_stats:
+          type:
+          - 'null'
+          - object
+          properties:
+            revenue:
+              type:
+              - 'null'
+              - number
+            conversions:
+              type:
+              - 'null'
+              - integer
+            conversions_by_entry_time:
+              type:
+              - 'null'
+              - integer
+            entries:
+              type:
+              - 'null'
+              - integer
+        variant_stats:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+        step_stats:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+  type: DeclarativeStream
+  name: "canvases_analytics"
+- retriever:
+    record_selector:
+      extractor:
+        field_path: []
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/canvas/details"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/canvas/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                last_edited:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+                name:
+                  type:
+                  - 'null'
+                  - string
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "canvases"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "canvas_id"
+        request_option:
+          field_name: "canvas_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "canvas_id"
+      value: "{{ stream_slice.canvas_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        updated_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        name:
+          type:
+          - 'null'
+          - string
+        description:
+          type:
+          - 'null'
+          - string
+        archived:
+          type:
+          - 'null'
+          - boolean
+        draft:
+          type:
+          - 'null'
+          - boolean
+        schedule_type:
+          type:
+          - 'null'
+          - string
+        first_entry:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        last_entry:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        message:
+          type: string
+        canvas_id:
+          type:
+          - 'null'
+          - string
+        channels:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+        steps:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties: {}
+        variants:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties: {}
+        enabled:
+          type:
+          - 'null'
+          - boolean
+        tags:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+  type: DeclarativeStream
+  name: "canvases_details"
+- retriever:
+    record_selector:
+      extractor:
+        class_name: source_declarative_manifest.components.EventsRecordExtractor
+        field_path:
+        - events
+        type: CustomRecordExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/events/list"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        event_name:
+          type:
+          - 'null'
+          - string
+  type: DeclarativeStream
+  name: "events"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        unit: "day"
+      type: HttpRequester
+      path: "/events/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                class_name: source_declarative_manifest.components.EventsRecordExtractor
+                field_path:
+                - events
+                type: CustomRecordExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              type: HttpRequester
+              path: "/events/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                event_name:
+                  type:
+                  - 'null'
+                  - string
+          type: DeclarativeStream
+          name: "events"
+        parent_key: "event_name"
+        partition_field: "event"
+        request_option:
+          field_name: "event"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "event_id"
+      value: "{{ stream_slice.event }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        event_name:
+          type:
+          - 'null'
+          - string
+        time:
+          type:
+          - 'null'
+          - string
+        count:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "events_analytics"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/kpi/new_users/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        time:
+          type:
+          - 'null'
+          - string
+        new_users:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "kpi_daily_new_users"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/kpi/dau/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        time:
+          type:
+          - 'null'
+          - string
+        dau:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "kpi_daily_active_users"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/kpi/uninstalls/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        time:
+          type:
+          - 'null'
+          - string
+        uninstalls:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "kpi_daily_app_uninstalls"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "{{ parameters['name'] }}"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
+      type: HttpRequester
+      path: "/feed/list"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+        type:
+          type:
+          - 'null'
+          - string
+        title:
+          type:
+          - 'null'
+          - string
+        tags:
+          type:
+          - 'null'
+          - array
+  type: DeclarativeStream
+  name: "cards"
+  primary_key: "id"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/feed/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/feed/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type:
+                  - 'null'
+                  - string
+                title:
+                  type:
+                  - 'null'
+                  - string
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "cards"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "card_id"
+        request_option:
+          field_name: "card_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "card_id"
+      value: "{{ stream_slice.card_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        card_id:
+          type:
+          - 'null'
+          - string
+        time:
+          type:
+          - 'null'
+          - string
+        clicks:
+          type:
+          - 'null'
+          - integer
+        impressions:
+          type:
+          - 'null'
+          - integer
+        unique_clicks:
+          type:
+          - 'null'
+          - integer
+        unique_impressions:
+          type:
+          - 'null'
+          - integer
+  type: DeclarativeStream
+  name: "cards_analytics"
+- retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "{{ parameters['name'] }}"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
+      type: HttpRequester
+      path: "/segments/list"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+        name:
+          type:
+          - 'null'
+          - string
+        analytics_tracking_enabled:
+          type:
+          - 'null'
+          - boolean
+        tags:
+          type:
+          - 'null'
+          - array
+  type: DeclarativeStream
+  name: "segments"
+  primary_key: "id"
+- incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+      type: RequestOption
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+  retriever:
+    record_selector:
+      extractor:
+        field_path:
+        - "data"
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/segments/data_series"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_declarative_manifest.components.DatetimeIncrementalSyncComponent"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+        type: MinMaxDatetime
+      end_time_option:
+        field_name: "ending_at"
+        inject_into: "request_parameter"
+        type: RequestOption
+      step_option:
+        field_name: "length"
+        inject_into: "request_parameter"
+      datetime_format: "%Y-%m-%d"
+      step: "P100D"
+      cursor_granularity: "P1D"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/segments/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                analytics_tracking_enabled:
+                  type:
+                  - 'null'
+                  - boolean
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "segments"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "segment_id"
+        request_option:
+          field_name: "segment_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "segment_id"
+      value: "{{ stream_slice.segment_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        segment_id:
+          type:
+          - 'null'
+          - string
+        time:
+          type:
+          - 'null'
+          - string
+        size:
+          type:
+          - 'null'
+          - number
+  type: DeclarativeStream
+  name: "segments_analytics"
+- retriever:
+    record_selector:
+      extractor:
+        field_path: []
+        type: DpathExtractor
+      type: RecordSelector
+    paginator:
+      type: NoPagination
+    requester:
+      url_base: "{{ config['url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      type: HttpRequester
+      path: "/segments/details"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            record_selector:
+              extractor:
+                field_path:
+                - "{{ parameters['name'] }}"
+                type: DpathExtractor
+              type: RecordSelector
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: PageIncrement
+                page_size: 2
+              page_token_option:
+                type: RequestOption
+                inject_into: "request_parameter"
+                field_name: "page"
+            requester:
+              url_base: "{{ config['url'] }}"
+              http_method: "GET"
+              authenticator:
+                type: BearerAuthenticator
+                api_token: "{{ config['api_key'] }}"
+              request_parameters:
+                last_edit.time[gt]: "{{ config['start_date'] }}"
+              type: HttpRequester
+              path: "/segments/list"
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                analytics_tracking_enabled:
+                  type:
+                  - 'null'
+                  - boolean
+                tags:
+                  type:
+                  - 'null'
+                  - array
+          type: DeclarativeStream
+          name: "segments"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "segment_id"
+        request_option:
+          field_name: "segment_id"
+          inject_into: "request_parameter"
+          type: RequestOption
+        type: ParentStreamConfig
+    type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - "segment_id"
+      value: "{{ stream_slice.segment_id }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        message:
+          type: string
+        created_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        updated_at:
+          type:
+          - 'null'
+          - string
+          format: date-time
+        name:
+          type:
+          - 'null'
+          - string
+        description:
+          type:
+          - 'null'
+          - string
+        text_description:
+          type:
+          - 'null'
+          - string
+        segment_id:
+          type:
+          - 'null'
+          - string
+        tags:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - string
+  type: DeclarativeStream
+  name: "segments_details"
+check:
+  stream_names:
+  - "campaigns"
+  type: CheckStream
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/braze
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Braze Spec
+    type: object
+    additionalProperties: true
+    required:
+    - url
+    - api_key
+    - start_date
+    properties:
+      url:
+        type: string
+        title: URL
+        description: Braze REST API endpoint
+      api_key:
+        type: string
+        title: Rest API Key
+        airbyte_secret: true
+        description: Braze REST API key
+      start_date:
+        type: string
+        format: date
+        title: Start date
+        description: Rows after this date will be synced
+  type: Spec
+type: DeclarativeSource
