@@ -1,0 +1,1323 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  FMP provides financial data.
+
+  Using this connector we can extract data from various endpoints like Stocks
+  list, ETFs list , Exchange Symbols and Historical MarketCap etc
+
+  Docs : https://site.financialmodelingprep.com/developer/docs
+
+check:
+  type: CheckStream
+  stream_names:
+    - Stocks List
+
+definitions:
+  streams:
+    Stocks List:
+      type: DeclarativeStream
+      name: Stocks List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stock/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stocks List"
+    ETFs List:
+      type: DeclarativeStream
+      name: ETFs List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: etf/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ETFs List"
+    "Tradable Search ":
+      type: DeclarativeStream
+      name: "Tradable Search "
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: available-traded/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tradable Search "
+    CIK List:
+      type: DeclarativeStream
+      name: CIK List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: cik_list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/CIK List"
+    Euronext Symbols:
+      type: DeclarativeStream
+      name: Euronext Symbols
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol/available-euronext
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Euronext Symbols"
+    Exchange Symbols:
+      type: DeclarativeStream
+      name: Exchange Symbols
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol/{{ config['exchange'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Exchange Symbols"
+    Available Indexes:
+      type: DeclarativeStream
+      name: Available Indexes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol/available-indexes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Indexes"
+    Company Profile:
+      type: DeclarativeStream
+      name: Company Profile
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profile/{{ stream_partition.symbol}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Exchange Symbols"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company Profile"
+    Screener (Stock):
+      type: DeclarativeStream
+      name: Screener (Stock)
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stock-screener
+          http_method: GET
+          request_parameters:
+            marketCapMoreThan: "{{ config['marketcapmorethan'] }}"
+            marketCapLowerThan: "{{ config['marketcaplowerthan'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Screener (Stock)"
+    Historical Market Cap:
+      type: DeclarativeStream
+      name: Historical Market Cap
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: historical-market-capitalization/{{ stream_partition.symbol}}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+            from: "{{ config['from'] }}"
+            to: "{{ config['to'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Exchange Symbols"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Historical Market Cap"
+    Delisted Companies:
+      type: DeclarativeStream
+      name: Delisted Companies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: delisted-companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Delisted Companies"
+    Exchange Prices:
+      type: DeclarativeStream
+      name: Exchange Prices
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stock-price-change/{{ stream_partition.symbol}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Exchange Symbols"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Exchange Prices"
+    All RealTime Full Stock Prices:
+      type: DeclarativeStream
+      name: All RealTime Full Stock Prices
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stock/full/real-time-price
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All RealTime Full Stock Prices"
+    ALL FX Prices:
+      type: DeclarativeStream
+      name: ALL FX Prices
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fx
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ALL FX Prices"
+    Stock Historical Price:
+      type: DeclarativeStream
+      name: Stock Historical Price
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            historical-chart/{{ config['time_frame'] }}/{{
+            stream_partition.symbol}}
+          http_method: GET
+          request_parameters:
+            from: "{{ config[\"from\"] }}"
+            to: "{{ config[\"to\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Exchange Symbols"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Historical Price"
+    Forex List:
+      type: DeclarativeStream
+      name: Forex List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol/available-forex-currency-pairs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Forex List"
+    Cryptocurrencies List:
+      type: DeclarativeStream
+      name: Cryptocurrencies List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: symbol/available-cryptocurrencies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Cryptocurrencies List"
+  base_requester:
+    type: HttpRequester
+    url_base: https://financialmodelingprep.com/api/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apikey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/Stocks List"
+  - $ref: "#/definitions/streams/ETFs List"
+  - $ref: "#/definitions/streams/Tradable Search "
+  - $ref: "#/definitions/streams/CIK List"
+  - $ref: "#/definitions/streams/Euronext Symbols"
+  - $ref: "#/definitions/streams/Exchange Symbols"
+  - $ref: "#/definitions/streams/Available Indexes"
+  - $ref: "#/definitions/streams/Company Profile"
+  - $ref: "#/definitions/streams/Screener (Stock)"
+  - $ref: "#/definitions/streams/Historical Market Cap"
+  - $ref: "#/definitions/streams/Delisted Companies"
+  - $ref: "#/definitions/streams/Exchange Prices"
+  - $ref: "#/definitions/streams/All RealTime Full Stock Prices"
+  - $ref: "#/definitions/streams/ALL FX Prices"
+  - $ref: "#/definitions/streams/Stock Historical Price"
+  - $ref: "#/definitions/streams/Forex List"
+  - $ref: "#/definitions/streams/Cryptocurrencies List"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      exchange:
+        type: string
+        description: >-
+          The stock exchange : AMEX, AMS, AQS, ASX, ATH, BER, BME, BRU, BSE,
+          BUD, BUE, BVC, CAI, CBOE, CNQ, CPH, DFM, DOH, DUS, DXE, EGX, EURONEXT,
+          HAM, HEL, HKSE, ICE, IOB, IST, JKT, JNB, JPX, KLS, KOE, KSC, KUW, LSE,
+          MCX, MEX, MIL, MUN, NASDAQ, NEO, NSE, NYSE, NZE, OEM, OQX, OSL, OTC,
+          PNK, PRA, RIS, SAO, SAU, SES, SET, SGO, SHH, SHZ, SIX, STO, STU, TAI,
+          TLV, TSX, TSXV, TWO, VIE, VSE, WSE, XETRA
+        title: Exchange
+        default: NASDAQ
+        order: 1
+      marketcapmorethan:
+        type: string
+        description: >-
+          Used in screener to filter out stocks with a market cap more than the
+          give marketcap
+        title: marketCapMoreThan
+        order: 2
+      marketcaplowerthan:
+        type: string
+        description: >-
+          Used in screener to filter out stocks with a market cap lower than the
+          give marketcap
+        title: marketCapLowerThan
+        order: 3
+      limit:
+        type: number
+        title: Limit
+        order: 4
+      from:
+        type: string
+        description: >-
+          Used when fetching historical data : The date from which you need the
+          data
+        title: From
+        order: 5
+      to:
+        type: string
+        description: >-
+          Used when fetching historical data : The date till which you need the
+          data
+        title: To
+        order: 6
+      time_frame:
+        type: string
+        description: For example 1min, 5min, 15min, 30min, 1hour, 4hour
+        title: Time Frame
+        default: 1hour
+        order: 7
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Stocks List: true
+    ETFs List: true
+    "Tradable Search ": true
+    CIK List: true
+    Euronext Symbols: true
+    Exchange Symbols: true
+    Available Indexes: true
+    Company Profile: true
+    Screener (Stock): true
+    Historical Market Cap: true
+    Delisted Companies: true
+    Exchange Prices: true
+    All RealTime Full Stock Prices: true
+    ALL FX Prices: true
+    Stock Historical Price: true
+    Forex List: true
+    Cryptocurrencies List: true
+  testedStreams:
+    Stocks List:
+      streamHash: cc38f7c2accf01a623390f1b5031121c6926cd23
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ETFs List:
+      streamHash: f08fb5bcd027301665bdac95bd9d25f2a722b7d4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    "Tradable Search ":
+      streamHash: d6da7696f9c319ab0412aeebea0158fd7e07611f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    CIK List:
+      streamHash: 5352740d1258ae19c9a9c5e3430c80f7a4277cd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Euronext Symbols:
+      streamHash: cdf9fd57c629070d901ea38cd21e4c99f1c6c3a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Exchange Symbols:
+      streamHash: 5c97666741aefdbe38f18d19c3d460f7e3aa39ec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Available Indexes:
+      streamHash: f242c0a80c3d6ca2b85b073db2d7621d65c31fb7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Company Profile:
+      streamHash: adae9912a98218fae7a2b63c4def255780a114f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Screener (Stock):
+      streamHash: 34ea29de20e806e4a61ce5dd61afa08902821232
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Historical Market Cap:
+      streamHash: 7cb404bfa08436349158cce597d6fc2f0ec9e457
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Delisted Companies:
+      streamHash: 878f46edec7e921133e3b920ef73615d961e710c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Exchange Prices:
+      streamHash: 527606a74d3d7a020c5fcad5ae74696b041a3d68
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    All RealTime Full Stock Prices:
+      streamHash: afb7b7ff361aecf31f31be0ecebc1c3ed398b3d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ALL FX Prices:
+      streamHash: dc67357866ce9d0c4e78da728fb019af0adc4b1b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Stock Historical Price:
+      streamHash: e3f9d808c76d90267a87fd38dfa24c2fc5e73eea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Forex List:
+      streamHash: 022b53d5162e18edf6d494d854bddce3ee6b41f7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Cryptocurrencies List:
+      streamHash: 613e1a01410a095a56632d86ef141ffaa032cd11
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Stocks List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  ETFs List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  "Tradable Search ":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  CIK List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cik:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  Euronext Symbols:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      stockExchange:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Exchange Symbols:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avgVolume:
+        type:
+          - number
+          - "null"
+      change:
+        type:
+          - number
+          - "null"
+      changesPercentage:
+        type:
+          - number
+          - "null"
+      dayHigh:
+        type:
+          - number
+          - "null"
+      dayLow:
+        type:
+          - number
+          - "null"
+      earningsAnnouncement:
+        type:
+          - string
+          - "null"
+      eps:
+        type:
+          - number
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      marketCap:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      pe:
+        type:
+          - number
+          - "null"
+      previousClose:
+        type:
+          - number
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      priceAvg200:
+        type:
+          - number
+          - "null"
+      priceAvg50:
+        type:
+          - number
+          - "null"
+      sharesOutstanding:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+      yearHigh:
+        type:
+          - number
+          - "null"
+      yearLow:
+        type:
+          - number
+          - "null"
+  Available Indexes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      stockExchange:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Company Profile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      beta:
+        type:
+          - number
+          - "null"
+      ceo:
+        type:
+          - string
+          - "null"
+      changes:
+        type:
+          - number
+          - "null"
+      cik:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      cusip:
+        type:
+          - string
+          - "null"
+      dcf:
+        type:
+          - number
+          - "null"
+      dcfDiff:
+        type:
+          - number
+          - "null"
+      defaultImage:
+        type:
+          - boolean
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      fullTimeEmployees:
+        type:
+          - string
+          - "null"
+      image:
+        type:
+          - string
+          - "null"
+      industry:
+        type:
+          - string
+          - "null"
+      ipoDate:
+        type:
+          - string
+          - "null"
+      isActivelyTrading:
+        type:
+          - boolean
+          - "null"
+      isAdr:
+        type:
+          - boolean
+          - "null"
+      isEtf:
+        type:
+          - boolean
+          - "null"
+      isFund:
+        type:
+          - boolean
+          - "null"
+      isin:
+        type:
+          - string
+          - "null"
+      lastDiv:
+        type:
+          - number
+          - "null"
+      mktCap:
+        type:
+          - number
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      range:
+        type:
+          - string
+          - "null"
+      sector:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      volAvg:
+        type:
+          - number
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+  Screener (Stock):
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      beta:
+        type:
+          - number
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      industry:
+        type:
+          - string
+          - "null"
+      isActivelyTrading:
+        type:
+          - boolean
+          - "null"
+      isEtf:
+        type:
+          - boolean
+          - "null"
+      isFund:
+        type:
+          - boolean
+          - "null"
+      lastAnnualDividend:
+        type:
+          - number
+          - "null"
+      marketCap:
+        type:
+          - number
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      sector:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+  Historical Market Cap:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      marketCap:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Delisted Companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      companyName:
+        type:
+          - string
+          - "null"
+      delistedDate:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      ipoDate:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Exchange Prices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      10Y:
+        type:
+          - number
+          - "null"
+      1D:
+        type:
+          - number
+          - "null"
+      1M:
+        type:
+          - number
+          - "null"
+      1Y:
+        type:
+          - number
+          - "null"
+      3M:
+        type:
+          - number
+          - "null"
+      3Y:
+        type:
+          - number
+          - "null"
+      5D:
+        type:
+          - number
+          - "null"
+      5Y:
+        type:
+          - number
+          - "null"
+      6M:
+        type:
+          - number
+          - "null"
+      max:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      ytd:
+        type:
+          - number
+          - "null"
+  All RealTime Full Stock Prices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      askPrice:
+        type:
+          - number
+          - "null"
+      askSize:
+        type:
+          - number
+          - "null"
+      bidPrice:
+        type:
+          - number
+          - "null"
+      bidSize:
+        type:
+          - number
+          - "null"
+      fmpLast:
+        type:
+          - number
+          - "null"
+      lastSalePrice:
+        type:
+          - number
+          - "null"
+      lastSaleSize:
+        type:
+          - number
+          - "null"
+      lastSaleTime:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+  ALL FX Prices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ask:
+        type:
+          - string
+          - "null"
+      bid:
+        type:
+          - string
+          - "null"
+      changes:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - string
+          - "null"
+      low:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+  Stock Historical Price:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      close:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+  Forex List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      stockExchange:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  Cryptocurrencies List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - string
+          - "null"
+      exchangeShortName:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      stockExchange:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
