@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-finnworlds:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  discovery:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  basic_read:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  incremental:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  full_refresh:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
