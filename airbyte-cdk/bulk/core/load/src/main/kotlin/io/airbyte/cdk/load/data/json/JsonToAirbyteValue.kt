@@ -38,7 +38,6 @@ class JsonToAirbyteValue {
                 is TimestampTypeWithoutTimezone -> TimestampValue(json.asText())
                 is UnionType -> toUnion(json, schema.options)
                 is UnknownType -> UnknownValue("From $schema: $json")
-                else -> throw IllegalArgumentException("Unsupported schema type: $schema")
             }
         } catch (t: Throwable) {
             return UnknownValue(t.message ?: "Unknown error")
@@ -182,9 +181,6 @@ class JsonToAirbyteValue {
             is TimestampTypeWithoutTimezone -> json.isTextual
             is UnionType -> schema.options.any { matchesStrictly(it, json) }
             is UnknownType -> false
-            is DateTypeIntegral,
-            is TimeTypeIntegral,
-            is TimestampTypeIntegral -> false
         }
     }
 

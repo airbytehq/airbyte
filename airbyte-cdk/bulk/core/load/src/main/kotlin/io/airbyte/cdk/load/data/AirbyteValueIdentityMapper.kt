@@ -46,10 +46,6 @@ open class AirbyteValueIdentityMapper(
                 is TimestampTypeWithoutTimezone ->
                     mapTimestampWithoutTimezone(value as TimestampValue, path)
                 is NullType -> mapNull(path)
-                is DateTypeIntegral -> mapDateTypeIntegral(value as DateValueIntegral, path)
-                is TimestampTypeIntegral ->
-                    mapTimestampTypeIntegral(value as TimestampValueIntegral, path)
-                is TimeTypeIntegral -> mapTimeTypeIntegral(value as TimeValueIntegral, path)
                 is UnknownType -> mapUnknown(value as UnknownValue, path)
             }
         } catch (e: Exception) {
@@ -117,13 +113,4 @@ open class AirbyteValueIdentityMapper(
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
 
     open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
-
-    open fun mapDateTypeIntegral(value: DateValueIntegral, path: List<String>): AirbyteValue = value
-
-    open fun mapTimestampTypeIntegral(
-        value: TimestampValueIntegral,
-        path: List<String>
-    ): AirbyteValue = value
-
-    open fun mapTimeTypeIntegral(value: TimeValueIntegral, path: List<String>): AirbyteValue = value
 }

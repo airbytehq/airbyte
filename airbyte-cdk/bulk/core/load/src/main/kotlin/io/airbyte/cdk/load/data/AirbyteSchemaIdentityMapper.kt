@@ -24,9 +24,6 @@ interface AirbyteSchemaIdentityMapper {
             is TimestampTypeWithTimezone -> mapTimestampTypeWithTimezone(schema)
             is TimestampTypeWithoutTimezone -> mapTimestampTypeWithoutTimezone(schema)
             is UnknownType -> mapUnknown(schema)
-            is DateTypeIntegral -> mapDateTypeIntegral(schema)
-            is TimeTypeIntegral -> mapTimeTypeIntegral(schema)
-            is TimestampTypeIntegral -> mapTimestampTypeIntegral(schema)
         }
 
     fun mapNull(schema: NullType): AirbyteType = schema
@@ -56,8 +53,4 @@ interface AirbyteSchemaIdentityMapper {
 
     fun mapUnknown(schema: UnknownType): AirbyteType = schema
     fun mapField(field: FieldType): FieldType = FieldType(map(field.type), field.nullable)
-
-    fun mapDateTypeIntegral(schema: DateTypeIntegral): AirbyteType = schema
-    fun mapTimeTypeIntegral(schema: TimeTypeIntegral): AirbyteType = schema
-    fun mapTimestampTypeIntegral(schema: TimestampTypeIntegral): AirbyteType = schema
 }

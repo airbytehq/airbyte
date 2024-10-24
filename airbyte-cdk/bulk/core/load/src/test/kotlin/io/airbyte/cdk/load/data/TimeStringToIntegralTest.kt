@@ -23,7 +23,7 @@ class TimeStringToIntegralTest {
             )
             .forEach {
                 Assertions.assertEquals(
-                    DateValueIntegral(it.second),
+                    IntegerValue(it.second.toLong()),
                     mapper.mapDate(DateValue(it.first), emptyList()),
                     "Failed for ${it.first} to ${it.second}"
                 )
@@ -66,7 +66,7 @@ class TimeStringToIntegralTest {
         val mapper = TimeStringToIntegral(DestinationRecord.Meta())
         timestampPairs.forEach {
             Assertions.assertEquals(
-                TimestampValueIntegral(it.second),
+                IntegerValue(it.second),
                 mapper.mapTimestampWithTimezone(TimestampValue(it.first), emptyList()),
                 "Failed for ${it.first} to ${it.second}"
             )
@@ -78,7 +78,7 @@ class TimeStringToIntegralTest {
         val mapper = TimeStringToIntegral(DestinationRecord.Meta())
         timestampPairs.forEach {
             Assertions.assertEquals(
-                TimestampValueIntegral(it.second),
+                IntegerValue(it.second),
                 mapper.mapTimestampWithoutTimezone(TimestampValue(it.first), emptyList()),
                 "Failed for ${it.first} to ${it.second}"
             )
@@ -101,7 +101,7 @@ class TimeStringToIntegralTest {
         val mapper = TimeStringToIntegral(DestinationRecord.Meta())
         timePairs.forEach {
             Assertions.assertEquals(
-                TimeValueIntegral(it.second),
+                IntegerValue(it.second),
                 mapper.mapTimeWithTimezone(TimeValue(it.first), emptyList()),
                 "Failed for ${it.first} to ${it.second}"
             )
@@ -113,7 +113,7 @@ class TimeStringToIntegralTest {
         val mapper = TimeStringToIntegral(DestinationRecord.Meta())
         timePairs.forEach {
             Assertions.assertEquals(
-                TimeValueIntegral(it.second),
+                IntegerValue(it.second),
                 mapper.mapTimeWithoutTimezone(TimeValue(it.first), emptyList()),
                 "Failed for ${it.first} to ${it.second}"
             )
