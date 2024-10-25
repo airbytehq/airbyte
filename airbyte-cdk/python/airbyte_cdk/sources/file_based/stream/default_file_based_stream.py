@@ -22,7 +22,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
 )
 from airbyte_cdk.sources.file_based.file_types import BlobTransfer
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema, file_transfer_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
@@ -227,7 +227,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             return {"type": "object", "properties": {**extra_fields, **schema["properties"]}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
-        if self.config.input_schema:
+        if self.use_file_transfer:
+            return file_transfer_schema
+        elif self.config.input_schema:
             return self.config.get_input_schema()  # type: ignore
         elif self.config.schemaless:
             return schemaless_schema
