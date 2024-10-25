@@ -54,14 +54,18 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
         self._state = state
 
-        self._concurrent_streams: List[AbstractStream]
-        self._synchronous_streams: List[Stream]
+        self._concurrent_streams: Optional[List[AbstractStream]]
+        self._synchronous_streams: Optional[List[Stream]]
 
+        # If the connector command was SPEC, there is no incoming config, and we cannot instantiate streams because
+        # they might depend on it. Ideally we want to have a static method on this class to get the spec without
+        # any other arguments, but the existing entrypoint.py isn't designed to support this. Just noting this
+        # for our future improvements to the CDK.
         if config:
             self._concurrent_streams, self._synchronous_streams = self._group_streams(config=config or {})
         else:
-            self._concurrent_streams = []
-            self._synchronous_streams = []
+            self._concurrent_streams = None
+            self._synchronous_streams = None
 
         concurrency_level_from_manifest = self._source_config.get("concurrency_level")
         if concurrency_level_from_manifest:
@@ -95,22 +99,30 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
         # ConcurrentReadProcessor pops streams that are finished being read so before syncing, the names of the concurrent
         # streams must be saved so that they can be removed from the catalog before starting synchronous streams
-        concurrent_stream_names = set([concurrent_stream.name for concurrent_stream in self._concurrent_streams])
+        if self._concurrent_streams:
+            concurrent_stream_names = set([concurrent_stream.name for concurrent_stream in self._concurrent_streams])
 
-        selected_concurrent_streams = self._select_streams(streams=self._concurrent_streams, configured_catalog=catalog)
-        # It would appear that passing in an empty set of streams causes an infinite loop in ConcurrentReadProcessor.
-        # This is also evident in concurrent_source_adapter.py so I'll leave this out of scope to fix for now
-        if selected_concurrent_streams:
-            yield from self._concurrent_source.read(selected_concurrent_streams)
+            selected_concurrent_streams = self._select_streams(streams=self._concurrent_streams, configured_catalog=catalog)
+            # It would appear that passing in an empty set of streams causes an infinite loop in ConcurrentReadProcessor.
+            # This is also evident in concurrent_source_adapter.py so I'll leave this out of scope to fix for now
+            if selected_concurrent_streams:
+                yield from self._concurrent_source.read(selected_concurrent_streams)
 
-        # Sync all streams that are not concurrent compatible. We filter out concurrent streams because the
-        # existing AbstractSource.read() implementation iterates over the catalog when syncing streams. Many
-        # of which were already synced using the Concurrent CDK
-        filtered_catalog = self._remove_concurrent_streams_from_catalog(catalog=catalog, concurrent_stream_names=concurrent_stream_names)
+            # Sync all streams that are not concurrent compatible. We filter out concurrent streams because the
+            # existing AbstractSource.read() implementation iterates over the catalog when syncing streams. Many
+            # of which were already synced using the Concurrent CDK
+            filtered_catalog = self._remove_concurrent_streams_from_catalog(
+                catalog=catalog, concurrent_stream_names=concurrent_stream_names
+            )
+        else:
+            filtered_catalog = catalog
+
         yield from super().read(logger, config, filtered_catalog, state)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in self._concurrent_streams + self._synchronous_streams])
+        concurrent_streams = self._concurrent_streams or []
+        synchronous_streams = self._synchronous_streams or []
+        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in concurrent_streams + synchronous_streams])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -159,11 +171,6 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
                     # This is an optimization so that we don't invoke any cursor or state management flows within the
                     # low-code framework because state management is handled through the ConcurrentCursor.
-                    #
-                    # todo: add this line back once safe to do so
-                    #  Removing this may break single-threaded connectors that rely on stream_state so I've commented it
-                    #  out, but left it in as a reminder to fix this once we've verified this is safe for data feed,
-                    #  client side incremental, and single threaded streams that use stream_state
                     if declarative_stream and declarative_stream.retriever and isinstance(declarative_stream.retriever, SimpleRetriever):
                         declarative_stream.retriever.cursor = None
 
