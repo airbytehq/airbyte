@@ -7,7 +7,7 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 from requests import Response
 from source_amazon_ads.schemas import (
     ProductAd,
