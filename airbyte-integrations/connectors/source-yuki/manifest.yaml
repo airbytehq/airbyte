@@ -1,0 +1,231 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - transactions
+
+definitions:
+  streams:
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /AccountingInfo.asmx
+          http_method: POST
+          request_headers:
+            Content-Type: text/xml
+          request_body_data: >-
+            <soapenv:Envelope
+            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:they="http://www.theyukicompany.com/">
+               <soapenv:Header/>
+               <soapenv:Body>
+                  <they:GetTransactions>
+                     <!--Optional:-->
+                     <they:sessionID>SESSION TOKEN WILL BE INJECTED HERE</they:sessionID>
+                     <!--Optional:-->
+                     <they:administrationID>{{ config['ADMINISTRATION_ID'] }}</they:administrationID>
+                     <!--Optional:-->
+                     <they:glAccountCode></they:glAccountCode>
+                     <!--Optional:-->
+                     <they:financialMode>0</they:financialMode>
+                     <!--Optional:-->
+                     <they:dataGroups>documentprocessed,document,documentmatching</they:dataGroups>
+                     <!--Optional:-->
+                  </they:GetTransactions>
+               </soapenv:Body>
+            </soapenv:Envelope>
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - soap:Envelope
+              - soap:Body
+              - GetTransactionsResponse
+              - GetTransactionsResult
+              - Transaction
+          schema_normalization: Default
+        decoder:
+          type: XmlDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.yukiworks.be/ws
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.CustomAuthenticator
+      api_key: " {{ config['API_KEY'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/transactions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - API_KEY
+      - ADMINISTRATION_ID
+    properties:
+      API_KEY:
+        type: string
+        order: 0
+        title: API_KEY
+        default: 540d691f-ff8d-418c-a49b-c4b758e7587e
+        airbyte_secret: true
+      ADMINISTRATION_ID:
+        type: string
+        order: 1
+        title: ADMINISTRATION_ID
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    transactions: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    transactions:
+      streamHash: 8ef55e3eb81f92bf123d3e347ea4a687da6c68f0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      document:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          "@id":
+            type:
+              - string
+              - "null"
+          HID:
+            type:
+              - string
+              - "null"
+          created:
+            type:
+              - string
+              - "null"
+          folder:
+            type:
+              - string
+              - "null"
+          folderId:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  "@xsi:nil":
+                    type: string
+          folderTab:
+            type:
+              - string
+              - "null"
+          folderTabId:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  "@xsi:nil":
+                    type: string
+          modified:
+            type:
+              - string
+              - "null"
+          reference:
+            type:
+              - string
+              - "null"
+          typeDescription:
+            type:
+              - string
+              - "null"
+          uploadMethod:
+            type:
+              - string
+              - "null"
+      documentMatched:
+        type:
+          - object
+          - "null"
+        properties:
+          matchDate:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  "@xsi:nil":
+                    type: string
+          matchedBy:
+            type:
+              - string
+              - "null"
+      documentProcessed:
+        type:
+          - object
+          - "null"
+        properties:
+          processedBy:
+            type:
+              - string
+              - "null"
+          processedDate:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  "@xsi:nil":
+                    type: string
+      glAccountCode:
+        type:
+          - string
+          - "null"
+      hID:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      transactionDate:
+        type:
+          - string
+          - "null"
+    required:
+      - id
