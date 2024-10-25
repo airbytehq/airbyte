@@ -38,7 +38,7 @@ definitions:
           path: organizations/{{stream_partition.parent_id}}/agreements
           http_method: GET
           request_headers:
-            organization: "{{ config[\"enviornment\"] }}"
+            organization: "{{ config[\"env\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -177,8 +177,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 0
+            page_size: 100
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -229,6 +229,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -249,7 +262,7 @@ definitions:
           $ref: "#/schemas/organization_members"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config["enviornment"] }}.concordnow.com/api/rest/1/
+    url_base: https://{{ config["env"] }}.concordnow.com/api/rest/1/
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -274,7 +287,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - enviornment
+      - env
     properties:
       api_key:
         type: string
@@ -282,7 +295,7 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      enviornment:
+      env:
         type: string
         description: The environment from where you want to access the API.
         enum:
@@ -290,7 +303,7 @@ spec:
           - api
         name: organizationId
         order: 1
-        title: enviornment
+        title: Environment
     additionalProperties: true
 
 metadata:
@@ -304,54 +317,54 @@ metadata:
     organization_members: false
   testedStreams:
     agreements:
-      hasRecords: true
-      streamHash: 42e7ce03f1c9c4f96292e5803a895e9bfc1bc846
+      streamHash: 07d516db9e3071f685d7e9f55fc2fc7ff5ce8dd5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     user_organizations:
-      streamHash: 7ec2840aa9e803910e71dedc972c993284f581ec
+      streamHash: 5520dfe5fc4a50db732484e0a2b69b057f998ed2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     organization:
-      hasRecords: true
-      streamHash: 668db7651aecdc2f7114053735f6320b6b4870e4
+      streamHash: 883312227d1d185dadbc88ee7bbbb2ac3c423eba
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     folders:
-      hasRecords: true
-      streamHash: 0b145b3b6c5714e734330d58071fa6fc7bfb0360
+      streamHash: 00fe7f2e0b38ad208db1f322bdea9f74b8551326
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     reports:
-      hasRecords: true
-      streamHash: 49c37c8b9e51c5369fe6046e33e9f2d1e6bd583c
+      streamHash: a1a6c2f6b428c996d9af1ffa8578223779bd0851
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tags:
-      hasRecords: true
-      streamHash: 3b021475e77a08ee2b2d56d4285b7549ea19e86e
+      streamHash: 884d1cd380e602b84919004685e117b97fcf0452
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     organization_members:
-      hasRecords: true
-      streamHash: 45cd9c0483e8abb23a2f936c8474d0f8390923cc
+      streamHash: d617acc1e88d4a7e563ca0c6b4f574e2e6e9ce04
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://api.doc.concordnow.com/
     openapiSpecUrl: https://api.doc.concordnow.com/concord-openapi-bundled.yaml
