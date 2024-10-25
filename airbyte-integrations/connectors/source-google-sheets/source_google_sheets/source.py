@@ -77,11 +77,12 @@ class SourceGoogleSheets(Source):
         # Check for duplicate headers
         spreadsheet_metadata = Spreadsheet.parse_obj(spreadsheet)
         grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
+        header_row_offset = Helpers.get_header_row_offset(config)
 
         duplicate_headers_in_sheet = {}
         for sheet_name in grid_sheets:
             try:
-                header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name, header_row_offset)
                 if config.get("names_conversion"):
                     header_row_data = [safe_name_conversion(h) for h in header_row_data]
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
@@ -113,6 +114,8 @@ class SourceGoogleSheets(Source):
     def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
+        header_row_offset = Helpers.get_header_row_offset(config)
+
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
             spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
@@ -120,7 +123,7 @@ class SourceGoogleSheets(Source):
             streams = []
             for sheet_name in grid_sheets:
                 try:
-                    header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                    header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name, header_row_offset)
                     if config.get("names_conversion"):
                         header_row_data = [safe_name_conversion(h) for h in header_row_data]
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
@@ -165,12 +168,13 @@ class SourceGoogleSheets(Source):
         stream_instances = {s.stream.name: s.stream for s in catalog.streams}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state or {})
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
+        header_row_offset = Helpers.get_header_row_offset(config)
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(
-            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion")
+            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion"), header_row_offset
         )
         sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
         logger.info(f"Row counts: {sheet_row_counts}")
@@ -181,25 +185,21 @@ class SourceGoogleSheets(Source):
             checkpoint_reader = FullRefreshCheckpointReader([])
             _ = checkpoint_reader.next()
             # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
-            is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
-            if not is_valid:
-                logger.info(f"Skipping syncing sheet {sheet}: {reason}")
-                yield self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager, sheet, None)
-                yield as_airbyte_message(stream, AirbyteStreamStatus.INCOMPLETE)
-                continue
-
-            column_index_to_name = sheet_to_column_index_to_name[sheet]
-            row_cursor = 2  # we start syncing past the header row
-            # For the loop, it is necessary that the initial row exists when we send a request to the API,
-            # if the last row of the interval goes outside the sheet - this is normal, we will return
-            # only the real data of the sheet and in the next iteration we will loop out.
-            while row_cursor <= sheet_row_counts[sheet]:
-                row_batch = SpreadsheetValues.parse_obj(
-                    client.get_values(
-                        sheet=sheet,
-                        row_cursor=row_cursor,
-                        spreadsheetId=spreadsheet_id,
-                        majorDimension="ROWS",
+            is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet, header_row_offset)
+            if is_valid:
+                column_index_to_name = sheet_to_column_index_to_name[sheet]
+                row_cursor = header_row_offset + 2  # we start syncing past the header row
+                # For the loop, it is necessary that the initial row exists when we send a request to the API,
+                # if the last row of the interval goes outside the sheet - this is normal, we will return
+                # only the real data of the sheet and in the next iteration we will loop out.
+                while row_cursor <= sheet_row_counts[sheet]:
+                    row_batch = SpreadsheetValues.parse_obj(
+                        client.get_values(
+                            sheet=sheet,
+                            row_cursor=row_cursor,
+                            spreadsheetId=spreadsheet_id,
+                            majorDimension="ROWS",
+                        )
                     )
                 )
 
