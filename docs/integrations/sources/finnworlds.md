@@ -16,9 +16,9 @@ Docs : https://finnworlds.com/
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Bonds List | country | No pagination | ✅ |  ❌  |
+| Bonds List | country | DefaultPaginator | ✅ |  ❌  |
 | Bonds |  | No pagination | ✅ |  ❌  |
-| Dividends List | ticker | No pagination | ✅ |  ❌  |
+| Dividends List | ticker | DefaultPaginator | ✅ |  ❌  |
 | Dividends |  | No pagination | ✅ |  ❌  |
 | Stock Splits List | ticker | DefaultPaginator | ✅ |  ❌  |
 | Stock Splits |  | No pagination | ✅ |  ❌  |
@@ -39,6 +39,6 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-24 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-25 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

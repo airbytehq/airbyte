@@ -38,6 +38,16 @@ definitions:
             field_path:
               - result
               - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -95,6 +105,16 @@ definitions:
             field_path:
               - result
               - output
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -352,6 +372,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - result
+              - output
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -554,9 +575,9 @@ spec:
       type_of_bond_:
         type: string
         description: For example 10y
+        order: 4
         title: "Type of bond "
         default: 10y
-        order: 4
     additionalProperties: true
 
 metadata:
@@ -578,33 +599,33 @@ metadata:
     Benchmark: true
   testedStreams:
     Bonds List:
-      streamHash: f36b957928677ac309460a6da63e639e00843e3f
+      streamHash: 37d3d326a72fd1d2d6b4a492040fb237f676e5b9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Bonds:
-      streamHash: 53c0f621dae8f010c0d137c4dd373a92b6183157
+      streamHash: bb3c5b8583779f77310b420e0adf2a0050ffa82f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Dividends List:
-      hasRecords: true
-      streamHash: 251b79fb6674029f6fa261958d05c0d4af8bb6ea
+      streamHash: 0b2728f1fc77b4c3b9826597696a92ce72489e0b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Dividends:
-      hasRecords: true
-      streamHash: 5f5cb954e6fbae7423be9a6d0f0307d10cc2b2ec
+      streamHash: d05d4f114dd47eaee2ac57013a903f1c10b54fc8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Stock Splits List:
       hasRecords: true
       streamHash: c3f35c7b853c2c7aa305835a3944f539dde7cba4
@@ -648,40 +669,40 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Macro Indicator:
-      streamHash: e62999e983e7e3d042934feea4e904fd02ce3a42
+      streamHash: 306753c816cc2ca2bcf28ead19ce257ec07b9f71
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Commodities List:
+      hasRecords: true
       streamHash: 6f32c056b218406fd205943741112e727389aead
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Commodities:
+      hasRecords: true
       streamHash: 831ff94ca46abe2199255b5e567f305d5f28f403
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Benchmark List:
+      hasRecords: true
       streamHash: 7d5afa11218feaaaca90f876c858e72be555d564
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Benchmark:
+      hasRecords: true
       streamHash: c19bcbaa045e034ff5df7c34e00c12ca46f548f5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -905,35 +926,26 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      output:
+      actual:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            actual:
-              type:
-                - string
-                - "null"
-            previous:
-              type:
-                - string
-                - "null"
-            report_date:
-              type:
-                - string
-                - "null"
-            report_name:
-              type:
-                - string
-                - "null"
-            unit:
-              type:
-                - string
-                - "null"
+      previous:
+        type:
+          - string
+          - "null"
+      report_date:
+        type:
+          - string
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
   Commodities List:
     type: object
     $schema: http://json-schema.org/schema#
