@@ -1,11 +1,11 @@
 # Uservoice
-Airbyte connector for UserVoice.com allows users to efficiently extract data from the UserVoice  and integrate it with various data destinations. This connector can sync data such as user feedback, suggestions, comments, tickets, and support metrics, providing a streamlined way to analyze and act on customer feedback. It supports incremental data syncs, ensuring that new or updated data is captured without duplication. The connector is designed for easy setup, enabling seamless integration with UserVoice&#39;s API to ensure your customer insights are always up to date.
+Airbyte connector for UserVoice.com allows users to efficiently extract data from the UserVoice  and integrate it with various data destinations. This connector can sync data such as user feedback, suggestions, comments, tickets, and support metrics, providing a streamlined way to analyze and act on customer feedback. It supports incremental data syncs, ensuring that new or updated data is captured without duplication. The connector is designed for easy setup, enabling seamless integration with UserVoice's API to ensure your customer insights are always up to date.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `subdomain` | `string` | subdomain.  |  |
+| `subdomain` | `string` | Subdomain.  |  |
 | `api_key` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
 
