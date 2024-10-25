@@ -57,6 +57,8 @@ class HttpMocker(contextlib.ContextDecorator):
             responses = [responses]
 
         matcher = HttpRequestMatcher(request, len(responses))
+        if matcher in self._matchers:
+            raise ValueError(f"Request {matcher.request} already mocked")
         self._matchers.append(matcher)
 
         getattr(self._mocker, method)(

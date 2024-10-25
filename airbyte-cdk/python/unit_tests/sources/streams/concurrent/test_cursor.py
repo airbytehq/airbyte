@@ -344,6 +344,73 @@ class ConcurrentCursorStateTest(TestCase):
         ]
 
     @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_small_slice_range_with_granularity_when_generate_slices_then_create_many_slices(self):
+        start = datetime.fromtimestamp(1, timezone.utc)
+        small_slice_range = timedelta(seconds=10)
+        granularity = timedelta(seconds=1)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 1, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
+                ],
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            small_slice_range,
+            granularity,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(29, timezone.utc)),
+            (datetime.fromtimestamp(30, timezone.utc), datetime.fromtimestamp(39, timezone.utc)),
+            (datetime.fromtimestamp(40, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
+        ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_difference_between_slices_match_slice_range_and_cursor_granularity_when_generate_slices_then_create_one_slice(self):
+        start = datetime.fromtimestamp(1, timezone.utc)
+        small_slice_range = timedelta(seconds=10)
+        granularity = timedelta(seconds=1)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 1, EpochValueConcurrentStreamStateConverter.END_KEY: 30},
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 41, EpochValueConcurrentStreamStateConverter.END_KEY: 50},
+                ],
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            small_slice_range,
+            granularity,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(31, timezone.utc), datetime.fromtimestamp(40, timezone.utc)),  # FIXME there should probably be the granularity at the beginning too
+        ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
     def test_given_non_continuous_state_when_generate_slices_then_create_slices_between_gaps_and_after(self):
         cursor = ConcurrentCursor(
             _A_STREAM_NAME,
@@ -434,6 +501,78 @@ class ConcurrentCursorStateTest(TestCase):
             (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
         ]
 
+    def test_slices_with_records_when_close_then_most_recent_cursor_value_from_most_recent_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        second_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 10, _UPPER_SLICE_BOUNDARY_FIELD: 20})
+        cursor.observe(_record(5, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.observe(_record(15, partition=second_partition))
+        cursor.close_partition(second_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 20, "start": 0, "most_recent_cursor_value": 15}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_last_slice_without_records_when_close_then_most_recent_cursor_value_is_from_previous_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        second_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 10, _UPPER_SLICE_BOUNDARY_FIELD: 20})
+        cursor.observe(_record(5, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.close_partition(second_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 20, "start": 0, "most_recent_cursor_value": 5}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_most_recent_cursor_value_outside_of_boundaries_when_close_then_most_recent_cursor_value_still_considered(self) -> None:
+        """
+        Not sure what is the value of this behavior but I'm simply documenting how it is today
+        """
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=False)
+        partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        cursor.observe(_record(15, partition=partition))
+        cursor.close_partition(partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            "slices": [
+                {"end": 10, "start": 0, "most_recent_cursor_value": 15}
+            ],
+            "state_type": "date-range",
+        }
+
+    def test_most_recent_cursor_value_on_sequential_state_when_close_then_cursor_value_is_most_recent_cursor_value(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=True)
+        partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        cursor.observe(_record(7, partition=partition))
+        cursor.close_partition(partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            _A_CURSOR_FIELD_KEY: 7
+        }
+
+    def test_non_continuous_slices_on_sequential_state_when_close_then_cursor_value_is_most_recent_cursor_value_of_first_slice(self) -> None:
+        cursor = self._cursor_with_slice_boundary_fields(is_sequential_state=True)
+        first_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 10})
+        third_partition = _partition({_LOWER_SLICE_BOUNDARY_FIELD: 20, _UPPER_SLICE_BOUNDARY_FIELD: 30})  # second partition has failed
+        cursor.observe(_record(7, partition=first_partition))
+        cursor.close_partition(first_partition)
+
+        cursor.close_partition(third_partition)
+
+        assert self._state_manager.update_state_for_stream.call_args_list[-1].args[2] == {
+            _A_CURSOR_FIELD_KEY: 7
+        }
+
 
 @freezegun.freeze_time(time_to_freeze=datetime(2024, 4, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
 @pytest.mark.parametrize(
@@ -452,7 +591,7 @@ class ConcurrentCursorStateTest(TestCase):
                 (datetime(2024, 1, 21, 0, 0, tzinfo=timezone.utc), datetime(2024, 1, 30, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 1, 31, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 9, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 10, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 19, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc))
+                (datetime(2024, 2, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc))
             ],
             id="test_datetime_based_cursor_all_fields",
         ),
@@ -474,7 +613,7 @@ class ConcurrentCursorStateTest(TestCase):
             [
                 (datetime(2024, 2, 5, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 14, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 15, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 24, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 25, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc))
+                (datetime(2024, 2, 25, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc))
             ],
             id="test_datetime_based_cursor_with_state",
         ),
@@ -497,7 +636,7 @@ class ConcurrentCursorStateTest(TestCase):
                 (datetime(2024, 1, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 8, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 9, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 28, 23, 59, 59, tzinfo=timezone.utc)),
                 (datetime(2024, 2, 29, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 19, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 31, 23, 59, 59, tzinfo=timezone.utc)),
+                (datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc), datetime(2024, 4, 1, 0, 0, 0, tzinfo=timezone.utc)),
             ],
             id="test_datetime_based_cursor_with_state_and_end_date",
         ),
@@ -510,7 +649,7 @@ class ConcurrentCursorStateTest(TestCase):
             {},
             [
                 (datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 1, 31, 23, 59, 59, tzinfo=timezone.utc)),
-                (datetime(2024, 2, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 2, 29, 23, 59, 59, tzinfo=timezone.utc)),
+                (datetime(2024, 2, 1, 0, 0, 0, tzinfo=timezone.utc), datetime(2024, 3, 1, 0, 0, 0, tzinfo=timezone.utc)),
             ],
             id="test_datetime_based_cursor_using_large_step_duration",
         ),
@@ -717,7 +856,7 @@ def test_close_partition_concurrent_cursor_from_datetime_based_cursor():
         "gods",
         _A_STREAM_NAMESPACE,
         {
-            "slices": [{"end": "2024-08-23T00:00:00.000Z", "start": "2024-08-01T00:00:00.000Z"}],
+            "slices": [{"end": "2024-08-23T00:00:00.000Z", "start": "2024-08-01T00:00:00.000Z", "most_recent_cursor_value": "2024-08-23T00:00:00.000Z"}],
             "state_type": "date-range"
         },
     )
@@ -795,9 +934,8 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
         _A_STREAM_NAMESPACE,
         {
             "slices": [
-                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-16T00:00:00.000Z"},
-                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-30T00:00:00.000Z"}
-
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-16T00:00:00.000Z", "most_recent_cursor_value": "2024-07-05T00:00:00.000Z"},
+                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-30T00:00:00.000Z", "most_recent_cursor_value": "2024-08-20T00:00:00.000Z"},
             ],
             "state_type": "date-range"
         },
@@ -887,8 +1025,8 @@ def test_close_partition_with_slice_range_granularity_concurrent_cursor_from_dat
         _A_STREAM_NAMESPACE,
         {
             "slices": [
-                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z"},
-                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-29T00:00:00.000Z"}
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z", "most_recent_cursor_value": "2024-07-25T00:00:00.000Z"},
+                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-29T00:00:00.000Z", "most_recent_cursor_value": "2024-08-20T00:00:00.000Z"}
 
             ],
             "state_type": "date-range"

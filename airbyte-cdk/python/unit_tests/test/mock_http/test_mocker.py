@@ -240,3 +240,20 @@ class HttpMockerTest(TestCase):
 
         with pytest.raises(ValueError):
             decorated_function()
+
+    def test_given_unknown_request_when_assert_number_of_calls_then_raise(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            http_mocker.get(HttpRequest(_A_URL), _A_RESPONSE)
+            http_mocker.assert_number_of_calls(HttpRequest(_ANOTHER_URL), 1)
+
+        with pytest.raises(ValueError):
+            decorated_function()
+
+    def test_given_request_already_mocked_when_decorate_then_raise(self):
+        with HttpMocker() as http_mocker:
+            a_request = HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS)
+            http_mocker.get(a_request, _A_RESPONSE)
+
+            with pytest.raises(ValueError):
+                http_mocker.get(a_request, _A_RESPONSE)
