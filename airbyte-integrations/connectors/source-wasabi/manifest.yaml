@@ -1,4 +1,4 @@
-version: 5.7.5
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -9,13 +9,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Standalone Utilizations
+    - standalone_utilizations
 
 definitions:
   streams:
-    Standalone Utilizations:
+    standalone_utilizations:
       type: DeclarativeStream
-      name: Standalone Utilizations
+      name: standalone_utilizations
       retriever:
         type: SimpleRetriever
         requester:
@@ -70,10 +70,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Standalone Utilizations"
-    Standalone Bucket Utilizations:
+          $ref: "#/schemas/standalone_utilizations"
+    standalone_bucket_utilizations:
       type: DeclarativeStream
-      name: Standalone Bucket Utilizations
+      name: standalone_bucket_utilizations
       retriever:
         type: SimpleRetriever
         requester:
@@ -126,7 +126,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Standalone Bucket Utilizations"
+          $ref: "#/schemas/standalone_bucket_utilizations"
   base_requester:
     type: HttpRequester
     url_base: https://stats.wasabisys.com
@@ -139,8 +139,8 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: "#/definitions/streams/Standalone Utilizations"
-  - $ref: "#/definitions/streams/Standalone Bucket Utilizations"
+  - $ref: "#/definitions/streams/standalone_utilizations"
+  - $ref: "#/definitions/streams/standalone_bucket_utilizations"
 
 spec:
   type: Spec
@@ -167,17 +167,17 @@ spec:
 
 metadata:
   autoImportSchema:
-    Standalone Utilizations: true
-    Standalone Bucket Utilizations: true
+    standalone_utilizations: true
+    standalone_bucket_utilizations: true
   testedStreams:
-    Standalone Utilizations:
+    standalone_utilizations:
       streamHash: a6e7efce5a1718c456382498fdd08ad27b845f78
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Standalone Bucket Utilizations:
+    standalone_bucket_utilizations:
       hasRecords: true
       streamHash: 35507d86920146614af160f9b6ebc95e40974c1a
       hasResponse: true
@@ -187,7 +187,7 @@ metadata:
   assist: {}
 
 schemas:
-  Standalone Utilizations:
+  standalone_utilizations:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -374,7 +374,7 @@ schemas:
           - "null"
     required:
       - StartTime
-  Standalone Bucket Utilizations:
+  standalone_bucket_utilizations:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
