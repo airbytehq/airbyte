@@ -12,7 +12,7 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 from urllib.parse import urlparse
 
-import duckdb
+from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
@@ -125,13 +125,7 @@ class DestinationMotherDuck(Destination):
         path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
         schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
-
-        # Get and register auth token if applicable
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
-        duckdb_config = {}
-        if motherduck_api_key:
-            duckdb_config["motherduck_token"] = motherduck_api_key
-            duckdb_config["custom_user_agent"] = "airbyte"
 
         for configured_stream in configured_catalog.streams:
             stream_name = configured_stream.stream.name
@@ -140,6 +134,7 @@ class DestinationMotherDuck(Destination):
                 configured_catalog=configured_catalog,
                 schema_name=schema_name,
                 db_path=path,
+                motherduck_token=motherduck_api_key,
             )
             processor._ensure_schema_exists()
 
@@ -171,7 +166,7 @@ class DestinationMotherDuck(Destination):
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
-                self._flush_buffer(buffer, configured_catalog, path, schema_name)
+                self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
                 buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
@@ -196,7 +191,7 @@ class DestinationMotherDuck(Destination):
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
-        self._flush_buffer(buffer, configured_catalog, path, schema_name)
+        self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
 
     def _flush_buffer(
         self,
@@ -204,6 +199,7 @@ class DestinationMotherDuck(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         db_path: str,
         schema_name: str,
+        motherduck_api_key: str,
     ) -> None:
         """
         Flush the buffer to the destination
@@ -212,9 +208,7 @@ class DestinationMotherDuck(Destination):
             stream_name = configured_stream.stream.name
             if stream_name in buffer:
                 processor = self._get_sql_processor(
-                    configured_catalog=configured_catalog,
-                    schema_name=schema_name,
-                    db_path=db_path,
+                    configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
                 processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
 
@@ -238,11 +232,8 @@ class DestinationMotherDuck(Destination):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
-            duckdb_config = {}
-            if CONFIG_MOTHERDUCK_API_KEY in config:
-                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
-                duckdb_config["custom_user_agent"] = "airbyte"
-                # Next, we want to specify 'saas_mode' for during check,
+            if self._is_motherduck(path):
+                # We want to specify 'saas_mode' for during check,
                 # to reduce memory usage from unnecessary extensions
                 if "?" in path:
                     # There are already some query params; append to them.
@@ -251,13 +242,20 @@ class DestinationMotherDuck(Destination):
                     # No query params yet; add one.
                     path += "?saas_mode=true"
 
-            con = duckdb.connect(
-                database=path,
-                read_only=False,
-                config=duckdb_config,
+            # Create a dummy catalog to check if the SQL processor works
+            check_stream = ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="check", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.incremental]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=SyncMode.incremental,
             )
-            con.execute("SELECT 1;")
-
+            check_catalog = ConfiguredAirbyteCatalog(streams=[check_stream])
+            processor = self._get_sql_processor(
+                configured_catalog=check_catalog,
+                schema_name="test",
+                db_path=path,
+                motherduck_token=str(config.get(CONFIG_MOTHERDUCK_API_KEY, "")),
+            )
+            processor._execute_sql("SELECT 1;")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
