@@ -32,9 +32,8 @@ from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY
 from faker import Faker
 
 CONFIG_PATH = "integration_tests/config.json"
-SECRETS_CONFIG_PATH = (
-    "secrets/config.json"  # Should contain a valid MotherDuck API token
-)
+# Should contain a valid MotherDuck API token
+SECRETS_CONFIG_PATH = Path("secrets/config.json")
 
 
 def pytest_generate_tests(metafunc):
@@ -42,7 +41,7 @@ def pytest_generate_tests(metafunc):
         return
 
     configs: list[str] = ["local_file_config"]
-    if Path(SECRETS_CONFIG_PATH).is_file():
+    if SECRETS_CONFIG_PATH.is_file():
         configs.append("motherduck_config")
     else:
         print(
