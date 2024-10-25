@@ -31,12 +31,8 @@ from source_amazon_ads.streams import (
     SponsoredProductsReportStream,
 )
 from source_amazon_ads.streams.report_streams.display_report import TACTICS
-from source_amazon_ads.streams.report_streams.report_streams import (
-    RecordType,
-    ReportGenerationFailure,
-    ReportGenerationInProgress,
-    TooManyRequests,
-)
+from source_amazon_ads.streams.report_streams.report_stream_models import RecordType
+from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
 
 from .utils import read_incremental
 
