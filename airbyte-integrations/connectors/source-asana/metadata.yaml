@@ -11,7 +11,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "This release introduces a new credential config option using OAuth. Users will need to reset streams after upgrading. Please see migration guide for more details."
-        upgradeDeadline: "2024-10-30"
+        upgradeDeadline: "2024-11-07"
       1.0.0:
         message: "This release introduces an updated data type of the `name` field in the `events` stream. Users will need to reset this stream after upgrading. Please see migration guide for more details."
         upgradeDeadline: "2024-06-30"
