@@ -245,7 +245,7 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ day_delta(60).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ day_delta(60, format='%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
