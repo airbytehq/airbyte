@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_protocol.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification
 
 
 class DeclarativeSourceAdapter(YamlDeclarativeSource):

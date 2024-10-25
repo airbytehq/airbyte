@@ -7,8 +7,8 @@ from unittest import TestCase
 import pendulum
 import requests_mock
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from source_amazon_ads.streams.report_streams import brands_report, brands_video_report, display_report, products_report
 
 from .ad_requests import (
