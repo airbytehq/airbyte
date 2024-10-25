@@ -25,6 +25,7 @@ definitions:
               action: IGNORE
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
+          max_retries: 10
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: "Retry-After"

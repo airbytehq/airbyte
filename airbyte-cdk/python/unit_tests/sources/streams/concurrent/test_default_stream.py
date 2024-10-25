@@ -166,6 +166,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             default_cursor_field=["date"],
             source_defined_primary_key=None,
             namespace=None,
+            is_resumable=True,
         )
 
         airbyte_stream = stream.as_airbyte_stream()
