@@ -388,7 +388,14 @@ class IncrementalAcceptanceTests(Step):
                 failed_nodes.add(single_test_report["nodeid"])
         return failed_nodes
 
-    async def get_result_log_on_master(self) -> Artifact:
+    def _get_master_metadata(self) -> Dict[str, Any]:
+        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
+        master_metadata = yaml.safe_load(raw_master_metadata.text)
+        if not master_metadata:
+            raise FileNotFoundError(f"Could not fetch metadata file for {self.context.connector.technical_name} on master.")
+        return master_metadata
+
+    async def get_result_log_on_master(self, master_metadata: dict) -> Artifact:
         """Runs acceptance test on the released image of the connector and returns the report log.
         The released image version is fetched from the master metadata file of the connector.
         We're not using the online connector registry here as some connectors might not be released to OSS nor Airbyte Cloud.
@@ -397,8 +404,6 @@ class IncrementalAcceptanceTests(Step):
         Returns:
             Artifact: The report log of the acceptance tests run on the released image.
         """
-        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
-        master_metadata = yaml.safe_load(raw_master_metadata.text)
         master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
         released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
         released_container = self.dagger_client.container().from_(released_image)
@@ -410,6 +415,7 @@ class IncrementalAcceptanceTests(Step):
         """Compare the acceptance tests report log of the current image with the one of the released image.
         Fails if there are new failing tests in the current acceptance tests report log.
         """
+
         if current_acceptance_tests_result.consider_in_overall_status:
             return StepResult(
                 step=self, status=StepStatus.SKIPPED, stdout="Skipping because the current acceptance tests are hard failures."
@@ -421,8 +427,19 @@ class IncrementalAcceptanceTests(Step):
             return StepResult(
                 step=self, status=StepStatus.SKIPPED, stdout="No failing acceptance tests were detected on the current version."
             )
+        try:
+            master_metadata = self._get_master_metadata()
+        except FileNotFoundError as exc:
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout="The connector does not have a metadata file on master. Skipping incremental acceptance tests.",
+                exc_info=exc,
+            )
 
-        master_failings = await self.get_failed_pytest_node_ids(await self.get_result_log_on_master())
+        master_result_logs = await self.get_result_log_on_master(master_metadata)
+
+        master_failings = await self.get_failed_pytest_node_ids(master_result_logs)
         new_failing_nodes = current_failing_nodes - master_failings
         if not new_failing_nodes:
             return StepResult(

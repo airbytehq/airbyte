@@ -18,9 +18,13 @@ data object NumberType : AirbyteType
 
 data object DateType : AirbyteType
 
-data class TimestampType(val hasTimezone: Boolean) : AirbyteType
+data object TimestampTypeWithTimezone : AirbyteType
 
-data class TimeType(val hasTimezone: Boolean) : AirbyteType
+data object TimestampTypeWithoutTimezone : AirbyteType
+
+data object TimeTypeWithTimezone : AirbyteType
+
+data object TimeTypeWithoutTimezone : AirbyteType
 
 data class ArrayType(val items: FieldType) : AirbyteType
 

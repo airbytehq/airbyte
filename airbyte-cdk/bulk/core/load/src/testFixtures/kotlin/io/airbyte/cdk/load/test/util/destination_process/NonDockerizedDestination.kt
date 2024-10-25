@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.test.util.destination_process
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -16,18 +15,27 @@ import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
+import java.util.concurrent.Executors
 import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
     private val destinationComplete = CompletableDeferred<Unit>()
+    // The destination has a runBlocking inside WriteOperation.
+    // This means that normal coroutine cancellation doesn't work.
+    // So we start our own thread pool, which we can forcibly kill if needed.
+    private val executor = Executors.newSingleThreadExecutor()
+    private val coroutineDispatcher = executor.asCoroutineDispatcher()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -42,7 +50,7 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
@@ -50,12 +58,20 @@ class NonDockerizedDestination(
     }
 
     override suspend fun run() {
-        try {
-            destination.run()
-        } catch (e: ConnectorUncleanExitException) {
-            throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
-        }
-        destinationComplete.complete(Unit)
+        withContext(coroutineDispatcher) {
+                launch {
+                    try {
+                        destination.run()
+                    } catch (e: ConnectorUncleanExitException) {
+                        throw DestinationUncleanExitException.of(
+                            e.exitCode,
+                            destination.results.traces()
+                        )
+                    }
+                    destinationComplete.complete(Unit)
+                }
+            }
+            .invokeOnCompletion { executor.shutdownNow() }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -68,6 +84,13 @@ class NonDockerizedDestination(
         destinationStdinPipe.close()
         destinationComplete.join()
     }
+
+    override fun kill() {
+        // In addition to preventing the executor from accepting new tasks,
+        // this also sends a Thread.interrupt() to running tasks.
+        // Coroutines interpret this as a cancellation.
+        executor.shutdownNow()
+    }
 }
 
 // Notably, not actually a Micronaut factory. We want to inject the actual
@@ -78,11 +101,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, *featureFlags)
+        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
     }
 }
