@@ -1,0 +1,32 @@
+# Mailosaur
+Mailosaur is a communication-testing platform .
+With this connector we can easily fetch data from messages , servers and transactions streams!
+Docs : https://mailosaur.com/docs
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `username` | `string` | Username.  |  |
+| `password` | `string` | Password.  |  |
+| `serverid` | `string` | ServerID.  |  |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| Messages | id | No pagination | ✅ |  ❌  |
+| Message |  | No pagination | ✅ |  ❌  |
+| Servers | id | No pagination | ✅ |  ❌  |
+| Server |  | No pagination | ✅ |  ❌  |
+| Transactions |  | No pagination | ✅ |  ❌  |
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.0.1 | 2024-10-25 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+
+</details>

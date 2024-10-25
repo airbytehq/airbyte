@@ -1,0 +1,587 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Mailosaur is a communication-testing platform .
+
+  With this connector we can easily fetch data from messages , servers and
+  transactions streams!
+
+  Docs : https://mailosaur.com/docs
+
+check:
+  type: CheckStream
+  stream_names:
+    - Messages
+
+definitions:
+  streams:
+    Messages:
+      type: DeclarativeStream
+      name: Messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages
+          http_method: GET
+          request_parameters:
+            server: "{{ config['serverid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Messages"
+    Message:
+      type: DeclarativeStream
+      name: Message
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages/{{stream_partition.id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/Messages"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Message"
+    Servers:
+      type: DeclarativeStream
+      name: Servers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: servers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Servers"
+    Server:
+      type: DeclarativeStream
+      name: Server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: servers/{{stream_partition.id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/Servers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Server"
+    Transactions:
+      type: DeclarativeStream
+      name: Transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: usage/transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Transactions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://mailosaur.com/api/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"username\"] }}"
+      password: "{{ config[\"password\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Messages"
+  - $ref: "#/definitions/streams/Message"
+  - $ref: "#/definitions/streams/Servers"
+  - $ref: "#/definitions/streams/Server"
+  - $ref: "#/definitions/streams/Transactions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        title: Username
+        order: 0
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 1
+      serverid:
+        type: string
+        title: ServerID
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Messages: true
+    Message: true
+    Servers: true
+    Server: true
+    Transactions: true
+  testedStreams:
+    Messages:
+      streamHash: b33d85d0fc8ebd42c5dbfebbeb3fb88625d50c8b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Message:
+      streamHash: 6f4b160a1eb3b6492489f88ebfd9e834ba804110
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Servers:
+      streamHash: 5e1df177ebb73b7190176690dc90be850205dbcc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Server:
+      streamHash: 273ad3468a86ad7c1b33fb85f3933a3d63a12d63
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Transactions:
+      streamHash: 32eb2c73aecc49e664d29025003048020cd22ec9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - number
+          - "null"
+      bcc:
+        type:
+          - array
+          - "null"
+      cc:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      from:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      read:
+        type:
+          - boolean
+          - "null"
+      received:
+        type:
+          - string
+          - "null"
+      server:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  Message:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          ehlo:
+            type:
+              - string
+              - "null"
+          headers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                field:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          mailFrom:
+            type:
+              - string
+              - "null"
+          rcptTo:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      bcc:
+        type:
+          - array
+          - "null"
+      cc:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      from:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      html:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          codes:
+            type:
+              - array
+              - "null"
+          images:
+            type:
+              - array
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      received:
+        type:
+          - string
+          - "null"
+      server:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          codes:
+            type:
+              - array
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+      to:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+  Servers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customId:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      messages:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      restricted:
+        type:
+          - boolean
+          - "null"
+      retention:
+        type:
+          - number
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  Server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customId:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type:
+          - string
+          - "null"
+      messages:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+  Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - number
+          - "null"
+      emailSent:
+        type:
+          - number
+          - "null"
+      previews:
+        type:
+          - number
+          - "null"
+      screenshots:
+        type:
+          - number
+          - "null"
+      sms:
+        type:
+          - number
+          - "null"
+      smsSent:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
