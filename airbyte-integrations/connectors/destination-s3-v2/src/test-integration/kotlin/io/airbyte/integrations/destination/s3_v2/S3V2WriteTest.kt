@@ -18,6 +18,7 @@ abstract class S3V2WriteTest(path: String) :
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
+        supportsDedup = false,
     ) {
     @Test
     override fun testBasicWrite() {
