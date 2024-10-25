@@ -5,13 +5,11 @@ type: DeclarativeSource
 description: >-
   This is the setup for the Kisi source connector that ingests data from the
   Kisi API.
-
-
+  
   Kisi's sturdy hardware and user-friendly software work in perfect harmony to
   enhance the security of your spaces. Remotely manage your locations,
   streamline operations, and stay compliant while enjoying mobile unlocks.
   https://www.getkisi.com/
-
 
   In order to use this source, you must first create an account with Kisi.
 
@@ -20,26 +18,6 @@ description: >-
   Next, select the API tab and click on Add API key. Enter your name, your Kisi
   password, and your verification code and click Add. Copy the API key shown on
   the screen.
-
-
-  You can learn more about the API key here https://api.kisi.io/docs#/
-
-
-
-  Kisi's sturdy hardware and user-friendly software work in perfect harmony to
-  enhance the security of your spaces. Remotely manage your locations,
-  streamline operations, and stay compliant while enjoying mobile unlocks.
-  https://www.getkisi.com/
-
-
-  In order to use this source, you must first create an account with Kisi.
-
-  On the top right corner, click on your name and click on My Account.
-
-  Next, select the API tab and click on Add API key. Enter your name, your Kisi
-  password, and your verification code and click Add. Copy the API key shown on
-  the screen.
-
 
   You can learn more about the API key here https://api.kisi.io/docs#/
 
