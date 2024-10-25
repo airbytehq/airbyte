@@ -14,15 +14,29 @@ public class S3GlueWriteConfig extends WriteConfig {
 
   private final String location;
 
+  /**
+   * val namespace: String?,
+   *     val streamName: String,
+   *     val outputBucketPath: String,
+   *     val pathFormat: String,
+   *     val fullOutputPath: String,
+   *     val syncMode: DestinationSyncMode,
+   *     val generationId: Long,
+   *     val minimumGenerationId: Long,
+   *     val storedFiles: MutableList<String> = arrayListOf(),
+   *     val objectsFromOldGeneration: MutableList<String> = arrayListOf()
+   */
   public S3GlueWriteConfig(String namespace,
                            String streamName,
                            String outputBucketPath,
                            String pathFormat,
                            String fullOutputPath,
+                           long generationId,
+                           long minimumGenerationId,
                            DestinationSyncMode syncMode,
                            JsonNode jsonSchema,
                            String location) {
-    super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode);
+    super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode, generationId, minimumGenerationId);
     this.jsonSchema = jsonSchema;
     this.location = location;
   }
