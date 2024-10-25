@@ -1,8 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from typing import Literal, Optional
-from pydantic.v1 import Field
+
 from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
+from pydantic.v1 import Field
 
 
 class S3SyncConfig(BaseSyncConfig):

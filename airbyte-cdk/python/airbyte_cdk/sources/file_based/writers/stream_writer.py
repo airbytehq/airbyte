@@ -4,9 +4,10 @@
 
 import logging
 from typing import Any, Mapping, Union
+
+from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
 from airbyte_cdk.sources.file_based.writers.file_based_stream_writer import AbstractFileBasedStreamWriter
 from airbyte_cdk.sources.file_based.writers.local_file_client import LocalFileTransferClient
-from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
 
 
 class FileTransferStreamWriter(AbstractFileBasedStreamWriter):

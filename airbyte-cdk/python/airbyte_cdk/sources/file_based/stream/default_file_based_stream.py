@@ -22,15 +22,15 @@ from airbyte_cdk.sources.file_based.exceptions import (
 )
 from airbyte_cdk.sources.file_based.file_types import BlobTransfer
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema, file_transfer_schema
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, file_transfer_schema, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
+from airbyte_cdk.sources.file_based.writers.stream_writer import FileTransferStreamWriter
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.sources.file_based.writers.stream_writer import FileTransferStreamWriter
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
@@ -48,7 +48,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def __init__(self, **kwargs: Any):
         if self.file_transfer_flag in kwargs:
-            self.use_file_transfer  = kwargs.pop(self.file_transfer_flag, False)
+            self.use_file_transfer = kwargs.pop(self.file_transfer_flag, False)
         super().__init__(**kwargs)
 
     @property
@@ -127,9 +127,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     # todo: complete here the code to not rely on local parser
                     writer = FileTransferStreamWriter()
                     blob_transfer = BlobTransfer()
-                    for record in blob_transfer.write_streams(
-                            self.config, file, self.stream_reader, self.logger, writer
-                    ):
+                    for record in blob_transfer.write_streams(self.config, file, self.stream_reader, self.logger, writer):
                         line_no += 1
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1

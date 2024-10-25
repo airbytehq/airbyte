@@ -128,7 +128,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
                 parsed_config = self._get_parsed_config(config)
-                availability_method = stream.availability_strategy.check_availability if parsed_config.use_file_transfer else stream.availability_strategy.check_availability_and_parsability
+                availability_method = (
+                    stream.availability_strategy.check_availability
+                    if parsed_config.use_file_transfer
+                    else stream.availability_strategy.check_availability_and_parsability
+                )
                 (
                     stream_is_available,
                     reason,
@@ -219,7 +223,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         CursorField(DefaultFileBasedStream.ab_last_mod_col),
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor, parsed_config.use_file_transfer), self, self.logger, stream_state, cursor
+                        self._make_default_stream(stream_config, cursor, parsed_config.use_file_transfer),
+                        self,
+                        self.logger,
+                        stream_state,
+                        cursor,
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
@@ -244,7 +252,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
-            use_file_transfer=use_file_transfer
+            use_file_transfer=use_file_transfer,
         )
 
     def _get_stream_from_catalog(self, stream_config: FileBasedStreamConfig) -> Optional[AirbyteStream]:

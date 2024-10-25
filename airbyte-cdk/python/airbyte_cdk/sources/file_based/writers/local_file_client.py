@@ -2,15 +2,16 @@
 
 import logging
 import os
-import psutil
 import time
-from typing import Optional, Union, Any, Mapping
+from typing import Any, Mapping, Optional, Union
 
+import psutil
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.clients_config.local_sync_config import LocalSyncConfig
 
 AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
 DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
+
 
 class LocalFileTransferClient:
     def __init__(self, config: Optional[Union[LocalSyncConfig, Mapping[str, Any]]] = None):
@@ -49,7 +50,7 @@ class LocalFileTransferClient:
         absolute_file_path = os.path.abspath(local_file_path)
 
         # Get available disk space
-        disk_usage = psutil.disk_usage('/')
+        disk_usage = psutil.disk_usage("/")
         available_disk_space = disk_usage.free
 
         # Get available memory
@@ -64,7 +65,6 @@ class LocalFileTransferClient:
             f"available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB),"
             f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
         )
-
 
         with open(local_file_path, "wb") as f:
             # Measure the time for reading

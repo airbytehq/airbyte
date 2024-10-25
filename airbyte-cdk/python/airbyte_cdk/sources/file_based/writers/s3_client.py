@@ -3,9 +3,8 @@
 import logging
 
 import boto3
-from botocore.session import Session
-
 from airbyte_cdk.sources.file_based.config.clients_config import S3SyncConfig
+from botocore.session import Session
 
 MIN_CHUNK_SIZE = 5000000
 

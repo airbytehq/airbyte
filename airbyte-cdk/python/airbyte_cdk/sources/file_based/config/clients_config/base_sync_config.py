@@ -1,7 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Literal
 
 from airbyte_cdk import OneOfOptionConfig
 from pydantic.v1 import BaseModel, Field
+
 
 class BaseSyncConfig(BaseModel):
     class Config(OneOfOptionConfig):

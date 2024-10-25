@@ -5,14 +5,13 @@ import logging
 from typing import Any, Dict, Generator, Iterable, Mapping, Optional
 from uuid import uuid4
 
-
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.writers.file_based_stream_writer import AbstractFileBasedStreamWriter
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
+from airbyte_cdk.sources.file_based.writers.file_based_stream_writer import AbstractFileBasedStreamWriter
 
 
 class _FileReader:
@@ -32,6 +31,7 @@ class _FileReader:
 
         except Exception as ex:
             logger.error("An error has occurred while reading file: %s", str(ex))
+
 
 class BlobTransfer(FileTypeParser):
     def __init__(self, file_reader: Optional[_FileReader] = None):

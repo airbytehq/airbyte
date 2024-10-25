@@ -2,8 +2,9 @@
 
 
 from typing import Literal
-from pydantic.v1 import Field
+
 from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
+from pydantic.v1 import Field
 
 
 class LocalSyncConfig(BaseSyncConfig):

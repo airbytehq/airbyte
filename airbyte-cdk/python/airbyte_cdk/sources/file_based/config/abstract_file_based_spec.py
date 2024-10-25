@@ -7,7 +7,6 @@ from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
 import dpath
-
 from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
@@ -36,9 +35,7 @@ class AbstractFileBasedSpec(BaseModel):
         order=10,
     )
 
-    sync_config: Optional[BaseSyncConfig] = Field(
-        title="Sync Configuration", description="Sync configuration"
-    )
+    sync_config: Optional[BaseSyncConfig] = Field(title="Sync Configuration", description="Sync configuration")
 
     use_file_transfer: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
 
