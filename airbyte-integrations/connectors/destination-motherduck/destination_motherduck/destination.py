@@ -208,10 +208,7 @@ class DestinationMotherDuck(Destination):
             stream_name = configured_stream.stream.name
             if stream_name in buffer:
                 processor = self._get_sql_processor(
-                    configured_catalog=configured_catalog,
-                    schema_name=schema_name,
-                    db_path=db_path,
-                    motherduck_token=motherduck_api_key
+                    configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
                 processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
 
@@ -247,20 +244,16 @@ class DestinationMotherDuck(Destination):
 
             # Create a dummy catalog to check if the SQL processor works
             check_stream = ConfiguredAirbyteStream(
-                stream=AirbyteStream(
-                    name="check",
-                    json_schema={"type": "object"},
-                    supported_sync_modes=[SyncMode.incremental]
-                ),
+                stream=AirbyteStream(name="check", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.incremental]),
                 sync_mode=SyncMode.incremental,
-                destination_sync_mode=SyncMode.incremental
+                destination_sync_mode=SyncMode.incremental,
             )
             check_catalog = ConfiguredAirbyteCatalog(streams=[check_stream])
             processor = self._get_sql_processor(
                 configured_catalog=check_catalog,
                 schema_name="test",
                 db_path=path,
-                motherduck_token=str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+                motherduck_token=str(config.get(CONFIG_MOTHERDUCK_API_KEY, "")),
             )
             processor._execute_sql("SELECT 1;")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
