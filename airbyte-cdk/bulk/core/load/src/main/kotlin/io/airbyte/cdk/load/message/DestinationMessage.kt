@@ -53,7 +53,7 @@ data class DestinationRecord(
         name: String,
         data: String,
         emittedAtMs: Long,
-        changes: List<Change>? = null,
+        changes: MutableList<Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
         data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
@@ -62,7 +62,7 @@ data class DestinationRecord(
         serialized = "",
     )
 
-    data class Meta(val changes: List<Change>?) {
+    data class Meta(val changes: MutableList<Change> = mutableListOf()) {
         companion object {
             const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
             const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
@@ -72,11 +72,8 @@ data class DestinationRecord(
         }
 
         fun asProtocolObject(): AirbyteRecordMessageMeta =
-            AirbyteRecordMessageMeta().also {
-                if (changes != null) {
-                    it.changes = changes.map { change -> change.asProtocolObject() }
-                }
-            }
+            AirbyteRecordMessageMeta()
+                .withChanges(changes.map { change -> change.asProtocolObject() })
     }
 
     data class Change(
@@ -277,17 +274,20 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                     data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
                     emittedAtMs = message.record.emittedAt,
                     meta =
-                        message.record.meta?.let { meta ->
-                            DestinationRecord.Meta(
-                                meta.changes?.map {
-                                    DestinationRecord.Change(
-                                        field = it.field,
-                                        change = it.change,
-                                        reason = it.reason,
-                                    )
-                                }
-                            )
-                        },
+                        DestinationRecord.Meta(
+                            changes =
+                                message.record.meta
+                                    ?.changes
+                                    ?.map {
+                                        DestinationRecord.Change(
+                                            field = it.field,
+                                            change = it.change,
+                                            reason = it.reason,
+                                        )
+                                    }
+                                    ?.toMutableList()
+                                    ?: mutableListOf()
+                        ),
                     serialized = serialized
                 )
             }
