@@ -1,9 +1,9 @@
 # Chargedesk
 This is the setup for the Chargedesk source that ingests data from the chargedesk API.
 
-ChargeDesk integrates directly with many of the most popular payment gateways including Stripe, WooCommerce, PayPal, Braintree Payments, Recurly, Authorize.Net, Zuora &amp; Shopify https://chargedesk.com/
+[ChargeDesk](https://chargedesk.com/) integrates directly with many of the most popular payment gateways including Stripe, WooCommerce, PayPal, Braintree Payments, Recurly, Authorize.Net, Zuora and Shopify. 
 
-In order to use this source, you must first create an account. Once verified and logged in, head over to Setup -&gt; API &amp; Webhooks -&gt; Issue New Key to generate your API key.
+In order to use this source, you must first create an account. Once verified and logged in, head over to Setup -> API / Webhooks -> Issue New Key to generate your API key.
 
 You can find more about the API here https://chargedesk.com/api-docs
 
