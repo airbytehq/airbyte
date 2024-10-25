@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
   connectorSubtype: api
   connectorType: source
-  definitionId: dcdd0703-4daa-4da2-ae6b-33da06335433
+  definitionId: 19abf02e-820c-4977-b40f-e50f601914b2
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-mailosaur
   githubIssueLabel: source-mailosaur

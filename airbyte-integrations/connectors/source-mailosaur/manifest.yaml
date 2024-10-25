@@ -116,6 +116,8 @@ definitions:
     Transactions:
       type: DeclarativeStream
       name: Transactions
+      primary_key:
+        - timestamp
       retriever:
         type: SimpleRetriever
         requester:
@@ -137,8 +139,8 @@ definitions:
     url_base: https://mailosaur.com/api/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
       password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/Messages"
@@ -157,18 +159,14 @@ spec:
     properties:
       username:
         type: string
-        title: Username
         order: 0
+        title: Username
       password:
         type: string
+        order: 1
         title: Password
         always_show: true
         airbyte_secret: true
-        order: 1
-      serverid:
-        type: string
-        title: ServerID
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -180,35 +178,35 @@ metadata:
     Transactions: true
   testedStreams:
     Messages:
+      hasRecords: true
       streamHash: b33d85d0fc8ebd42c5dbfebbeb3fb88625d50c8b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Message:
+      hasRecords: true
       streamHash: 6f4b160a1eb3b6492489f88ebfd9e834ba804110
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Servers:
+      hasRecords: true
       streamHash: 5e1df177ebb73b7190176690dc90be850205dbcc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Server:
+      hasRecords: true
       streamHash: 273ad3468a86ad7c1b33fb85f3933a3d63a12d63
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Transactions:
-      streamHash: 32eb2c73aecc49e664d29025003048020cd22ec9
+      streamHash: 3edcbb4e0514bf8e47343fb415044ccb728932fb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -582,6 +580,6 @@ schemas:
           - number
           - "null"
       timestamp:
-        type:
-          - string
-          - "null"
+        type: string
+    required:
+      - timestamp

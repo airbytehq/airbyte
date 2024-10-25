@@ -9,7 +9,6 @@ Docs : https://mailosaur.com/docs
 |-------|------|-------------|---------------|
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
-| `serverid` | `string` | ServerID.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -18,7 +17,7 @@ Docs : https://mailosaur.com/docs
 | Message |  | No pagination | ✅ |  ❌  |
 | Servers | id | No pagination | ✅ |  ❌  |
 | Server |  | No pagination | ✅ |  ❌  |
-| Transactions |  | No pagination | ✅ |  ❌  |
+| Transactions | timestamp | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
