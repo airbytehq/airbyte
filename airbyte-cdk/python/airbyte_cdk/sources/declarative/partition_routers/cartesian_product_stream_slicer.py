@@ -3,12 +3,33 @@
 #
 
 import itertools
+import logging
 from collections import ChainMap
+from collections.abc import Callable
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.types import StreamSlice, StreamState
+
+
+def check_for_substream_in_slicers(slicers: Iterable[PartitionRouter], log_warning: Callable[[str], None]) -> None:
+    """
+    Recursively checks for the presence of SubstreamPartitionRouter within slicers.
+    Logs a warning if a SubstreamPartitionRouter is found within a CartesianProductStreamSlicer.
+
+    Args:
+        slicers (Iterable[PartitionRouter]): The list of slicers to check.
+        log_warning (Callable): Logging function to record warnings.
+    """
+    for slicer in slicers:
+        if isinstance(slicer, SubstreamPartitionRouter):
+            log_warning("Parent state handling is not supported for CartesianProductStreamSlicer.")
+            return
+        elif isinstance(slicer, CartesianProductStreamSlicer):
+            # Recursively check sub-slicers within CartesianProductStreamSlicer
+            check_for_substream_in_slicers(slicer.stream_slicers, log_warning)
 
 
 @dataclass
@@ -36,7 +57,7 @@ class CartesianProductStreamSlicer(PartitionRouter):
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._initial_parent_state: Mapping[str, Any] = {}
+        check_for_substream_in_slicers(self.stream_slicers, self.logger.warning)
 
     def get_request_params(
         self,
@@ -118,60 +139,16 @@ class CartesianProductStreamSlicer(PartitionRouter):
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
-        Set the state of the parent streams.
-
-        This method tries to set the parent state for every stream slicer. If a stream slicer does not have parent streams,
-        this will be skipped due to the default StreamSlicer implementation.
-
-        Args:
-            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
-            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
-
-        Example of state format:
-        {
-            "parent_state": {
-                "parent_stream_name_1": {
-                    "last_updated": "2023-05-27T00:00:00Z"
-                },
-                "parent_stream_name_2": {
-                    "last_updated": "2023-05-27T00:00:00Z"
-                }
-            }
-        }
+        Parent stream states are not supported for cartesian product stream slicer
         """
-        if "parent_state" in stream_state:
-            self._initial_parent_state = stream_state["parent_state"]
+        pass
 
-        for stream_slicer in self.stream_slicers:
-            stream_slicer.set_initial_state(stream_state)
-
-    def get_stream_state(self, last: bool = False) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
-        Get the state of the parent streams.
-
-        This method returns the combined parent states from all stream slicers. It currently retrieves the final state only for the last partition processed. If a stream slicer does not have parent streams, this will be skipped due to the default StreamSlicer implementation.
-
-        TODO: Can be improved by tracking the state of every stream slicer and updating the state of the last stream slicer when all the partitions for other slicers have been produced.
-
-        Returns:
-            Optional[Mapping[str, StreamState]]: The current state of the parent streams in a dictionary format.
-                 The returned format will be:
-                 {
-                     "parent_stream_name1": {
-                         "last_updated": "2023-05-27T00:00:00Z"
-                     },
-                     "parent_stream_name2": {
-                         "last_updated": "2023-05-27T00:00:00Z"
-                     }
-                 }
+        Parent stream states are not supported for cartesian product stream slicer
         """
-        if not last:
-            return self._initial_parent_state
+        pass
 
-        combined_state: dict[str, StreamState] = {}
-        for s in self.stream_slicers:
-            # Getting the initial state of the stream slicer
-            parent_state = s.get_stream_state(last=last)
-            if parent_state:
-                combined_state.update(parent_state)
-        return combined_state
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger("airbyte.CartesianProductStreamSlicer")

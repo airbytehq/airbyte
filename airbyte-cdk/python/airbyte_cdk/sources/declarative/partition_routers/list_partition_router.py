@@ -94,7 +94,7 @@ class ListPartitionRouter(PartitionRouter):
         """
         pass
 
-    def get_stream_state(self, last: bool = False) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         ListPartitionRouter doesn't have parent streams
         """

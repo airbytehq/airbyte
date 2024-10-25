@@ -15,7 +15,7 @@ T = TypeVar("T")
 
 
 def iterate_with_last_flag_and_state(
-    generator: Iterable[T], get_stream_state_func: Callable[[bool], Optional[Mapping[str, StreamState]]]
+    generator: Iterable[T], get_stream_state_func: Callable[[], Optional[Mapping[str, StreamState]]]
 ) -> Iterable[tuple[T, bool, Any]]:
     """
     Iterates over the given generator, yielding tuples containing the element, a flag
@@ -35,14 +35,14 @@ def iterate_with_last_flag_and_state(
 
     try:
         current = next(iterator)
-        state = get_stream_state_func(False)
+        state = get_stream_state_func()
     except StopIteration:
         return  # Return an empty iterator
 
     for next_item in iterator:
         yield current, False, state
         current = next_item
-        state = get_stream_state_func(False)
+        state = get_stream_state_func()
 
     yield current, True, state
 

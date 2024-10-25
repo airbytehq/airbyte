@@ -82,7 +82,7 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
             # Generate slices for the current cursor and handle the last slice using the flag
             self._parent_state = parent_state
             for slice, is_last_slice, _ in iterate_with_last_flag_and_state(
-                self._get_active_cursor().generate_slices_from_partition(partition=partition), lambda x: None
+                self._get_active_cursor().generate_slices_from_partition(partition=partition), lambda: None
             ):
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice

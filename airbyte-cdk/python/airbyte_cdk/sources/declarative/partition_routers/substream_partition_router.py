@@ -233,7 +233,7 @@ class SubstreamPartitionRouter(PartitionRouter):
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
 
-    def get_stream_state(self, last: bool = True) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 

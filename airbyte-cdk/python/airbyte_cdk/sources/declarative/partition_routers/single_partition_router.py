@@ -56,7 +56,7 @@ class SinglePartitionRouter(PartitionRouter):
         """
         pass
 
-    def get_stream_state(self, last: bool = False) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         SinglePartitionRouter doesn't have parent streams
         """
