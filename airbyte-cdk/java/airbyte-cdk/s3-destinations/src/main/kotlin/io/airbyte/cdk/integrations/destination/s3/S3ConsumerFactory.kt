@@ -307,6 +307,7 @@ class S3ConsumerFactory {
             val dataFile = File(absolutePath)
             val fileSize = dataFile.length()
             val startTimeMs = System.currentTimeMillis()
+            LOGGER.info { "Writing file: ${dataFile.name}" }
             storageOps.loadDataIntoBucket(
                 fullObjectKey = fullObjectKey,
                 fileName = dataFile.name,
@@ -318,6 +319,7 @@ class S3ConsumerFactory {
             LOGGER.info {
                 "wrote ${FileUtils.byteCountToDisplaySize(fileSize)} file in $elapsedTimeSeconds s, for a speed of ${decimalFormat.format(speedMBps)} MBps"
             }
+            LOGGER.info { "Deleting file: ${dataFile.name}" }
             dataFile.delete()
         }
 
