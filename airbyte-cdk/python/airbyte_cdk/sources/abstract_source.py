@@ -56,11 +56,9 @@ class AbstractSource(Source, ABC):
         """
 
     @abstractmethod
-    def streams(self, config: Mapping[str, Any], include_concurrent_streams: bool = False) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
-        :param include_concurrent_streams: Concurrent sources can be made up of streams that can be run concurrently and
-          ones that must be run synchronously. By default, for backwards compatibility this is disabled.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """

@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from typing import Any
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
@@ -33,3 +34,8 @@ class HttpRequestMatcher:
             f"minimum_number_of_expected_match={self._minimum_number_of_expected_match}, "
             f"actual_number_of_matches={self._actual_number_of_matches})"
         )
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, HttpRequestMatcher):
+            return self._request_to_match == other._request_to_match
+        return False
