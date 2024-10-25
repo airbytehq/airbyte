@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -11,6 +12,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.incremental import ChildPartitionResumableFullRefreshCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor, StreamSlice
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer, ListPartitionRouter
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.streams.checkpoint import Cursor
@@ -890,3 +892,79 @@ def test_substream_partition_router_with_extra_keys(parent_stream_configs, expec
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
     slices = [s.extra_fields for s in partition_router.stream_slices()]
     assert slices == expected_slices
+
+
+@pytest.mark.parametrize(
+    "stream_slicers, expect_warning",
+    [
+        # Case with two ListPartitionRouters, no warning expected
+        (
+            [
+                ListPartitionRouter(values=["1", "2", "3"], cursor_field="partition_field", config={}, parameters={}),
+                ListPartitionRouter(values=["1", "2", "3"], cursor_field="partition_field", config={}, parameters={}),
+            ],
+            False,
+        ),
+        # Case with a SubstreamPartitionRouter, warning expected
+        (
+            [
+                ListPartitionRouter(values=["1", "2", "3"], cursor_field="partition_field", config={}, parameters={}),
+                SubstreamPartitionRouter(
+                    parent_stream_configs=[
+                        ParentStreamConfig(
+                            stream=MockStream([{}], [{"a": {"b": 0}}, {"a": {"b": 1}}, {"a": {"c": 2}}, {"a": {"b": 3}}], "first_stream"),
+                            parent_key="a/b",
+                            partition_field="first_stream_id",
+                            parameters={},
+                            config={},
+                        )
+                    ],
+                    parameters={},
+                    config={},
+                ),
+            ],
+            True,
+        ),
+        # Case with nested CartesianProductStreamSlicer containing a SubstreamPartitionRouter, warning expected
+        (
+            [
+                ListPartitionRouter(values=["1", "2", "3"], cursor_field="partition_field", config={}, parameters={}),
+                CartesianProductStreamSlicer(
+                    stream_slicers=[
+                        ListPartitionRouter(values=["1", "2", "3"], cursor_field="partition_field", config={}, parameters={}),
+                        SubstreamPartitionRouter(
+                            parent_stream_configs=[
+                                ParentStreamConfig(
+                                    stream=MockStream(
+                                        [{}], [{"a": {"b": 0}}, {"a": {"b": 1}}, {"a": {"c": 2}}, {"a": {"b": 3}}], "first_stream"
+                                    ),
+                                    parent_key="a/b",
+                                    partition_field="first_stream_id",
+                                    parameters={},
+                                    config={},
+                                )
+                            ],
+                            parameters={},
+                            config={},
+                        ),
+                    ],
+                    parameters={},
+                ),
+            ],
+            True,
+        ),
+    ],
+)
+def test_cartesian_product_stream_slicer_warning_log_message(caplog, stream_slicers, expect_warning):
+    """Test that a warning is logged when SubstreamPartitionRouter is used within a CartesianProductStreamSlicer."""
+    warning_message = "Parent state handling is not supported for CartesianProductStreamSlicer."
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
+
+    logged_warnings = [record.message for record in caplog.records if record.levelname == "WARNING"]
+
+    if expect_warning:
+        assert warning_message in logged_warnings
+    else:
+        assert warning_message not in logged_warnings
