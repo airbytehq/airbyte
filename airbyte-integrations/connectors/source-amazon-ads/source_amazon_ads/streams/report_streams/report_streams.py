@@ -22,7 +22,9 @@ from pendulum import Date
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
-from .report_stream_models import Status, ReportInfo, ReportInitResponse, ReportStatus
+
+from .report_stream_models import ReportInfo, ReportInitResponse, ReportStatus, Status
+
 
 class RetryableException(Exception):
     pass
