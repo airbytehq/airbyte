@@ -167,6 +167,10 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         else:
             return self._abstract_stream.cursor_field
 
+    @property
+    def cursor(self) -> Optional[Cursor]:  # type: ignore[override] # StreamFaced expects to use only airbyte_cdk.sources.streams.concurrent.cursor.Cursor
+        return self._cursor
+
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._abstract_stream.get_json_schema()
@@ -259,9 +263,7 @@ class StreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    record = Record(data_to_return, self._stream.name)
-                    self._cursor.observe(record)
-                    yield Record(data_to_return, self._stream.name)
+                    yield Record(data_to_return, self)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:

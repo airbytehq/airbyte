@@ -1,0 +1,382 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - labels
+    - memberships
+    - transactions
+
+definitions:
+  streams:
+    labels:
+      type: DeclarativeStream
+      name: labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - labels
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: current_page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+    memberships:
+      type: DeclarativeStream
+      name: memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: memberships
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - memberships
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: current_page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/memberships"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactions
+          http_method: GET
+          request_parameters:
+            iban: "{{ config['iban'] }}"
+            settled_at_from: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transactions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: current_page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ 'https://thirdparty.qonto.com/v2/' if config['endpoint'] ==
+      'Production'  else
+      ('https://stoplight.io/mocks/qonto-next/business-api/8419419/v2' if
+      config['endpoint'] == 'Test Mocked API Server' else '') }}
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/memberships"
+  - $ref: "#/definitions/streams/transactions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - endpoint
+      - api_key
+      - iban
+    properties:
+      endpoint:
+        type: string
+        description: Please choose the right endpoint to use in this connection
+        enum:
+          - Production
+          - Test Mocked API Server
+        order: 0
+        title: Endpoint
+      api_key:
+        type: string
+        description: "Fill it in this format: `<organization_slug>:<secret_key>`"
+        order: 1
+        title: API key
+        pattern: ^[\w-]+:[\w]+$
+        examples:
+          - my-organization:3564f
+        airbyte_secret: true
+        pattern_descriptor: organization_slug:secret_key
+      iban:
+        type: string
+        description: International Bank Account Number linked used with your Qonto Account
+        order: 2
+        title: IBAN
+        pattern: ^[A-Z0-9]*$
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        title: Start date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    labels: false
+    memberships: false
+    transactions: false
+  testedStreams:
+    labels:
+      streamHash: 4eef83a17d456d2d928eaaa9bcad3a08bbf32157
+    memberships:
+      streamHash: 257eb175af504b59559adf8af516cb66c192cc10
+    transactions:
+      streamHash: c9f5bf1b729147a2547b98b705f9a5ed625a0a8c
+  assist: {}
+
+schemas:
+  labels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      parent_id:
+        type:
+          - "null"
+          - string
+  memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      birth_country:
+        type:
+          - "null"
+          - string
+      birthdate:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type: string
+      last_name:
+        type:
+          - "null"
+          - string
+      nationality:
+        type:
+          - "null"
+          - string
+      residence_country:
+        type:
+          - "null"
+          - string
+      role:
+        type:
+          - "null"
+          - string
+      ubo:
+        type:
+          - "null"
+          - boolean
+  transactions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+      amount_cents:
+        type:
+          - "null"
+          - integer
+      attachment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      attachment_lost:
+        type:
+          - "null"
+          - boolean
+      attachment_required:
+        type:
+          - "null"
+          - boolean
+      card_last_digits:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      emitted_at:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      initiator_id:
+        type:
+          - "null"
+          - string
+      label:
+        type:
+          - "null"
+          - string
+      label_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      local_amount:
+        type:
+          - "null"
+          - number
+      local_amount_cents:
+        type:
+          - "null"
+          - integer
+      local_currency:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      operation_type:
+        type:
+          - "null"
+          - string
+      reference:
+        type:
+          - "null"
+          - string
+      settled_at:
+        type:
+          - "null"
+          - string
+      settled_balance:
+        type:
+          - "null"
+          - number
+      settled_balance_cents:
+        type:
+          - "null"
+          - integer
+      side:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      subject_type:
+        type:
+          - "null"
+          - string
+      transaction_id:
+        type:
+          - "null"
+          - string
+      transfer:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      updated_at:
+        type:
+          - "null"
+          - string
+      vat_amount:
+        type:
+          - "null"
+          - number
+      vat_amount_cents:
+        type:
+          - "null"
+          - number
+      vat_rate:
+        type:
+          - "null"
+          - number

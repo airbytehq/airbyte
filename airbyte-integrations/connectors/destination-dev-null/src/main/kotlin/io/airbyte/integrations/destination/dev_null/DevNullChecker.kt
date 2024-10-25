@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.check.DestinationChecker
+import io.airbyte.cdk.load.check.DestinationChecker
 import jakarta.inject.Singleton
 
 @Singleton
