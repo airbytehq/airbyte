@@ -5,13 +5,12 @@ package io.airbyte.cdk.integrations.standardtest.destination.argproviders
 
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.stream.Stream
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DataTypeTestArgumentProvider : ArgumentsProvider {
     private lateinit var protocolVersion: ProtocolVersion
@@ -95,6 +94,8 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
     ) : DataArgumentsProvider.CatalogMessageTestConfigPair(catalogFile, messageFile)
 
     companion object {
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(DataTypeTestArgumentProvider::class.java)
 
         const val INTEGER_TYPE_CATALOG: String = "data_type_integer_type_test_catalog.json"
         const val NUMBER_TYPE_CATALOG: String = "data_type_number_type_test_catalog.json"

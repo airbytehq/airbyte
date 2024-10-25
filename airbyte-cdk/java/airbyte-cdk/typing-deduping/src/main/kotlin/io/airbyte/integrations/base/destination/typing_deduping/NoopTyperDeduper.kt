@@ -5,6 +5,9 @@ package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.Lock
 
 /**
  * This class should be used while upgrading a destination from V1 to V2. V2 destinations should use
@@ -16,9 +19,34 @@ class NoopTyperDeduper : TyperDeduper {
 
     override fun prepareFinalTables() {}
 
-    override fun typeAndDedupe(originalNamespace: String, originalName: String) {}
+    override fun typeAndDedupe(originalNamespace: String, originalName: String, mustRun: Boolean) {}
 
-    override fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {}
+    override fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock {
+        // Return a fake lock that does nothing.
+        return object : Lock {
+            override fun lock() {}
+
+            override fun lockInterruptibly() {}
+
+            override fun tryLock(): Boolean {
+                // To mimic NoOp behavior always return true that lock is acquired
+                return true
+            }
+
+            override fun tryLock(time: Long, unit: TimeUnit): Boolean {
+                // To mimic NoOp behavior always return true that lock is acquired
+                return true
+            }
+
+            override fun unlock() {}
+
+            override fun newCondition(): Condition? {
+                return null
+            }
+        }
+    }
+
+    override fun commitFinalTables() {}
 
     override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {}
 

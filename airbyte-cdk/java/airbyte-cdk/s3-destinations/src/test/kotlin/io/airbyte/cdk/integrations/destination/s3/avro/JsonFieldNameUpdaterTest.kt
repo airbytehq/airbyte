@@ -3,10 +3,13 @@
  */
 package io.airbyte.cdk.integrations.destination.s3.avro
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.resources.MoreResources.readResource
 import io.airbyte.commons.util.MoreIterators.toList
 import java.io.IOException
+import java.util.function.Function
+import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -19,7 +22,14 @@ internal class JsonFieldNameUpdaterTest {
             val nameMap = testCase["nameMap"]
             val nameUpdater =
                 JsonFieldNameUpdater(
-                    toList(nameMap.fields()).associate { it.key to it.value.asText() }
+                    toList(nameMap.fields())
+                        .stream()
+                        .collect(
+                            Collectors.toMap(
+                                Function { obj: Map.Entry<String, JsonNode> -> obj.key },
+                                Function { e: Map.Entry<String, JsonNode> -> e.value.asText() }
+                            )
+                        )
                 )
 
             val original = testCase["original"]

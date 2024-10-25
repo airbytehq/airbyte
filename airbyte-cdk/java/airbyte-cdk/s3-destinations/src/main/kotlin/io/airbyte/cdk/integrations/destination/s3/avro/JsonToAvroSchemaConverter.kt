@@ -8,13 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType.*
 import io.airbyte.commons.util.MoreIterators
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.LinkedList
 import java.util.Objects
 import java.util.Optional
 import java.util.function.Predicate
+import java.util.stream.Collectors
+import java.util.stream.Stream
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -36,27 +37,16 @@ class JsonToAvroSchemaConverter {
     }
 
     /** @return Avro schema based on the input `jsonSchema`. */
-    fun getAvroSchema(
-        jsonSchema: JsonNode,
-        streamName: String,
-        namespace: String?,
-        useV2FieldNames: Boolean = false,
-        addStringToLogicalTypes: Boolean = true,
-        appendExtraProps: Boolean = true
-    ): Schema {
-        val schema =
-            getAvroSchema(
-                jsonSchema,
-                streamName,
-                namespace,
-                appendAirbyteFields = true,
-                appendExtraProps = appendExtraProps,
-                addStringToLogicalTypes = addStringToLogicalTypes,
-                isRootNode = true,
-                useV2FieldNames = useV2FieldNames,
-            )
-        logger.info { "$namespace.$streamName: Generated Avro schema: $schema" }
-        return schema
+    fun getAvroSchema(jsonSchema: JsonNode, streamName: String, namespace: String?): Schema {
+        return getAvroSchema(
+            jsonSchema,
+            streamName,
+            namespace,
+            appendAirbyteFields = true,
+            appendExtraProps = true,
+            addStringToLogicalTypes = true,
+            isRootNode = true
+        )
     }
 
     /**
@@ -74,8 +64,7 @@ class JsonToAvroSchemaConverter {
         appendAirbyteFields: Boolean,
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean,
-        isRootNode: Boolean,
-        useV2FieldNames: Boolean = false,
+        isRootNode: Boolean
     ): Schema {
         val stdName: String = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName)
         val stdNamespace: String? =
@@ -105,48 +94,16 @@ class JsonToAvroSchemaConverter {
         val assembler: SchemaBuilder.FieldAssembler<Schema> = builder.fields()
 
         if (appendAirbyteFields) {
-            if (!useV2FieldNames) {
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                    .type(
-                        UUID_SCHEMA,
-                    )
-                    .noDefault()
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-                    .type(TIMESTAMP_MILLIS_SCHEMA)
-                    .noDefault()
-            } else {
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID)
-                    .type(
-                        UUID_SCHEMA,
-                    )
-                    .noDefault()
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
-                    .type(TIMESTAMP_MILLIS_SCHEMA)
-                    .noDefault()
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
-                    .type(Schema.create(Schema.Type.LONG))
-                    .noDefault()
-                assembler
-                    .name(JavaBaseConstants.COLUMN_NAME_AB_META)
-                    .type(
-                        SchemaBuilder.builder()
-                            .record(JavaBaseConstants.COLUMN_NAME_AB_META)
-                            .fields()
-                            .name("changes")
-                            .type(Schema.createArray(AvroConstants.AVRO_CHANGES_SCHEMA))
-                            .noDefault()
-                            .name("sync_id")
-                            .type(Schema.create(Schema.Type.LONG))
-                            .noDefault()
-                            .endRecord()
-                    )
-                    .noDefault()
-            }
+            assembler
+                .name(JavaBaseConstants.COLUMN_NAME_AB_ID)
+                .type(
+                    UUID_SCHEMA,
+                )
+                .noDefault()
+            assembler
+                .name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                .type(TIMESTAMP_MILLIS_SCHEMA)
+                .noDefault()
         }
 
         for (subfieldName: String in subfieldNames) {
@@ -175,20 +132,17 @@ class JsonToAvroSchemaConverter {
                 // This may not be the correct choice.
                 ) null
                 else (if (stdNamespace == null) stdName else ("$stdNamespace.$stdName"))
-            val parsed =
-                parseJsonField(
-                    subfieldName,
-                    subfieldNamespace,
-                    subfieldDefinition,
-                    appendExtraProps,
-                    addStringToLogicalTypes,
+            fieldBuilder
+                .type(
+                    parseJsonField(
+                        subfieldName,
+                        subfieldNamespace,
+                        subfieldDefinition,
+                        appendExtraProps,
+                        addStringToLogicalTypes,
+                    ),
                 )
-            val nextStep = fieldBuilder.type(parsed)
-            if (parsed.isUnion || parsed == NULL_SCHEMA) {
-                nextStep.withDefault(null)
-            } else {
-                nextStep.noDefault()
-            }
+                .withDefault(null)
         }
 
         if (appendExtraProps) {
@@ -214,10 +168,10 @@ class JsonToAvroSchemaConverter {
         fieldType: JsonSchemaType,
         fieldDefinition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean,
+        addStringToLogicalTypes: Boolean
     ): Schema {
         Preconditions.checkState(
-            fieldType != NULL,
+            fieldType != JsonSchemaType.NULL,
             "Null types should have been filtered out",
         )
 
@@ -229,46 +183,37 @@ class JsonToAvroSchemaConverter {
 
         val fieldSchema: Schema
         when (fieldType) {
-            INTEGER_V1,
-            NUMBER_V1,
-            BOOLEAN_V1,
-            STRING_V1,
-            BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.avroType)
-            DATE_V1 -> {
-                if (addStringToLogicalTypes) {
-                    fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT))
-                } else {
-                    fieldSchema = Schema.create(Schema.Type.INT)
-                    LogicalTypes.date().addToSchema(fieldSchema)
-                }
-            }
-            TIMESTAMP_WITH_TIMEZONE_V1,
-            TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
-                if (addStringToLogicalTypes) {
-                    fieldSchema =
-                        LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
-                } else {
-                    fieldSchema = Schema.create(Schema.Type.LONG)
-                    LogicalTypes.timestampMicros().addToSchema(fieldSchema)
-                }
-            }
-            TIME_WITH_TIMEZONE_V1,
-            TIME_WITHOUT_TIMEZONE_V1 -> {
-                if (addStringToLogicalTypes) {
-                    fieldSchema =
-                        LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG))
-                } else {
-                    fieldSchema = Schema.create(Schema.Type.LONG)
-                    LogicalTypes.timeMicros().addToSchema(fieldSchema)
-                }
-            }
-            INTEGER_V0,
-            NUMBER_V0,
-            NUMBER_INT_V0,
-            NUMBER_BIGINT_V0,
-            NUMBER_FLOAT_V0,
-            BOOLEAN_V0 -> fieldSchema = Schema.create(fieldType.avroType)
-            STRING_V0 -> {
+            JsonSchemaType.INTEGER_V1,
+            JsonSchemaType.NUMBER_V1,
+            JsonSchemaType.BOOLEAN_V1,
+            JsonSchemaType.STRING_V1,
+            JsonSchemaType.TIME_WITH_TIMEZONE_V1,
+            JsonSchemaType.BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.avroType)
+            JsonSchemaType.DATE_V1 ->
+                fieldSchema =
+                    LogicalTypes.date()
+                        .addToSchema(
+                            Schema.create(
+                                Schema.Type.INT,
+                            ),
+                        )
+            JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1,
+            JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1 ->
+                fieldSchema =
+                    LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
+            JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1 ->
+                fieldSchema =
+                    LogicalTypes.timeMicros()
+                        .addToSchema(
+                            Schema.create(Schema.Type.LONG),
+                        )
+            JsonSchemaType.INTEGER_V0,
+            JsonSchemaType.NUMBER_V0,
+            JsonSchemaType.NUMBER_INT_V0,
+            JsonSchemaType.NUMBER_BIGINT_V0,
+            JsonSchemaType.NUMBER_FLOAT_V0,
+            JsonSchemaType.BOOLEAN_V0 -> fieldSchema = Schema.create(fieldType.avroType)
+            JsonSchemaType.STRING_V0 -> {
                 if (fieldDefinition.has("format")) {
                     val format: String = fieldDefinition.get("format").asText()
                     fieldSchema =
@@ -289,7 +234,7 @@ class JsonToAvroSchemaConverter {
                     fieldSchema = Schema.create(fieldType.avroType)
                 }
             }
-            COMBINED -> {
+            JsonSchemaType.COMBINED -> {
                 val combinedRestriction: Optional<JsonNode> =
                     getCombinedRestriction(fieldDefinition)
                 val unionTypes: List<Schema> =
@@ -302,7 +247,7 @@ class JsonToAvroSchemaConverter {
                     )
                 fieldSchema = createUnionAndCheckLongTypesDuplications(unionTypes)
             }
-            ARRAY -> {
+            JsonSchemaType.ARRAY -> {
                 val items: JsonNode? = fieldDefinition.get("items")
                 if (items == null) {
                     logger.warn {
@@ -369,7 +314,7 @@ class JsonToAvroSchemaConverter {
                         )
                 }
             }
-            OBJECT ->
+            JsonSchemaType.OBJECT ->
                 fieldSchema =
                     getAvroSchema(
                         fieldDefinition,
@@ -405,6 +350,7 @@ class JsonToAvroSchemaConverter {
     ): MutableList<Schema> {
         val schemas: List<Schema> =
             MoreIterators.toList(types.elements())
+                .stream()
                 .flatMap { definition: JsonNode ->
                     getSchemas(
                         fieldName = fieldName,
@@ -415,6 +361,7 @@ class JsonToAvroSchemaConverter {
                     )
                 }
                 .distinct()
+                .collect(Collectors.toList())
 
         return mergeRecordSchemas(fieldName, fieldNamespace, schemas, appendExtraProps)
     }
@@ -425,8 +372,8 @@ class JsonToAvroSchemaConverter {
         definition: JsonNode,
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean
-    ): List<Schema> {
-        return getNonNullTypes(fieldName, definition).flatMap { type: JsonSchemaType ->
+    ): Stream<Schema>? {
+        return getNonNullTypes(fieldName, definition).stream().flatMap { type: JsonSchemaType ->
             getSchema(
                 fieldName = fieldName,
                 fieldNamespace = fieldNamespace,
@@ -445,7 +392,7 @@ class JsonToAvroSchemaConverter {
         definition: JsonNode,
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean
-    ): List<Schema> {
+    ): Stream<Schema>? {
         val namespace: String =
             if (fieldNamespace == null) fieldName else "$fieldNamespace.$fieldName"
         val singleFieldSchema: Schema =
@@ -458,9 +405,9 @@ class JsonToAvroSchemaConverter {
                 addStringToLogicalTypes,
             )
         if (singleFieldSchema.isUnion) {
-            return singleFieldSchema.types
+            return singleFieldSchema.types.stream()
         } else {
-            return listOf(
+            return Stream.of<Schema>(
                 singleFieldSchema,
             )
         }
@@ -491,9 +438,8 @@ class JsonToAvroSchemaConverter {
 
         val mergedSchemas: MutableList<Schema> =
             schemas
-
-                // gather record schemas to construct a single record schema later on
-                .onEach { schema: Schema ->
+                .stream() // gather record schemas to construct a single record schema later on
+                .peek { schema: Schema ->
                     if (schema.type == Schema.Type.RECORD) {
                         for (field: Schema.Field in schema.fields) {
                             recordFieldSchemas.putIfAbsent(
@@ -512,7 +458,8 @@ class JsonToAvroSchemaConverter {
                     }
                 } // remove record schemas because they will be merged into one
                 .filter { schema: Schema -> schema.type != Schema.Type.RECORD }
-                .toMutableList()
+                .collect(Collectors.toList<Schema>())
+
         // create one record schema from all the record fields
         if (recordFieldSchemas.isNotEmpty()) {
             val builder: SchemaBuilder.RecordBuilder<Schema> = SchemaBuilder.record(fieldName)
@@ -539,19 +486,15 @@ class JsonToAvroSchemaConverter {
                 }
                 val subfieldSchemas: List<Schema> =
                     entry.value
+                        .stream()
                         .flatMap { schema: Schema ->
-                            val types =
-                                if (schema.isUnion) {
-                                    schema.types
-                                } else {
-                                    listOf(schema)
-                                }
-                            // filter out null and add it later on as the first
-                            // element
-                            types.filter { s: Schema -> s != NULL_SCHEMA }
+                            schema.types
+                                .stream() // filter out null and add it later on as the first
+                                // element
+                                .filter { s: Schema -> s != NULL_SCHEMA }
                         }
                         .distinct()
-
+                        .collect(Collectors.toList())
                 val subfieldNamespace: String =
                     if (fieldNamespace == null) fieldName else ("$fieldNamespace.$fieldName")
                 // recursively merge schemas of a subfield because they may include multiple record
@@ -590,11 +533,12 @@ class JsonToAvroSchemaConverter {
         fieldNamespace: String?,
         fieldDefinition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean,
+        addStringToLogicalTypes: Boolean
     ): Schema {
         // Filter out null types, which will be added back in the end.
-        val nonNullFieldTypes: MutableList<Schema?> =
+        val nonNullFieldTypes: MutableList<Schema> =
             getNonNullTypes(fieldName, fieldDefinition)
+                .stream()
                 .flatMap { fieldType: JsonSchemaType ->
                     val singleFieldSchema: Schema =
                         parseSingleType(
@@ -605,24 +549,16 @@ class JsonToAvroSchemaConverter {
                             appendExtraProps,
                             addStringToLogicalTypes,
                         )
-                    if (fieldType == TYPE_NAME) {
-                        // Hack to convey `type_name`, which has no avro equivalent.
-                        return@flatMap listOf(null)
-                    } else if (singleFieldSchema.isUnion) {
-                        return@flatMap singleFieldSchema.types
+                    if (singleFieldSchema.isUnion) {
+                        return@flatMap singleFieldSchema.types.stream()
                     } else {
-                        return@flatMap listOf(
+                        return@flatMap Stream.of<Schema>(
                             singleFieldSchema,
                         )
                     }
                 }
                 .distinct()
-                .toMutableList()
-
-        // Sentinel hack to make field names non-optional.
-        if (nonNullFieldTypes == listOf(null)) {
-            return STRING_SCHEMA
-        }
+                .collect(Collectors.toList())
 
         if (nonNullFieldTypes.isEmpty()) {
             return Schema.create(Schema.Type.NULL)
@@ -637,9 +573,9 @@ class JsonToAvroSchemaConverter {
             // invalid and
             // cannot be properly processed.
             if (
-                ((nonNullFieldTypes.any { schema: Schema? -> schema?.logicalType != null }) &&
-                    (!nonNullFieldTypes.contains(STRING_SCHEMA)) &&
-                    addStringToLogicalTypes)
+                ((nonNullFieldTypes.stream().anyMatch { schema: Schema ->
+                    schema.logicalType != null
+                }) && (!nonNullFieldTypes.contains(STRING_SCHEMA)) && addStringToLogicalTypes)
             ) {
                 nonNullFieldTypes.add(STRING_SCHEMA)
             }
@@ -671,8 +607,8 @@ class JsonToAvroSchemaConverter {
                 ) && ("timestamp-micros" == type.logicalType.name)
             }
 
-        val hasPlainLong: Boolean = unionTypes.any { isPlainLong.test(it) }
-        val hasTimestampMicrosLong: Boolean = unionTypes.any { isTimestampMicrosLong.test(it) }
+        val hasPlainLong: Boolean = unionTypes.stream().anyMatch(isPlainLong)
+        val hasTimestampMicrosLong: Boolean = unionTypes.stream().anyMatch(isTimestampMicrosLong)
         val removeTimestampType: Predicate<Schema> = Predicate { type: Schema ->
             !(hasPlainLong &&
                 hasTimestampMicrosLong &&
@@ -680,7 +616,14 @@ class JsonToAvroSchemaConverter {
                     type,
                 ))
         }
-        return Schema.createUnion(unionTypes.filter { removeTimestampType.test(it) })
+        return Schema.createUnion(
+            unionTypes
+                .stream()
+                .filter(removeTimestampType)
+                .collect(
+                    Collectors.toList(),
+                ),
+        )
     }
 
     companion object {
@@ -697,16 +640,19 @@ class JsonToAvroSchemaConverter {
 
         @Suppress("DEPRECATION")
         fun getNonNullTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
-            return getTypes(fieldName, fieldDefinition).filter { type: JsonSchemaType ->
-                type != NULL
-            }
+            return getTypes(fieldName, fieldDefinition)
+                .stream()
+                .filter { type: JsonSchemaType -> type != JsonSchemaType.NULL }
+                .collect(
+                    Collectors.toList(),
+                )
         }
 
         /** When no type or $ref are specified, it will default to string. */
         fun getTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
             val combinedRestriction: Optional<JsonNode> = getCombinedRestriction(fieldDefinition)
             if (combinedRestriction.isPresent) {
-                return listOf(COMBINED)
+                return listOf(JsonSchemaType.COMBINED)
             }
 
             val typeProperty: JsonNode? = fieldDefinition.get(TYPE)
@@ -714,11 +660,14 @@ class JsonToAvroSchemaConverter {
             val airbyteType: String? = fieldDefinition.get(AIRBYTE_TYPE)?.asText()
 
             if (typeProperty != null && typeProperty.isArray) {
-                return MoreIterators.toList(typeProperty.elements()).map { s: JsonNode ->
-                    JsonSchemaType.fromJsonSchemaType(
-                        s.asText(),
-                    )
-                }
+                return MoreIterators.toList(typeProperty.elements())
+                    .stream()
+                    .map { s: JsonNode ->
+                        JsonSchemaType.fromJsonSchemaType(
+                            s.asText(),
+                        )
+                    }
+                    .collect(Collectors.toList())
             }
 
             if (hasTextValue(typeProperty)) {
@@ -742,7 +691,7 @@ class JsonToAvroSchemaConverter {
             logger.warn {
                 "Field \"$fieldName\" has unexpected type $referenceType. It will default to string."
             }
-            return listOf(STRING_V1)
+            return listOf(JsonSchemaType.STRING_V1)
         }
 
         private fun hasTextValue(value: JsonNode?): Boolean {

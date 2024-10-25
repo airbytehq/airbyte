@@ -8,11 +8,12 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /** Factory class that creates [StateManager] instances based on the provided state. */
 object StateManagerFactory {
+    private val LOGGER: Logger = LoggerFactory.getLogger(StateManagerFactory::class.java)
 
     /**
      * Creates a [StateManager] based on the provided state object and catalog. This method will
@@ -36,9 +37,10 @@ object StateManagerFactory {
             val airbyteStateMessage = initialState[0]
             when (supportedStateType) {
                 AirbyteStateMessage.AirbyteStateType.LEGACY -> {
-                    LOGGER.info {
-                        "Legacy state manager selected to manage state object with type ${airbyteStateMessage.type}."
-                    }
+                    LOGGER.info(
+                        "Legacy state manager selected to manage state object with type {}.",
+                        airbyteStateMessage.type
+                    )
                     @Suppress("deprecation")
                     val retVal: StateManager =
                         LegacyStateManager(
@@ -48,21 +50,24 @@ object StateManagerFactory {
                     return retVal
                 }
                 AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
-                    LOGGER.info {
-                        "Global state manager selected to manage state object with type ${airbyteStateMessage.type}."
-                    }
+                    LOGGER.info(
+                        "Global state manager selected to manage state object with type {}.",
+                        airbyteStateMessage.type
+                    )
                     return GlobalStateManager(generateGlobalState(airbyteStateMessage), catalog)
                 }
                 AirbyteStateMessage.AirbyteStateType.STREAM -> {
-                    LOGGER.info {
-                        "Stream state manager selected to manage state object with type ${airbyteStateMessage.type}."
-                    }
+                    LOGGER.info(
+                        "Stream state manager selected to manage state object with type {}.",
+                        airbyteStateMessage.type
+                    )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
                 else -> {
-                    LOGGER.info {
-                        "Stream state manager selected to manage state object with type ${airbyteStateMessage.type}."
-                    }
+                    LOGGER.info(
+                        "Stream state manager selected to manage state object with type {}.",
+                        airbyteStateMessage.type
+                    )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
             }
@@ -97,7 +102,7 @@ object StateManagerFactory {
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                 globalStateMessage =
                     StateGeneratorUtils.convertLegacyStateToGlobalState(airbyteStateMessage)
-                LOGGER.info { "Legacy state converted to global state." }
+                LOGGER.info("Legacy state converted to global state.", airbyteStateMessage.type)
             }
             AirbyteStateMessage.AirbyteStateType.GLOBAL -> {}
             else -> {}

@@ -11,8 +11,7 @@ import java.util.*
 abstract class DebeziumPropertiesManager(
     private val properties: Properties,
     private val config: JsonNode,
-    private val catalog: ConfiguredAirbyteCatalog,
-    private val streamNames: List<String>
+    private val catalog: ConfiguredAirbyteCatalog
 ) {
     fun getDebeziumProperties(offsetManager: AirbyteFileOffsetBackingStore): Properties {
         return getDebeziumProperties(offsetManager, Optional.empty())
@@ -74,7 +73,7 @@ abstract class DebeziumPropertiesManager(
         // following
         props.setProperty("value.converter.replace.null.with.default", "false")
         // includes
-        props.putAll(getIncludeConfiguration(catalog, config, streamNames))
+        props.putAll(getIncludeConfiguration(catalog, config))
 
         return props
     }
@@ -85,8 +84,7 @@ abstract class DebeziumPropertiesManager(
 
     protected abstract fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
-        config: JsonNode?,
-        streamNames: List<String>
+        config: JsonNode?
     ): Properties
 
     companion object {

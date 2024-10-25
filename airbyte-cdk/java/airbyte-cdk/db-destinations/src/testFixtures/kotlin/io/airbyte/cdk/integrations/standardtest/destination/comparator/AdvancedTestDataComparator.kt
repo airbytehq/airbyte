@@ -4,14 +4,13 @@
 package io.airbyte.cdk.integrations.standardtest.destination.comparator
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import org.junit.jupiter.api.Assertions
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 open class AdvancedTestDataComparator : TestDataComparator {
     override fun assertSameData(expected: List<JsonNode>, actual: List<JsonNode>) {
@@ -25,7 +24,9 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected open fun resolveIdentifier(identifier: String?): List<String?> = listOf(identifier)
+    protected open fun resolveIdentifier(identifier: String?): List<String?> {
+        return java.util.List.of(identifier)
+    }
 
     protected open fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
         if (!areBothEmpty(expectedObject, actualObject)) {
@@ -119,11 +120,14 @@ open class AdvancedTestDataComparator : TestDataComparator {
         } else {
             for (expectedNode in expectedList) {
                 val sameActualNode =
-                    actualList.firstOrNull { actualNode: JsonNode ->
-                        compareJsonNodes(expectedNode, actualNode)
-                    }
-                if (sameActualNode != null) {
-                    actualList.remove(sameActualNode)
+                    actualList
+                        .stream()
+                        .filter { actualNode: JsonNode? ->
+                            compareJsonNodes(expectedNode, actualNode)
+                        }
+                        .findFirst()
+                if (sameActualNode.isPresent) {
+                    actualList.remove(sameActualNode.get())
                 } else {
                     return false
                 }
@@ -242,6 +246,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
     }
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(AdvancedTestDataComparator::class.java)
 
         const val AIRBYTE_DATE_FORMAT: String = "yyyy-MM-dd"
         const val AIRBYTE_DATETIME_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss"

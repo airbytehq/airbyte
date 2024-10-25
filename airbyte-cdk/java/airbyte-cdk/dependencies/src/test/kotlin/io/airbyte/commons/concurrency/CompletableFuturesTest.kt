@@ -4,12 +4,10 @@
 package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
-import java.time.Duration
-import java.util.Arrays
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 
 internal class CompletableFuturesTest {
@@ -28,7 +26,8 @@ internal class CompletableFuturesTest {
 
         val allOfResult = CompletableFutures.allOf(futures).toCompletableFuture()
         val result = allOfResult.join()
-        val success = result.filter { obj: Either<out Exception, Int> -> obj.isRight() }
+        val success =
+            result.stream().filter { obj: Either<out Exception, Int> -> obj.isRight() }.toList()
         Assertions.assertEquals(
             success,
             Arrays.asList(
@@ -41,45 +40,11 @@ internal class CompletableFuturesTest {
         // Extract wrapped CompletionException messages.
         val failureMessages =
             result
+                .stream()
                 .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
                 .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
-
+                .toList()
         Assertions.assertEquals(failureMessages, mutableListOf("Fail 5", "Fail 6"))
-    }
-
-    @Test
-    fun allOfEmptyList() {
-        Assertions.assertTimeoutPreemptively(Duration.ofSeconds(5)) {
-            Assertions.assertEquals(
-                emptyList<String>(),
-                CompletableFutures.allOf(emptyList<CompletableFuture<String>>())
-                    .toCompletableFuture()
-                    .join(),
-            )
-        }
-    }
-
-    @Test
-    fun testFutureThrowingThrowable() {
-        val errorMessage = "Throwable1"
-        try {
-            val result =
-                CompletableFutures.allOf(
-                        listOf(CompletableFuture.failedFuture<Int>(Throwable(errorMessage)))
-                    )
-                    .toCompletableFuture()
-                    .get()
-            val failureMessages =
-                result
-                    .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
-                    .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
-            Assertions.assertEquals(
-                listOf(errorMessage),
-                failureMessages,
-            )
-        } catch (t: Throwable) {
-            fail(t)
-        }
     }
 
     private fun returnSuccessWithDelay(value: Int, delayMs: Long): CompletableFuture<Int> {

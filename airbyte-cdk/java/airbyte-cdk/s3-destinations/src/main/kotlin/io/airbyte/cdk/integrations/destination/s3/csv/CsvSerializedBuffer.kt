@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class CsvSerializedBuffer(
     bufferStorage: BufferStorage,
     private val csvSheetGenerator: CsvSheetGenerator,
-    compression: Boolean,
+    compression: Boolean
 ) : BaseSerializedBuffer(bufferStorage) {
     private var csvPrinter: CSVPrinter? = null
     private var csvFormat: CSVFormat
@@ -63,26 +63,18 @@ class CsvSerializedBuffer(
      */
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
-    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
-        csvPrinter!!.printRecord(
-            csvSheetGenerator.getDataRow(UUID.randomUUID(), record, generationId, syncId)
-        )
+    override fun writeRecord(record: AirbyteRecordMessage) {
+        csvPrinter!!.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record))
     }
 
     @Throws(IOException::class)
-    override fun writeRecord(
-        recordString: String,
-        airbyteMetaString: String,
-        generationId: Long,
-        emittedAt: Long
-    ) {
+    override fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long) {
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
                 recordString,
                 emittedAt,
                 airbyteMetaString,
-                generationId,
             ),
         )
     }
@@ -117,8 +109,7 @@ class CsvSerializedBuffer(
         @Suppress("DEPRECATION")
         fun createFunction(
             config: UploadCsvFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>,
-            useV2FieldNames: Boolean = false
+            createStorageFunction: Callable<BufferStorage>
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
@@ -133,6 +124,7 @@ class CsvSerializedBuffer(
                 val csvSheetGenerator =
                     CsvSheetGenerator.Factory.create(
                         catalog.streams
+                            .stream()
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
@@ -140,18 +132,19 @@ class CsvSerializedBuffer(
                                         stream.namespace,
                                     )
                             }
-                            .firstOrNull()
-                            ?.stream
-                            ?.jsonSchema
-                            ?: throw RuntimeException(
-                                String.format(
-                                    "No such stream %s.%s",
-                                    stream.namespace,
-                                    stream.name,
-                                ),
-                            ),
+                            .findFirst()
+                            .orElseThrow {
+                                RuntimeException(
+                                    String.format(
+                                        "No such stream %s.%s",
+                                        stream.namespace,
+                                        stream.name,
+                                    ),
+                                )
+                            }
+                            .stream
+                            .jsonSchema,
                         config,
-                        useV2FieldNames,
                     )
                 val csvSettings =
                     CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)

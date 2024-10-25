@@ -29,13 +29,12 @@ interface BufferingStrategy : AutoCloseable {
     @Throws(Exception::class)
     fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage,
-        generationId: Long = 0,
-        syncId: Long = 0
+        message: AirbyteMessage
     ): Optional<BufferFlushType>
 
-    /** Flush the buffered messages from a single stream */
-    @Throws(Exception::class) fun flushSingleStream(stream: AirbyteStreamNameNamespacePair)
+    /** Flush buffered messages in a buffer from a particular stream */
+    @Throws(Exception::class)
+    fun flushSingleBuffer(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer)
 
     /** Flush all buffers that were buffering message data so far. */
     @Throws(Exception::class) fun flushAllBuffers()

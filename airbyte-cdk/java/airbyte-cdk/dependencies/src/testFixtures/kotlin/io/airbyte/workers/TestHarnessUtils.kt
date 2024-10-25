@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.*
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.helper.FailureHelper
 import io.airbyte.workers.internal.AirbyteStreamFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -19,10 +18,12 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 // TODO:(Issue-4824): Figure out how to log Docker process information.
 object TestHarnessUtils {
+    private val LOGGER: Logger = LoggerFactory.getLogger(TestHarnessUtils::class.java)
 
     fun gentleClose(process: Process?, timeout: Long, timeUnit: TimeUnit?) {
         if (process == null) {
@@ -30,8 +31,8 @@ object TestHarnessUtils {
         }
 
         if (process.info() != null) {
-            process.info().commandLine().ifPresent { commandLine: String ->
-                LOGGER.debug { "Gently closing process $commandLine" }
+            process.info().commandLine().ifPresent { commandLine: String? ->
+                LOGGER.debug("Gently closing process {}", commandLine)
             }
         }
 
@@ -40,7 +41,7 @@ object TestHarnessUtils {
                 process.waitFor(timeout, timeUnit)
             }
         } catch (e: InterruptedException) {
-            LOGGER.error(e) { "Exception while while waiting for process to finish" }
+            LOGGER.error("Exception while while waiting for process to finish", e)
         }
 
         if (process.isAlive) {
@@ -56,13 +57,13 @@ object TestHarnessUtils {
             process.destroy()
             process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS)
             if (process.isAlive) {
-                LOGGER.warn {
+                LOGGER.warn(
                     "Process is still alive after calling destroy. Attempting to destroy forcibly..."
-                }
+                )
                 process.destroyForcibly()
             }
         } catch (e: InterruptedException) {
-            LOGGER.error(e) { "Exception when closing process." }
+            LOGGER.error("Exception when closing process.", e)
         }
     }
 
@@ -70,7 +71,7 @@ object TestHarnessUtils {
         try {
             process.waitFor()
         } catch (e: InterruptedException) {
-            LOGGER.error(e) { "Exception while while waiting for process to finish" }
+            LOGGER.error("Exception while while waiting for process to finish", e)
         }
     }
 
@@ -116,26 +117,30 @@ object TestHarnessUtils {
     fun getMostRecentConfigControlMessage(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<AirbyteControlConnectorConfigMessage> {
-        return Optional.ofNullable(
-            messagesByType
-                .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
-                .map { obj: AirbyteMessage -> obj.control }
-                .filter { control: AirbyteControlMessage ->
-                    control.type == AirbyteControlMessage.Type.CONNECTOR_CONFIG
-                }
-                .map { obj: AirbyteControlMessage -> obj.connectorConfig }
-                .lastOrNull()
-        )
+        return messagesByType
+            .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
+            .stream()
+            .map { obj: AirbyteMessage -> obj.control }
+            .filter { control: AirbyteControlMessage ->
+                control.type == AirbyteControlMessage.Type.CONNECTOR_CONFIG
+            }
+            .map { obj: AirbyteControlMessage -> obj.connectorConfig }
+            .reduce {
+                first: AirbyteControlConnectorConfigMessage?,
+                second: AirbyteControlConnectorConfigMessage ->
+                second
+            }
     }
 
     private fun getTraceMessageFromMessagesByType(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
-    ): AirbyteTraceMessage? {
+    ): Optional<AirbyteTraceMessage> {
         return messagesByType
             .getOrDefault(AirbyteMessage.Type.TRACE, ArrayList())
+            .stream()
             .map { obj: AirbyteMessage -> obj.trace }
             .filter { trace: AirbyteTraceMessage -> trace.type == AirbyteTraceMessage.Type.ERROR }
-            .firstOrNull()
+            .findFirst()
     }
 
     fun getDidControlMessageChangeConfig(
@@ -169,10 +174,15 @@ object TestHarnessUtils {
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<FailureReason> {
         val traceMessage = getTraceMessageFromMessagesByType(messagesByType)
-        if (traceMessage != null) {
+        if (traceMessage.isPresent) {
             val connectorCommand = getConnectorCommandFromOutputType(outputType)
             return Optional.of(
-                FailureHelper.connectorCommandFailure(traceMessage, null, null, connectorCommand)
+                FailureHelper.connectorCommandFailure(
+                    traceMessage.get(),
+                    null,
+                    null,
+                    connectorCommand
+                )
             )
         } else {
             return Optional.empty()

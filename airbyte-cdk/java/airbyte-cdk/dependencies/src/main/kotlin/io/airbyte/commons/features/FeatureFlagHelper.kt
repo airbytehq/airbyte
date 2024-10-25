@@ -32,7 +32,7 @@ object FeatureFlagHelper {
     ): Boolean {
         val workspaceIdsString = flagRetriever.apply(featureFlags)
         val workspaceIds: MutableSet<UUID> = HashSet()
-        if (!workspaceIdsString.isNullOrEmpty()) {
+        if (workspaceIdsString != null && !workspaceIdsString.isEmpty()) {
             for (id in
                 workspaceIdsString
                     .split(",".toRegex())

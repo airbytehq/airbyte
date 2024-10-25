@@ -22,15 +22,14 @@ import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.process.Metadata
 import io.airbyte.workers.process.ProcessFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DefaultNormalizationRunner(
     private val processFactory: ProcessFactory,
@@ -213,7 +212,7 @@ class DefaultNormalizationRunner(
             }
             LineGobbler.gobble(
                 process.errorStream,
-                { msg: String -> LOGGER.error(msg) },
+                { msg: String? -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 
@@ -256,16 +255,20 @@ class DefaultNormalizationRunner(
 
     override val traceMessages: Stream<AirbyteTraceMessage>
         get() {
-            if (airbyteMessagesByType[AirbyteMessage.Type.TRACE] != null) {
-                return airbyteMessagesByType[AirbyteMessage.Type.TRACE]!!
-                    .map { obj: AirbyteMessage -> obj.trace }
-                    .stream()
+            if (
+                airbyteMessagesByType != null &&
+                    airbyteMessagesByType!![AirbyteMessage.Type.TRACE] != null
+            ) {
+                return airbyteMessagesByType!![AirbyteMessage.Type.TRACE]!!.stream().map {
+                    obj: AirbyteMessage ->
+                    obj.trace
+                }
             }
             return Stream.empty()
         }
 
     companion object {
-
+        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultNormalizationRunner::class.java)
         private val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
             MdcScope.Builder()
                 .setLogPrefix("normalization")

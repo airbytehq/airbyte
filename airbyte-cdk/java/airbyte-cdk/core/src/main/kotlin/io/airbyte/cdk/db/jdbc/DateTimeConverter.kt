@@ -5,18 +5,17 @@ package io.airbyte.cdk.db.jdbc
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.DataTypeUtils
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.*
 import kotlin.math.abs
 import kotlin.math.min
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object DateTimeConverter {
-
+    private val LOGGER: Logger = LoggerFactory.getLogger(DateTimeConverter::class.java)
     val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
             "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]"
@@ -35,7 +34,7 @@ object DateTimeConverter {
             else time.toString()
         } else {
             if (!loggedUnknownTimeWithTimeZoneClass) {
-                LOGGER.info { "Unknown class for Time with timezone data type ${time.javaClass}" }
+                LOGGER.info("Unknown class for Time with timezone data type" + time.javaClass)
                 loggedUnknownTimeWithTimeZoneClass = true
             }
             val timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER)
@@ -79,9 +78,9 @@ object DateTimeConverter {
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(localDate, value)
         } else {
             if (!loggedUnknownTimestampWithTimeZoneClass) {
-                LOGGER.info {
-                    "Unknown class for Timestamp with time zone data type ${timestamp.javaClass}"
-                }
+                LOGGER.info(
+                    "Unknown class for Timestamp with time zone data type" + timestamp.javaClass
+                )
                 loggedUnknownTimestampWithTimeZoneClass = true
             }
             val instant = Instant.parse(timestamp.toString())
@@ -124,7 +123,7 @@ object DateTimeConverter {
             )
         } else {
             if (!loggedUnknownTimestampClass) {
-                LOGGER.info { "Unknown class for Timestamp data type ${timestamp.javaClass}" }
+                LOGGER.info("Unknown class for Timestamp data type" + timestamp.javaClass)
                 loggedUnknownTimestampClass = true
             }
             val localDateTime = LocalDateTime.parse(timestamp.toString())
@@ -159,7 +158,7 @@ object DateTimeConverter {
             return LocalDate.ofEpochDay(date.toLong()).format(DataTypeUtils.DATE_FORMATTER)
         } else {
             if (!loggedUnknownDateClass) {
-                LOGGER.info { "Unknown class for Date data type${date.javaClass}" }
+                LOGGER.info("Unknown class for Date data type" + date.javaClass)
                 loggedUnknownDateClass = true
             }
             val localDate = LocalDate.parse(date.toString())
@@ -183,22 +182,22 @@ object DateTimeConverter {
             } else {
                 val updatedValue =
                     min(abs(value.toDouble()), LocalTime.MAX.toNanoOfDay().toDouble()).toLong()
-                LOGGER.debug {
-                    "Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its $value, converting to $updatedValue "
-                }
+                LOGGER.debug(
+                    "Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ",
+                    value,
+                    updatedValue
+                )
                 return formatTime(LocalTime.ofNanoOfDay(updatedValue))
             }
         } else {
             if (!loggedUnknownTimeClass) {
-                LOGGER.info { "Unknown class for Time data type ${time.javaClass}" }
+                LOGGER.info("Unknown class for Time data type" + time.javaClass)
                 loggedUnknownTimeClass = true
             }
 
             val valueAsString = time.toString()
             if (valueAsString.startsWith("24")) {
-                LOGGER.debug {
-                    "Time value ${valueAsString} is above range, converting to 23:59:59"
-                }
+                LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString)
                 return LocalTime.MAX.toString()
             }
             return formatTime(LocalTime.parse(valueAsString))

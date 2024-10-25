@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
 import java.util.function.Supplier
+import java.util.stream.Collectors
 
 /**
  * Global implementation of the [StateManager] interface.
@@ -53,7 +54,7 @@ class GlobalStateManager(
             )
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage>?
+    override val rawStateMessages: List<AirbyteStateMessage?>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."
@@ -64,17 +65,7 @@ class GlobalStateManager(
         // Populate global state
         val globalState = AirbyteGlobalState()
         globalState.sharedState = Jsons.jsonNode(cdcStateManager.cdcState)
-        // If stream state exists in the global manager, it should be used to reflect the partial
-        // states of initial loads.
-        if (
-            cdcStateManager.rawStateMessage?.global?.streamStates != null &&
-                cdcStateManager.rawStateMessage.global?.streamStates?.size != 0
-        ) {
-            globalState.streamStates = cdcStateManager.rawStateMessage.global.streamStates
-        } else {
-            globalState.streamStates =
-                StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap)
-        }
+        globalState.streamStates = StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap)
 
         // Generate the legacy state for backwards compatibility
         val dbState =
@@ -114,6 +105,7 @@ class GlobalStateManager(
     ): Set<AirbyteStreamNameNamespacePair> {
         if (airbyteStateMessage!!.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             return airbyteStateMessage.global.streamStates
+                .stream()
                 .map { streamState: AirbyteStreamState ->
                     val cloned = Jsons.clone(streamState)
                     AirbyteStreamNameNamespacePair(
@@ -121,7 +113,7 @@ class GlobalStateManager(
                         cloned.streamDescriptor.namespace
                     )
                 }
-                .toSet()
+                .collect(Collectors.toSet())
         } else {
             val legacyState: DbState? =
                 Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
@@ -135,11 +127,12 @@ class GlobalStateManager(
         streams: List<DbStreamState>
     ): Set<AirbyteStreamNameNamespacePair> {
         return streams
+            .stream()
             .map { stream: DbStreamState ->
                 val cloned = Jsons.clone(stream)
                 AirbyteStreamNameNamespacePair(cloned.streamName, cloned.streamNamespace)
             }
-            .toSet()
+            .collect(Collectors.toSet())
     }
 
     companion object {
@@ -168,7 +161,8 @@ class GlobalStateManager(
                             DbState::class.java
                         )!!
                         .streams
-                        .map { s: DbStreamState ->
+                        .stream()
+                        .map<AirbyteStreamState?> { s: DbStreamState ->
                             AirbyteStreamState()
                                 .withStreamState(Jsons.jsonNode<DbStreamState>(s))
                                 .withStreamDescriptor(
@@ -177,6 +171,7 @@ class GlobalStateManager(
                                         .withName(s.streamName)
                                 )
                         }
+                        .collect(Collectors.toList<AirbyteStreamState?>())
                 } else {
                     return@Supplier listOf<AirbyteStreamState>()
                 }

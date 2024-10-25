@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.util.*
 import java.util.List
 import java.util.Map
+import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -150,11 +151,13 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .sortedWith(
+                                    .stream()
+                                    .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
+                                    .collect(Collectors.toList())
                             )
                             .withCdc(false)
                     )
@@ -188,11 +191,13 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .sortedWith(
+                                    .stream()
+                                    .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
+                                    .collect(Collectors.toList())
                             )
                             .withCdc(false)
                     )
@@ -244,11 +249,13 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .sortedWith(
+                                    .stream()
+                                    .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
+                                    .collect(Collectors.toList())
                             )
                             .withCdc(false)
                     )
@@ -305,11 +312,13 @@ class LegacyStateManagerTest {
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(listOf())
                                     )
-                                    .sortedWith(
+                                    .stream()
+                                    .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
+                                    .collect(Collectors.toList())
                             )
                             .withCdc(true)
                     )
@@ -338,11 +347,13 @@ class LegacyStateManagerTest {
                                             .withCursorField(listOf())
                                             .withCursor(null)
                                     )
-                                    .sortedWith(
+                                    .stream()
+                                    .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
+                                    .collect(Collectors.toList())
                             )
                             .withCdc(true)
                     )

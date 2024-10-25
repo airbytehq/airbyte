@@ -18,7 +18,6 @@ import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFact
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -27,8 +26,8 @@ import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.QuoteMode
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class GcsCsvWriter(
     config: GcsDestinationConfig,
@@ -52,9 +51,12 @@ class GcsCsvWriter(
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        LOGGER.info {
-            "Full GCS path for stream '${stream.name}': ${config.bucketName}/$outputPath"
-        }
+        LOGGER.info(
+            "Full GCS path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
         this.uploadManager =
             create(config.bucketName, outputPath, s3Client)
@@ -99,5 +101,7 @@ class GcsCsvWriter(
     override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.CSV
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(GcsCsvWriter::class.java)
+    }
 }

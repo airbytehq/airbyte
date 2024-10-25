@@ -9,11 +9,10 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageP
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.apache.kafka.connect.errors.ConnectException
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DebeziumMessageProducer<T>(
     private val cdcStateHandler: CdcStateHandler,
@@ -63,7 +62,7 @@ class DebeziumMessageProducer<T>(
     override fun generateStateMessageAtCheckpoint(
         stream: ConfiguredAirbyteStream?
     ): AirbyteStateMessage {
-        LOGGER.info { "Sending CDC checkpoint state message." }
+        LOGGER.info("Sending CDC checkpoint state message.")
         val stateMessage = createStateMessage(checkpointOffsetToSend)
         previousCheckpointOffset.clear()
         previousCheckpointOffset.putAll(checkpointOffsetToSend)
@@ -88,9 +87,9 @@ class DebeziumMessageProducer<T>(
                     checkpointOffsetToSend.putAll(temporalOffset)
                 }
             } catch (e: ConnectException) {
-                LOGGER.warn {
+                LOGGER.warn(
                     "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop."
-                }
+                )
             }
         }
 
@@ -141,5 +140,7 @@ class DebeziumMessageProducer<T>(
         return message
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumMessageProducer::class.java)
+    }
 }

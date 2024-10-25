@@ -10,6 +10,7 @@ import io.airbyte.commons.text.Names
 import io.airbyte.protocol.models.SyncMode
 import io.airbyte.validation.json.JsonValidationException
 import java.util.*
+import java.util.stream.Collectors
 
 /**
  * Utilities to convert Catalog protocol to Catalog API client. This class was similar to existing
@@ -26,13 +27,16 @@ object CatalogClientConverters {
     fun toAirbyteProtocol(catalog: AirbyteCatalog): io.airbyte.protocol.models.AirbyteCatalog {
         val protoCatalog = io.airbyte.protocol.models.AirbyteCatalog()
         val airbyteStream =
-            catalog.streams.map { stream: AirbyteStreamAndConfiguration ->
-                try {
-                    return@map toConfiguredProtocol(stream.stream, stream.config)
-                } catch (e: JsonValidationException) {
-                    return@map null
+            catalog.streams
+                .stream()
+                .map { stream: AirbyteStreamAndConfiguration ->
+                    try {
+                        return@map toConfiguredProtocol(stream.stream, stream.config)
+                    } catch (e: JsonValidationException) {
+                        return@map null
+                    }
                 }
-            }
+                .collect(Collectors.toList())
 
         protoCatalog.withStreams(airbyteStream)
         return protoCatalog
@@ -72,8 +76,9 @@ object CatalogClientConverters {
             // field path.
             val selectedFieldNames =
                 config.selectedFields!!
+                    .stream()
                     .map { field: SelectedFieldInfo -> field.fieldPath!![0] }
-                    .toSet()
+                    .collect(Collectors.toSet())
             // TODO(mfsiega-airbyte): we only check the top level of the cursor/primary key fields
             // because we
             // don't support filtering nested fields yet.
@@ -130,6 +135,7 @@ object CatalogClientConverters {
         return AirbyteCatalog()
             .streams(
                 catalog.streams
+                    .stream()
                     .map { stream: io.airbyte.protocol.models.AirbyteStream ->
                         toAirbyteStreamClientApi(stream)
                     }
@@ -138,6 +144,7 @@ object CatalogClientConverters {
                             .stream(s)
                             .config(generateDefaultConfiguration(s))
                     }
+                    .collect(Collectors.toList())
             )
     }
 

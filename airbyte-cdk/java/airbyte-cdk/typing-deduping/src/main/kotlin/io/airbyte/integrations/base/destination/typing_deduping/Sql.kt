@@ -4,6 +4,8 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import java.util.function.Consumer
+import java.util.function.Function
+import java.util.stream.Stream
 
 /**
  * Represents a list of SQL transactions, where each transaction consists of one or more SQL
@@ -24,32 +26,35 @@ data class Sql(val transactions: List<List<String>>) {
      * @return A list of SQL strings, each of which represents a transaction.
      */
     fun asSqlStrings(begin: String?, commit: String?): List<String> {
-        return transactions.map { transaction: List<String> ->
-            // If there's only one statement, we don't need to wrap it in a transaction.
-            if (transaction.size == 1) {
-                return@map transaction[0]
-            }
-            val builder = StringBuilder()
-            builder.append(begin)
-            builder.append(";\n")
-            transaction.forEach(
-                Consumer { statement: String ->
-                    builder.append(statement)
-                    // No semicolon - statements already end with a semicolon
-                    builder.append("\n")
+        return transactions
+            .stream()
+            .map { transaction: List<String> ->
+                // If there's only one statement, we don't need to wrap it in a transaction.
+                if (transaction.size == 1) {
+                    return@map transaction[0]
                 }
-            )
-            builder.append(commit)
-            builder.append(";\n")
-            builder.toString()
-        }
+                val builder = StringBuilder()
+                builder.append(begin)
+                builder.append(";\n")
+                transaction.forEach(
+                    Consumer { statement: String? ->
+                        builder.append(statement)
+                        // No semicolon - statements already end with a semicolon
+                        builder.append("\n")
+                    }
+                )
+                builder.append(commit)
+                builder.append(";\n")
+                builder.toString()
+            }
+            .toList()
     }
 
     init {
         transactions.forEach(
             Consumer { transaction: List<String> ->
                 require(!transaction.isEmpty()) { "Transaction must not be empty" }
-                require(!transaction.any { it.isNullOrEmpty() }) {
+                require(!transaction.stream().anyMatch { s: String? -> s == null || s.isEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
             }
@@ -71,12 +76,17 @@ data class Sql(val transactions: List<List<String>>) {
         /** Execute each statement as its own transaction. */
         @JvmStatic
         fun separately(statements: List<String>): Sql {
-            return create(statements.map { listOf(it) })
+            return create(
+                statements
+                    .stream()
+                    .map(Function<String, List<String>> { o: String -> listOf(o) })
+                    .toList()
+            )
         }
 
         @JvmStatic
         fun separately(vararg statements: String): Sql {
-            return separately(statements.asList())
+            return separately(Stream.of(*statements).toList())
         }
 
         /**
@@ -90,12 +100,14 @@ data class Sql(val transactions: List<List<String>>) {
 
         @JvmStatic
         fun concat(vararg sqls: Sql): Sql {
-            return create(sqls.flatMap { sql: Sql -> sql.transactions })
+            return create(
+                Stream.of(*sqls).flatMap { sql: Sql -> sql.transactions.stream() }.toList()
+            )
         }
 
         @JvmStatic
         fun concat(sqls: List<Sql>): Sql {
-            return create(sqls.flatMap { sql: Sql -> sql.transactions })
+            return create(sqls.stream().flatMap { sql: Sql -> sql.transactions.stream() }.toList())
         }
 
         /**
@@ -106,17 +118,21 @@ data class Sql(val transactions: List<List<String>>) {
         fun create(transactions: List<List<String>>): Sql {
             return Sql(
                 transactions
+                    .stream()
                     .map { transaction: List<String> ->
                         transaction
-                            .filter { statement: String -> !statement.isNullOrEmpty() }
+                            .stream()
+                            .filter { statement: String? -> !statement.isNullOrEmpty() }
                             .map internalMap@{ statement: String ->
                                 if (!statement.trim { it <= ' ' }.endsWith(";")) {
                                     return@internalMap "$statement;"
                                 }
                                 statement
                             }
+                            .toList()
                     }
                     .filter { transaction: List<String> -> !transaction.isEmpty() }
+                    .toList()
             )
         }
     }
