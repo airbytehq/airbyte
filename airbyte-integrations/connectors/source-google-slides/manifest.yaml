@@ -1,0 +1,4283 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Google Slides connector for Airbyte that enables seamless data integration by
+  extracting presentation data, including slide content and metadata. This
+  connector simplifies workflows by automating the flow of presentation data
+  into analytics or reporting tools.
+
+check:
+  type: CheckStream
+  stream_names:
+    - presentation
+
+definitions:
+  streams:
+    presentation:
+      type: DeclarativeStream
+      name: presentation
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/presentations/{{ config['presentation_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/presentation"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - objectId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v1/presentations/{{ config['presentation_id'] }}/pages/{{
+            config['page_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    thumbnail:
+      type: DeclarativeStream
+      name: thumbnail
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v1/presentations/{{ config["presentation_id"] }}/pages/{{
+            config["page_id"] }}/thumbnail
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/thumbnail"
+  base_requester:
+    type: HttpRequester
+    url_base: https://slides.googleapis.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+      refresh_request_body: {}
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/presentation"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/thumbnail"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - presentation_id
+      - page_id
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        title: OAuth Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        name: client_secret
+        title: OAuth Client Secret
+        airbyte_secret: true
+        order: 1
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 2
+      presentation_id:
+        type: string
+        title: Presentation Id
+        airbyte_secret: true
+        order: 3
+      page_id:
+        type: string
+        title: Page Id
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    presentation: true
+    pages: true
+    thumbnail: true
+  testedStreams:
+    presentation:
+      streamHash: 1c6b45e4af6f4fbb579b742f1cbc58c06185f0c5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pages:
+      streamHash: d06ff42b628c26b2319ee7ae97c4ed68cccbf876
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    thumbnail:
+      streamHash: 48cc5cafbdf699dd1ee558712d6aa3381d3cb0f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/slides/api/reference/rest
+
+schemas:
+  presentation:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      layouts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            layoutProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                displayName:
+                  type:
+                    - string
+                    - "null"
+                masterObjectId:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            objectId:
+              type:
+                - string
+                - "null"
+            pageElements:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  objectId:
+                    type:
+                      - string
+                      - "null"
+                  shape:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      placeholder:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          index:
+                            type:
+                              - number
+                              - "null"
+                          parentObjectId:
+                            type:
+                              - string
+                              - "null"
+                      shapeProperties:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          autofit:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              autofitType:
+                                type:
+                                  - string
+                                  - "null"
+                              fontScale:
+                                type:
+                                  - number
+                                  - "null"
+                          contentAlignment:
+                            type:
+                              - string
+                              - "null"
+                          outline:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              dashStyle:
+                                type:
+                                  - string
+                                  - "null"
+                              outlineFill:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  solidFill:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      alpha:
+                                        type:
+                                          - number
+                                          - "null"
+                                      color:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          rgbColor:
+                                            type:
+                                              - object
+                                              - "null"
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              weight:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  magnitude:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                          shadow:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              alignment:
+                                type:
+                                  - string
+                                  - "null"
+                              alpha:
+                                type:
+                                  - number
+                                  - "null"
+                              blurRadius:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                              color:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  rgbColor:
+                                    type:
+                                      - object
+                                      - "null"
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              rotateWithShape:
+                                type:
+                                  - boolean
+                                  - "null"
+                              transform:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  scaleX:
+                                    type:
+                                      - number
+                                      - "null"
+                                  scaleY:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                          shapeBackgroundFill:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              solidFill:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  alpha:
+                                    type:
+                                      - number
+                                      - "null"
+                                  color:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      themeColor:
+                                        type:
+                                          - string
+                                          - "null"
+                      shapeType:
+                        type:
+                          - string
+                          - "null"
+                      text:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          lists:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              bodyPlaceholderListEntity:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  listId:
+                                    type:
+                                      - string
+                                      - "null"
+                                  nestingLevel:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      "0":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "1":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "2":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "3":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "4":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "5":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "6":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "7":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                      "8":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                          textElements:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                autoText:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    content:
+                                      type:
+                                        - string
+                                        - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                endIndex:
+                                  type:
+                                    - number
+                                    - "null"
+                                paragraphMarker:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    bullet:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                        glyph:
+                                          type:
+                                            - string
+                                            - "null"
+                                        listId:
+                                          type:
+                                            - string
+                                            - "null"
+                                        nestingLevel:
+                                          type:
+                                            - number
+                                            - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        alignment:
+                                          type:
+                                            - string
+                                            - "null"
+                                        direction:
+                                          type:
+                                            - string
+                                            - "null"
+                                        lineSpacing:
+                                          type:
+                                            - number
+                                            - "null"
+                                        spaceBelow:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                startIndex:
+                                  type:
+                                    - number
+                                    - "null"
+                                textRun:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    content:
+                                      type:
+                                        - string
+                                        - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        fontSize:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            magnitude:
+                                              type:
+                                                - number
+                                                - "null"
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                  size:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                      width:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                  transform:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      scaleX:
+                        type:
+                          - number
+                          - "null"
+                      scaleY:
+                        type:
+                          - number
+                          - "null"
+                      translateX:
+                        type:
+                          - number
+                          - "null"
+                      translateY:
+                        type:
+                          - number
+                          - "null"
+                      unit:
+                        type:
+                          - string
+                          - "null"
+            pageProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                pageBackgroundFill:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    propertyState:
+                      type:
+                        - string
+                        - "null"
+            pageType:
+              type:
+                - string
+                - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      masters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            masterProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                displayName:
+                  type:
+                    - string
+                    - "null"
+            objectId:
+              type:
+                - string
+                - "null"
+            pageElements:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  objectId:
+                    type:
+                      - string
+                      - "null"
+                  shape:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      placeholder:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      shapeProperties:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          autofit:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              autofitType:
+                                type:
+                                  - string
+                                  - "null"
+                              fontScale:
+                                type:
+                                  - number
+                                  - "null"
+                          contentAlignment:
+                            type:
+                              - string
+                              - "null"
+                          outline:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              dashStyle:
+                                type:
+                                  - string
+                                  - "null"
+                              outlineFill:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  solidFill:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      alpha:
+                                        type:
+                                          - number
+                                          - "null"
+                                      color:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          rgbColor:
+                                            type:
+                                              - object
+                                              - "null"
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              weight:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  magnitude:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                          shadow:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              alignment:
+                                type:
+                                  - string
+                                  - "null"
+                              alpha:
+                                type:
+                                  - number
+                                  - "null"
+                              blurRadius:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                              color:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  rgbColor:
+                                    type:
+                                      - object
+                                      - "null"
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              rotateWithShape:
+                                type:
+                                  - boolean
+                                  - "null"
+                              transform:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  scaleX:
+                                    type:
+                                      - number
+                                      - "null"
+                                  scaleY:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                          shapeBackgroundFill:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                              solidFill:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  alpha:
+                                    type:
+                                      - number
+                                      - "null"
+                                  color:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      rgbColor:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          blue:
+                                            type:
+                                              - number
+                                              - "null"
+                                          green:
+                                            type:
+                                              - number
+                                              - "null"
+                                          red:
+                                            type:
+                                              - number
+                                              - "null"
+                      shapeType:
+                        type:
+                          - string
+                          - "null"
+                      text:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          lists:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              bodyPlaceholderListEntity:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  listId:
+                                    type:
+                                      - string
+                                      - "null"
+                                  nestingLevel:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      "0":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "1":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "2":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "3":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "4":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "5":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "6":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "7":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                      "8":
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          bulletStyle:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              backgroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                              baselineOffset:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              bold:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              fontFamily:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              fontSize:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  magnitude:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                                                  unit:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                              foregroundColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  opaqueColor:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      themeColor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                              italic:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              smallCaps:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              strikethrough:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              underline:
+                                                type:
+                                                  - boolean
+                                                  - "null"
+                                              weightedFontFamily:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  fontFamily:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  weight:
+                                                    type:
+                                                      - number
+                                                      - "null"
+                          textElements:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                autoText:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    content:
+                                      type:
+                                        - string
+                                        - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        backgroundColor:
+                                          type:
+                                            - object
+                                            - "null"
+                                        baselineOffset:
+                                          type:
+                                            - string
+                                            - "null"
+                                        bold:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        fontFamily:
+                                          type:
+                                            - string
+                                            - "null"
+                                        fontSize:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            magnitude:
+                                              type:
+                                                - number
+                                                - "null"
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        foregroundColor:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            opaqueColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                themeColor:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                        italic:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        smallCaps:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        strikethrough:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        underline:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        weightedFontFamily:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            weight:
+                                              type:
+                                                - number
+                                                - "null"
+                                endIndex:
+                                  type:
+                                    - number
+                                    - "null"
+                                paragraphMarker:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    bullet:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                        glyph:
+                                          type:
+                                            - string
+                                            - "null"
+                                        listId:
+                                          type:
+                                            - string
+                                            - "null"
+                                        nestingLevel:
+                                          type:
+                                            - number
+                                            - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        alignment:
+                                          type:
+                                            - string
+                                            - "null"
+                                        direction:
+                                          type:
+                                            - string
+                                            - "null"
+                                        indentEnd:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        indentFirstLine:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        indentStart:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        lineSpacing:
+                                          type:
+                                            - number
+                                            - "null"
+                                        spaceAbove:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        spaceBelow:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            magnitude:
+                                              type:
+                                                - number
+                                                - "null"
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        spacingMode:
+                                          type:
+                                            - string
+                                            - "null"
+                                startIndex:
+                                  type:
+                                    - number
+                                    - "null"
+                                textRun:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    content:
+                                      type:
+                                        - string
+                                        - "null"
+                                    style:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        backgroundColor:
+                                          type:
+                                            - object
+                                            - "null"
+                                        baselineOffset:
+                                          type:
+                                            - string
+                                            - "null"
+                                        bold:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        fontFamily:
+                                          type:
+                                            - string
+                                            - "null"
+                                        fontSize:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            magnitude:
+                                              type:
+                                                - number
+                                                - "null"
+                                            unit:
+                                              type:
+                                                - string
+                                                - "null"
+                                        foregroundColor:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            opaqueColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                themeColor:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                        italic:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        smallCaps:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        strikethrough:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        underline:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        weightedFontFamily:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            weight:
+                                              type:
+                                                - number
+                                                - "null"
+                  size:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                      width:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                  transform:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      scaleX:
+                        type:
+                          - number
+                          - "null"
+                      scaleY:
+                        type:
+                          - number
+                          - "null"
+                      translateX:
+                        type:
+                          - number
+                          - "null"
+                      translateY:
+                        type:
+                          - number
+                          - "null"
+                      unit:
+                        type:
+                          - string
+                          - "null"
+            pageProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                colorScheme:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    colors:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          color:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              blue:
+                                type:
+                                  - number
+                                  - "null"
+                              green:
+                                type:
+                                  - number
+                                  - "null"
+                              red:
+                                type:
+                                  - number
+                                  - "null"
+                pageBackgroundFill:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    solidFill:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        alpha:
+                          type:
+                            - number
+                            - "null"
+                        color:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            themeColor:
+                              type:
+                                - string
+                                - "null"
+            pageType:
+              type:
+                - string
+                - "null"
+      notesMaster:
+        type:
+          - object
+          - "null"
+        properties:
+          objectId:
+            type:
+              - string
+              - "null"
+          pageElements:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                objectId:
+                  type:
+                    - string
+                    - "null"
+                shape:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    placeholder:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        index:
+                          type:
+                            - number
+                            - "null"
+                    shapeProperties:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        autofit:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            autofitType:
+                              type:
+                                - string
+                                - "null"
+                            fontScale:
+                              type:
+                                - number
+                                - "null"
+                        contentAlignment:
+                          type:
+                            - string
+                            - "null"
+                        outline:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            dashStyle:
+                              type:
+                                - string
+                                - "null"
+                            outlineFill:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                solidFill:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    alpha:
+                                      type:
+                                        - number
+                                        - "null"
+                                    color:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        rgbColor:
+                                          type:
+                                            - object
+                                            - "null"
+                            propertyState:
+                              type:
+                                - string
+                                - "null"
+                            weight:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                magnitude:
+                                  type:
+                                    - number
+                                    - "null"
+                                unit:
+                                  type:
+                                    - string
+                                    - "null"
+                        shadow:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            alignment:
+                              type:
+                                - string
+                                - "null"
+                            alpha:
+                              type:
+                                - number
+                                - "null"
+                            blurRadius:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                unit:
+                                  type:
+                                    - string
+                                    - "null"
+                            color:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                rgbColor:
+                                  type:
+                                    - object
+                                    - "null"
+                            propertyState:
+                              type:
+                                - string
+                                - "null"
+                            rotateWithShape:
+                              type:
+                                - boolean
+                                - "null"
+                            transform:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                scaleX:
+                                  type:
+                                    - number
+                                    - "null"
+                                scaleY:
+                                  type:
+                                    - number
+                                    - "null"
+                                unit:
+                                  type:
+                                    - string
+                                    - "null"
+                        shapeBackgroundFill:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            propertyState:
+                              type:
+                                - string
+                                - "null"
+                            solidFill:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                alpha:
+                                  type:
+                                    - number
+                                    - "null"
+                                color:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    rgbColor:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        blue:
+                                          type:
+                                            - number
+                                            - "null"
+                                        green:
+                                          type:
+                                            - number
+                                            - "null"
+                                        red:
+                                          type:
+                                            - number
+                                            - "null"
+                    shapeType:
+                      type:
+                        - string
+                        - "null"
+                    text:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        lists:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            bodyPlaceholderListEntity:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                listId:
+                                  type:
+                                    - string
+                                    - "null"
+                                nestingLevel:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    "0":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "1":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "2":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "3":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "4":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "5":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "6":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "7":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                    "8":
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        bulletStyle:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            backgroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                            baselineOffset:
+                                              type:
+                                                - string
+                                                - "null"
+                                            bold:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            fontFamily:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                magnitude:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                                                unit:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            foregroundColor:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                opaqueColor:
+                                                  type:
+                                                    - object
+                                                    - "null"
+                                                  properties:
+                                                    rgbColor:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                            italic:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            smallCaps:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            strikethrough:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            underline:
+                                              type:
+                                                - boolean
+                                                - "null"
+                                            weightedFontFamily:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                fontFamily:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                weight:
+                                                  type:
+                                                    - number
+                                                    - "null"
+                        textElements:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              endIndex:
+                                type:
+                                  - number
+                                  - "null"
+                              paragraphMarker:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  bullet:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      bulletStyle:
+                                        type:
+                                          - object
+                                          - "null"
+                                      glyph:
+                                        type:
+                                          - string
+                                          - "null"
+                                      listId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      nestingLevel:
+                                        type:
+                                          - number
+                                          - "null"
+                                  style:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      alignment:
+                                        type:
+                                          - string
+                                          - "null"
+                                      direction:
+                                        type:
+                                          - string
+                                          - "null"
+                                      indentEnd:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      indentFirstLine:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      indentStart:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      lineSpacing:
+                                        type:
+                                          - number
+                                          - "null"
+                                      spaceAbove:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      spaceBelow:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      spacingMode:
+                                        type:
+                                          - string
+                                          - "null"
+                              startIndex:
+                                type:
+                                  - number
+                                  - "null"
+                              textRun:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  content:
+                                    type:
+                                      - string
+                                      - "null"
+                                  style:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      backgroundColor:
+                                        type:
+                                          - object
+                                          - "null"
+                                      baselineOffset:
+                                        type:
+                                          - string
+                                          - "null"
+                                      bold:
+                                        type:
+                                          - boolean
+                                          - "null"
+                                      fontFamily:
+                                        type:
+                                          - string
+                                          - "null"
+                                      fontSize:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          magnitude:
+                                            type:
+                                              - number
+                                              - "null"
+                                          unit:
+                                            type:
+                                              - string
+                                              - "null"
+                                      foregroundColor:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          opaqueColor:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              rgbColor:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                      italic:
+                                        type:
+                                          - boolean
+                                          - "null"
+                                      smallCaps:
+                                        type:
+                                          - boolean
+                                          - "null"
+                                      strikethrough:
+                                        type:
+                                          - boolean
+                                          - "null"
+                                      underline:
+                                        type:
+                                          - boolean
+                                          - "null"
+                                      weightedFontFamily:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          fontFamily:
+                                            type:
+                                              - string
+                                              - "null"
+                                          weight:
+                                            type:
+                                              - number
+                                              - "null"
+                size:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    height:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        magnitude:
+                          type:
+                            - number
+                            - "null"
+                        unit:
+                          type:
+                            - string
+                            - "null"
+                    width:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        magnitude:
+                          type:
+                            - number
+                            - "null"
+                        unit:
+                          type:
+                            - string
+                            - "null"
+                transform:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    scaleX:
+                      type:
+                        - number
+                        - "null"
+                    scaleY:
+                      type:
+                        - number
+                        - "null"
+                    translateX:
+                      type:
+                        - number
+                        - "null"
+                    translateY:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          pageProperties:
+            type:
+              - object
+              - "null"
+            properties:
+              colorScheme:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  colors:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        color:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            blue:
+                              type:
+                                - number
+                                - "null"
+                            green:
+                              type:
+                                - number
+                                - "null"
+                            red:
+                              type:
+                                - number
+                                - "null"
+              pageBackgroundFill:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  propertyState:
+                    type:
+                      - string
+                      - "null"
+                  solidFill:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      alpha:
+                        type:
+                          - number
+                          - "null"
+                      color:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          rgbColor:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              blue:
+                                type:
+                                  - number
+                                  - "null"
+                              green:
+                                type:
+                                  - number
+                                  - "null"
+                              red:
+                                type:
+                                  - number
+                                  - "null"
+          pageType:
+            type:
+              - string
+              - "null"
+      pageSize:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - object
+              - "null"
+            properties:
+              magnitude:
+                type:
+                  - number
+                  - "null"
+              unit:
+                type:
+                  - string
+                  - "null"
+          width:
+            type:
+              - object
+              - "null"
+            properties:
+              magnitude:
+                type:
+                  - number
+                  - "null"
+              unit:
+                type:
+                  - string
+                  - "null"
+      presentationId:
+        type:
+          - string
+          - "null"
+      revisionId:
+        type:
+          - string
+          - "null"
+      slides:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            objectId:
+              type:
+                - string
+                - "null"
+            pageElements:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  objectId:
+                    type:
+                      - string
+                      - "null"
+                  shape:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      placeholder:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          parentObjectId:
+                            type:
+                              - string
+                              - "null"
+                      shapeProperties:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          autofit:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              autofitType:
+                                type:
+                                  - string
+                                  - "null"
+                              fontScale:
+                                type:
+                                  - number
+                                  - "null"
+                          outline:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                          shadow:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                          shapeBackgroundFill:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              propertyState:
+                                type:
+                                  - string
+                                  - "null"
+                      shapeType:
+                        type:
+                          - string
+                          - "null"
+                  size:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                      width:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          magnitude:
+                            type:
+                              - number
+                              - "null"
+                          unit:
+                            type:
+                              - string
+                              - "null"
+                  transform:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      scaleX:
+                        type:
+                          - number
+                          - "null"
+                      scaleY:
+                        type:
+                          - number
+                          - "null"
+                      translateX:
+                        type:
+                          - number
+                          - "null"
+                      translateY:
+                        type:
+                          - number
+                          - "null"
+                      unit:
+                        type:
+                          - string
+                          - "null"
+            pageProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                pageBackgroundFill:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    propertyState:
+                      type:
+                        - string
+                        - "null"
+            slideProperties:
+              type:
+                - object
+                - "null"
+              properties:
+                layoutObjectId:
+                  type:
+                    - string
+                    - "null"
+                masterObjectId:
+                  type:
+                    - string
+                    - "null"
+                notesPage:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    notesProperties:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        speakerNotesObjectId:
+                          type:
+                            - string
+                            - "null"
+                    objectId:
+                      type:
+                        - string
+                        - "null"
+                    pageElements:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          objectId:
+                            type:
+                              - string
+                              - "null"
+                          shape:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              placeholder:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  type:
+                                    type:
+                                      - string
+                                      - "null"
+                                  index:
+                                    type:
+                                      - number
+                                      - "null"
+                                  parentObjectId:
+                                    type:
+                                      - string
+                                      - "null"
+                              shapeProperties:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  autofit:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      fontScale:
+                                        type:
+                                          - number
+                                          - "null"
+                                  outline:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      propertyState:
+                                        type:
+                                          - string
+                                          - "null"
+                                  shadow:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      propertyState:
+                                        type:
+                                          - string
+                                          - "null"
+                                  shapeBackgroundFill:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      propertyState:
+                                        type:
+                                          - string
+                                          - "null"
+                              shapeType:
+                                type:
+                                  - string
+                                  - "null"
+                          size:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              height:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  magnitude:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                              width:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  magnitude:
+                                    type:
+                                      - number
+                                      - "null"
+                                  unit:
+                                    type:
+                                      - string
+                                      - "null"
+                          transform:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              scaleX:
+                                type:
+                                  - number
+                                  - "null"
+                              scaleY:
+                                type:
+                                  - number
+                                  - "null"
+                              translateX:
+                                type:
+                                  - number
+                                  - "null"
+                              translateY:
+                                type:
+                                  - number
+                                  - "null"
+                              unit:
+                                type:
+                                  - string
+                                  - "null"
+                    pageProperties:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        pageBackgroundFill:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            propertyState:
+                              type:
+                                - string
+                                - "null"
+                    pageType:
+                      type:
+                        - string
+                        - "null"
+      title:
+        type:
+          - string
+          - "null"
+  pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      objectId:
+        type: string
+      pageElements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            objectId:
+              type:
+                - string
+                - "null"
+            shape:
+              type:
+                - object
+                - "null"
+              properties:
+                placeholder:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    parentObjectId:
+                      type:
+                        - string
+                        - "null"
+                shapeProperties:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    autofit:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        fontScale:
+                          type:
+                            - number
+                            - "null"
+                    outline:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        propertyState:
+                          type:
+                            - string
+                            - "null"
+                    shadow:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        propertyState:
+                          type:
+                            - string
+                            - "null"
+                    shapeBackgroundFill:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        propertyState:
+                          type:
+                            - string
+                            - "null"
+                shapeType:
+                  type:
+                    - string
+                    - "null"
+            size:
+              type:
+                - object
+                - "null"
+              properties:
+                height:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    magnitude:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+                width:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    magnitude:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+            transform:
+              type:
+                - object
+                - "null"
+              properties:
+                scaleX:
+                  type:
+                    - number
+                    - "null"
+                scaleY:
+                  type:
+                    - number
+                    - "null"
+                translateX:
+                  type:
+                    - number
+                    - "null"
+                translateY:
+                  type:
+                    - number
+                    - "null"
+                unit:
+                  type:
+                    - string
+                    - "null"
+      pageProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          pageBackgroundFill:
+            type:
+              - object
+              - "null"
+            properties:
+              propertyState:
+                type:
+                  - string
+                  - "null"
+      revisionId:
+        type:
+          - string
+          - "null"
+      slideProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          layoutObjectId:
+            type:
+              - string
+              - "null"
+          masterObjectId:
+            type:
+              - string
+              - "null"
+          notesPage:
+            type:
+              - object
+              - "null"
+            properties:
+              notesProperties:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  speakerNotesObjectId:
+                    type:
+                      - string
+                      - "null"
+              objectId:
+                type:
+                  - string
+                  - "null"
+              pageElements:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    objectId:
+                      type:
+                        - string
+                        - "null"
+                    shape:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        placeholder:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            index:
+                              type:
+                                - number
+                                - "null"
+                            parentObjectId:
+                              type:
+                                - string
+                                - "null"
+                        shapeProperties:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            autofit:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                fontScale:
+                                  type:
+                                    - number
+                                    - "null"
+                            outline:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                propertyState:
+                                  type:
+                                    - string
+                                    - "null"
+                            shadow:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                propertyState:
+                                  type:
+                                    - string
+                                    - "null"
+                            shapeBackgroundFill:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                propertyState:
+                                  type:
+                                    - string
+                                    - "null"
+                        shapeType:
+                          type:
+                            - string
+                            - "null"
+                    size:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        height:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            magnitude:
+                              type:
+                                - number
+                                - "null"
+                            unit:
+                              type:
+                                - string
+                                - "null"
+                        width:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            magnitude:
+                              type:
+                                - number
+                                - "null"
+                            unit:
+                              type:
+                                - string
+                                - "null"
+                    transform:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        scaleX:
+                          type:
+                            - number
+                            - "null"
+                        scaleY:
+                          type:
+                            - number
+                            - "null"
+                        translateX:
+                          type:
+                            - number
+                            - "null"
+                        translateY:
+                          type:
+                            - number
+                            - "null"
+                        unit:
+                          type:
+                            - string
+                            - "null"
+              pageProperties:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  pageBackgroundFill:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      propertyState:
+                        type:
+                          - string
+                          - "null"
+              pageType:
+                type:
+                  - string
+                  - "null"
+    required:
+      - objectId
+  thumbnail:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contentUrl:
+        type:
+          - string
+          - "null"
+      height:
+        type:
+          - number
+          - "null"
+      width:
+        type:
+          - number
+          - "null"
