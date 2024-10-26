@@ -31,7 +31,7 @@ definitions:
               - employees
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_declarative_manifest.components.BambooHRSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportsSchemaLoader
     employees_directory_stream:
       type: DeclarativeStream
       name: employees_directory_stream
