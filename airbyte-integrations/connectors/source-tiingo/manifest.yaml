@@ -1,0 +1,145 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: source-tiingo
+
+check:
+  type: CheckStream
+  stream_names:
+    - endofday
+
+definitions:
+  streams:
+    endofday:
+      type: DeclarativeStream
+      name: endofday
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tiingo/daily/{{ config['ticker'] }}/prices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/endofday"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tiingo.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: Token {{ config['api_token'] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/endofday"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - ticker
+      - api_token
+    properties:
+      ticker:
+        type: string
+        name: ticker
+        title: ticker
+        order: 0
+      api_token:
+        type: string
+        description: API token to use. Find it at https://www.tiingo.com/account/api/token
+        name: api_token
+        title: API Token
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    endofday: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    endofday:
+      streamHash: 202d0c9111b38a8bb6dfddc10d930c64d7cf4edf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.tiingo.com/documentation
+
+schemas:
+  endofday:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adjClose:
+        type:
+          - number
+          - "null"
+      adjHigh:
+        type:
+          - number
+          - "null"
+      adjLow:
+        type:
+          - number
+          - "null"
+      adjOpen:
+        type:
+          - number
+          - "null"
+      adjVolume:
+        type:
+          - number
+          - "null"
+      close:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      divCash:
+        type:
+          - number
+          - "null"
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      splitFactor:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+    required:
+      - date
