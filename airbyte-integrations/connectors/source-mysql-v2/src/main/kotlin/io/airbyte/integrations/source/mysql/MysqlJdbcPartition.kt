@@ -185,19 +185,35 @@ class MysqlJdbcSnapshotPartition(
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
 
+    // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
+    // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
-            when (upperBound) {
-                null -> MysqlJdbcStreamStateValue.snapshotCompleted
-                else ->
-                    MysqlJdbcStreamStateValue.snapshotCheckpoint(
-                        primaryKey = checkpointColumns,
-                        primaryKeyCheckpoint = upperBound,
-                    )
-            }
+            MysqlJdbcStreamStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint = listOf(),
+            )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlJdbcStreamStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+/** Implementation of a [JdbcPartition] for a CDC snapshot partition. */
+class MysqlJdbcCdcSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val upperBound: List<JsonNode>? = null
+    override val completeState: OpaqueStateValue
+        get() = MysqlCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
