@@ -17,7 +17,8 @@ class MockBasicFunctionalityIntegrationTest :
         MockDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
-        NoopNameMapper
+        NoopNameMapper,
+        isStreamSchemaRetroactive = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -37,5 +38,20 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testFunkyStreamAndColumnNames() {
         super.testFunkyStreamAndColumnNames()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }

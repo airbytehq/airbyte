@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "5.14.0"
+version = "5.16.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-5.14.0-py3-none-any.whl", hash = "sha256:2791b684ffdb4ea7a877bcde5b0a461dbfa4ac6b0e619d5a973bd63dd09c0aa1"},
-    {file = "airbyte_cdk-5.14.0.tar.gz", hash = "sha256:d6953dc5a69293d3d9cf36443522ad07c7d351c942a859047a7bdb0807eeaa58"},
+    {file = "airbyte_cdk-5.16.0-py3-none-any.whl", hash = "sha256:71f909ffc489e3c20ee2ee8a307fe30035bc3f62b221951ede1f2063b76b49a9"},
+    {file = "airbyte_cdk-5.16.0.tar.gz", hash = "sha256:1f214a93c3ec20c047d13c4612de0cdaf76fb87e8f312fd7a8ea1e216ad1794a"},
 ]
 
 [package.dependencies]
@@ -43,6 +43,7 @@ xmltodict = ">=0.13.0,<0.14.0"
 [package.extras]
 file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 sphinx-docs = ["Sphinx (>=4.2,<4.3)", "sphinx-rtd-theme (>=1.0,<1.1)"]
+sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.4.0)"]
 
 [[package]]
@@ -1746,4 +1747,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "baff24abe6e7ba61b0d758887ed230ffb116199271e52672e88567fe5ee11512"
+content-hash = "62a37bc67a317299cc94df0750dca824191a594334df14f8331dc18b1537f85c"

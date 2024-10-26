@@ -360,7 +360,7 @@ _Applies to connector with any Airbyte usage level_
 
 Connector version in metadata.yaml and pyproject.toml file must match. This is to ensure that connector release is consistent.
 
-### Python connectors must have PyPi publishing enabled
+### Python connectors must have PyPi publishing declared.
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
