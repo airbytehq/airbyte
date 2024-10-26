@@ -473,7 +473,3 @@ check:
 #
 # We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
 # customers can specify a higher concurrency level as needed up to the theoretical max rate limt.
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: 1
-  max_concurrency: 50
