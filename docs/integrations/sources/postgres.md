@@ -175,7 +175,7 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 
 #### Step 6: Enable CDC replication in Airbyte UI
 
-In your Postgres source, change the replication mode to `Logical Replication (CDC)`, and enter the replication slot and publication you just created.
+In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
 ## Postgres Replication Methods
 

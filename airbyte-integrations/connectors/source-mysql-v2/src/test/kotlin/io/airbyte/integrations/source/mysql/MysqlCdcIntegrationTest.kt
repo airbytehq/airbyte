@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
@@ -114,7 +113,9 @@ class MysqlCdcIntegrationTest {
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
-                    .withCursorField(listOf(CommonMetaField.CDC_LSN.id))
+                    .withCursorField(
+                        listOf(MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id)
+                    )
             ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
         }
 
