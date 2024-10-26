@@ -171,8 +171,8 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
                     # This is an optimization so that we don't invoke any cursor or state management flows within the
                     # low-code framework because state management is handled through the ConcurrentCursor.
-                    if declarative_stream and declarative_stream.retriever and isinstance(declarative_stream.retriever, SimpleRetriever):
-                        declarative_stream.retriever.cursor = None
+                    # if declarative_stream and declarative_stream.retriever and isinstance(declarative_stream.retriever, SimpleRetriever):
+                    #     declarative_stream.retriever.cursor = None
 
                     partition_generator = CursorPartitionGenerator(
                         stream=declarative_stream,
