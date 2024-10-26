@@ -22,7 +22,8 @@ python-ulid = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
-ruff = "^0.0.286"
+airbyte-connector-tester = {path = "/Users/ajsteers/Source/airbyte-pytest", develop = true}  # TODO: replace with pypi package or git ref
+ruff = "^0.7.1"
 black = "^23.7.0"
 mypy = "^1.5.1"
 faker = "24.4.0"
