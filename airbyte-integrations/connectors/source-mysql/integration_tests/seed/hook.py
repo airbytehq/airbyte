@@ -12,7 +12,6 @@ from mysql.connector import Error
 import pytz
 
 support_file_path_prefix = "/connector/integration_tests"
-#support_file_path_prefix = "./localtest"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
 catalog_source_file = support_file_path_prefix + "/configured_catalog_template.json"
 catalog_incremental_write_file = support_file_path_prefix + "/temp/incremental_configured_catalog_copy.json"
@@ -24,12 +23,6 @@ secret_config_file = '/connector/secrets/cat-config.json'
 secret_active_config_file = support_file_path_prefix + '/temp/config_active.json'
 secret_config_cdc_file = '/connector/secrets/cat-config-cdc.json'
 secret_active_config_cdc_file = support_file_path_prefix + '/temp/config_cdc_active.json'
-
-
-#secret_config_file = './secrets/cat-config.json'
-#secret_active_config_file = './secrets/config_active.json'
-#secret_config_cdc_file = './secrets/cat-config-cdc.json'
-#secret_active_config_cdc_file = './secrets/config_cdc_active.json'
 
 la_timezone = pytz.timezone('America/Los_Angeles')
 
