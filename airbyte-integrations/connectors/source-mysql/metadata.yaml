@@ -65,6 +65,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CDC_CREDS
+          fileName: cat-config-cdc.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MYSQL_SSH-KEY-REPL__CREDS
@@ -94,6 +99,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CREDS
           fileName: cat-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CDC_CREDS
+          fileName: cat-config-cdc.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
