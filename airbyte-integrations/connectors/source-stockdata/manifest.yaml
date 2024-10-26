@@ -1,0 +1,503 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >+
+  Stockdata provides access to market news for global exchanges, and trading
+  data for US stocks.
+
+  With this connector we can extract data from EOD , Intraday and news feeds
+  streams
+
+
+check:
+  type: CheckStream
+  stream_names:
+    - Stock Search
+
+definitions:
+  streams:
+    Stock Search:
+      type: DeclarativeStream
+      name: Stock Search
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: entity/search
+          http_method: GET
+          request_parameters:
+            exchanges: "{{ config['exchanges'] }}"
+            symbols: "{{ config['symbols'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stock Search"
+    News Feeds:
+      type: DeclarativeStream
+      name: News Feeds
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: news/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/News Feeds"
+    EOD Data:
+      type: DeclarativeStream
+      name: EOD Data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: data/eod
+          http_method: GET
+          request_parameters:
+            date_to: "{{ config['to'] }}"
+            symbols: "{{ stream_partition.symbol }}"
+            date_from: "{{ config['from'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Stock Search"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/EOD Data"
+    Intraday Unadjusted Data:
+      type: DeclarativeStream
+      name: Intraday Unadjusted Data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: data/intraday
+          http_method: GET
+          request_parameters:
+            date_to: "{{ config['to'] }}"
+            symbols: "{{ stream_partition.symbol }}"
+            date_from: "{{ config['from'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/Stock Search"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Intraday Unadjusted Data"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.stockdata.org/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/Stock Search"
+  - $ref: "#/definitions/streams/News Feeds"
+  - $ref: "#/definitions/streams/EOD Data"
+  - $ref: "#/definitions/streams/Intraday Unadjusted Data"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      exchanges:
+        type: string
+        order: 1
+        title: Exchanges
+        default: NASDAQ
+      from:
+        type: string
+        order: 2
+        title: From
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      to:
+        type: string
+        order: 3
+        title: To
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      symbols:
+        type: string
+        title: Symbols
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Stock Search: true
+    News Feeds: true
+    EOD Data: true
+    Intraday Unadjusted Data: true
+  testedStreams:
+    Stock Search:
+      streamHash: d46a94e5b963e86e6ba528f80a1f4f4e56cecaba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    News Feeds:
+      hasRecords: true
+      streamHash: acc8df0a8a5f4a35579a6d9078aa347c6b37fc5d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    EOD Data:
+      streamHash: 9189aaad682a9b9248ad203e5496322d8afd97c1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Intraday Unadjusted Data:
+      streamHash: 8c5b00c7885e7741de7587d396926a96f2963d35
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Stock Search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  News Feeds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      entities:
+        type:
+          - array
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      keywords:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      published_at:
+        type:
+          - string
+          - "null"
+      similar:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            entities:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  highlights:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        highlight:
+                          type:
+                            - string
+                            - "null"
+                        highlighted_in:
+                          type:
+                            - string
+                            - "null"
+                        sentiment:
+                          type:
+                            - number
+                            - "null"
+                  industry:
+                    type:
+                      - string
+                      - "null"
+                  match_score:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sentiment_score:
+                    type:
+                      - number
+                      - "null"
+                  symbol:
+                    type:
+                      - string
+                      - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            keywords:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - string
+                - "null"
+            published_at:
+              type:
+                - string
+                - "null"
+            snippet:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            uuid:
+              type:
+                - string
+                - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  EOD Data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      close:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+  Intraday Unadjusted Data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          close:
+            type:
+              - number
+              - "null"
+          high:
+            type:
+              - number
+              - "null"
+          is_extended_hours:
+            type:
+              - boolean
+              - "null"
+          low:
+            type:
+              - number
+              - "null"
+          open:
+            type:
+              - number
+              - "null"
+          volume:
+            type:
+              - number
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
