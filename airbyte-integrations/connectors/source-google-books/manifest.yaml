@@ -1,0 +1,437 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: source-google-books
+
+check:
+  type: CheckStream
+  stream_names:
+    - volumes
+
+definitions:
+  streams:
+    volumes:
+      type: DeclarativeStream
+      name: volumes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: volumes
+          http_method: GET
+          request_parameters:
+            q: "{{config['search_terms']}}"
+            country: "{{config['country']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 40
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/volumes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.googleapis.com/books/v1/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: "#/definitions/streams/volumes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - search_terms
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - country
+    properties:
+      search_terms:
+        type: string
+        name: search_terms
+        order: 0
+        title: search_terms
+      client_id:
+        type: string
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 2
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 3
+        title: Refresh token
+        airbyte_secret: true
+      country:
+        type: string
+        title: Country
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    volumes: true
+  testedStreams:
+    volumes:
+      streamHash: a0a79e5c66d574fcd3ca1eb0858c4f5e993e44dc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/books/docs/v1/using
+
+schemas:
+  volumes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accessInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          accessViewStatus:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          embeddable:
+            type:
+              - boolean
+              - "null"
+          epub:
+            type:
+              - object
+              - "null"
+            properties:
+              acsTokenLink:
+                type:
+                  - string
+                  - "null"
+              isAvailable:
+                type:
+                  - boolean
+                  - "null"
+          pdf:
+            type:
+              - object
+              - "null"
+            properties:
+              acsTokenLink:
+                type:
+                  - string
+                  - "null"
+              isAvailable:
+                type:
+                  - boolean
+                  - "null"
+          publicDomain:
+            type:
+              - boolean
+              - "null"
+          quoteSharingAllowed:
+            type:
+              - boolean
+              - "null"
+          textToSpeechPermission:
+            type:
+              - string
+              - "null"
+          viewability:
+            type:
+              - string
+              - "null"
+          webReaderLink:
+            type:
+              - string
+              - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      saleInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          buyLink:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          isEbook:
+            type:
+              - boolean
+              - "null"
+          listPrice:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currencyCode:
+                type:
+                  - string
+                  - "null"
+          offers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                finskyOfferType:
+                  type:
+                    - number
+                    - "null"
+                giftable:
+                  type:
+                    - boolean
+                    - "null"
+                listPrice:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amountInMicros:
+                      type:
+                        - number
+                        - "null"
+                    currencyCode:
+                      type:
+                        - string
+                        - "null"
+                retailPrice:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amountInMicros:
+                      type:
+                        - number
+                        - "null"
+                    currencyCode:
+                      type:
+                        - string
+                        - "null"
+          retailPrice:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currencyCode:
+                type:
+                  - string
+                  - "null"
+          saleability:
+            type:
+              - string
+              - "null"
+      searchInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          textSnippet:
+            type:
+              - string
+              - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      volumeInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allowAnonLogging:
+            type:
+              - boolean
+              - "null"
+          authors:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          averageRating:
+            type:
+              - number
+              - "null"
+          canonicalVolumeLink:
+            type:
+              - string
+              - "null"
+          categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          contentVersion:
+            type:
+              - string
+              - "null"
+          imageLinks:
+            type:
+              - object
+              - "null"
+            properties:
+              smallThumbnail:
+                type:
+                  - string
+                  - "null"
+              thumbnail:
+                type:
+                  - string
+                  - "null"
+          industryIdentifiers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                identifier:
+                  type:
+                    - string
+                    - "null"
+          infoLink:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          maturityRating:
+            type:
+              - string
+              - "null"
+          pageCount:
+            type:
+              - number
+              - "null"
+          panelizationSummary:
+            type:
+              - object
+              - "null"
+            properties:
+              containsEpubBubbles:
+                type:
+                  - boolean
+                  - "null"
+              containsImageBubbles:
+                type:
+                  - boolean
+                  - "null"
+          previewLink:
+            type:
+              - string
+              - "null"
+          printType:
+            type:
+              - string
+              - "null"
+          publishedDate:
+            type:
+              - string
+              - "null"
+          publisher:
+            type:
+              - string
+              - "null"
+          ratingsCount:
+            type:
+              - number
+              - "null"
+          readingModes:
+            type:
+              - object
+              - "null"
+            properties:
+              image:
+                type:
+                  - boolean
+                  - "null"
+              text:
+                type:
+                  - boolean
+                  - "null"
+          subtitle:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
