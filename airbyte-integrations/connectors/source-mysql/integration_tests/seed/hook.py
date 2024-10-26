@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import datetime
 import json
 import random
@@ -8,8 +10,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 import mysql.connector
-from mysql.connector import Error
 import pytz
+from mysql.connector import Error
 
 support_file_path_prefix = "/connector/integration_tests"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
