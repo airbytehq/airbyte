@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 import logging
 from typing import Any, List, Mapping
 
@@ -36,6 +36,7 @@ class OktaConfigMigration:
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         config["domain"] = config["base_url"].split("https://")[1].split(".")[0]
+        config["environment_domain"] = ".".join(config["base_url"].split("https://")[1].split(".")[1:])
         if "credentials" not in config:
             if "token" in config:
                 config["credentials"] = {
@@ -60,8 +61,8 @@ class OktaConfigMigration:
         # add the Airbyte Control Message to message repo
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        for message in cls.message_repository.consume_queue():
+            print(json.dumps(cls.airbyte_message_to_dict(message)))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
@@ -80,3 +81,21 @@ class OktaConfigMigration:
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
                 )
+
+    @classmethod
+    def airbyte_message_to_dict(cls, message):
+        return {
+            "type": message.type.value,
+            "log": message.log,
+            "spec": message.spec,
+            "connectionStatus": message.connectionStatus,
+            "catalog": message.catalog,
+            "record": message.record,
+            "state": message.state,
+            "trace": message.trace,
+            "control": {
+                "type": message.control.type.value,
+                "emitted_at": message.control.emitted_at,
+                "connectorConfig": {"config": message.control.connectorConfig.config},
+            },
+        }
