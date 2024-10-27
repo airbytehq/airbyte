@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import java.util.concurrent.ConcurrentHashMap
@@ -19,15 +21,24 @@ object MockDestinationBackend {
         return getFile(filename)
     }
 
+    fun deleteOldRecords(filename: String, minGenerationId: Long) {
+        getFile(filename).removeAll {
+            it.generationId == null || it.generationId!! < minGenerationId
+        }
+    }
+
     private fun getFile(filename: String): MutableList<OutputRecord> {
         return files.getOrPut(filename) { mutableListOf() }
     }
 }
 
 object MockDestinationDataDumper : DestinationDataDumper {
-    override fun dumpRecords(streamName: String, streamNamespace: String?): List<OutputRecord> {
+    override fun dumpRecords(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            MockStreamLoader.getFilename(streamNamespace, streamName)
+            MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
     }
 }
