@@ -729,47 +729,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/segments_details"
-    test:
-      type: DeclarativeStream
-      name: test
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /feed/data_series
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
-        cursor_field: time
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-        end_time_option:
-          type: RequestOption
-          field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
-          inject_into: request_parameter
-        datetime_format: "%Y-%m-%d"
-        step: P100D
-        cursor_granularity: P1D
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/test"
   base_requester:
     type: HttpRequester
     url_base: "{{ config['url'] }}"
@@ -794,7 +753,6 @@ streams:
   - $ref: "#/definitions/streams/segments"
   - $ref: "#/definitions/streams/segments_analytics"
   - $ref: "#/definitions/streams/segments_details"
-  - $ref: "#/definitions/streams/test"
 
 spec:
   type: Spec
@@ -843,7 +801,6 @@ metadata:
     segments: false
     segments_analytics: false
     segments_details: false
-    test: false
   yamlComponents:
     streams:
       campaigns_analytics:
@@ -864,11 +821,7 @@ metadata:
         - incrementalSync
       segments_analytics:
         - incrementalSync
-      test:
-        - incrementalSync
-  testedStreams:
-    test:
-      streamHash: null
+  testedStreams: {}
   assist: {}
 
 schemas:
@@ -1414,8 +1367,3 @@ schemas:
           - "null"
           - string
         format: date-time
-  test:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
