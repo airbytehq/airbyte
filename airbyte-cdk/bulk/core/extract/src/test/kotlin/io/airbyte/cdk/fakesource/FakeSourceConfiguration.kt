@@ -21,6 +21,7 @@ data class FakeSourceConfiguration(
     val cursor: CursorConfiguration,
     override val maxConcurrency: Int,
     override val checkpointTargetInterval: Duration,
+    override val maxSnapshotReadDuration: Duration? = null,
 ) : SourceConfiguration {
     override val global: Boolean = cursor is CdcCursor
 
@@ -33,9 +34,9 @@ data class FakeSourceConfiguration(
 @Requires(env = [Environment.TEST])
 @Secondary
 class FakeSourceConfigurationFactory :
-    SourceConfigurationFactory<FakeSourceConfigurationJsonObject, FakeSourceConfiguration> {
+    SourceConfigurationFactory<FakeSourceConfigurationSpecification, FakeSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: FakeSourceConfigurationJsonObject,
+        pojo: FakeSourceConfigurationSpecification,
     ): FakeSourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())

@@ -1,0 +1,493 @@
+version: 5.7.3
+
+type: DeclarativeSource
+
+description: >-
+  Coassemble is an online training tool that connects people with the
+  information they need - anytime, anyplace.
+
+check:
+  type: CheckStream
+  stream_names:
+    - courses
+
+definitions:
+  streams:
+    courses:
+      type: DeclarativeStream
+      name: courses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/headless/courses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: length
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/courses"
+    screen_types:
+      type: DeclarativeStream
+      name: screen_types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/headless/screen/types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/screen_types"
+    trackings:
+      type: DeclarativeStream
+      name: trackings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/headless/trackings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: length
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trackings"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.coassemble.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: >-
+        COASSEMBLE-V1-SHA256 UserId={{ config["user_id"] }}, UserToken={{
+        config["user_token"] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/courses"
+  - $ref: "#/definitions/streams/screen_types"
+  - $ref: "#/definitions/streams/trackings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - user_token
+      - user_id
+    properties:
+      user_token:
+        type: string
+        name: api_key
+        order: 0
+        title: User Token
+        airbyte_secret: true
+      user_id:
+        type: string
+        order: 1
+        title: User ID
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    courses: true
+    screen_types: false
+    trackings: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    courses:
+      hasRecords: true
+      streamHash: e525c6075f62d30a2f08bf4f97fe3eada75513cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    screen_types:
+      streamHash: null
+    trackings:
+      streamHash: null
+  assist:
+    docsUrl: https://developers.coassemble.com/
+
+schemas:
+  courses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+      finish:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              description:
+                type: string
+              bg_colour:
+                type: "null"
+              button_label:
+                type: string
+              button_style:
+                type: string
+              confetti_style:
+                type: string
+              display_button:
+                type: boolean
+              display_confetti:
+                type: boolean
+              display_description:
+                type: boolean
+              display_feedback:
+                type: boolean
+              display_pattern:
+                type: boolean
+              display_title:
+                type: boolean
+              finish:
+                type: boolean
+              layout:
+                type: string
+              legacy:
+                type: boolean
+              link_type:
+                type: string
+              link_url:
+                type: string
+              mode:
+                type: string
+              overlay:
+                type: number
+              text_alignment:
+                type: string
+              title:
+                type: string
+              title_colour:
+                type: "null"
+      id:
+        type: number
+      identified:
+        type:
+          - boolean
+          - "null"
+      image:
+        type:
+          - string
+          - "null"
+      is_sharable:
+        type:
+          - boolean
+          - "null"
+      key:
+        type:
+          - string
+          - "null"
+      paid:
+        type:
+          - boolean
+          - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      screens:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - object
+                - "null"
+              properties:
+                completable:
+                  type:
+                    - number
+                    - "null"
+                icon:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                premium:
+                  type:
+                    - boolean
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+            description:
+              type:
+                - string
+                - "null"
+            asset:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            object:
+              type:
+                - object
+                - "null"
+              properties:
+                display_button:
+                  type:
+                    - boolean
+                    - "null"
+                display_description:
+                  type:
+                    - boolean
+                    - "null"
+                display_duration:
+                  type:
+                    - boolean
+                    - "null"
+                display_title:
+                  type:
+                    - boolean
+                    - "null"
+                drag_index:
+                  type:
+                    - number
+                    - "null"
+                layout:
+                  type:
+                    - string
+                    - "null"
+                legacy:
+                  type:
+                    - boolean
+                    - "null"
+                mode:
+                  type:
+                    - string
+                    - "null"
+                text_alignment:
+                  type:
+                    - string
+                    - "null"
+            passing_grade:
+              type:
+                - number
+                - "null"
+            questions:
+              type:
+                - array
+                - "null"
+            scored:
+              type:
+                - boolean
+                - "null"
+            sequence:
+              type:
+                - number
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          button_label:
+            type:
+              - string
+              - "null"
+          button_style:
+            type:
+              - string
+              - "null"
+          display_button:
+            type:
+              - boolean
+              - "null"
+          display_description:
+            type:
+              - boolean
+              - "null"
+          display_duration:
+            type:
+              - boolean
+              - "null"
+          display_pattern:
+            type:
+              - boolean
+              - "null"
+          drag_index:
+            type:
+              - number
+              - "null"
+          finish:
+            type:
+              - boolean
+              - "null"
+          layout:
+            type:
+              - string
+              - "null"
+          legacy:
+            type:
+              - boolean
+              - "null"
+          link_type:
+            type:
+              - string
+              - "null"
+          mode:
+            type:
+              - string
+              - "null"
+          overlay:
+            type:
+              - number
+              - "null"
+          start:
+            type:
+              - boolean
+              - "null"
+          text_alignment:
+            type:
+              - string
+              - "null"
+          text_colour:
+            type:
+              - string
+              - "null"
+          title_size:
+            type:
+              - string
+              - "null"
+      theme:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              colours:
+                type: object
+                properties:
+                  cover:
+                    type: object
+                    properties:
+                      background:
+                        type: string
+                      headings:
+                        type: string
+                      pattern:
+                        type: string
+                      primary:
+                        type: string
+                  standard:
+                    type: object
+                    properties:
+                      background:
+                        type: string
+                      headings:
+                        type: string
+                      primary:
+                        type: string
+              font:
+                type: string
+              logo:
+                type: array
+              preset:
+                type: string
+      thumbnail:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  screen_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  trackings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
