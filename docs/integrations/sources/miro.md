@@ -1,5 +1,6 @@
 # Miro
-Airbyte connector, Miro&#39;s API could be used to extract data related to board content, user activities, and collaboration metrics, enabling integration with data warehouses and further analysis of team interactions and productivity.
+
+Airbyte connector for Miro can be used to extract data related to board content, user activities, and collaboration metrics, enabling integration with data warehouses and further analysis of team interactions and productivity.
 
 ## Configuration
 
