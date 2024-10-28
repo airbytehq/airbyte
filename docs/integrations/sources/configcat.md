@@ -37,6 +37,8 @@ Configcat APIs are under rate limits for the number of API calls allowed per API
 
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------ |
+| 0.2.2 | 2024-10-28 | [47465](https://github.com/airbytehq/airbyte/pull/47465) | Update dependencies |
+| 0.2.1 | 2024-10-21 | [47194](https://github.com/airbytehq/airbyte/pull/47194) | Update dependencies |
 | 0.2.0 | 2024-08-23 | [44594](https://github.com/airbytehq/airbyte/pull/44594) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-17 | [44357](https://github.com/airbytehq/airbyte/pull/44357) | Update dependencies |
 | 0.1.12 | 2024-08-12 | [43870](https://github.com/airbytehq/airbyte/pull/43870) | Update dependencies |

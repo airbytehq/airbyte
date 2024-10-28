@@ -1,16 +1,34 @@
 # Changelog
 
+## 5.17.0
+Add Per Partition with Global fallback Cursor 
+
+## 5.16.0
+Better structured error log messages in connector_builder module, with message / internal_message / stacktrace split into separate fields
+
+## 5.15.0
+Add new Error:
+No DBURL given
+
+sql [-hnr] [--table-size] [--db-size] [-p pass-through] [-s string] dburl [command] module for SQL-based destinations
+
+## 5.14.1
+HttpClient: Fixes issue where oauth authenticators would not refresh on backed off retries.
+
+## 5.14.0
+Fix yielding parent records in SubstreamPartitionRouter
+
 ## 5.13.0
 Add extra fields to StreamSlice
 
 ## 5.12.1
-Low Code: Removes deprecated  and 
+Low Code: Removes deprecated `class_types_registry` and `default_implementation_registry`
 
 ## 5.12.0
-Low Code: Adds  component
+Low Code: Adds `XmlDecoder` component
 
 ## 5.11.1
-Low Code: Consolidate manifest decoder selection under , , and 
+Low Code: Consolidate manifest decoder selection under `SimpleRetriever`, `AsyncRetriever`, and `SessionTokenAuthenticator`
 
 ## 5.11.0
 concurrent-cdk: add per slice tracking of the most recent cursor
@@ -43,7 +61,7 @@ Have headers match during HTTP cache hit
 Always return a connection status even if an exception was raised
 
 ## 5.7.3
-fix connector builder output serialization 
+fix connector builder output serialization
 
 ## 5.7.2
 add transform_record() to class DefaultFileBasedStream
@@ -70,7 +88,7 @@ Declarative async job components
 add migration of global stream_state to per_partition format
 
 ## 5.3.0
-Connector builder: add flag to disable cache 
+Connector builder: add flag to disable cache
 
 ## 5.2.1
 Fix error in incremental sync docs
@@ -249,10 +267,10 @@ Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
 Exclude airbyte-cdk modules from schema discovery
 
 ## 1.7.0
-add  from  to 
+add  from  to
 
 ## 1.6.0
-add  from  to 
+add  from  to
 
 ## 1.5.6
 Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
@@ -276,7 +294,7 @@ Fix client_side_incremental end_datetime comparison
 Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
 
 ## 1.4.0
-low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
+low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter
 
 ## 1.3.3
 Mock server tests: adding 'discover' as part of the entrypoint_wrapper

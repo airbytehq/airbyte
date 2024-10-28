@@ -174,6 +174,8 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.47.3     | 2024-10-23 | [\#46689](https://github.com/airbytehq/airbyte/pull/46689)  | Split DestinationAcceptanceTest|
+| 0.47.2     | 2024-10-21 | [\#47216](https://github.com/airbytehq/airbyte/pull/47216)  | improve java compatibiilty|
 | 0.47.1     | 2024-09-27 | [\#45397](https://github.com/airbytehq/airbyte/pull/45397)  | Allow logical replication from Postgres 16 read-replicas|
 | 0.47.0     | 2024-09-26 | [\#42030](https://github.com/airbytehq/airbyte/pull/42030)  | minor refactor                                                                                                                                                 |
 | 0.46.1     | 2024-09-20 | [\#45700](https://github.com/airbytehq/airbyte/pull/45700)  | Destinations: Fix bug in parsing jsonschema |
