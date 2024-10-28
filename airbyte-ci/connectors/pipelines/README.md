@@ -850,6 +850,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.41.8  | [#47447](https://github.com/airbytehq/airbyte/pull/47447)  | Use `cache_ttl` for base image registry listing in `up-to-date`.                                                             |
 | 4.41.7  | [#47444](https://github.com/airbytehq/airbyte/pull/47444)  | Remove redundant `--ignore-connector` error from up-to-date. `--metadata-query` can be used instead.                         |
 | 4.41.6  | [#47308](https://github.com/airbytehq/airbyte/pull/47308)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
 | 4.41.5  | [#47255](https://github.com/airbytehq/airbyte/pull/47255)  | Fix `DisableProgressiveRollout`  following Dagger API change.                                                                |
