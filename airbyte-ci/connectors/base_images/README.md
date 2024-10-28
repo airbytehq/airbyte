@@ -94,6 +94,9 @@ poetry run mypy base_images --check-untyped-defs
 ```
 ## CHANGELOG
 
+### 1.1.0
+- Add a cache ttl for base image listing to avoid DockerHub rate limiting.
+
 ### 1.0.4
 - Upgrade Dagger to `0.13.3`
 

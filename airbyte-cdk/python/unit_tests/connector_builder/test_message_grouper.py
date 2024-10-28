@@ -591,7 +591,7 @@ def test_read_stream_returns_error_if_stream_does_not_exist() -> None:
     )
 
     assert len(actual_response.logs) == 1
-    assert "Traceback" in actual_response.logs[0].message
+    assert "Traceback" in actual_response.logs[0].stacktrace
     assert "ERROR" in actual_response.logs[0].level
 
 

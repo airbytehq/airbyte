@@ -4,7 +4,8 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.test.util.SchemaTestBuilder
+import io.airbyte.cdk.load.test.util.Root
+import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -12,7 +13,7 @@ class AirbyteSchemaIdentityMapperTest {
     @Test
     fun testIdMapping() {
         val (inputSchema, expectedOutput) =
-            SchemaTestBuilder()
+            SchemaRecordBuilder<Root>()
                 .with(DateType)
                 .with(StringType)
                 .with(IntegerType)

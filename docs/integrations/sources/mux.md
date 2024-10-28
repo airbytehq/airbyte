@@ -34,6 +34,7 @@ Visit `https://docs.mux.com/api-reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.2 | 2024-10-28 | [47492](https://github.com/airbytehq/airbyte/pull/47492) | Update dependencies |
 | 0.0.1 | 2024-09-27 | [45921](https://github.com/airbytehq/airbyte/pull/45921) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

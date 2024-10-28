@@ -15,8 +15,12 @@ import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
+import java.util.concurrent.Executors
 import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NonDockerizedDestination(
     command: String,
@@ -27,6 +31,11 @@ class NonDockerizedDestination(
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
     private val destinationComplete = CompletableDeferred<Unit>()
+    // The destination has a runBlocking inside WriteOperation.
+    // This means that normal coroutine cancellation doesn't work.
+    // So we start our own thread pool, which we can forcibly kill if needed.
+    private val executor = Executors.newSingleThreadExecutor()
+    private val coroutineDispatcher = executor.asCoroutineDispatcher()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -49,12 +58,20 @@ class NonDockerizedDestination(
     }
 
     override suspend fun run() {
-        try {
-            destination.run()
-        } catch (e: ConnectorUncleanExitException) {
-            throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
-        }
-        destinationComplete.complete(Unit)
+        withContext(coroutineDispatcher) {
+                launch {
+                    try {
+                        destination.run()
+                    } catch (e: ConnectorUncleanExitException) {
+                        throw DestinationUncleanExitException.of(
+                            e.exitCode,
+                            destination.results.traces()
+                        )
+                    }
+                    destinationComplete.complete(Unit)
+                }
+            }
+            .invokeOnCompletion { executor.shutdownNow() }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -66,6 +83,13 @@ class NonDockerizedDestination(
     override suspend fun shutdown() {
         destinationStdinPipe.close()
         destinationComplete.join()
+    }
+
+    override fun kill() {
+        // In addition to preventing the executor from accepting new tasks,
+        // this also sends a Thread.interrupt() to running tasks.
+        // Coroutines interpret this as a cancellation.
+        executor.shutdownNow()
     }
 }
 
