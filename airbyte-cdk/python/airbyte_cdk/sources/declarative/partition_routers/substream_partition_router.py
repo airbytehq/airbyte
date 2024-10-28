@@ -4,7 +4,7 @@
 import copy
 import logging
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage
@@ -69,7 +69,6 @@ class SubstreamPartitionRouter(PartitionRouter):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
-        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
@@ -144,8 +143,6 @@ class SubstreamPartitionRouter(PartitionRouter):
                 if parent_stream_config.extra_fields:
                     extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]  # type: ignore # extra_fields is always casted to an interpolated string
 
-                incremental_dependency = parent_stream_config.incremental_dependency
-
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
                 for parent_record in parent_stream.read_only_records():
@@ -178,13 +175,6 @@ class SubstreamPartitionRouter(PartitionRouter):
                         cursor_slice={},
                         extra_fields=extracted_extra_fields,
                     )
-
-                    if incremental_dependency:
-                        self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
-
-                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
-                if incremental_dependency:
-                    self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
@@ -242,7 +232,6 @@ class SubstreamPartitionRouter(PartitionRouter):
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
-                self._parent_state[parent_config.stream.name] = parent_config.stream.state
 
     def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
@@ -261,7 +250,11 @@ class SubstreamPartitionRouter(PartitionRouter):
             }
         }
         """
-        return copy.deepcopy(self._parent_state)
+        parent_state = {}
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_state[parent_config.stream.name] = copy.deepcopy(parent_config.stream.state)
+        return parent_state
 
     @property
     def logger(self) -> logging.Logger:
