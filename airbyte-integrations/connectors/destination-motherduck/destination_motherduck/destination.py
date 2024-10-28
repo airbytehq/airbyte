@@ -218,7 +218,7 @@ class DestinationMotherDuck(Destination):
         Related: See the `read` method for an operation that uses self-discovered catalog to read
         the data.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # TODO: Implement this method and plug it into the tests
 
     def _flush_buffer(
         self,
