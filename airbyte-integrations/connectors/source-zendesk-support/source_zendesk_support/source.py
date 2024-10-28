@@ -13,11 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
-
-from .streams import UserSettingsStream
-
-DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+from source_zendesk_support.streams import DATETIME_FORMAT, UserSettingsStream, ZendeskConfigException
 
 logger = logging.getLogger("airbyte")
 
