@@ -3,9 +3,6 @@ data:
   allowedHosts:
     hosts:
       - "api.jotform.com"
-      - "eu-api.jotform.com"
-      - "hipaa-api.jotform.com"
-      - "*/API"
   registryOverrides:
     oss:
       enabled: true
@@ -16,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-jotform
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.6.2@sha256:f5fcd3d4703b7590b6166a7853c5ed1686731607cd30a159a8c24e2fe2c1ee98
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
   connectorSubtype: api
   connectorType: source
   definitionId: 3456679e-2ff2-4ef7-aa9f-da6c0cc13894
@@ -26,7 +23,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Jotform
-  releaseDate: 2024-09-12
+  releaseDate: 2024-10-28
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/jotform
