@@ -169,9 +169,9 @@ check:
 
 # Sentry currently supports 5 streams and each operates as descending data feed that can only run in
 # parallel with each other. This number can increase if we add more streams
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: 5
+#concurrency_level:
+#  type: ConcurrencyLevel
+#  default_concurrency: 5
 
 metadata:
   autoImportSchema:
