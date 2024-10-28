@@ -12,16 +12,16 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | documents | id | DefaultPaginator | ✅ |  ✅  |
-| attachments | uuid | No pagination | ✅ |  ❌  |
-| fields | uuid | No pagination | ✅ |  ❌  |
-| sections |  | No pagination | ✅ |  ❌  |
+| document_attachment | uuid | No pagination | ✅ |  ❌  |
+| document_field | uuid | No pagination | ✅ |  ❌  |
+| document_section | uuid | No pagination | ✅ |  ❌  |
 | templates |  | DefaultPaginator | ✅ |  ❌  |
 | forms | id | No pagination | ✅ |  ✅  |
 | contacts | id | No pagination | ✅ |  ❌  |
 | members | user_id | No pagination | ✅ |  ✅  |
 | api_logs | id | DefaultPaginator | ✅ |  ❌  |
 | document_folders | uuid | DefaultPaginator | ✅ |  ❌  |
-| templates_folders | uuid | No pagination | ✅ |  ❌  |
+| template_folders | uuid | No pagination | ✅ |  ❌  |
 | workspaces | id | DefaultPaginator | ✅ |  ❌  |
 | webhook_subscriptions | uuid | No pagination | ✅ |  ❌  |
 | webhook_events | uuid | DefaultPaginator | ✅ |  ❌  |
