@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Iterable
 
-from airbyte_cdk.logger import AirbyteLogger
 from azure.core.paging import ItemPaged
 from azure.data.tables import TableClient, TableServiceClient
 
@@ -44,7 +44,7 @@ class AzureTableReader:
 
     """
 
-    def __init__(self, logger: AirbyteLogger, config: dict):
+    def __init__(self, logger: logging.Logger, config: dict):
         """
         Parameters
         ----------

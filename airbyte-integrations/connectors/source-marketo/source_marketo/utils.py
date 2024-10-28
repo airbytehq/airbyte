@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -35,6 +35,7 @@ def clean_string(string: str) -> str:
     "updated_at" -> "updated_at"
     " updated_at " -> "updated_at"
     "updatedat" -> "updatedat"
+    "updated at" -> "updated_at"
     """
 
     fix = {

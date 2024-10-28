@@ -10,20 +10,26 @@
       "api_token": {
         "type": "string",
         "title": "API Token",
-        "description": "Jira API Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
-        "airbyte_secret": true
+        "description": "Jira API Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/jira\">docs</a> for more information on how to generate this key. API Token is used for Authorization to your account by BasicAuth.",
+        "airbyte_secret": true,
+        "order": 0
       },
       "domain": {
         "type": "string",
         "title": "Domain",
-        "examples": ["domainname.atlassian.net"],
-        "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
-        "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
+        "examples": [
+          "<your-domain>.atlassian.net",
+          "<your-domain>.jira.com",
+          "jira.<your-domain>.com"
+        ],
+        "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com",
+        "order": 1
       },
       "email": {
         "type": "string",
         "title": "Email",
-        "description": "The user email for your Jira account."
+        "description": "The user email for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.",
+        "order": 2
       },
       "projects": {
         "type": "array",
@@ -32,41 +38,66 @@
           "type": "string"
         },
         "examples": ["PROJ1", "PROJ2"],
-        "description": "List of Jira project keys to replicate data for."
+        "description": "List of Jira project keys to replicate data for, or leave it empty if you want to replicate data for all projects.",
+        "order": 3
       },
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "The date from which you'd like to replicate data for Jira in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: issues.",
+        "description": "The date from which you want to replicate data from Jira, use the format YYYY-MM-DDT00:00:00Z. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. Or leave it empty if you want to replicate all data. For more information, refer to the <a href=\"https://docs.airbyte.com/integrations/sources/jira/\">documentation</a>.",
         "examples": ["2021-03-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },
-      "additional_fields": {
-        "type": "array",
-        "title": "Additional Fields",
-        "items": {
-          "type": "string"
-        },
-        "description": "List of additional fields to include in replicating issues.",
-        "examples": ["customfield_10096", "customfield_10071"]
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "format": "date-time",
+        "order": 4
       },
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",
-        "description": "Expand the changelog when replicating issues.",
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the changelog when replicating issues.",
         "default": false
       },
       "render_fields": {
         "type": "boolean",
         "title": "Render Issue Fields",
-        "description": "Render issue fields in HTML format in addition to Jira JSON-like format.",
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Render issue fields in HTML format in addition to Jira JSON-like format.",
         "default": false
+      },
+      "expand_issue_transition": {
+        "type": "boolean",
+        "title": "Expand Issue Transitions",
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the transitions when replicating issues.",
+        "default": false
+      },
+      "issues_stream_expand_with": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["renderedFields", "transitions", "changelog"]
+        },
+        "title": "Expand Issues stream",
+        "airbyte_hidden": true,
+        "description": "Select fields to Expand the `Issues` stream when replicating with: ",
+        "default": []
+      },
+      "lookback_window_minutes": {
+        "title": "Lookback window",
+        "description": "When set to N, the connector will always refresh resources created within the past N minutes. By default, updated objects that are not newly created are not incrementally synced.",
+        "examples": [60],
+        "default": 0,
+        "minimum": 0,
+        "maximum": 576000,
+        "type": "integer",
+        "order": 5
       },
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
-        "default": false
+        "default": false,
+        "order": 6
       }
     }
   }

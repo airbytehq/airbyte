@@ -1,20 +1,26 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
-from typing import Any, List, Mapping, Optional, Tuple
+import logging
+from typing import Any, List, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from source_google_search_console.exceptions import InvalidSiteURLValidationError
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.utils import AirbyteTracedException
+from source_google_search_console.exceptions import (
+    InvalidSiteURLValidationError,
+    UnauthorizedOauthError,
+    UnauthorizedServiceAccountError,
+    UnidentifiedError,
+)
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
@@ -24,6 +30,12 @@ from source_google_search_console.streams import (
     SearchAnalyticsByDevice,
     SearchAnalyticsByPage,
     SearchAnalyticsByQuery,
+    SearchAnalyticsKeywordPageReport,
+    SearchAnalyticsKeywordSiteReportByPage,
+    SearchAnalyticsKeywordSiteReportBySite,
+    SearchAnalyticsPageReport,
+    SearchAnalyticsSiteReportByPage,
+    SearchAnalyticsSiteReportBySite,
     Sitemaps,
     Sites,
 )
@@ -50,34 +62,53 @@ class SourceGoogleSearchConsole(AbstractSource):
         return parse_result.geturl()
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        # authorization checks
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
             try:
                 authorization["service_account_info"] = json.loads(authorization["service_account_info"])
             except ValueError:
-                raise Exception("authorization.service_account_info is not valid JSON")
+                message = "authorization.service_account_info is not valid JSON"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise Exception("custom_reports is not valid JSON")
-            jsonschema.validate(config["custom_reports"], custom_reports_schema)
-            for report in config["custom_reports"]:
-                for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
-                        raise Exception(f"dimension: '{dimension}' not found")
+        # custom report validation
+        config = self._validate_custom_reports(config)
 
-        pendulum.parse(config["start_date"])
+        # start date checks
+        pendulum.parse(config.get("start_date", "2021-01-01"))  # `2021-01-01` is the default value
+
+        # the `end_date` checks
         end_date = config.get("end_date")
         if end_date:
             pendulum.parse(end_date)
         config["end_date"] = end_date or pendulum.now().to_date_string()
-
+        # site  urls checks
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
+        # data state checks
+        config["data_state"] = config.get("data_state", "final")
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        if "custom_reports_array" in config:
+            try:
+                custom_reports = config["custom_reports_array"]
+                if isinstance(custom_reports, str):
+                    # load the json_str old report structure and transform it into valid JSON Object
+                    config["custom_reports_array"] = json.loads(config["custom_reports_array"])
+                elif isinstance(custom_reports, list):
+                    pass  # allow the list structure only
+            except ValueError:
+                message = "Custom Reports provided is not valid List of Object (reports)"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+            jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
+            for report in config["custom_reports_array"]:
+                for dimension in report["dimensions"]:
+                    if dimension not in SearchAnalyticsByCustomDimensions.DIMENSION_TO_PROPERTY_SCHEMA_MAP:
+                        message = f"dimension: '{dimension}' not found"
+                        raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+        return config
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
@@ -92,28 +123,45 @@ class SourceGoogleSearchConsole(AbstractSource):
                 next(sites_gen)
             return True, None
 
-        except (InvalidSiteURLValidationError, jsonschema.ValidationError) as e:
+        except (InvalidSiteURLValidationError, UnauthorizedOauthError, UnauthorizedServiceAccountError, jsonschema.ValidationError) as e:
             return False, repr(e)
-        except Exception as error:
+        except (Exception, UnidentifiedError) as error:
             return (
                 False,
-                f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}",
+                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
             )
 
-    @staticmethod
-    def validate_site_urls(site_urls, auth):
+    def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
             with requests.Session() as s:
                 response = s.send(s.prepare_request(request))
+                # the exceptions for `service account` are handled in `service_account_authenticator.py`
         else:
-            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
-        response_data = response.json()
+            # catch the error while refreshing the access token
+            auth_header = self.get_client_auth_header(auth)
+            if "error" in auth_header:
+                if auth_header.get("code", 0) in [400, 401]:
+                    raise UnauthorizedOauthError
+            # validate site urls with provided authenticator
+            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth_header)
+        # validate the status of the response, if it was successfull
+        if response.status_code != 200:
+            raise UnidentifiedError(response.json())
 
-        remote_site_urls = {s["siteUrl"] for s in response_data["siteEntry"]}
+        remote_site_urls = {s["siteUrl"] for s in response.json()["siteEntry"]}
         invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
-            raise InvalidSiteURLValidationError(f'The following URLs are not permitted: {", ".join(invalid_site_url)}')
+            raise InvalidSiteURLValidationError(invalid_site_url)
+
+    def get_client_auth_header(self, auth: Oauth2Authenticator) -> Mapping[str, Any]:
+        try:
+            return auth.get_auth_header()
+        except requests.exceptions.HTTPError as e:
+            return {
+                "code": e.response.status_code,
+                "error": e.response.json(),
+            }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -131,6 +179,12 @@ class SourceGoogleSearchConsole(AbstractSource):
             SearchAnalyticsByQuery(**stream_config),
             SearchAnalyticsByPage(**stream_config),
             SearchAnalyticsAllFields(**stream_config),
+            SearchAnalyticsKeywordPageReport(**stream_config),
+            SearchAnalyticsPageReport(**stream_config),
+            SearchAnalyticsSiteReportBySite(**stream_config),
+            SearchAnalyticsSiteReportByPage(**stream_config),
+            SearchAnalyticsKeywordSiteReportByPage(**stream_config),
+            SearchAnalyticsKeywordSiteReportBySite(**stream_config),
         ]
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
@@ -140,15 +194,16 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in config.get("custom_reports", [])
+            for report in config.get("custom_reports_array", [])
         ]
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             "site_urls": config["site_urls"],
-            "start_date": config["start_date"],
+            "start_date": config.get("start_date", "2021-01-01"),  # `2021-01-01` is the default value
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
+            "data_state": config["data_state"],
         }
 
     def get_authenticator(self, config):

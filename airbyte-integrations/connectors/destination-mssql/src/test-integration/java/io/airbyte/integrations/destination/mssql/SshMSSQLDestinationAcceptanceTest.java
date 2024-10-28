@@ -1,27 +1,30 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
@@ -29,9 +32,10 @@ import org.testcontainers.containers.Network;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final String database = "test";
@@ -48,7 +52,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
   }
 
   @Override
@@ -61,8 +65,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName, namespace);
+    return List.of();
   }
 
   @Override
@@ -71,24 +74,14 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 
@@ -116,15 +109,15 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
                         + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                        database, "airbyte_internal", tableName.toLowerCase(),
+                        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
                     .stream()
                     .map(this::getJsonFromRecord)
                     .collect(Collectors.toList())));
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
@@ -136,7 +129,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
             ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
-
+            TEST_SCHEMAS.add(schemaName);
             return null;
           });
         });

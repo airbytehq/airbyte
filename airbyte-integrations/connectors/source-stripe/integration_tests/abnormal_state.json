@@ -2,14 +2,42 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "application_fees" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "authorizations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "cards" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "cardholders" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "charges" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "coupons" }
     }
   },
@@ -23,35 +51,35 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "customers" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "plans" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "invoices" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "invoice_items" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "transfers" }
     }
   },
@@ -59,7 +87,21 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "shipping_rates" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "subscriptions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "subscription_schedule" }
     }
   },
   {
@@ -72,57 +114,169 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "payouts" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "prices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "disputes" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "products" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "refunds" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "payment_intents" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "promotion_codes" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "expires_at": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "checkout_session_expires_at": 10000000000 },
+      "stream_state": { "checkout_session_updated": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions_line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "reviews" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "setup_intents" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "top_ups" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "files" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "file_links" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "setup_attempts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "transactions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "application_fees_refunds" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "bank_accounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "credit_notes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "early_fraud_warnings" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "external_account_bank_accounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "external_account_cards" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "payment_methods" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "persons" }
     }
   }
 ]

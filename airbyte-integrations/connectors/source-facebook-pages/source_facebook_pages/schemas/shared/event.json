@@ -12,7 +12,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "declined_count": {
       "type": ["integer", "null"]
@@ -94,7 +94,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     }
   }
 }

@@ -1,18 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import Any, Iterable, Mapping
 
 import requests
-from airbyte_cdk.sources.declarative.types import Record
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordExtractor(JsonSchemaMixin):
+class RecordExtractor:
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response.
     """
@@ -21,7 +18,7 @@ class RecordExtractor(JsonSchemaMixin):
     def extract_records(
         self,
         response: requests.Response,
-    ) -> List[Record]:
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Selects records from the response
         :param response: The response to extract the records from

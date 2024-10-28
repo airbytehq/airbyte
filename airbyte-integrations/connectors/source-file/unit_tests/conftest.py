@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from pathlib import Path
@@ -30,6 +30,17 @@ def invalid_config(read_file):
         "format": "jsonl",
         "url": "https://airbyte.com",
         "reader_options": '{"encoding": "encoding"}',
+        "provider": {"storage": "HTTPS"},
+    }
+
+
+@pytest.fixture
+def invalid_reader_options_config(read_file):
+    return {
+        "dataset_name": "test",
+        "format": "jsonl",
+        "url": "https://airbyte.com",
+        "reader_options": '["encoding"]',
         "provider": {"storage": "HTTPS"},
     }
 

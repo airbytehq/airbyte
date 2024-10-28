@@ -1,19 +1,21 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
 
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -23,7 +25,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +46,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       return "TIMESTAMPLTZ".equalsIgnoreCase(typeName)
@@ -73,8 +77,17 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     preparedStatement.setString(parameterIndex, value);
   }
 
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -93,44 +106,17 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     };
   }
 
-  /**
-   * The only difference between this method and the one in {@link JdbcSourceOperations} is that the
-   * TIMESTAMP_WITH_TIMEZONE columns are also converted using the putTimestamp method. This is
-   * necessary after the JDBC upgrade from 3.13.9 to 3.13.22. This change may need to be added to
-   * {@link JdbcSourceOperations#setJsonField} in the future.
-   * <p/>
-   * See issue: https://github.com/airbytehq/airbyte/issues/16838.
-   */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
-    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
     // TIMESTAMPLTZ data type detected as JDBCType.TIMESTAMP which is not correct
     if ("TIMESTAMPLTZ".equalsIgnoreCase(columnTypeName)) {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-    switch (columnType) {
-      case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putFloat(json, columnName, resultSet, colIndex);
-      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-      case CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-      case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-      case TIMESTAMP_WITH_TIMEZONE -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
-      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-      default -> putDefault(json, columnName, resultSet, colIndex);
-    }
+    super.copyToJsonField(resultSet, colIndex, json);
   }
 
   @Override
@@ -139,29 +125,37 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
 
+  private static final DateTimeFormatter SNOWFLAKE_TIMESTAMPTZ_FORMATTER = new DateTimeFormatterBuilder()
+      .parseCaseInsensitive()
+      .append(DateTimeFormatter.ISO_LOCAL_DATE)
+      .appendLiteral(' ')
+      .append(DateTimeFormatter.ISO_LOCAL_TIME)
+      .optionalStart()
+      .appendLiteral(' ')
+      .append(DateTimeFormatter.ofPattern("XX"))
+      .toFormatter();
+
   @Override
-  protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    final Timestamp timestamp = resultSet.getTimestamp(index);
-    node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
+    final String timestampAsString = resultSet.getString(index);
+    OffsetDateTime timestampWithOffset = OffsetDateTime.parse(timestampAsString, SNOWFLAKE_TIMESTAMPTZ_FORMATTER);
+    node.put(columnName, timestampWithOffset.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER));
   }
 
   @Override
-  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
-  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    final Date date = resultSet.getDate(index);
-    node.put(columnName, DateTimeConverter.convertToDate(date));
-  }
-
-  @Override
-  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    // resultSet.getTime() will lose nanoseconds precision
-    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
-    node.put(columnName, DateTimeConverter.convertToTime(localTime));
+  protected void putTime(final ObjectNode node,
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
+      throws SQLException {
+    putJavaSQLTime(node, columnName, resultSet, index);
   }
 
 }

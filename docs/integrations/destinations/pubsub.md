@@ -4,13 +4,14 @@ description: >-
   Provider.
 ---
 
-# Google PubSub
+# PubSub
 
 ## Overview
 
 The Airbyte Google PubSub destination allows you to send/stream data into PubSub. Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
 
 ## Prerequisites
+
 - For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your PubSub connector to version `0.1.6` or newer
 
 ### Sync overview
@@ -19,23 +20,23 @@ The Airbyte Google PubSub destination allows you to send/stream data into PubSub
 
 Each stream will be output a PubSubMessage with attributes. The message attributes will be
 
-* `_stream`: the name of stream where the data is coming from
-* `_namespace`: namespace if available from the stream
+- `_stream`: the name of stream where the data is coming from
+- `_namespace`: namespace if available from the stream
 
 The data will be a serialized JSON, containing the following fields
 
-* `_airbyte_ab_id`: a uuid string assigned by Airbyte to each event that is processed.
-* `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
-* `_airbyte_data`: a json string representing source data.
+- `_airbyte_ab_id`: a uuid string assigned by Airbyte to each event that is processed.
+- `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
+- `_airbyte_data`: a json string representing source data.
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | Yes |  |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -43,10 +44,10 @@ The data will be a serialized JSON, containing the following fields
 
 To use the PubSub destination, you'll need:
 
-* A Google Cloud Project with PubSub enabled
-* A PubSub Topic to which Airbyte can stream/sync your data
-* A Google Cloud Service Account with the `Pub/Sub Editor` role in your GCP project
-* A Service Account Key to authenticate into your Service Account
+- A Google Cloud Project with PubSub enabled
+- A PubSub Topic to which Airbyte can stream/sync your data
+- A Google Cloud Service Account with the `Pub/Sub Editor` role in your GCP project
+- A Service Account Key to authenticate into your Service Account
 
 See the setup guide for more information about how to create the required resources.
 
@@ -80,22 +81,27 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 
 ### Setup the PubSub destination in Airbyte
 
-You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
+You should now have all the requirements needed to configure PubSub as a destination in the UI. You'll need the following information to configure the PubSub destination:
 
-* **Project ID**: GCP project id
-* **Topic ID**: name of pubsub topic under the project
-* **Service Account Key**: the contents of your Service Account Key JSON file
+- **Project ID**: GCP project id
+- **Topic ID**: name of pubsub topic under the project
+- **Service Account Key**: the contents of your Service Account Key JSON file
 
 Once you've configured PubSub as a destination, delete the Service Account Key from your computer.
 
-## CHANGELOG
+## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.5 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.1.4 | February 21, 2022 | [\#9819](https://github.com/airbytehq/airbyte/pull/9819) | Upgrade version of google-cloud-pubsub |
-| 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.2 | December 29, 2021 | [\#9183](https://github.com/airbytehq/airbyte/pull/9183) | Update connector fields title/description |
-| 0.1.1 | August 13, 2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
-| 0.1.0 | June 24, 2021 | [\#4339](https://github.com/airbytehq/airbyte/pull/4339) | Initial release |
+<details>
+  <summary>Expand to review</summary>
 
+| Version | Date              | Pull Request                                             | Subject                                                    |
+| :------ | :---------------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.0   | August 16, 2022   | [15705](https://github.com/airbytehq/airbyte/pull/15705) | Add configuration for Batching and Ordering                |
+| 0.1.5   | 2022-06-17        | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors     |
+| 0.1.4   | February 21, 2022 | [\#9819](https://github.com/airbytehq/airbyte/pull/9819) | Upgrade version of google-cloud-pubsub                     |
+| 0.1.3   | 2022-02-14        | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.2   | December 29, 2021 | [\#9183](https://github.com/airbytehq/airbyte/pull/9183) | Update connector fields title/description                  |
+| 0.1.1   | August 13, 2021   | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator                                |
+| 0.1.0   | June 24, 2021     | [\#4339](https://github.com/airbytehq/airbyte/pull/4339) | Initial release                                            |
+
+</details>

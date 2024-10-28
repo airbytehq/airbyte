@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import heapq
@@ -61,6 +61,40 @@ def get_query_pull_requests(owner, name, first, after, direction):
     return str(op)
 
 
+def get_query_projectsV2(owner, name, first, after, direction):
+    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": direction}}
+    if after:
+        kwargs["after"] = after
+
+    op = sgqlc.operation.Operation(_schema_root.query_type)
+    repository = op.repository(owner=owner, name=name)
+    repository.name()
+    repository.owner.login()
+    projects_v2 = repository.projects_v2(**kwargs)
+    projects_v2.nodes.__fields__(
+        closed=True,
+        created_at="created_at",
+        closed_at="closed_at",
+        updated_at="updated_at",
+        creator="creator",
+        id="node_id",
+        database_id="id",
+        number=True,
+        public=True,
+        readme="readme",
+        short_description="short_description",
+        template=True,
+        title="title",
+        url="url",
+        viewer_can_close=True,
+        viewer_can_reopen=True,
+        viewer_can_update=True,
+    )
+    projects_v2.nodes.owner.__fields__(id="id")
+    projects_v2.page_info.__fields__(has_next_page=True, end_cursor=True)
+    return str(op)
+
+
 def get_query_reviews(owner, name, first, after, number=None):
     op = sgqlc.operation.Operation(_schema_root.query_type)
     repository = op.repository(owner=owner, name=name)
@@ -96,6 +130,37 @@ def get_query_reviews(owner, name, first, after, number=None):
     reviews.nodes.commit.oid()
     user = reviews.nodes.author(__alias__="user").__as__(_schema_root.User)
     select_user_fields(user)
+    return str(op)
+
+
+def get_query_issue_reactions(owner, name, first, after, number=None):
+    op = sgqlc.operation.Operation(_schema_root.query_type)
+    repository = op.repository(owner=owner, name=name)
+    repository.name()
+    repository.owner.login()
+    if number:
+        issue = repository.issue(number=number)
+    else:
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        issues = repository.issues(**kwargs)
+        issues.page_info.__fields__(has_next_page=True, end_cursor=True)
+        issue = issues.nodes
+
+    issue.__fields__(number=True)
+    kwargs = {"first": first}
+    if number and after:
+        kwargs["after"] = after
+    reactions = issue.reactions(**kwargs)
+    reactions.page_info.__fields__(has_next_page=True, end_cursor=True)
+    reactions.nodes.__fields__(
+        id="node_id",
+        database_id="id",
+        content=True,
+        created_at="created_at",
+    )
+    select_user_fields(reactions.nodes.user())
     return str(op)
 
 

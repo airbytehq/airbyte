@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.sftp;
@@ -90,6 +90,7 @@ public class SftpClient {
     return channelSftp != null && channelSftp.isConnected();
   }
 
+  @SuppressWarnings("rawtypes")
   public Vector lsFile(SupportedFileExtension fileExtension) {
     try {
       return channelSftp.ls("*." + fileExtension.typeName);

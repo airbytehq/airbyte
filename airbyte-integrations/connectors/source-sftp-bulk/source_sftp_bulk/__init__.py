@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
-from .source import SourceFtp
+from .source import SourceSFTPBulk
 
-__all__ = ["SourceFtp"]
+__all__ = ["SourceSFTPBulk"]

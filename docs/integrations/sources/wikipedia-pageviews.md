@@ -12,7 +12,7 @@ None
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Courier connector and select **Wikipedia Pageviews** from the Source type dropdown.
 4. Enter your parameters.
@@ -48,6 +48,23 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject        |
+| :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.1 | 2024-10-28 | [47618](https://github.com/airbytehq/airbyte/pull/47618) | Update dependencies |
+| 0.2.0 | 2024-08-20 | [44460](https://github.com/airbytehq/airbyte/pull/44460) | Refactor connector to manifest-only format |
+| 0.1.10 | 2024-08-17 | [44202](https://github.com/airbytehq/airbyte/pull/44202) | Update dependencies |
+| 0.1.9 | 2024-08-12 | [43771](https://github.com/airbytehq/airbyte/pull/43771) | Update dependencies |
+| 0.1.8 | 2024-08-10 | [43543](https://github.com/airbytehq/airbyte/pull/43543) | Update dependencies |
+| 0.1.7 | 2024-08-03 | [43184](https://github.com/airbytehq/airbyte/pull/43184) | Update dependencies |
+| 0.1.6 | 2024-07-27 | [42706](https://github.com/airbytehq/airbyte/pull/42706) | Update dependencies |
+| 0.1.5 | 2024-07-20 | [42242](https://github.com/airbytehq/airbyte/pull/42242) | Update dependencies |
+| 0.1.4 | 2024-07-13 | [41686](https://github.com/airbytehq/airbyte/pull/41686) | Update dependencies |
+| 0.1.3 | 2024-07-10 | [41560](https://github.com/airbytehq/airbyte/pull/41560) | Update dependencies |
+| 0.1.2 | 2024-07-09 | [41081](https://github.com/airbytehq/airbyte/pull/41081) | Update dependencies |
+| 0.1.1 | 2024-05-31 | [38724](https://github.com/airbytehq/airbyte/pull/38724) | Make connector compatible with builder |
 | 0.1.0   | 2022-10-31 | [#18343](https://github.com/airbytehq/airbyte/pull/18343) | Initial commit |
+
+</details>

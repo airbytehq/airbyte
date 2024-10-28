@@ -1,10 +1,10 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mailersend:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_mailersend/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -21,8 +21,7 @@ acceptance_tests:
         empty_streams: []
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
-  #          path: "integration_tests/expected_records.txt"
-  #          extra_fields: no
+  #          path: "integration_tests/expected_records.jsonl"
   #          exact_order: no
   #          extra_recods: yes
   incremental:

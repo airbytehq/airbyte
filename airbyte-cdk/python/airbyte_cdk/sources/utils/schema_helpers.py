@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,14 +7,14 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
 
 import jsonref
 from airbyte_cdk.models import ConnectorSpecification, FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class JsonFileLoader:
@@ -30,10 +30,15 @@ class JsonFileLoader:
 
     def __call__(self, uri: str) -> Dict[str, Any]:
         uri = uri.replace(self.uri_base, f"{self.uri_base}/{self.shared}/")
-        return json.load(open(uri))
+        with open(uri) as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return data
+            else:
+                raise ValueError(f"Expected to read a dictionary from {uri}. Got: {data}")
 
 
-def resolve_ref_links(obj: Any) -> Union[Dict[str, Any], List[Any]]:
+def resolve_ref_links(obj: Any) -> Any:
     """
     Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
 
@@ -44,8 +49,11 @@ def resolve_ref_links(obj: Any) -> Union[Dict[str, Any], List[Any]]:
         obj = resolve_ref_links(obj.__subject__)
         # Omit existing definitions for external resource since
         # we dont need it anymore.
-        obj.pop("definitions", None)
-        return obj
+        if isinstance(obj, dict):
+            obj.pop("definitions", None)
+            return obj
+        else:
+            raise ValueError(f"Expected obj to be a dict. Got {obj}")
     elif isinstance(obj, dict):
         return {k: resolve_ref_links(v) for k, v in obj.items()}
     elif isinstance(obj, list):
@@ -107,7 +115,7 @@ class ResourceSchemaLoader:
     def __init__(self, package_name: str):
         self.package_name = package_name
 
-    def get_schema(self, name: str) -> dict:
+    def get_schema(self, name: str) -> dict[str, Any]:
         """
         This method retrieves a JSON schema from the schemas/ folder.
 
@@ -129,9 +137,9 @@ class ResourceSchemaLoader:
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
 
-        return self.__resolve_schema_references(raw_schema)
+        return self._resolve_schema_references(raw_schema)
 
-    def __resolve_schema_references(self, raw_schema: dict) -> dict:
+    def _resolve_schema_references(self, raw_schema: dict[str, Any]) -> dict[str, Any]:
         """
         Resolve links to external references and move it to local "definitions" map.
 
@@ -140,13 +148,19 @@ class ResourceSchemaLoader:
         """
 
         package = importlib.import_module(self.package_name)
-        base = os.path.dirname(package.__file__) + "/"
+        if package.__file__:
+            base = os.path.dirname(package.__file__) + "/"
+        else:
+            raise ValueError(f"Package {package} does not have a valid __file__ field")
         resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, "schemas/shared"), base_uri=base)
         resolved = resolve_ref_links(resolved)
-        return resolved
+        if isinstance(resolved, dict):
+            return resolved
+        else:
+            raise ValueError(f"Expected resolved to be a dict. Got {resolved}")
 
 
-def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification):
+def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification) -> None:
     """
     Check config object against spec. In case of spec is invalid, throws
     an exception with validation error description.
@@ -166,17 +180,28 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
 
 
 class InternalConfig(BaseModel):
-    KEYWORDS: ClassVar[set] = {"_limit", "_page_size"}
+    KEYWORDS: ClassVar[set[str]] = {"_limit", "_page_size"}
     limit: int = Field(None, alias="_limit")
     page_size: int = Field(None, alias="_page_size")
 
-    def dict(self, *args, **kwargs):
+    def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         kwargs["by_alias"] = True
         kwargs["exclude_unset"] = True
-        return super().dict(*args, **kwargs)
+        return super().dict(*args, **kwargs)  # type: ignore[no-any-return]
+
+    def is_limit_reached(self, records_counter: int) -> bool:
+        """
+        Check if record count reached limit set by internal config.
+        :param records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if self.limit:
+            if records_counter >= self.limit:
+                return True
+        return False
 
 
-def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
+def split_config(config: Mapping[str, Any]) -> Tuple[dict[str, Any], InternalConfig]:
     """
     Break config map object into 2 instances: first is a dict with user defined
     configuration and second is internal config that contains private keys for
@@ -186,7 +211,7 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
      config - Dict object that has been loaded from config file.
 
     :return tuple of user defined config dict with filtered out internal
-    parameters and SAT internal config object.
+    parameters and connector acceptance test internal config object.
     """
     main_config = {}
     internal_config = {}

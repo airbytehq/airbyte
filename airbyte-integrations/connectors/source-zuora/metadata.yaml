@@ -1,0 +1,29 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-zuora
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zuora
+  githubIssueLabel: source-zuora
+  icon: zuora.svg
+  license: MIT
+  name: Zuora
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zuora
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: archived
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
 
-import io.airbyte.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 
 public class SshKeyOracleDestinationAcceptanceTest extends SshOracleDestinationAcceptanceTest {
 

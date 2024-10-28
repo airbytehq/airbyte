@@ -1,13 +1,13 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import logging
 import time
 from typing import Any, Mapping
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from destination_amazon_sqs import DestinationAmazonSqs
 
@@ -88,7 +88,7 @@ def test_check():
     # Create config
     config = create_config(queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], 10)
     # Create AirbyteLogger
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
     # Create Destination
     destination = DestinationAmazonSqs()
     # Run check

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -38,11 +38,6 @@ SCHEMA_HEADERS: dict = {"Accept": "application/schema+json"}
 INCREMENTAL_CURSOR: str = "lastModifiedDate"
 CUSTOM_INCREMENTAL_CURSOR: str = "lastmodified"
 
-# NETSUITE ERROR CODES BY THEIR HTTP TWINS
-NETSUITE_ERRORS_MAPPING: dict = {
-    400: {
-        "USER_ERROR": "reading an Admin record allowed for Admin only",
-        "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object",
-        "INVALID_PARAMETER": "cannot read or find the object. Skipping",
-    },
-}
+
+NETSUITE_INPUT_DATE_FORMATS: list[str] = ["%m/%d/%Y", "%Y-%m-%d"]
+NETSUITE_OUTPUT_DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"

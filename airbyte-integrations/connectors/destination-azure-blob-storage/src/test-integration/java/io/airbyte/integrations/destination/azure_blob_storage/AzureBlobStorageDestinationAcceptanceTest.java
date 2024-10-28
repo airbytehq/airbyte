@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -13,14 +13,15 @@ import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -79,19 +80,19 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .buildAppendBlobClient();
 
     final BlobContainerClient containerClient = streamAppendBlobClient.getContainerClient();
-    var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
+    final var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
         .collect(Collectors.toList());
-    var filteredBlobList = blobItemList.stream()
+    final var filteredBlobList = blobItemList.stream()
         .filter(blob -> blob.getName().startsWith(streamName + "/"))
         .toList();
     if (!filteredBlobList.isEmpty()) {
-      List<AppendBlobClient> clobClientList = new ArrayList<>();
+      final List<AppendBlobClient> clobClientList = new ArrayList<>();
       filteredBlobList.forEach(blobItem -> {
         clobClientList.add(specializedBlobClientBuilder.blobName(blobItem.getName()).buildAppendBlobClient());
       });
       return clobClientList;
     } else {
-      var errorText = String.format("Can not find blob started with: %s/", streamName);
+      final var errorText = String.format("Can not find blob started with: %s/", streamName);
       LOGGER.error(errorText);
       throw new Exception(errorText);
     }
@@ -125,7 +126,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * <li>Construct the Azure Blob client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
 
     configJson = Jsons.jsonNode(ImmutableMap.builder()

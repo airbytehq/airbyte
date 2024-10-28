@@ -39,7 +39,7 @@
       "type": ["string", "null"]
     },
     "twitter_id": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"]
     },
     "custom_fields": {
       "type": ["object", "null"]

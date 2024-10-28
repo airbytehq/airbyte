@@ -1,52 +1,11 @@
-# union of frontend, api, server, scheduler, protocol, worker, kubernetes
-area/platform:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
-  - airbyte-api/*
-  - airbyte-api/**/*
-  - airbyte-persistence/*
-  - airbyte-persistence/**/*
-  - airbyte-protocol/*
-  - airbyte-protocol/**/*
-  - airbyte-server/*
-  - airbyte-server/**/*
-  - airbyte-workers/*
-  - airbyte-workers/**/*
-  - kube/*
-  - kube/**/*
-  - charts/*
-  - charts/**/*
-
-team/frontend:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
-
+# Union of api, connectors, documentation, octavia-cli, CDK and normalization.
 area/api:
   - airbyte-api/*
   - airbyte-api/**/*
 
-area/server:
-  - airbyte-server/*
-  - airbyte-server/**/*
-
-area/protocol:
-  - airbyte-protocol/*
-  - airbyte-protocol/**/*
-
-area/worker:
-  - airbyte-workers/*
-  - airbyte-workers/**/*
-
-kubernetes:
-  - kube/*
-  - kube/**/*
-  - charts/*
-  - charts/**/*
-
 area/connectors:
   - airbyte-integrations/connectors/*
   - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
 
 area/documentation:
   - docs/*

@@ -1,0 +1,88 @@
+{
+  "data": [
+    {
+      "name": "impressions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 11000
+        }
+      ],
+      "title": "Impressions",
+      "description": "The number of times your carousel album was displayed.",
+      "id": "66123508374641123/insights/impressions/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 8500
+        }
+      ],
+      "title": "Reach",
+      "description": "The number of unique accounts that viewed your carousel album.",
+      "id": "66123508374641123/insights/reach/lifetime"
+    },
+    {
+      "name": "saved",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 250
+        }
+      ],
+      "title": "Saves",
+      "description": "The number of saves of your carousel album.",
+      "id": "66123508374641123/insights/saved/lifetime"
+    },
+    {
+      "name": "video_views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 6000
+        }
+      ],
+      "title": "Video Views",
+      "description": "The number of times videos in your carousel album were viewed.",
+      "id": "66123508374641123/insights/video_views/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 3
+        }
+      ],
+      "title": "Shares title",
+      "description": "Shares description.",
+      "id": "66123508374641123/insights/shares/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 53
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "66123508374641123/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9
+        }
+      ],
+      "title": "Profile visits title",
+      "description": "Profile visits description.",
+      "id": "66123508374641123/insights/profile_visits/lifetime"
+    }
+  ]
+}

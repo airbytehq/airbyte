@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from copy import deepcopy
@@ -17,7 +17,10 @@ def test_return_new_object():
         "key_2": [1, 2],
     }
     right = {"key_1": {"two": "right_value", "three": [1, 2, 3]}, "key_2": [3]}
-    expected_result = {"key_1": {"one": {"a", "b"}, "two": "right_value", "three": [1, 2, 3]}, "key_2": [1, 2, 3]}
+    expected_result = {
+        "key_1": {"one": {"a", "b"}, "two": "right_value", "three": [1, 2, 3]},
+        "key_2": [1, 2, 3],
+    }
 
     result = deep_merge(deepcopy(left), deepcopy(right))
 

@@ -1,9 +1,9 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-callrail:dev
 tests:
   spec:
-    - spec_path: "source_callrail/spec.yaml"
+    - spec_path: "manifest.yaml"
       timeout_seconds: 60
   connection:
     - config_path: "secrets/config.json"

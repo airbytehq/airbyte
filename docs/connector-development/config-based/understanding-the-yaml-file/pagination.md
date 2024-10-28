@@ -9,14 +9,14 @@ Conversely, pages don't have semantic value. More pages simply means that more r
 Schema:
 
 ```yaml
-  Paginator:
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/DefaultPaginator"
-      - "$ref": "#/definitions/NoPagination"
-  NoPagination:
-    type: object
-    additionalProperties: true
+Paginator:
+  type: object
+  anyOf:
+    - "$ref": "#/definitions/DefaultPaginator"
+    - "$ref": "#/definitions/NoPagination"
+NoPagination:
+  type: object
+  additionalProperties: true
 ```
 
 ## Default paginator
@@ -30,26 +30,25 @@ The default paginator is defined by
 Schema:
 
 ```yaml
-  DefaultPaginator:
-    type: object
-    additionalProperties: true
-    required:
-      - page_token_option
-      - pagination_strategy
-      - url_base
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      page_size:
-        type: integer
-      page_size_option:
-        "$ref": "#/definitions/RequestOption"
-      page_token_option:
-        "$ref": "#/definitions/RequestOption"
-      pagination_strategy:
-        "$ref": "#/definitions/PaginationStrategy"
-      url_base:
-        type: string
+DefaultPaginator:
+  type: object
+  additionalProperties: true
+  required:
+    - page_token_option
+    - pagination_strategy
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    page_size:
+      type: integer
+    page_size_option:
+      "$ref": "#/definitions/RequestOption"
+    page_token_option:
+      anyOf:
+        - "$ref": "#/definitions/RequestOption"
+        - "$ref": "#/definitions/RequestPath"
+    pagination_strategy:
+      "$ref": "#/definitions/PaginationStrategy"
 ```
 
 3 pagination strategies are supported
@@ -63,12 +62,12 @@ Schema:
 Schema:
 
 ```yaml
-  PaginationStrategy:
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/CursorPaginator"
-      - "$ref": "#/definitions/OffsetIncrement"
-      - "$ref": "#/definitions/PageIncrement"
+PaginationStrategy:
+  type: object
+  anyOf:
+    - "$ref": "#/definitions/CursorPagination"
+    - "$ref": "#/definitions/OffsetIncrement"
+    - "$ref": "#/definitions/PageIncrement"
 ```
 
 ### Page increment
@@ -78,16 +77,16 @@ When using the `PageIncrement` strategy, the page number will be set as part of 
 Schema:
 
 ```yaml
-  PageIncrement:
-    type: object
-    additionalProperties: true
-    required:
-      - page_size
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      page_size:
-        type: integer
+PageIncrement:
+  type: object
+  additionalProperties: true
+  required:
+    - page_size
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    page_size:
+      type: integer
 ```
 
 The following paginator example will fetch 5 records per page, and specify the page number as a request_parameter:
@@ -98,12 +97,14 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
   page_token_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page"
 ```
@@ -122,16 +123,16 @@ When using the `OffsetIncrement` strategy, the number of records read will be se
 Schema:
 
 ```yaml
-  OffsetIncrement:
-    type: object
-    additionalProperties: true
-    required:
-      - page_size
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      page_size:
-        type: integer
+OffsetIncrement:
+  type: object
+  additionalProperties: true
+  required:
+    - page_size
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    page_size:
+      type: integer
 ```
 
 The following paginator example will fetch 5 records per page, and specify the offset as a request_parameter:
@@ -142,12 +143,14 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "OffsetIncrement"
     page_size: 5
   page_token_option:
+    type: "RequestOption"
     field_name: "offset"
     inject_into: "request_parameter"
 ```
@@ -169,20 +172,20 @@ This cursor value can be used to request the next page of record.
 Schema:
 
 ```yaml
-  CursorPagination:
-    type: object
-    additionalProperties: true
-    required:
-      - cursor_value
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      cursor_value:
-        type: string
-      stop_condition:
-        type: string
-      page_size:
-        type: integer
+CursorPagination:
+  type: object
+  additionalProperties: true
+  required:
+    - cursor_value
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    cursor_value:
+      type: string
+    stop_condition:
+      type: string
+    page_size:
+      type: integer
 ```
 
 #### Cursor paginator in request parameters
@@ -197,6 +200,7 @@ paginator:
     type: "CursorPagination"
     cursor_value: "{{ last_records[-1]['id'] }}"
   page_token_option:
+    type: "RequestPath"
     field_name: "from"
     inject_into: "request_parameter"
 ```
@@ -216,9 +220,9 @@ paginator:
   <...>
   pagination_strategy:
     type: "CursorPagination"
-    cursor_value: "{{ headers['urls']['next'] }}"
+    cursor_value: "{{ headers['link']['next']['url'] }}"
   page_token_option:
-    inject_into: "path"
+    type: "RequestPath"
 ```
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,

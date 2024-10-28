@@ -1,22 +1,24 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from collections import namedtuple
 
 import pytest
 
-TestCase = namedtuple("TestCase", ("json_type", "data_type", "length", "decimal_place", "api_name", "pick_list_values", "expected_values"))
+TestCase = namedtuple(
+    "TestCase", ("json_type", "data_type", "length", "decimal_place", "api_name", "pick_list_values", "autonumber", "expected_values")
+)
 
 
 datatype_inputs = pytest.mark.parametrize(
     TestCase._fields,
     (
-        TestCase("boolean", "boolean", None, None, "Field", [], {"title": "Field", "type": ["null", "boolean"]}),
-        TestCase("double", "double", None, 3, "Field", [], {"multipleOf": 0.001, "title": "Field", "type": ["null", "number"]}),
-        TestCase("double", "currency", None, 2, "Field", [], {"multipleOf": 0.01, "title": "Field", "type": ["null", "number"]}),
-        TestCase("integer", "integer", None, None, "Field", [], {"title": "Field", "type": ["null", "integer"]}),
-        TestCase("string", "profileimage", 256, None, "Field", [], {"maxLength": 256, "title": "Field", "type": ["null", "string"]}),
+        TestCase("boolean", "boolean", None, None, "Field", [], None, {"title": "Field", "type": ["null", "boolean"]}),
+        TestCase("double", "double", None, 3, "Field", [], None, {"multipleOf": 0.001, "title": "Field", "type": ["null", "number"]}),
+        TestCase("double", "currency", None, 2, "Field", [], None, {"multipleOf": 0.01, "title": "Field", "type": ["null", "number"]}),
+        TestCase("integer", "integer", None, None, "Field", [], None, {"title": "Field", "type": ["null", "integer"]}),
+        TestCase("string", "profileimage", 256, None, "Field", [], None, {"maxLength": 256, "title": "Field", "type": ["null", "string"]}),
         TestCase(
             "string",
             "picklist",
@@ -24,9 +26,10 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             ["Chelsea", "Arsenal", "ManUtd"],
+            None,
             {"enum": [None, "Chelsea", "Arsenal", "ManUtd"], "maxLength": 128, "title": "Field", "type": ["null", "string"]},
         ),
-        TestCase("string", "textarea", 1024, None, "Field", [], {"maxLength": 1024, "title": "Field", "type": ["null", "string"]}),
+        TestCase("string", "textarea", 1024, None, "Field", [], None, {"maxLength": 1024, "title": "Field", "type": ["null", "string"]}),
         TestCase(
             "string",
             "website",
@@ -34,6 +37,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
                 "format": "uri",
                 "maxLength": 256,
@@ -48,6 +52,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
                 "format": "date",
                 "maxLength": 16,
@@ -62,6 +67,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
                 "format": "date-time",
                 "maxLength": 32,
@@ -69,8 +75,8 @@ datatype_inputs = pytest.mark.parametrize(
                 "type": ["null", "string"],
             },
         ),
-        TestCase("string", "text", 1024, None, "Field", [], {"maxLength": 1024, "title": "Field", "type": ["null", "string"]}),
-        TestCase("string", "phone", 16, None, "Field", [], {"maxLength": 16, "title": "Field", "type": ["null", "string"]}),
+        TestCase("string", "text", 1024, None, "Field", [], None, {"maxLength": 1024, "title": "Field", "type": ["null", "string"]}),
+        TestCase("string", "phone", 16, None, "Field", [], None, {"maxLength": 16, "title": "Field", "type": ["null", "string"]}),
         TestCase(
             "string",
             "bigint",
@@ -78,6 +84,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
                 "airbyte_type": "big_integer",
                 "maxLength": None,
@@ -92,6 +99,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Reminder",
             ["15 min", "30 min", "1 hour"],
+            None,
             {"format": "date-time", "title": "Reminder", "type": ["null", "string"]},
         ),
         TestCase(
@@ -101,23 +109,10 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
                 "format": "email",
                 "maxLength": 256,
-                "title": "Field",
-                "type": ["null", "string"],
-            },
-        ),
-        TestCase(
-            "string",
-            "autonumber",
-            512,
-            None,
-            "Field",
-            [],
-            {
-                "airbyte_type": "big_integer",
-                "maxLength": 512,
                 "title": "Field",
                 "type": ["null", "string"],
             },
@@ -129,8 +124,9 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
-                "additionalProperties": False,
+                "additionalProperties": True,
                 "properties": {
                     "email": {"format": "email", "type": "string"},
                     "id": {"type": "string"},
@@ -141,8 +137,8 @@ datatype_inputs = pytest.mark.parametrize(
                 "type": ["null", "object"],
             },
         ),
-        TestCase("jsonobject", "RRULE", None, None, "Field", [], {"type": ["null", "object"]}),
-        TestCase("jsonobject", "ALARM", None, None, "Field", [], {"type": ["null", "object"]}),
+        TestCase("jsonobject", "RRULE", None, None, "Field", [], None, {"type": ["null", "object"]}),
+        TestCase("jsonobject", "ALARM", None, None, "Field", [], None, {"type": ["null", "object"]}),
         TestCase(
             "jsonobject",
             "lookup",
@@ -150,8 +146,9 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {
-                "additionalProperties": False,
+                "additionalProperties": True,
                 "properties": {"id": {"type": "string"}, "name": {"type": ["null", "string"]}},
                 "required": ["name", "id"],
                 "title": "Field",
@@ -165,9 +162,19 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             [],
+            None,
             {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"},
         ),
-        TestCase("jsonarray", "text", 2056, None, "Field", [], {"items": {"type": "string"}, "title": "Field", "type": "array"}),
+        TestCase(
+            "jsonarray",
+            "text",
+            2056,
+            None,
+            "Field",
+            [],
+            None,
+            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"},
+        ),
         TestCase(
             "jsonarray",
             "text",
@@ -175,6 +182,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Pricing_Details",
             [],
+            None,
             {"items": {"type": "object"}, "title": "Pricing_Details", "type": "array"},
         ),
         TestCase(
@@ -184,6 +192,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Product_Details",
             [],
+            None,
             {"items": {"type": "object"}, "title": "Product_Details", "type": "array"},
         ),
         TestCase(
@@ -193,9 +202,10 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Tag",
             [],
+            None,
             {
                 "items": {
-                    "additionalProperties": False,
+                    "additionalProperties": True,
                     "properties": {"id": {"type": "string"}, "name": {"type": "string"}},
                     "required": ["name", "id"],
                     "type": "object",
@@ -211,12 +221,46 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             "Field",
             ["A", "B", "C", "D"],
+            None,
             {
                 "items": {"enum": [None, "A", "B", "C", "D"], "type": ["null", "string"]},
                 "minItems": 1,
                 "title": "Field",
                 "type": "array",
                 "uniqueItems": True,
+            },
+        ),
+        TestCase(
+            "string",
+            "autonumber",
+            512,
+            None,
+            "Field",
+            [],
+            {
+                "prefix": "prefix",
+                "suffix": "suffix",
+            },
+            {
+                "format": "string",
+                "maxLength": 512,
+                "title": "Field",
+                "type": ["null", "string"],
+            },
+        ),
+        TestCase(
+            "string",
+            "autonumber",
+            512,
+            None,
+            "Field",
+            [],
+            None,
+            {
+                "airbyte_type": "big_integer",
+                "maxLength": 512,
+                "title": "Field",
+                "type": ["null", "string"],
             },
         ),
     ),

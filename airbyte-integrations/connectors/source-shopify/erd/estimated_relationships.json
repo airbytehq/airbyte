@@ -1,0 +1,282 @@
+{
+  "streams": [
+    {
+      "name": "abandoned_checkouts",
+      "relations": {
+        "location_id": "locations.id",
+        "user_id": "customers.id"
+      }
+    },
+    {
+      "name": "articles",
+      "relations": {
+        "blog_id": "blogs.id",
+        "user_id": "customers.id"
+      }
+    },
+    {
+      "name": "balance_transactions",
+      "relations": {
+        "payout_id": "payouts.id",
+        "source_id": "sources.id"
+      }
+    },
+    {
+      "name": "blogs",
+      "relations": {}
+    },
+    {
+      "name": "collections",
+      "relations": {}
+    },
+    {
+      "name": "collects",
+      "relations": {
+        "collection_id": "collections.id",
+        "product_id": "products.id"
+      }
+    },
+    {
+      "name": "custom_collections",
+      "relations": {}
+    },
+    {
+      "name": "customer_journey_summary",
+      "relations": {
+        "order_id": "orders.id"
+      }
+    },
+    {
+      "name": "customers",
+      "relations": {
+        "last_order_id": "orders.id"
+      }
+    },
+    {
+      "name": "discount_codes",
+      "relations": {
+        "price_rule_id": "price_rules.id"
+      }
+    },
+    {
+      "name": "disputes",
+      "relations": {
+        "order_id": "orders.id"
+      }
+    },
+    {
+      "name": "draft_orders",
+      "relations": {
+        "order_id": "orders.id"
+      }
+    },
+    {
+      "name": "fulfillment_orders",
+      "relations": {
+        "assigned_location_id": "locations.id",
+        "order_id": "orders.id",
+        "shop_id": "shop.id"
+      }
+    },
+    {
+      "name": "fulfillments",
+      "relations": {
+        "location_id": "locations.id",
+        "order_id": "orders.id"
+      }
+    },
+    {
+      "name": "inventory_items",
+      "relations": {}
+    },
+    {
+      "name": "inventory_levels",
+      "relations": {
+        "inventory_item_id": "inventory_items.id",
+        "location_id": "locations.id"
+      }
+    },
+    {
+      "name": "locations",
+      "relations": {}
+    },
+    {
+      "name": "metafield_articles",
+      "relations": {
+        "owner_id": "articles.id"
+      }
+    },
+    {
+      "name": "metafield_blogs",
+      "relations": {
+        "owner_id": "blogs.id"
+      }
+    },
+    {
+      "name": "metafield_collections",
+      "relations": {
+        "owner_id": "collections.id"
+      }
+    },
+    {
+      "name": "metafield_customers",
+      "relations": {
+        "owner_id": "customers.id"
+      }
+    },
+    {
+      "name": "metafield_draft_orders",
+      "relations": {
+        "owner_id": "draft_orders.id"
+      }
+    },
+    {
+      "name": "metafield_locations",
+      "relations": {
+        "owner_id": "locations.id"
+      }
+    },
+    {
+      "name": "metafield_orders",
+      "relations": {
+        "owner_id": "orders.id"
+      }
+    },
+    {
+      "name": "metafield_pages",
+      "relations": {
+        "owner_id": "pages.id"
+      }
+    },
+    {
+      "name": "metafield_product_images",
+      "relations": {
+        "owner_id": "product_images.id"
+      }
+    },
+    {
+      "name": "metafield_products",
+      "relations": {
+        "owner_id": "products.id"
+      }
+    },
+    {
+      "name": "metafield_product_variants",
+      "relations": {
+        "owner_id": "product_variants.id"
+      }
+    },
+    {
+      "name": "metafield_shops",
+      "relations": {
+        "owner_id": "shop.id"
+      }
+    },
+    {
+      "name": "metafield_smart_collections",
+      "relations": {
+        "owner_id": "smart_collections.id"
+      }
+    },
+    {
+      "name": "order_agreements",
+      "relations": {
+        "id": "orders.id"
+      }
+    },
+    {
+      "name": "order_refunds",
+      "relations": {
+        "order_id": "orders.id",
+        "user_id": "customers.id"
+      }
+    },
+    {
+      "name": "order_risks",
+      "relations": {
+        "order_id": "orders.id",
+        "checkout_id": "abandoned_checkouts.id"
+      }
+    },
+    {
+      "name": "orders",
+      "relations": {
+        "app_id": "apps.id",
+        "checkout_id": "abandoned_checkouts.id",
+        "location_id": "locations.id",
+        "user_id": "customers.id"
+      }
+    },
+    {
+      "name": "pages",
+      "relations": {
+        "shop_id": "shop.id"
+      }
+    },
+    {
+      "name": "price_rules",
+      "relations": {}
+    },
+    {
+      "name": "product_images",
+      "relations": {
+        "product_id": "products.id"
+      }
+    },
+    {
+      "name": "products",
+      "relations": {}
+    },
+    {
+      "name": "products_graph_ql",
+      "relations": {}
+    },
+    {
+      "name": "product_variants",
+      "relations": {
+        "product_id": "products.id",
+        "inventory_item_id": "inventory_items.id"
+      }
+    },
+    {
+      "name": "shop",
+      "relations": {
+        "primary_location_id": "locations.id"
+      }
+    },
+    {
+      "name": "smart_collections",
+      "relations": {}
+    },
+    {
+      "name": "tender_transactions",
+      "relations": {
+        "order_id": "orders.id",
+        "user_id": "customers.id"
+      }
+    },
+    {
+      "name": "transactions",
+      "relations": {
+        "order_id": "orders.id",
+        "user_id": "customers.id",
+        "parent_id": "transactions.id",
+        "location_id": "locations.id"
+      }
+    },
+    {
+      "name": "customer_saved_search",
+      "relations": {}
+    },
+    {
+      "name": "customer_address",
+      "relations": {
+        "customer_id": "customers.id"
+      }
+    },
+    {
+      "name": "countries",
+      "relations": {}
+    }
+  ]
+}

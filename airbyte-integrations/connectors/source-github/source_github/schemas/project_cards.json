@@ -1,103 +1,64 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "https://json-schema.org/schema#",
   "type": "object",
   "properties": {
     "url": {
+      "description": "The URL to access the project card.",
       "type": ["null", "string"]
     },
     "project_url": {
+      "description": "The URL to access the project that includes the project card.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the project card.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The unique Node ID of the project card.",
       "type": ["null", "string"]
     },
     "note": {
+      "description": "Any notes associated with the project card.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Indicates whether the project card is archived or not.",
       "type": ["null", "boolean"]
     },
     "creator": {
-      "type": "object",
-      "properties": {
-        "login": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "node_id": {
-          "type": ["null", "string"]
-        },
-        "avatar_url": {
-          "type": ["null", "string"]
-        },
-        "gravatar_id": {
-          "type": ["null", "string"]
-        },
-        "url": {
-          "type": ["null", "string"]
-        },
-        "html_url": {
-          "type": ["null", "string"]
-        },
-        "followers_url": {
-          "type": ["null", "string"]
-        },
-        "following_url": {
-          "type": ["null", "string"]
-        },
-        "gists_url": {
-          "type": ["null", "string"]
-        },
-        "starred_url": {
-          "type": ["null", "string"]
-        },
-        "subscriptions_url": {
-          "type": ["null", "string"]
-        },
-        "organizations_url": {
-          "type": ["null", "string"]
-        },
-        "repos_url": {
-          "type": ["null", "string"]
-        },
-        "events_url": {
-          "type": ["null", "string"]
-        },
-        "received_events_url": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "string"]
-        },
-        "site_admin": {
-          "type": ["null", "boolean"]
-        }
-      }
+      "description": "The user who created the project card.",
+      "$ref": "user.json"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "description": "The date and time when the project card was created.",
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "description": "The date and time when the project card was last updated.",
+      "type": "string",
       "format": "date-time"
     },
     "column_url": {
+      "description": "The URL to access the project column associated with the project card.",
+      "type": ["null", "string"]
+    },
+    "content_url": {
+      "description": "The URL that provides direct access to the project card's content.",
       "type": ["null", "string"]
     },
     "repository": {
-      "type": ["null", "string"]
+      "description": "The repository to which the project card is linked.",
+      "type": "string"
     },
     "project_id": {
-      "type": ["null", "integer"]
+      "description": "The unique identifier of the project to which the project card belongs.",
+      "type": "integer"
     },
     "column_id": {
-      "type": ["null", "integer"]
+      "description": "The unique identifier of the project column that the project card belongs to.",
+      "type": "integer"
     }
   }
 }

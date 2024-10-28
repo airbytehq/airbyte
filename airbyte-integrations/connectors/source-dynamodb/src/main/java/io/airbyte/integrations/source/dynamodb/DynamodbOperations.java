@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.dynamodb;
@@ -7,19 +7,24 @@ package io.airbyte.integrations.source.dynamodb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import io.airbyte.db.AbstractDatabase;
+import io.airbyte.cdk.db.AbstractDatabase;
 import java.io.Closeable;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
 public class DynamodbOperations extends AbstractDatabase implements Closeable {
@@ -30,7 +35,10 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
   private ObjectMapper schemaObjectMapper;
 
+  private DynamodbConfig dynamodbConfig;
+
   public DynamodbOperations(DynamodbConfig dynamodbConfig) {
+    this.dynamodbConfig = dynamodbConfig;
     this.dynamoDbClient = DynamodbUtils.createDynamoDbClient(dynamodbConfig);
     initMappers();
   }
@@ -51,15 +59,31 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   }
 
   public List<String> listTables() {
-    return dynamoDbClient.listTables()
-        // filter on table status?
-        .tableNames();
+    List<String> tableNames = new ArrayList<>();
+    ListTablesRequest listTablesRequest = ListTablesRequest.builder().build();
+    boolean completed = false;
+
+    while (!completed) {
+      ListTablesResponse listTablesResponse = dynamoDbClient.listTables(listTablesRequest);
+      tableNames.addAll(listTablesResponse.tableNames());
+
+      if (listTablesResponse.lastEvaluatedTableName() == null) {
+        completed = true;
+      } else {
+        listTablesRequest = listTablesRequest.toBuilder()
+            .exclusiveStartTableName(listTablesResponse.lastEvaluatedTableName())
+            .build();
+      }
+    }
+
+    return tableNames;
   }
 
   public List<String> primaryKey(String tableName) {
     DescribeTableRequest describeTableRequest = DescribeTableRequest.builder().tableName(tableName).build();
-    return dynamoDbClient.describeTable(describeTableRequest).table().attributeDefinitions().stream()
-        .map(AttributeDefinition::attributeName)
+    return dynamoDbClient.describeTable(describeTableRequest).table().keySchema().stream()
+        .filter(element -> element.keyType().equals(KeyType.HASH))
+        .map(KeySchemaElement::attributeName)
         .toList();
   }
 
@@ -105,11 +129,29 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   public List<JsonNode> scanTable(String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
     List<JsonNode> items = new ArrayList<>();
 
-    var projectionAttributes = String.join(", ", attributes);
+    String prefix = "dyndb";
+    // remove and replace reserved attribute names
+    Set<String> copyAttributes = new HashSet<>(attributes);
+    dynamodbConfig.reservedAttributeNames().forEach(copyAttributes::remove);
+    dynamodbConfig.reservedAttributeNames().stream()
+        .filter(attributes::contains)
+        .map(str -> str.replaceAll("[-.]", ""))
+        .forEach(attr -> copyAttributes.add("#" + prefix + "_" + attr));
+
+    Map<String, String> mappingAttributes = dynamodbConfig.reservedAttributeNames().stream()
+        .filter(attributes::contains)
+        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
+
+    var projectionAttributes = String.join(", ", copyAttributes);
 
     ScanRequest.Builder scanRequestBuilder = ScanRequest.builder()
         .tableName(tableName)
         .projectionExpression(projectionAttributes);
+
+    if (!mappingAttributes.isEmpty()) {
+      scanRequestBuilder
+          .expressionAttributeNames(mappingAttributes);
+    }
 
     if (filterAttribute != null && filterAttribute.name() != null &&
         filterAttribute.value() != null && filterAttribute.type() != null) {
@@ -134,8 +176,10 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         comparator = ">";
       }
 
+      String filterPlaceholder =
+          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
       scanRequestBuilder
-          .filterExpression(filterName + " " + comparator + " :timestamp")
+          .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
           .expressionAttributeValues(Map.of(":timestamp", attributeValue));
 
     }

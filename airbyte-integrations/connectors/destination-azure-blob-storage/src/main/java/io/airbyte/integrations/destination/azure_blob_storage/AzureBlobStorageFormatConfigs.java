@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -12,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AzureBlobStorageFormatConfigs {
+
+  private AzureBlobStorageFormatConfigs() {
+
+  }
 
   protected static final Logger LOGGER = LoggerFactory
       .getLogger(AzureBlobStorageFormatConfigs.class);
@@ -27,11 +31,10 @@ public class AzureBlobStorageFormatConfigs {
         return new AzureBlobStorageCsvFormatConfig(formatConfig);
       }
       case JSONL -> {
-        return new AzureBlobStorageJsonlFormatConfig();
+        return new AzureBlobStorageJsonlFormatConfig(formatConfig);
       }
-      default -> {
-        throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
-      }
+      default -> throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
+
     }
   }
 

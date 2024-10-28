@@ -1,22 +1,36 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
-
+import pytest
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_notion.source import SourceNotion
 
 
-def test_check_connection(mocker, requests_mock):
+@pytest.mark.parametrize(
+    "config, expected_token",
+    [
+        ({"credentials": {"auth_type": "OAuth2.0", "access_token": "oauth_token_123"}}, "Bearer oauth_token_123"),
+        ({"credentials": {"auth_type": "token", "token": "api_token_456"}}, "Bearer api_token_456"),
+        ({"access_token": "legacy_token_789"}, "Bearer legacy_token_789"),
+        ({}, None),
+    ],
+)
+def test_get_authenticator(config, expected_token):
     source = SourceNotion()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    requests_mock.get("https://api.notion.com/v1/users", json={"results": [{"id": "aaa"}], "next_cursor": None})
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    authenticator = source._get_authenticator(config)
+
+    if expected_token:
+        assert isinstance(authenticator, TokenAuthenticator)
+        assert authenticator.token == expected_token
+    else:
+        assert authenticator is None
 
 
-def test_streams(mocker):
+def test_streams():
     source = SourceNotion()
-    config_mock = MagicMock()
+    config_mock = {"start_date": "2020-01-01T00:00:00.000Z",
+                   "credentials": {"auth_type": "token", "token": "abcd"}}
     streams = source.streams(config_mock)
-    expected_streams_number = 4
+    expected_streams_number = 5
     assert len(streams) == expected_streams_number

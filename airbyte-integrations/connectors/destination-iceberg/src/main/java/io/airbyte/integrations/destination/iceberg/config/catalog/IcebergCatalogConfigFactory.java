@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg.config.catalog;
@@ -14,6 +14,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBE
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.storage.ServerManagedStorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class IcebergCatalogConfigFactory {
 
-  public IcebergCatalogConfig fromJsonNodeConfig(@Nonnull final JsonNode config) {
+  public static IcebergCatalogConfig fromJsonNodeConfig(@Nonnull final JsonNode config) {
     // storage config
     final JsonNode storageConfigJson = config.get(ICEBERG_STORAGE_CONFIG_KEY);
     StorageConfig storageConfig = genStorageConfig(storageConfigJson);
@@ -38,24 +39,25 @@ public class IcebergCatalogConfigFactory {
     IcebergCatalogConfig icebergCatalogConfig = genIcebergCatalogConfig(catalogConfigJson);
     icebergCatalogConfig.formatConfig = formatConfig;
     icebergCatalogConfig.storageConfig = storageConfig;
-    icebergCatalogConfig.setDefaultOutputDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
+    JsonNode defaultDb = catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY);
+    if (null != defaultDb) {
+      icebergCatalogConfig.setDefaultOutputDatabase(defaultDb.asText());
+    }
 
     return icebergCatalogConfig;
   }
 
-  private StorageConfig genStorageConfig(JsonNode storageConfigJson) {
+  private static StorageConfig genStorageConfig(JsonNode storageConfigJson) {
     String storageTypeStr = storageConfigJson.get(ICEBERG_STORAGE_TYPE_CONFIG_KEY).asText();
     if (storageTypeStr == null) {
       throw new IllegalArgumentException(ICEBERG_STORAGE_TYPE_CONFIG_KEY + " cannot be null");
     }
     StorageType storageType = StorageType.valueOf(storageTypeStr.toUpperCase());
-    switch (storageType) {
-      case S3:
-        return S3Config.fromDestinationConfig(storageConfigJson);
-      case HDFS:
-      default:
-        throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
-    }
+    return switch (storageType) {
+      case S3 -> S3Config.fromDestinationConfig(storageConfigJson);
+      case MANAGED -> ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
+      default -> throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
+    };
   }
 
   @NotNull
@@ -70,7 +72,8 @@ public class IcebergCatalogConfigFactory {
       case HIVE -> new HiveCatalogConfig(catalogConfigJson);
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
-      default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
+      case REST -> new RESTCatalogConfig(catalogConfigJson);
+      case GLUE -> new GlueCatalogConfig();
     };
   }
 

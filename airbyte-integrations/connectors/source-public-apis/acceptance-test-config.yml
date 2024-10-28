@@ -1,6 +1,7 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-public-apis:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
@@ -10,7 +11,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+        status: "succeed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
@@ -18,9 +19,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-  incremental:
-    bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

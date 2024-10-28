@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg.config.catalog;
@@ -10,5 +10,7 @@ package io.airbyte.integrations.destination.iceberg.config.catalog;
 public enum CatalogType {
   HIVE,
   HADOOP,
-  JDBC
+  JDBC,
+  REST,
+  GLUE
 }

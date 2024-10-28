@@ -1,17 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
-class RequestOptionsProvider(JsonSchemaMixin):
+class RequestOptionsProvider:
     """
     Defines the request options to set on an outgoing HTTP request
 
@@ -29,7 +28,7 @@ class RequestOptionsProvider(JsonSchemaMixin):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
@@ -54,7 +53,7 @@ class RequestOptionsProvider(JsonSchemaMixin):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Union[Mapping[str, Any], str]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -72,7 +71,7 @@ class RequestOptionsProvider(JsonSchemaMixin):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Mapping[str, Any]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 

@@ -1,32 +1,40 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Optional
 
 import requests
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass
-class PaginationStrategy(JsonSchemaMixin):
+class PaginationStrategy:
     """
     Defines how to get the next page token
     """
 
+    @property
     @abstractmethod
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def initial_token(self) -> Optional[Any]:
+        """
+        Return the initial value of the token
+        """
+
+    @abstractmethod
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         """
         :param response: response to process
-        :param last_records: records extracted from the response
+        :param last_page_size: the number of records read from the response
+        :param last_record: the last record extracted from the response
         :return: next page token. Returns None if there are no more pages to fetch
         """
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         """
         Reset the pagination's inner state
         """

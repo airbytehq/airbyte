@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, ConnectorSpecificationSerializer
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
@@ -20,17 +20,6 @@ def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
         return pkgutil.get_data(package, filename)
     except FileNotFoundError:
         return None
-
-
-class AirbyteSpec(object):
-    @staticmethod
-    def from_file(file_name: str):
-        with open(file_name) as file:
-            spec_text = file.read()
-        return AirbyteSpec(spec_text)
-
-    def __init__(self, spec_string):
-        self.spec_string = spec_string
 
 
 TConfig = TypeVar("TConfig", bound=Mapping[str, Any])
@@ -47,13 +36,27 @@ class BaseConnector(ABC, Generic[TConfig]):
         """
 
     @staticmethod
-    def read_config(config_path: str) -> TConfig:
-        with open(config_path, "r") as file:
-            contents = file.read()
-        return json.loads(contents)
+    def read_config(config_path: str) -> Mapping[str, Any]:
+        config = BaseConnector._read_json_file(config_path)
+        if isinstance(config, Mapping):
+            return config
+        else:
+            raise ValueError(
+                f"The content of {config_path} is not an object and therefore is not a valid config. Please ensure the file represent a config."
+            )
 
     @staticmethod
-    def write_config(config: TConfig, config_path: str):
+    def _read_json_file(file_path: str) -> Any:
+        with open(file_path, "r") as file:
+            contents = file.read()
+
+        try:
+            return json.loads(contents)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
+
+    @staticmethod
+    def write_config(config: TConfig, config_path: str) -> None:
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
@@ -74,11 +77,14 @@ class BaseConnector(ABC, Generic[TConfig]):
         if yaml_spec:
             spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
         elif json_spec:
-            spec_obj = json.loads(json_spec)
+            try:
+                spec_obj = json.loads(json_spec)
+            except json.JSONDecodeError as error:
+                raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
-        return ConnectorSpecification.parse_obj(spec_obj)
+        return ConnectorSpecificationSerializer.load(spec_obj)
 
     @abstractmethod
     def check(self, logger: logging.Logger, config: TConfig) -> AirbyteConnectionStatus:
@@ -90,7 +96,7 @@ class BaseConnector(ABC, Generic[TConfig]):
 
 class _WriteConfigProtocol(Protocol):
     @staticmethod
-    def write_config(config: Mapping[str, Any], config_path: str):
+    def write_config(config: Mapping[str, Any], config_path: str) -> None:
         ...
 
 

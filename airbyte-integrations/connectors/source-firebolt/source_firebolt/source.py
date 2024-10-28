@@ -1,12 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
-from asyncio import gather, get_event_loop
+import logging
 from typing import Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -17,38 +16,15 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources import Source
-from firebolt.async_db import Connection as AsyncConnection
 
-from .database import establish_async_connection, establish_connection, get_firebolt_tables
+from .database import establish_connection, get_table_structure
 from .utils import airbyte_message_from_data, convert_type
 
 SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
 
 
-async def get_table_stream(connection: AsyncConnection, table: str) -> AirbyteStream:
-    """
-    Get AirbyteStream for a particular table with table structure defined.
-
-    :param connection: Connection object connected to a database
-
-    :return: AirbyteStream object containing the table structure
-    """
-    column_mapping = {}
-    cursor = connection.cursor()
-    await cursor.execute(f"SHOW COLUMNS {table}")
-    for t_name, c_name, c_type, nullable in await cursor.fetchall():
-        airbyte_type = convert_type(c_type, nullable)
-        column_mapping[c_name] = airbyte_type
-    cursor.close()
-    json_schema = {
-        "type": "object",
-        "properties": column_mapping,
-    }
-    return AirbyteStream(name=table, json_schema=json_schema, supported_sync_modes=SUPPORTED_SYNC_MODES)
-
-
 class SourceFirebolt(Source):
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -69,7 +45,7 @@ class SourceFirebolt(Source):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -87,20 +63,23 @@ class SourceFirebolt(Source):
             by their names and types)
         """
 
-        async def get_streams():
-            async with await establish_async_connection(config, logger) as connection:
-                tables = await get_firebolt_tables(connection)
-                logger.info(f"Found {len(tables)} available tables.")
-                return await gather(*[get_table_stream(connection, table) for table in tables])
+        with establish_connection(config, logger) as connection:
+            structure = get_table_structure(connection)
 
-        loop = get_event_loop()
-        streams = loop.run_until_complete(get_streams())
+        streams = []
+        for table, columns in structure.items():
+            column_mapping = {c_name: convert_type(c_type, nullable) for c_name, c_type, nullable in columns}
+            json_schema = {
+                "type": "object",
+                "properties": column_mapping,
+            }
+            streams.append(AirbyteStream(name=table, json_schema=json_schema, supported_sync_modes=SUPPORTED_SYNC_MODES))
         logger.info(f"Provided {len(streams)} streams to the Aribyte Catalog.")
         return AirbyteCatalog(streams=streams)
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, any],
@@ -130,18 +109,19 @@ class SourceFirebolt(Source):
             with connection.cursor() as cursor:
                 for c_stream in catalog.streams:
                     table_name = c_stream.stream.name
-                    table_properties = c_stream.stream.json_schema["properties"]
+                    table_properties = c_stream.stream.json_schema.get("properties", {})
                     columns = list(table_properties.keys())
+                    if columns:
+                        # Escape columns with " to avoid reserved keywords e.g. id
+                        escaped_columns = ['"{}"'.format(col) for col in columns]
 
-                    # Escape columns with " to avoid reserved keywords e.g. id
-                    escaped_columns = ['"{}"'.format(col) for col in columns]
+                        query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
+                        print(query)
+                        cursor.execute(query)
 
-                    query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
-                    cursor.execute(query)
-
-                    logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
-                    for result in cursor.fetchall():
-                        message = airbyte_message_from_data(result, columns, table_name)
-                        if message:
-                            yield message
+                        logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
+                        for result in cursor.fetchall():
+                            message = airbyte_message_from_data(result, columns, table_name)
+                            if message:
+                                yield message
         logger.info("Data read complete.")

@@ -1,8 +1,8 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Google Analytics (Universal Analytics) Spec",
+    "title": "Google Analytics (V4) Spec",
     "type": "object",
     "required": ["view_id", "start_date"],
     "additionalProperties": true,
@@ -81,7 +81,9 @@
         "type": "string",
         "title": "Replication Start Date",
         "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
-        "examples": ["2020-06-01"]
+        "examples": ["2020-06-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$|[\\s\\S]+$",
+        "format": "date"
       },
       "view_id": {
         "order": 2,
@@ -89,8 +91,17 @@
         "title": "View ID",
         "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>."
       },
-      "custom_reports": {
+      "end_date": {
         "order": 3,
+        "type": "string",
+        "title": "Replication End Date",
+        "description": "The date in the format YYYY-MM-DD. Any data after this date will not be replicated.",
+        "examples": ["2020-06-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$|[\\s\\S]+$",
+        "format": "date"
+      },
+      "custom_reports": {
+        "order": 4,
         "type": "string",
         "title": "Custom Reports",
         "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
@@ -101,16 +112,52 @@
         "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. ",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1,
-        "order": 4
+        "order": 5
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg.config.storage;
@@ -9,5 +9,6 @@ package io.airbyte.integrations.destination.iceberg.config.storage;
  */
 public enum StorageType {
   S3,
-  HDFS;
+  HDFS,
+  MANAGED;
 }

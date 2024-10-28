@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import requests
@@ -7,6 +7,6 @@ from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import 
 
 
 def test():
-    paginator = NoPagination(options={})
-    next_page_token = paginator.next_page_token(requests.Response(), [])
+    paginator = NoPagination(parameters={})
+    next_page_token = paginator.next_page_token(requests.Response(), 0, [])
     assert next_page_token == {}

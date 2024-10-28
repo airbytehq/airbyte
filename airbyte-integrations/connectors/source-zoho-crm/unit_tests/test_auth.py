@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
@@ -28,5 +28,6 @@ def test_refresh_access_token(mocker, request_mocker):
 
 
 def test_get_auth_header(mocker):
+    mocker.patch.object(ZohoOauth2Authenticator, "get_token_refresh_endpoint", Mock(return_value="refresh_token"))
     mocker.patch.object(ZohoOauth2Authenticator, "get_access_token", Mock(return_value="token"))
     assert authenticator.get_auth_header() == {"Authorization": "Zoho-oauthtoken token"}

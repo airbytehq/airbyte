@@ -7,7 +7,7 @@ description: >-
 
 ## Overview
 
-The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.io/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
+The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.com/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
 
 ### Sync overview
 
@@ -17,12 +17,12 @@ Each replicated stream from Airbyte will output data into a corresponding event 
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | No |  |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | No                   |       |
 
 ## Getting started
 
@@ -32,8 +32,8 @@ To use the Chargify destination, you'll first need to create a [Chargify account
 
 Once you have a Chargify account, you can use the following credentials to set up the connector
 
-* A Project ID associated with the site
-* A Master API key associated with the site
+- A Project ID associated with the site
+- A Master API key associated with the site
 
 You can reach out to [support@chargify.com](mailto:support@chargify.com) to request your Project ID and Master API key for the Airbyte destination connector.
 
@@ -57,24 +57,29 @@ The Chargify Connector requires your `Project ID` and `Master Key` for authentic
 
 #### Timestamp Inference
 
-The `Infer Timestamp` field lets you specify if you want the connector to infer the [chargify.timestamp](https://help.chargify.com/events/getting-data-in-guide.html#event-timestamps) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Chargify's time series analytics. By default, this property is set to true. If toggled off, chargify.timestamp will be set to the datetime when the data was recorded by Chargify.
+The `Infer Timestamp` field lets you specify if you want the connector to infer the [chargify.timestamp](https://maxio-chargify.zendesk.com/hc/en-us/articles/5405362457613#event-timestamps) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Chargify's time series analytics. By default, this property is set to true. If toggled off, chargify.timestamp will be set to the datetime when the data was recorded by Chargify.
 
 ### Setup the Chargify destination in Airbyte
 
 Now, you should have all the parameters needed to configure Chargify destination.
 
-* **Project ID**
-* **Master API Key**
-* **Infer Timestamp**
+- **Project ID**
+- **Master API Key**
+- **Infer Timestamp**
 
 Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](http://chargify.com/events-based-billing/).
 
 If you have any questions or want to get started, [please reach out to a billing expert](https://go.chargify.com/contact/).
 
-## CHANGELOG
+## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.2 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.2.0 | 2021-09-10 | [\#5973](https://github.com/airbytehq/airbyte/pull/5973) | Fix timestamp inference for complex schemas |
-| 0.1.0 | 2021-08-18 | [\#5339](https://github.com/airbytehq/airbyte/pull/5339) | Chargify Destination Release! |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                      |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 0.2.2   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.2.0   | 2021-09-10 | [\#5973](https://github.com/airbytehq/airbyte/pull/5973) | Fix timestamp inference for complex schemas  |
+| 0.1.0   | 2021-08-18 | [\#5339](https://github.com/airbytehq/airbyte/pull/5339) | Chargify Destination Release!                |
+
+</details>

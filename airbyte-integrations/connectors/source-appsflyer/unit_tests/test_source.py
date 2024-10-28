@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -37,5 +37,5 @@ def test_streams():
     source = SourceAppsflyer()
     config_mock = {"app_id": "testing", "api_token": "secrets", "start_date": "2021-09-13 01:00:00", "timezone": "UTC"}
     streams = source.streams(config_mock)
-    expected_streams_number = 11
+    expected_streams_number = 18
     assert len(streams) == expected_streams_number

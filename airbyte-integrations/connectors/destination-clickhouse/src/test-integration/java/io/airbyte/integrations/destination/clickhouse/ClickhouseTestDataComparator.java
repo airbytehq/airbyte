@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseTestDataComparator.class);
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private static final String CLICKHOUSE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
 
@@ -50,12 +50,12 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
                                          final String secondNumericValue) {
     // clickhouse stores double 1.14 as 1.1400000000000001
     // https://clickhouse.com/docs/en/sql-reference/data-types/float/
-    double epsilon = 0.000000000000001d;
+    final double epsilon = 0.000000000000001d;
 
-    double firstValue = Double.parseDouble(firstNumericValue);
-    double secondValue = Double.parseDouble(secondNumericValue);
+    final double firstValue = Double.parseDouble(firstNumericValue);
+    final double secondValue = Double.parseDouble(secondNumericValue);
 
-    return Math.abs(firstValue - secondValue) < epsilon;
+    return firstValue == secondValue || Math.abs(firstValue - secondValue) < epsilon;
   }
 
   @Override
@@ -85,9 +85,9 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue,
                                                 final String destinationValue) {
     try {
-      ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
+      final ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
           getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
-      ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
+      final ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
 
       if (airbyteDate.isBefore(minSupportedDateTime) || airbyteDate.isAfter(maxSupportedDateTime)) {
         // inserting any dates that are out of supported range causes registers overflow in clickhouseDB,
@@ -98,7 +98,7 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
         return true;
       }
       return airbyteDate.equals(destinationDate);
-    } catch (DateTimeParseException e) {
+    } catch (final DateTimeParseException e) {
       LOGGER.warn(
           "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
           airbyteMessageValue, destinationValue, e);
@@ -117,8 +117,15 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   protected boolean compareDateTimeValues(final String airbyteMessageValue,
                                           final String destinationValue) {
     final LocalDateTime expectedDateTime = LocalDateTime.parse(airbyteMessageValue);
-    final LocalDateTime actualDateTime = LocalDateTime.parse(destinationValue,
-        DateTimeFormatter.ofPattern(CLICKHOUSE_DATETIME_WITH_TZ_FORMAT));
+    LocalDateTime actualDateTime;
+    try {
+      actualDateTime = LocalDateTime.parse(destinationValue,
+          DateTimeFormatter.ofPattern(CLICKHOUSE_DATETIME_WITH_TZ_FORMAT));
+
+    } catch (final DateTimeParseException e) {
+      LOGGER.warn("Error using Clickhouse Timezone format, trying standard format", e);
+      actualDateTime = LocalDateTime.parse(destinationValue);
+    }
 
     if (expectedDateTime.isBefore(minSupportedDateTime.toLocalDateTime())
         || expectedDateTime.isAfter(maxSupportedDateTime.toLocalDateTime())) {
@@ -133,7 +140,7 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
     return expectedDateTime.equals(actualDateTime);
   }
 
-  private boolean parseBool(final String valueAsString) {
+  private static boolean parseBool(final String valueAsString) {
     // boolen as a String may be returned as true\false and as 0\1
     // https://clickhouse.com/docs/en/sql-reference/data-types/boolean
     try {

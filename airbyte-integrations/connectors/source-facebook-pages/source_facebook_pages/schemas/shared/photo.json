@@ -9,7 +9,7 @@
     },
     "backdated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "backdated_time_granularity": {
       "type": ["string", "null"]
@@ -25,7 +25,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "from": {
       "type": ["string", "null"]
@@ -59,7 +59,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "width": {
       "type": ["integer", "null"]

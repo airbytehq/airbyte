@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -7,46 +7,38 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.cdk.testutils.DatabaseConnectionHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private JsonNode config;
-  private DSLContext dslContext;
 
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
@@ -102,17 +94,16 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    try (final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null)) {
-      return getDatabase(dslContext).query(
-          ctx -> {
-            ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
-            return ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(this::getJsonFromRecord)
-                .collect(Collectors.toList());
-          });
-    }
+    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
+    return getDatabase(dslContext).query(
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+              .stream()
+              .map(this::getJsonFromRecord)
+              .collect(Collectors.toList());
+        });
   }
 
   @BeforeAll
@@ -140,10 +131,10 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    dslContext = getDslContext(configWithoutDbName);
+    DSLContext dslContext = getDslContext(configWithoutDbName);
     final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
@@ -159,8 +150,9 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    db.stop();
+    db.close();
   }
 
   @Override

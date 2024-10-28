@@ -1,4 +1,4 @@
-name: Run Integration Test
+name: Deprecation message for test slash command
 on:
   workflow_dispatch:
     inputs:
@@ -19,189 +19,28 @@ on:
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
+      connector-acceptance-test-version:
+        description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
+        required: false
+        default: "latest"
+      local_cdk:
+        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
+        required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
 
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
+  write-deprecation-message:
     runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
     steps:
-      - name: UUID ${{ github.event.inputs.uuid }}
-        run: true
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
-  start-test-runner:
-    name: Start Build EC2 Runner
-    needs: find_valid_pat
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          # 80 gb disk
-          ec2-image-id: ami-06cf12549e3d9c522
-  integration-test:
-    timeout-minutes: 240
-    needs: start-test-runner
-    runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
-    steps:
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
+      - name: Print deprecation message
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Search for valid connector name format
-        id: regex
-        uses: AsasInnab/regex-action@v1
-        with:
-          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
-          regex_flags: "i" # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
-      - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
-        run: echo "The connector provided has an invalid format!" && exit 1
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Install Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Install Pyenv and Tox
-        run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
-          python3 -m virtualenv venv
-          source venv/bin/activate
-          pip install --quiet tox==3.24.4
-      - name: Test and install CI scripts
-        # all CI python packages have the prefix "ci_"
-        run: |
-          source venv/bin/activate
-          tox -r -c ./tools/tox_ci.ini
-          pip install --quiet -e ./tools/ci_*
-      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
-        run: |
-          source venv/bin/activate
-          ci_credentials ${{ github.event.inputs.connector }}
-          # normalization also runs destination-specific tests, so fetch their creds also
-          if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
-          fi
-        env:
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-
-      - name: Test ${{ github.event.inputs.connector }}
-        run: |
-          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
-        id: test
-        env:
-          ACTION_RUN_ID: ${{github.run_id}}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-      - name: Archive test reports artifacts
-        if: github.event.inputs.comment-id && failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: |
-            **/${{ github.event.inputs.connector }}/build/reports/tests/**/**
-            **/${{ github.event.inputs.connector }}/acceptance_tests_logs/**
-            **/normalization_test_output/**/dbt_output.log
-            **/normalization_test_output/**/destination_output.log
-            **/normalization_test_output/**/build/compiled/airbyte_utils/**
-            **/normalization_test_output/**/build/run/airbyte_utils/**
-            **/normalization_test_output/**/models/generated/**
-
-      - name: Test coverage reports artifacts
-        if: github.event.inputs.comment-id && success()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: |
-            **/${{ github.event.inputs.connector }}/htmlcov/**
-          retention-days: 3
-
-      - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-2"
-      - name: Add Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-            ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
-            > ${{env.TEST_SUMMARY_INFO}}
-      - name: Add Failure Comment
-        if: github.event.inputs.comment-id && failure()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-            > :bug: ${{env.GRADLE_SCAN_LINK}}
-            > ${{env.TEST_SUMMARY_INFO}}
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-test-runner:
-    name: Stop Build EC2 Runner
-    timeout-minutes: 10
-    needs:
-      - start-test-runner # required to get output from the start-runner job
-      - integration-test # required to wait when the main job is done
-      - find_valid_pat
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-test-runner.outputs.ec2-instance-id }}
+            > :warning: The test slash command is now deprecated.<br>
+            The connector tests are automatically triggered as CI checks.<br>
+            Please use /legacy-test if you need to test CDK or CAT changes.<br>
+            Please join post to #pipeline-complaint-hotline slack channel if something is not working as expected.<br>

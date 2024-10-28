@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -19,16 +19,18 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     expected_cursor_field = "_ts"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     resp = MagicMock()
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 3000, "hasMore": True}
+    resp.status_code = 200
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1234,
         "snapshot_has_more": True,
@@ -36,6 +38,7 @@ def test_get_updated_state(patch_incremental_base_class):
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "snapshot": 3000, "hasMore": False}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
@@ -43,6 +46,7 @@ def test_get_updated_state(patch_incremental_base_class):
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 8000, "hasMore": True}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
@@ -51,6 +55,7 @@ def test_get_updated_state(patch_incremental_base_class):
     assert stream._delta_has_more is True
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 9000, "hasMore": False}
     stream.parse_response(resp, {})
+    stream.next_page_token(resp)
     assert stream.get_updated_state(None, None) == {
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
@@ -60,7 +65,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
@@ -68,16 +73,16 @@ def test_stream_slices(patch_incremental_base_class):
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(ConvexStream, "cursor_field", "dummy_field")
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     expected_checkpoint_interval = 128
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

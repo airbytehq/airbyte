@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 3052084644 },
+      "stream_descriptor": { "name": "open_exchange_rates" }
+    }
+  }
+]

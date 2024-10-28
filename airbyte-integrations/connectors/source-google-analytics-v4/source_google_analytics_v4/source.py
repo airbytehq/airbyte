@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -17,6 +17,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
@@ -101,6 +102,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: MutableMapping):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
+        self.end_date = config.get("end_date")
         self.window_in_days: int = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
@@ -115,6 +117,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     @property
     def state_checkpoint_interval(self) -> int:
         return self.window_in_days
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
@@ -250,7 +256,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
-        end_date = pendulum.now().date()
+        end_date = (pendulum.parse(self.end_date) if self.end_date else pendulum.now()).date()
         start_date = pendulum.parse(self.start_date).date()
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
@@ -527,8 +533,8 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
 class TestStreamConnection(GoogleAnalyticsV4Stream):
     """
     Test the connectivity and permissions to read the data from the stream.
-    Because of the nature of the connector, the streams are created dynamicaly.
-    We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
+    Because of the nature of the connector, the streams are created dynamically.
+    We declare the static stream like this to be able to test out the permissions to read the particular view_id."""
 
     page_size = 1
 
@@ -543,6 +549,14 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
         return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+
+    def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
+        res = response.json()
+        try:
+            return res.get("reports", [])[0].get("data")
+        except IndexError:
+            self.logger.warning(f"No reports in response: {res}")
+            return []
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):

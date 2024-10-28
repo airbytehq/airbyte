@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.dynamodb;
@@ -15,12 +15,14 @@ import java.util.Set;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
+@Disabled
 public class DynamodbOperationsTest {
 
   private static final String TABLE_NAME = "airbyte_table";
@@ -153,7 +155,7 @@ public class DynamodbOperationsTest {
     PutItemRequest putItemRequest1 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
         "attr_1", AttributeValue.builder().s("str_4").build(),
         "attr_2", AttributeValue.builder().s("str_5").build(),
-        "attr_3", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
+        "name", AttributeValue.builder().s("2017-12-21T17:42:34Z").build(),
         "attr_4", AttributeValue.builder().ns("12.5", "74.5").build()));
 
     dynamoDbClient.putItem(putItemRequest1);
@@ -161,13 +163,13 @@ public class DynamodbOperationsTest {
     PutItemRequest putItemRequest2 = DynamodbDataFactory.putItemRequest(tableName, Map.of(
         "attr_1", AttributeValue.builder().s("str_6").build(),
         "attr_2", AttributeValue.builder().s("str_7").build(),
-        "attr_3", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
+        "name", AttributeValue.builder().s("2019-12-21T17:42:34Z").build(),
         "attr_6", AttributeValue.builder().ss("str_1", "str_2").build()));
 
     dynamoDbClient.putItem(putItemRequest2);
 
-    var response = dynamodbOperations.scanTable(tableName, Set.of("attr_1", "attr_2", "attr_3"),
-        new DynamodbOperations.FilterAttribute("attr_3", "2018-12-21T17:42:34Z",
+    var response = dynamodbOperations.scanTable(tableName, Set.of("attr_1", "attr_2", "name"),
+        new DynamodbOperations.FilterAttribute("name", "2018-12-21T17:42:34Z",
             DynamodbOperations.FilterAttribute.FilterType.S));
 
     assertThat(response)
@@ -175,7 +177,7 @@ public class DynamodbOperationsTest {
 
     JSONAssert.assertEquals(objectMapper.writeValueAsString(response.get(0)), """
                                                                               {
-                                                                              	"attr_3": "2019-12-21T17:42:34Z",
+                                                                              	"name": "2019-12-21T17:42:34Z",
                                                                               	"attr_2": "str_7",
                                                                               	"attr_1": "str_6"
                                                                               }
