@@ -107,7 +107,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "replication_start_date": start_date,
             "marketplace_id": marketplace_id,
-            "period_in_days": config.get("period_in_days", 30),
+            "period_in_days": config.get("period_in_days", 365),
             "replication_end_date": end_date,
         }
         return stream_kwargs

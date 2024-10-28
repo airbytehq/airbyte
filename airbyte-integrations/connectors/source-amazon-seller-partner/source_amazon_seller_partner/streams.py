@@ -232,7 +232,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
-        self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work
+        self.period_in_days = min(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work
         self._report_options = report_options
         self._http_method = "GET"
         self._stream_name = stream_name
@@ -575,7 +575,7 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     report_name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
-
+    replication_start_date_limit_in_days = 30
 
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
     """
