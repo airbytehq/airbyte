@@ -18,6 +18,9 @@ import java.math.BigDecimal
  */
 class JsonToAirbyteValue {
     fun convert(json: JsonNode, schema: AirbyteType): AirbyteValue {
+        if (json.isNull) {
+            return NullValue
+        }
         try {
             return when (schema) {
                 is ArrayType -> toArray(json, schema.items.type)
@@ -103,6 +106,11 @@ class JsonToAirbyteValue {
         return ObjectValue(
             values =
                 schema.properties
+                    // Note that this will create an ObjectValue where properties in the schema
+                    // might not exist in the value.
+                    // This matches JSON behavior (i.e. explicit null != property not set),
+                    // but we maybe would prefer to set an explicit NullValue.
+                    .filter { (name, _) -> json.has(name) }
                     .mapValues { (name, field) -> convert(json.get(name), field.type) }
                     .toMap(LinkedHashMap())
         )
