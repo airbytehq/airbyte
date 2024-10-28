@@ -6,7 +6,7 @@ import logging
 import traceback
 from abc import ABC
 from collections import Counter
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import (
