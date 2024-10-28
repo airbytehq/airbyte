@@ -4,10 +4,9 @@ import logging
 import os
 import time
 from io import IOBase
+from typing import Any, Mapping
 
 import psutil
-
-from typing import Mapping, Any
 
 AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
 DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
