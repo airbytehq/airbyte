@@ -1,16 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from abc import ABC, abstractmethod
 from http import HTTPStatus
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
-from pydantic import BaseModel, ValidationError
+from pydantic.v1 import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
@@ -65,6 +67,8 @@ reports for profiles from BasicAmazonAdsStream _profiles list.
 
 """
 
+LOGGER = logging.getLogger("airbyte")
+
 
 class ErrorResponse(BaseModel):
     code: str
@@ -72,10 +76,35 @@ class ErrorResponse(BaseModel):
     requestId: Optional[str]
 
 
+class AmazonAdsErrorHandler(HttpStatusErrorHandler):
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+
+        if response_or_exception.status_code == HTTPStatus.OK:
+            return ErrorResolution(ResponseAction.SUCCESS)
+
+        try:
+            resp = ErrorResponse.parse_raw(response_or_exception.text)
+        except ValidationError:
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. {response_or_exception.text=}",
+            )
+
+        LOGGER.warning(
+            f"Unexpected error {resp.code} when processing request {response_or_exception.request.url} for "
+            f"{response_or_exception.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
+        )
+
+        return ErrorResolution(ResponseAction.SUCCESS)
+
+
 class BasicAmazonAdsStream(Stream, ABC):
     """
     Base class for all Amazon Ads streams.
     """
+
+    is_resumable = False
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
         self._profiles = profiles or []
@@ -111,10 +140,6 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     @property
     def url_base(self):
         return self._url
-
-    @property
-    def raise_on_http_errors(self):
-        return False
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -164,6 +189,9 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
             f"Unexpected error {resp.code} when processing request {response.request.url} for "
             f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
         )
+
+    def get_error_handler(self) -> ErrorHandler:
+        return AmazonAdsErrorHandler(logger=LOGGER)
 
 
 class SubProfilesStream(AmazonAdsStream):

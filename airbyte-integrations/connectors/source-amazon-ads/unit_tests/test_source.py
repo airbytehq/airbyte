@@ -43,8 +43,8 @@ def test_discover(config):
     setup_responses()
     source = DeclarativeSourceAdapter(source=SourceAmazonAds())
     catalog = source.discover(None, config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
-    schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
+    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog)
+    schemas = [stream.json_schema for stream in catalog.catalog.streams]
     for schema in schemas:
         Draft4Validator.check_schema(schema)
         ensure_additional_property_is_boolean(schema)

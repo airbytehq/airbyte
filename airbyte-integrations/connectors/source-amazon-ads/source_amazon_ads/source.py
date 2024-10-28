@@ -138,7 +138,11 @@ class SourceAmazonAds(AbstractSource):
             AttributionReportProducts,
         ]
         portfolios_stream = Portfolios(**stream_args)
-        return [profiles_stream, portfolios_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
+        return [
+            Profiles(**stream_args),
+            Portfolios(**stream_args),
+            *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],
+        ]
 
     @staticmethod
     def _make_authenticator(config: Mapping[str, Any]):
