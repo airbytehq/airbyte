@@ -12,6 +12,8 @@ import { CardWithIcon } from "../../components/Card/Card";
 import { Details } from "../../components/Details";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 import { Grid } from "../../components/Grid/Grid";
+import { YoutubeEmbed } from "../../components/YoutubeEmbed";
+
 export default {
   // Re-use the default mapping
   ...MDXComponents,
@@ -27,4 +29,5 @@ export default {
   EntityRelationshipDiagram,
   CardWithIcon,
   Grid,
+  YoutubeEmbed,
 };
