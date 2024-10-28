@@ -30,7 +30,6 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
-from source_amazon_ads.streams.report_streams.display_report import TACTICS
 from source_amazon_ads.streams.report_streams.report_stream_models import RecordType
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
 
@@ -184,7 +183,7 @@ def make_profiles(profile_type="seller"):
 @responses.activate
 def test_display_report_stream(config):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
@@ -192,16 +191,16 @@ def test_display_report_stream(config):
     profiles = make_profiles()
 
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map) * len(TACTICS)
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
     profiles = make_profiles(profile_type="vendor")
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice["profile"] = profiles[0]
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     # Skip asins record for vendor profiles
-    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1) * len(TACTICS)
+    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map))
 
 
 @pytest.mark.parametrize(
@@ -231,7 +230,7 @@ def test_stream_report_body_metrics(config, profiles, stream_class, url_pattern,
     )
 
     stream = stream_class(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
     list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for call in responses.calls:
         create_report_pattern = re.compile(url_pattern)
@@ -330,9 +329,9 @@ def test_brands_video_report_stream(config):
 def test_display_report_stream_init_failure(mocker, config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
     responses.add(
-        responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={"error": "some error"}, status=400
+        responses.POST, re.compile(r"https://advertising-api.amazon.com/reporting/reports"), json={"error": "some error"}, status=400
     )
 
     sleep_mock = mocker.patch("time.sleep")
@@ -348,8 +347,8 @@ def test_display_report_stream_init_http_exception(mocker, config):
     mocker.patch("time.sleep", lambda x: None)
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
-    responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), body=ConnectionError())
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
+    responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/reporting/reports"), body=ConnectionError())
 
     with raises(ConnectionError):
         _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
@@ -361,8 +360,8 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     mocker.patch("time.sleep", lambda x: None)
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
-    responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={}, status=429)
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
+    responses.add(responses.POST, "https://advertising-api.amazon.com/reporting/reports", json={}, status=429)
 
     with raises(TooManyRequests):
         _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
@@ -376,13 +375,13 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
             [
                 (lambda x: x <= 10, "SUCCESS", None),
             ],
-            10,
+            5,
         ),
         (
             [
                 (lambda x: x > 10, "SUCCESS", None),
             ],
-            20,
+            15,
         ),
         (
             [
@@ -396,7 +395,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
                 (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
                 (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
             ],
-            20,
+            15,
         ),
         (
             [
@@ -414,7 +413,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
 @responses.activate
 def test_display_report_stream_backoff(mocker, config, modifiers, expected):
     mocker.patch("time.sleep")
-    setup_responses(init_response=REPORT_INIT_RESPONSE, metric_response=METRIC_RESPONSE)
+    setup_responses(init_response_products=REPORT_INIT_RESPONSE, metric_response=METRIC_RESPONSE)
 
     with freeze_time("2021-01-02 03:04:05") as frozen_time:
 
@@ -434,10 +433,10 @@ def test_display_report_stream_backoff(mocker, config, modifiers, expected):
                 return (200, {}, response)
 
         callback = StatusCallback()
-        responses.add_callback(responses.GET, re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"), callback=callback)
+        responses.add_callback(responses.GET, re.compile(r"https://advertising-api.amazon.com/reporting/reports/[^/]+$"), callback=callback)
         profiles = make_profiles()
         stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-        stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+        stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
 
         if isinstance(expected, int):
             list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
@@ -453,7 +452,7 @@ def test_display_report_stream_slices_full_refresh(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field))
-    assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
+    assert slices == [{"profile": profiles[0], "reportDate": "2021-07-29"}]
 
 
 @freeze_time("2021-07-30 04:26:08")
@@ -461,25 +460,25 @@ def test_display_report_stream_slices_full_refresh(config):
 def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_state = {str(profiles[0].profileId): {"reportDate": "20210725"}}
+    stream_state = {str(profiles[0].profileId): {"reportDate": "2021-07-25"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
-        {"profile": profiles[0], "reportDate": "20210725"},
-        {"profile": profiles[0], "reportDate": "20210726"},
-        {"profile": profiles[0], "reportDate": "20210727"},
-        {"profile": profiles[0], "reportDate": "20210728"},
-        {"profile": profiles[0], "reportDate": "20210729"},
+        {"profile": profiles[0], "reportDate": "2021-07-25"},
+        {"profile": profiles[0], "reportDate": "2021-07-26"},
+        {"profile": profiles[0], "reportDate": "2021-07-27"},
+        {"profile": profiles[0], "reportDate": "2021-07-28"},
+        {"profile": profiles[0], "reportDate": "2021-07-29"},
     ]
 
-    stream_state = {str(profiles[0].profileId): {"reportDate": "20210730"}}
+    stream_state = {str(profiles[0].profileId): {"reportDate": "2021-07-30"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
-    assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
+    assert slices == [{"profile": profiles[0], "reportDate": "2021-07-29"}]
 
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={}))
-    assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
+    assert slices == [{"profile": profiles[0], "reportDate": "2021-07-29"}]
 
 
 @freeze_time("2021-08-01 04:00:00")
@@ -567,7 +566,7 @@ def test_get_date_range_lazy_evaluation():
 @responses.activate
 def test_read_incremental_without_records(config):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=b64decode("H4sIAAAAAAAAAIuOBQApu0wNAgAAAA=="),
     )
@@ -577,7 +576,7 @@ def test_read_incremental_without_records(config):
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
         state = {}
-        reportDates = ["20210102", "20210102", "20210102", "20210103", "20210104", "20210105"]
+        reportDates = ["2021-01-02", "2021-01-02", "2021-01-02", "2021-01-03", "2021-01-04", "2021-01-05"]
         for reportDate in reportDates:
             records = list(read_incremental(stream, state))
             assert state == {"1": {"reportDate": reportDate}}
@@ -588,7 +587,7 @@ def test_read_incremental_without_records(config):
 @responses.activate
 def test_read_incremental_with_records(config):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
@@ -599,39 +598,39 @@ def test_read_incremental_with_records(config):
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
         state = {}
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210102"}}
-        assert {r["reportDate"] for r in records} == {"20210102"}
+        assert state == {"1": {"reportDate": "2021-01-02"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-02"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210102"}}
-        assert {r["reportDate"] for r in records} == {"20210102", "20210103"}
+        assert state == {"1": {"reportDate": "2021-01-02"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-02", "2021-01-03"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210102"}}
-        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104"}
+        assert state == {"1": {"reportDate": "2021-01-02"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-02", "2021-01-03", "2021-01-04"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210103"}}
-        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104", "20210105"}
+        assert state == {"1": {"reportDate": "2021-01-03"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-02", "2021-01-03", "2021-01-04", "2021-01-05"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210104"}}
-        assert {r["reportDate"] for r in records} == {"20210103", "20210104", "20210105", "20210106"}
+        assert state == {"1": {"reportDate": "2021-01-04"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-03", "2021-01-04", "2021-01-05", "2021-01-06"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210105"}}
-        assert {r["reportDate"] for r in records} == {"20210104", "20210105", "20210106", "20210107"}
+        assert state == {"1": {"reportDate": "2021-01-05"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-04", "2021-01-05", "2021-01-06", "2021-01-07"}
 
 
 @responses.activate
 def test_read_incremental_without_records_start_date(config):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=b64decode("H4sIAAAAAAAAAIuOBQApu0wNAgAAAA=="),
     )
@@ -642,7 +641,7 @@ def test_read_incremental_without_records_start_date(config):
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
         state = {}
-        reportDates = ["20201231", "20210101", "20210102", "20210103", "20210104"]
+        reportDates = ["2020-12-31", "2021-01-01", "2021-01-02", "2021-01-03", "2021-01-04"]
         for reportDate in reportDates:
             records = list(read_incremental(stream, state))
             assert state == {"1": {"reportDate": reportDate}}
@@ -653,7 +652,7 @@ def test_read_incremental_without_records_start_date(config):
 @responses.activate
 def test_read_incremental_with_records_start_date(config):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
@@ -666,38 +665,38 @@ def test_read_incremental_with_records_start_date(config):
         state = {}
         records = list(read_incremental(stream, state))
 
-        assert state == {"1": {"reportDate": "20201231"}}
+        assert state == {"1": {"reportDate": "2020-12-31"}}
         assert {r["reportDate"] for r in records} == {
-            "20201225",
-            "20201226",
-            "20201227",
-            "20201228",
-            "20201229",
-            "20201230",
-            "20201231",
-            "20210101",
-            "20210102",
+            "2020-12-25",
+            "2020-12-26",
+            "2020-12-27",
+            "2020-12-28",
+            "2020-12-29",
+            "2020-12-30",
+            "2020-12-31",
+            "2021-01-01",
+            "2021-01-02",
         }
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210101"}}
-        assert {r["reportDate"] for r in records} == {"20201231", "20210101", "20210102", "20210103"}
+        assert state == {"1": {"reportDate": "2021-01-01"}}
+        assert {r["reportDate"] for r in records} == {"2020-12-31", "2021-01-01", "2021-01-02", "2021-01-03"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210102"}}
-        assert {r["reportDate"] for r in records} == {"20210101", "20210102", "20210103", "20210104"}
+        assert state == {"1": {"reportDate": "2021-01-02"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-01", "2021-01-02", "2021-01-03", "2021-01-04"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210103"}}
-        assert {r["reportDate"] for r in records} == {"20210102", "20210103", "20210104", "20210105"}
+        assert state == {"1": {"reportDate": "2021-01-03"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-02", "2021-01-03", "2021-01-04", "2021-01-05"}
 
         frozen_datetime.tick(delta=timedelta(days=1))
         records = list(read_incremental(stream, state))
-        assert state == {"1": {"reportDate": "20210104"}}
-        assert {r["reportDate"] for r in records} == {"20210103", "20210104", "20210105", "20210106"}
+        assert state == {"1": {"reportDate": "2021-01-04"}}
+        assert {r["reportDate"] for r in records} == {"2021-01-03", "2021-01-04", "2021-01-05", "2021-01-06"}
 
 
 @pytest.mark.parametrize(
@@ -776,7 +775,7 @@ def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state
 )
 def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
     setup_responses(
-        init_response=REPORT_INIT_RESPONSE,
+        init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
@@ -784,7 +783,7 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
     profiles = make_profiles()
 
     stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         if record["recordType"] not in custom_record_types:
