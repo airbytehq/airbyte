@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -30,6 +32,7 @@ import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
+import io.airbyte.integrations.source.mysql.MysqlCdcMetaFields
 import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -71,26 +74,37 @@ class MySqlDebeziumOperations(
         val after: JsonNode = value.after
         val source: JsonNode = value.source
         val isDelete: Boolean = after.isNull
-        val desc =
-            StreamDescriptor()
-                .withName(source["table"].asText())
-                .withNamespace(source["db"].asText())
+        // Identify the stream.
+        val streamID: StreamIdentifier =
+            StreamIdentifier.from(
+                StreamDescriptor()
+                    .withName(source["table"].asText())
+                    .withNamespace(source["db"].asText())
+            )
+        // Use either `before` or `after` as the record data, depending on the nature of the change.
+        val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
+        // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         val transactionTimestampJsonNode: JsonNode =
             OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-        val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
-        data.set<JsonNode>(CommonMetaField.CDC_UPDATED_AT.id, transactionTimestampJsonNode)
+        data.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            transactionTimestampJsonNode,
+        )
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
-        return DeserializedRecord(
-            streamID = StreamIdentifier.from(desc),
-            data = data,
-            changes = emptyMap(),
-        )
+        // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
+        val position = MySqlPosition(source["file"].asText(), source["pos"].asLong())
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_FILE.id, TextCodec.encode(position.fileName))
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_POS.id, LongCodec.encode(position.position))
+        // Set the _ab_cdc_cursor meta-field value.
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_CURSOR.id, LongCodec.encode(position.cursorValue))
+        // Return a DeserializedRecord instance.
+        return DeserializedRecord(streamID, data, changes = emptyMap())
     }
 
     /**

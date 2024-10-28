@@ -47,15 +47,21 @@ sealed class FeedBootstrap<T : Feed>(
     /** A map of all [StreamRecordConsumer] for this [feed]. */
     fun streamRecordConsumers(): Map<StreamIdentifier, StreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to CachingStreamRecordConsumer(stream)
+            stream.id to EfficientStreamRecordConsumer(stream)
         }
 
-    /** Caching implementation of [StreamRecordConsumer]. */
-    private inner class CachingStreamRecordConsumer(val stream: Stream) : StreamRecordConsumer {
+    /**
+     * Efficient implementation of [StreamRecordConsumer].
+     *
+     * It's efficient because it re-uses the same Airbyte protocol message instance from one record
+     * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
+     * measurable impact on performance.
+     */
+    private inner class EfficientStreamRecordConsumer(val stream: Stream) : StreamRecordConsumer {
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
-                accept(recordData)
+                acceptWithoutChanges(recordData)
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -64,26 +70,29 @@ sealed class FeedBootstrap<T : Feed>(
                             .withChange(fieldValueChange.protocolChange())
                             .withReason(fieldValueChange.protocolReason())
                     }
-                accept(recordData, protocolChanges)
+                acceptWithChanges(recordData, protocolChanges)
             }
         }
 
-        private fun accept(recordData: ObjectNode) {
+        private fun acceptWithoutChanges(recordData: ObjectNode) {
             synchronized(this) {
-                for ((fieldName, defaultValue) in zeroData.fields()) {
-                    cachedData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
-                outputConsumer.accept(cachedMessage)
+                outputConsumer.accept(reusedMessageWithoutChanges)
             }
         }
 
-        private fun accept(recordData: ObjectNode, changes: List<AirbyteRecordMessageMetaChange>) {
+        private fun acceptWithChanges(
+            recordData: ObjectNode,
+            changes: List<AirbyteRecordMessageMetaChange>
+        ) {
             synchronized(this) {
-                for ((fieldName, defaultValue) in zeroData.fields()) {
-                    cachedData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
-                cachedMeta.changes = changes
-                outputConsumer.accept(cachedMessageWithMeta)
+                reusedRecordMeta.changes = changes
+                outputConsumer.accept(reusedMessageWithChanges)
             }
         }
 
@@ -93,7 +102,7 @@ sealed class FeedBootstrap<T : Feed>(
                 .filter { it.streams.contains(stream) }
                 .firstOrNull()
 
-        private val zeroData: ObjectNode =
+        private val defaultRecordData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
                 if (feed is Stream && precedingGlobalFeed != null) {
@@ -106,9 +115,9 @@ sealed class FeedBootstrap<T : Feed>(
                 }
             }
 
-        private val cachedData: ObjectNode = zeroData.deepCopy()
+        private val reusedRecordData: ObjectNode = defaultRecordData.deepCopy()
 
-        private val cachedMessage: AirbyteMessage =
+        private val reusedMessageWithoutChanges: AirbyteMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
@@ -116,12 +125,12 @@ sealed class FeedBootstrap<T : Feed>(
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
                         .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
-                        .withData(cachedData)
+                        .withData(reusedRecordData)
                 )
 
-        private val cachedMeta = AirbyteRecordMessageMeta()
+        private val reusedRecordMeta = AirbyteRecordMessageMeta()
 
-        private val cachedMessageWithMeta: AirbyteMessage =
+        private val reusedMessageWithChanges: AirbyteMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
@@ -129,8 +138,8 @@ sealed class FeedBootstrap<T : Feed>(
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
                         .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
-                        .withData(cachedData)
-                        .withMeta(cachedMeta)
+                        .withData(reusedRecordData)
+                        .withMeta(reusedRecordMeta)
                 )
     }
 
@@ -194,7 +203,17 @@ sealed class FeedBootstrap<T : Feed>(
     }
 }
 
-/** Emits an Airbyte RECORD message for the [Stream] associated with this instance. */
+/**
+ * Emits an Airbyte RECORD message for the [Stream] associated with this instance.
+ *
+ * The purpose of this interface is twofold:
+ * 1. to encapsulate a performance-minded implementation behind a simple abstraction;
+ * 2. to decorate the RECORD messages with
+ * ```
+ *    a) meta-fields in the record data, and
+ *    b) field value changes and the motivating reason for these in the record metadata.
+ * ```
+ */
 fun interface StreamRecordConsumer {
     fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
 }
