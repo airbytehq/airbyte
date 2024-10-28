@@ -14,7 +14,7 @@ Airbyte connector for Miro can be used to extract data related to board content,
 | boards | id | DefaultPaginator | ✅ |  ❌  |
 | board_users |  | DefaultPaginator | ✅ |  ❌  |
 | board_items |  | DefaultPaginator | ✅ |  ❌  |
-| board_tags |  | No pagination | ✅ |  ❌  |
+| board_tags |  | DefaultPaginator | ✅ |  ❌  |
 | board_groups |  | No pagination | ✅ |  ❌  |
 | board_connectors | id | DefaultPaginator | ✅ |  ❌  |
 
