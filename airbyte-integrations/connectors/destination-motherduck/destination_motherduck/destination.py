@@ -138,7 +138,7 @@ class DestinationMotherDuck(Destination):
             )
             processor._ensure_schema_exists()
 
-            table_name = f"_airbyte_raw_{stream_name}"
+            table_name = processor.normalizer.normalize(stream_name)
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
