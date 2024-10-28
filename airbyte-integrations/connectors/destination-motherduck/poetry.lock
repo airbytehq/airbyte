@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "5.16.0"
+version = "5.17.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-5.16.0-py3-none-any.whl", hash = "sha256:71f909ffc489e3c20ee2ee8a307fe30035bc3f62b221951ede1f2063b76b49a9"},
-    {file = "airbyte_cdk-5.16.0.tar.gz", hash = "sha256:1f214a93c3ec20c047d13c4612de0cdaf76fb87e8f312fd7a8ea1e216ad1794a"},
+    {file = "airbyte_cdk-5.17.0-py3-none-any.whl", hash = "sha256:135a8fc43b00a92169dfcdc43c1d7c629aba871a0b471f950ca5d76d3741fc92"},
+    {file = "airbyte_cdk-5.17.0.tar.gz", hash = "sha256:5db70cbacec80ba3beabe4253480ab9a3947a450e8d0e39af4a91638b317b32a"},
 ]
 
 [package.dependencies]
@@ -54,14 +54,20 @@ description = "Airbyte Connector Tester (ACT) Pytest Plugin"
 optional = false
 python-versions = "^3.10"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
+airbyte-cdk = ">=5.16.0"
+pluggy = "^1.5.0"
 pytest = "^8.3.3"
+pytest-cov = "^5.0.0"
+typing-extensions = "^4.12.2"
 
 [package.source]
-type = "directory"
-url = "../../../../airbyte-pytest"
+type = "git"
+url = "https://github.com/airbytehq/airbyte-pytest.git"
+reference = "dev"
+resolved_reference = "a14a4b0066308feca1f1831607a3b4c984b1f661"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -541,6 +547,9 @@ files = [
     {file = "coverage-7.6.4-pp39.pp310-none-any.whl", hash = "sha256:3c65d37f3a9ebb703e710befdc489a38683a5b152242664b973a7b7b22348a4e"},
     {file = "coverage-7.6.4.tar.gz", hash = "sha256:29fc0f17b1d3fea332f8001d4558f8214af7f1d87a345f3a133c901d60347c73"},
 ]
+
+[package.dependencies]
+tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
 
 [package.extras]
 toml = ["tomli"]
@@ -1041,8 +1050,8 @@ files = [
 httpx = ">=0.23.0,<1"
 orjson = ">=3.9.14,<4.0.0"
 pydantic = [
-    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
     {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""},
+    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
 ]
 requests = ">=2,<3"
 requests-toolbelt = ">=1.0.0,<2.0.0"
@@ -1415,9 +1424,9 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -1598,8 +1607,8 @@ files = [
 annotated-types = ">=0.6.0"
 pydantic-core = "2.23.4"
 typing-extensions = [
-    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
     {version = ">=4.6.1", markers = "python_version < \"3.13\""},
+    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
 ]
 
 [package.extras]
@@ -1815,6 +1824,24 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+
+[[package]]
+name = "pytest-cov"
+version = "5.0.0"
+description = "Pytest plugin for measuring coverage."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest-cov-5.0.0.tar.gz", hash = "sha256:5837b58e9f6ebd335b0f8060eecce69b662415b16dc503883a02f45dfeb14857"},
+    {file = "pytest_cov-5.0.0-py3-none-any.whl", hash = "sha256:4f0764a1219df53214206bf1feea4633c3b558a2925c8b59f144f682861ce652"},
+]
+
+[package.dependencies]
+coverage = {version = ">=5.2.1", extras = ["toml"]}
+pytest = ">=4.6"
+
+[package.extras]
+testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "python-dateutil"
@@ -2353,13 +2380,13 @@ files = [
 
 [[package]]
 name = "tqdm"
-version = "4.66.5"
+version = "4.66.6"
 description = "Fast, Extensible Progress Meter"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tqdm-4.66.5-py3-none-any.whl", hash = "sha256:90279a3770753eafc9194a0364852159802111925aa30eb3f9d85b0e805ac7cd"},
-    {file = "tqdm-4.66.5.tar.gz", hash = "sha256:e1020aef2e5096702d8a025ac7d16b1577279c9d63f8375b63083e9a5f0fcbad"},
+    {file = "tqdm-4.66.6-py3-none-any.whl", hash = "sha256:223e8b5359c2efc4b30555531f09e9f2f3589bcd7fdd389271191031b49b7a63"},
+    {file = "tqdm-4.66.6.tar.gz", hash = "sha256:4bdd694238bef1485ce839d67967ab50af8f9272aab687c0d7702a01da0be090"},
 ]
 
 [package.dependencies]
@@ -2531,4 +2558,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "405ff4f8e71dc815f8d5ee595d720bf81f5ab640c3c772c5a3c98521fff1f68e"
+content-hash = "bae4803309f004e73e28cfb95a5fd4e9c391084c70efde578938ece52171849b"
