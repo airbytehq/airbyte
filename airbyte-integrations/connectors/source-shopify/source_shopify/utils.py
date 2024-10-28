@@ -7,23 +7,47 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+
+# default logger instance
+LOGGER: Final[logging.Logger] = logging.getLogger("airbyte")
 
 
 class ShopifyNonRetryableErrors:
-    """Holds the errors clasification and messaging scenarios."""
+    """Holds the errors classification and messaging scenarios."""
 
     def __new__(self, stream: str) -> Mapping[str, Any]:
         return {
-            401: f"Stream `{stream}`. Failed to access the Shopify store with provided API token. Verify your API token is valid.",
-            402: f"Stream `{stream}`. The shop's plan does not have access to this feature. Please upgrade your plan to be  able to access this stream.",
-            403: f"Stream `{stream}`. Unable to access Shopify endpoint for {stream}. Check that you have the appropriate access scopes to read data from this endpoint.",
-            404: f"Stream `{stream}`. Not available or missing.",
-            500: f"Stream `{stream}`. Entity might not be available or missing."
+            401: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Stream `{stream}`. Failed to access the Shopify store with provided API token. Verify your API token is valid.",
+            ),
+            402: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Stream `{stream}`. The shop's plan does not have access to this feature. Please upgrade your plan to be  able to access this stream.",
+            ),
+            403: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Stream `{stream}`. Unable to access Shopify endpoint for {stream}. Check that you have the appropriate access scopes to read data from this endpoint.",
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Stream `{stream}`. Not available or missing.",
+            ),
+            500: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message=f"Stream `{stream}`. Entity might not be available or missing.",
+            )
             # extend the mapping with more handable errors, if needed.
         }
 
@@ -43,7 +67,7 @@ class ShopifyBadJsonError(AirbyteTracedException):
 
     def __init__(self, message, **kwargs) -> None:
         self.message = f"Reason: Bad JSON Response from the Shopify server. Details: {message}."
-        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(internal_message=self.message, failure_type=FailureType.transient_error, **kwargs)
 
 
 class ShopifyConnectionError(AirbyteTracedException):
@@ -91,8 +115,6 @@ class ShopifyRateLimiter:
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
 
-    logger = logging.getLogger("airbyte")
-
     log_message_count = 0
     log_message_frequency = 3
 
@@ -103,7 +125,7 @@ class ShopifyRateLimiter:
         if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
             ShopifyRateLimiter.log_message_count += 1
         else:
-            ShopifyRateLimiter.logger.info(message)
+            LOGGER.info(message)
             ShopifyRateLimiter.log_message_count = 0
 
     def get_response_from_args(*args) -> Optional[requests.Response]:
@@ -117,8 +139,8 @@ class ShopifyRateLimiter:
         Define wait_time based on load conditions.
 
         :: load - represents how close we are to being throttled
-                - 0.5 is half way through our allowance
-                - 1 indicates that all of the allowance is used and the api will start rejecting calls
+            - 0.5 is half way through our allowance
+            - 1 indicates that all of the allowance is used and the api will start rejecting calls
         :: threshold - is the % cutoff for the rate_limits/load
         :: wait_time - time to wait between each request in seconds
 

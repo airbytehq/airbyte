@@ -4,7 +4,7 @@ connector_image: airbyte/source-launchdarkly:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_launchdarkly/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -38,4 +38,5 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
           members:
-            - "_lastSeen"
+            - name: "_lastSeen"
+              bypass_reason: "Value is not constant"

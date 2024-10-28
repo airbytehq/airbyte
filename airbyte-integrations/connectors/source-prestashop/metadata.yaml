@@ -17,7 +17,7 @@ data:
   icon: prestashop.svg
   license: MIT
   name: PrestaShop
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

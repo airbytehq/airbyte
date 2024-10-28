@@ -1,0 +1,2187 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: "https://api.hubplanner.com/v1/"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: Authorization
+      api_token: "{{ config['api_key'] }}"
+    request_parameters:
+      limit: "100"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      type: HttpRequester
+      url_base: "https://api.hubplanner.com/v1/"
+      http_method: "GET"
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: Authorization
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        limit: "100"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+  billing_rates_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "billing_rates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          rate:
+            type:
+              - "null"
+              - number
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          label:
+            type: string
+          currency:
+            type: string
+  bookings_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "bookings"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          allDay:
+            type:
+              - "null"
+              - boolean
+          scale:
+            type:
+              - "null"
+              - string
+          start:
+            type: string
+          end:
+            type: string
+          categoryTemplateId:
+            type:
+              - "null"
+              - string
+          categoryName:
+            type:
+              - "null"
+              - string
+          stateValue:
+            type:
+              - "null"
+              - integer
+          resource:
+            type: string
+          project:
+            type: string
+          note:
+            type:
+              - "null"
+              - string
+          details:
+            properties:
+              offDaysCount:
+                type:
+                  - "null"
+                  - integer
+              workDaysCount:
+                type:
+                  - "null"
+                  - integer
+              holidayCount:
+                type:
+                  - "null"
+                  - integer
+              workWeekDetails:
+                items:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  - "null"
+                  - array
+              bookedMinutes:
+                type:
+                  - "null"
+                  - integer
+              budgetBookedAmount:
+                type:
+                  - "null"
+                  - integer
+            type:
+              - "null"
+              - object
+          createdDate:
+            format: date-time
+            type:
+              - "null"
+              - string
+          updatedDate:
+            format: date-time
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          bookingRate:
+            properties:
+              external:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - integer
+                type:
+                  - "null"
+                  - object
+              internal:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - integer
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          bookingCreatorId:
+            type:
+              - "null"
+              - string
+          lastUpdatedById:
+            type:
+              - "null"
+              - string
+          deletedById:
+            type:
+              - "null"
+              - string
+          billable:
+            type:
+              - "null"
+              - boolean
+          backgroundColor:
+            type:
+              - "null"
+              - string
+  clients_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "clients"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          company:
+            type:
+              - "null"
+              - string
+          __v:
+            type:
+              - "null"
+              - integer
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          deleted:
+            type:
+              - "null"
+              - boolean
+  events_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "events"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          backgroundColor:
+            type:
+              - "null"
+              - string
+          label:
+            type: string
+          metadata:
+            type:
+              - "null"
+              - string
+  holidays_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "holidays"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+  projects_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "projects"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          links:
+            properties: {}
+            type:
+              - "null"
+              - object
+          notes:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          timeEntryEnabled:
+            type:
+              - "null"
+              - boolean
+          timeEntryLocked:
+            type:
+              - "null"
+              - boolean
+          timeEntryApproval:
+            type:
+              - "null"
+              - boolean
+          resourceRates:
+            items:
+              properties:
+                resource:
+                  type:
+                    - "null"
+                    - string
+                companyBillingRateId:
+                  type:
+                    - "null"
+                    - string
+                companyBillingRate:
+                  type:
+                    - "null"
+                    - number
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          includeBookedTimeReports:
+            type:
+              - "null"
+              - boolean
+          includeBookedTimeGrid:
+            type:
+              - "null"
+              - boolean
+          projectManagers:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          resources:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          workDays:
+            items:
+              type:
+                - "null"
+                - boolean
+            type:
+              - "null"
+              - array
+          useProjectDays:
+            type:
+              - "null"
+              - boolean
+          budget:
+            properties:
+              hasBudget:
+                type:
+                  - "null"
+                  - boolean
+              projectHours:
+                properties:
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                  hours:
+                    type:
+                      - "null"
+                      - number
+                type:
+                  - "null"
+                  - object
+              cashAmount:
+                properties:
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                  amount:
+                    type:
+                      - "null"
+                      - number
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                  billingRate:
+                    properties:
+                      useDefault:
+                        type:
+                          - "null"
+                          - boolean
+                      rate:
+                        type:
+                          - "null"
+                          - number
+                      id:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          companyBillingRateId:
+            type:
+              - "null"
+              - string
+          budgetHours:
+            type:
+              - "null"
+              - number
+          budgetCashAmount:
+            type:
+              - "null"
+              - number
+          budgetCurrency:
+            type:
+              - "null"
+              - string
+          useStatusColor:
+            type:
+              - "null"
+              - boolean
+          status:
+            type:
+              - "null"
+              - string
+          useProjectDuration:
+            type:
+              - "null"
+              - boolean
+          start:
+            type:
+              - "null"
+              - string
+          end:
+            type:
+              - "null"
+              - string
+          backgroundColor:
+            type:
+              - "null"
+              - string
+          projectCode:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          defaultCategory:
+            type:
+              - "null"
+              - string
+          categoryGroups:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          customers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          budgetCategories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          private:
+            type:
+              - "null"
+              - boolean
+          billable:
+            type:
+              - "null"
+              - boolean
+          fixedCosts:
+            type:
+              - "null"
+              - array
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          timeEntryNoteRequired:
+            type:
+              - "null"
+              - boolean
+          projectRate:
+            properties:
+              external:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - string
+                  customRates:
+                    items:
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        resourceId:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    type:
+                      - "null"
+                      - array
+                type:
+                  - "null"
+                  - object
+              internal:
+                properties:
+                  customRates:
+                    items:
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        resourceId:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    type:
+                      - "null"
+                      - array
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          note:
+            type:
+              - "null"
+              - string
+          tags:
+            items:
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+  resources_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+    name: "resources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          note:
+            type:
+              - "null"
+              - string
+          firstName:
+            type: string
+          lastName:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          links:
+            properties: {}
+            type:
+              - "null"
+              - object
+          billable:
+            type:
+              - "null"
+              - boolean
+          calendarIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          isApprover:
+            type:
+              - "null"
+              - boolean
+          billing:
+            properties:
+              useDefault:
+                type:
+                  - "null"
+                  - boolean
+              rate:
+                type:
+                  - "null"
+                  - number
+            type:
+              - "null"
+              - object
+          useCustomAvailability:
+            type:
+              - "null"
+              - boolean
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          resourceRates:
+            properties:
+              external:
+                items:
+                  properties: {}
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              internal:
+                items:
+                  properties: {}
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+            type:
+              - "null"
+              - object
+          isProjectManager:
+            type:
+              - "null"
+              - boolean
+          tags:
+            items:
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "billingRate"
+    name: "billing_rates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          rate:
+            type:
+              - "null"
+              - number
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          label:
+            type: string
+          currency:
+            type: string
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "booking"
+    name: "bookings"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          allDay:
+            type:
+              - "null"
+              - boolean
+          scale:
+            type:
+              - "null"
+              - string
+          start:
+            type: string
+          end:
+            type: string
+          categoryTemplateId:
+            type:
+              - "null"
+              - string
+          categoryName:
+            type:
+              - "null"
+              - string
+          stateValue:
+            type:
+              - "null"
+              - integer
+          resource:
+            type: string
+          project:
+            type: string
+          note:
+            type:
+              - "null"
+              - string
+          details:
+            properties:
+              offDaysCount:
+                type:
+                  - "null"
+                  - integer
+              workDaysCount:
+                type:
+                  - "null"
+                  - integer
+              holidayCount:
+                type:
+                  - "null"
+                  - integer
+              workWeekDetails:
+                items:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  - "null"
+                  - array
+              bookedMinutes:
+                type:
+                  - "null"
+                  - integer
+              budgetBookedAmount:
+                type:
+                  - "null"
+                  - integer
+            type:
+              - "null"
+              - object
+          createdDate:
+            format: date-time
+            type:
+              - "null"
+              - string
+          updatedDate:
+            format: date-time
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          bookingRate:
+            properties:
+              external:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - integer
+                type:
+                  - "null"
+                  - object
+              internal:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - integer
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          bookingCreatorId:
+            type:
+              - "null"
+              - string
+          lastUpdatedById:
+            type:
+              - "null"
+              - string
+          deletedById:
+            type:
+              - "null"
+              - string
+          billable:
+            type:
+              - "null"
+              - boolean
+          backgroundColor:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "client"
+    name: "clients"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          company:
+            type:
+              - "null"
+              - string
+          __v:
+            type:
+              - "null"
+              - integer
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          deleted:
+            type:
+              - "null"
+              - boolean
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "event"
+    name: "events"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          backgroundColor:
+            type:
+              - "null"
+              - string
+          label:
+            type: string
+          metadata:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "holiday"
+    name: "holidays"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "project"
+    name: "projects"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          links:
+            properties: {}
+            type:
+              - "null"
+              - object
+          notes:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          timeEntryEnabled:
+            type:
+              - "null"
+              - boolean
+          timeEntryLocked:
+            type:
+              - "null"
+              - boolean
+          timeEntryApproval:
+            type:
+              - "null"
+              - boolean
+          resourceRates:
+            items:
+              properties:
+                resource:
+                  type:
+                    - "null"
+                    - string
+                companyBillingRateId:
+                  type:
+                    - "null"
+                    - string
+                companyBillingRate:
+                  type:
+                    - "null"
+                    - number
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          includeBookedTimeReports:
+            type:
+              - "null"
+              - boolean
+          includeBookedTimeGrid:
+            type:
+              - "null"
+              - boolean
+          projectManagers:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          resources:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          workDays:
+            items:
+              type:
+                - "null"
+                - boolean
+            type:
+              - "null"
+              - array
+          useProjectDays:
+            type:
+              - "null"
+              - boolean
+          budget:
+            properties:
+              hasBudget:
+                type:
+                  - "null"
+                  - boolean
+              projectHours:
+                properties:
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                  hours:
+                    type:
+                      - "null"
+                      - number
+                type:
+                  - "null"
+                  - object
+              cashAmount:
+                properties:
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                  amount:
+                    type:
+                      - "null"
+                      - number
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                  billingRate:
+                    properties:
+                      useDefault:
+                        type:
+                          - "null"
+                          - boolean
+                      rate:
+                        type:
+                          - "null"
+                          - number
+                      id:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          companyBillingRateId:
+            type:
+              - "null"
+              - string
+          budgetHours:
+            type:
+              - "null"
+              - number
+          budgetCashAmount:
+            type:
+              - "null"
+              - number
+          budgetCurrency:
+            type:
+              - "null"
+              - string
+          useStatusColor:
+            type:
+              - "null"
+              - boolean
+          status:
+            type:
+              - "null"
+              - string
+          useProjectDuration:
+            type:
+              - "null"
+              - boolean
+          start:
+            type:
+              - "null"
+              - string
+          end:
+            type:
+              - "null"
+              - string
+          backgroundColor:
+            type:
+              - "null"
+              - string
+          projectCode:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          defaultCategory:
+            type:
+              - "null"
+              - string
+          categoryGroups:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          customers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          budgetCategories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          private:
+            type:
+              - "null"
+              - boolean
+          billable:
+            type:
+              - "null"
+              - boolean
+          fixedCosts:
+            type:
+              - "null"
+              - array
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          timeEntryNoteRequired:
+            type:
+              - "null"
+              - boolean
+          projectRate:
+            properties:
+              external:
+                properties:
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - string
+                  customRates:
+                    items:
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        resourceId:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    type:
+                      - "null"
+                      - array
+                type:
+                  - "null"
+                  - object
+              internal:
+                properties:
+                  customRates:
+                    items:
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        resourceId:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                    type:
+                      - "null"
+                      - array
+                  defaultRateId:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          note:
+            type:
+              - "null"
+              - string
+          tags:
+            items:
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.hubplanner.com/v1/"
+        http_method: "GET"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          limit: "100"
+        path: "resource"
+    name: "resources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          note:
+            type:
+              - "null"
+              - string
+          firstName:
+            type: string
+          lastName:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          links:
+            properties: {}
+            type:
+              - "null"
+              - object
+          billable:
+            type:
+              - "null"
+              - boolean
+          calendarIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          isApprover:
+            type:
+              - "null"
+              - boolean
+          billing:
+            properties:
+              useDefault:
+                type:
+                  - "null"
+                  - boolean
+              rate:
+                type:
+                  - "null"
+                  - number
+            type:
+              - "null"
+              - object
+          useCustomAvailability:
+            type:
+              - "null"
+              - boolean
+          customFields:
+            items:
+              properties:
+                _id:
+                  type: string
+                templateId:
+                  type: string
+                templateType:
+                  type: string
+                templateLabel:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                choices:
+                  items:
+                    properties:
+                      _id:
+                        type: string
+                      choiceId:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                  type:
+                    - "null"
+                    - array
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          resourceRates:
+            properties:
+              external:
+                items:
+                  properties: {}
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+              internal:
+                items:
+                  properties: {}
+                  type:
+                    - "null"
+                    - object
+                type:
+                  - "null"
+                  - array
+            type:
+              - "null"
+              - object
+          isProjectManager:
+            type:
+              - "null"
+              - boolean
+          tags:
+            items:
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+check:
+  type: CheckStream
+  stream_names:
+    - "billing_rates"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/hubplanner
+  connection_specification:
+    title: Hubplanner Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description:
+          Hubplanner API key. See https://github.com/hubplanner/API#authentication
+          for more details.
+        airbyte_secret: true
+type: DeclarativeSource

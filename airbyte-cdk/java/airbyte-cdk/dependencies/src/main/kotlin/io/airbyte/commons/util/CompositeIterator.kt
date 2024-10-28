@@ -8,11 +8,11 @@ import com.google.common.collect.AbstractIterator
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.stream.StreamStatusUtils
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Composes multiple [AutoCloseableIterator]s. For each internal iterator, after the first time its
  * [Iterator.hasNext] function returns false, the composite iterator will call
@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory
 class CompositeIterator<T>
 internal constructor(
     iterators: List<AutoCloseableIterator<T>>,
-    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?
+    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
+    emitStatus: Boolean = false
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     private val airbyteStreamStatusConsumer: Optional<Consumer<AirbyteStreamStatusHolder>>
     private val iterators: List<AutoCloseableIterator<T>>
@@ -41,6 +42,7 @@ internal constructor(
     private var i: Int
     private val seenIterators: MutableSet<Optional<AirbyteStreamNameNamespacePair>>
     private var hasClosed: Boolean
+    private var emitStatus: Boolean = emitStatus
 
     init {
         Preconditions.checkNotNull(iterators)
@@ -65,16 +67,20 @@ internal constructor(
         while (!currentIterator().hasNext()) {
             try {
                 currentIterator().close()
-                emitStartStreamStatus(currentIterator().airbyteStream)
-                StreamStatusUtils.emitCompleteStreamStatus(
-                    airbyteStream,
-                    airbyteStreamStatusConsumer
-                )
+                if (emitStatus) {
+                    emitStartStreamStatus(currentIterator().airbyteStream)
+                    StreamStatusUtils.emitCompleteStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
             } catch (e: Exception) {
-                StreamStatusUtils.emitIncompleteStreamStatus(
-                    airbyteStream,
-                    airbyteStreamStatusConsumer
-                )
+                if (emitStatus) {
+                    StreamStatusUtils.emitIncompleteStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
                 throw RuntimeException(e)
             }
 
@@ -86,17 +92,27 @@ internal constructor(
         }
 
         try {
-            val isFirstRun = emitStartStreamStatus(currentIterator().airbyteStream)
+            var isFirstRun = false
+            if (emitStatus) {
+                isFirstRun = emitStartStreamStatus(currentIterator().airbyteStream)
+            }
             val next = currentIterator().next()
-            if (isFirstRun) {
-                StreamStatusUtils.emitRunningStreamStatus(
+            if (emitStatus) {
+                if (isFirstRun) {
+                    StreamStatusUtils.emitRunningStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
+            }
+            return next
+        } catch (e: RuntimeException) {
+            if (emitStatus) {
+                StreamStatusUtils.emitIncompleteStreamStatus(
                     airbyteStream,
                     airbyteStreamStatusConsumer
                 )
             }
-            return next
-        } catch (e: RuntimeException) {
-            StreamStatusUtils.emitIncompleteStreamStatus(airbyteStream, airbyteStreamStatusConsumer)
             throw e
         }
     }
@@ -125,7 +141,7 @@ internal constructor(
             try {
                 iterator.close()
             } catch (e: Exception) {
-                LOGGER.error("exception while closing", e)
+                LOGGER.error(e) { "exception while closing" }
                 exceptions.add(e)
             }
         }
@@ -142,7 +158,5 @@ internal constructor(
         Preconditions.checkState(!hasClosed)
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CompositeIterator::class.java)
-    }
+    companion object {}
 }

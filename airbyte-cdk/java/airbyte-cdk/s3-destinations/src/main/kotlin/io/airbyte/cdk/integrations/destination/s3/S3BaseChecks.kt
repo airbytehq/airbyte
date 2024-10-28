@@ -8,17 +8,17 @@ import com.amazonaws.services.s3.model.ListObjectsRequest
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object S3BaseChecks {
-    private val LOGGER: Logger = LoggerFactory.getLogger(S3BaseChecks::class.java)
 
     /**
      * Note that this method completely ignores s3Config.getBucketPath(), in favor of the bucketPath
@@ -35,9 +35,9 @@ object S3BaseChecks {
 
     @JvmStatic
     fun testSingleUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
-        LOGGER.info(
+        LOGGER.info {
             "Started testing if all required credentials assigned to user for single file uploading"
-        )
+        }
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
         try {
@@ -45,15 +45,15 @@ object S3BaseChecks {
         } finally {
             s3Client.deleteObject(bucketName, testFile)
         }
-        LOGGER.info("Finished checking for normal upload mode")
+        LOGGER.info { "Finished checking for normal upload mode" }
     }
 
     @JvmStatic
     @Throws(IOException::class)
     fun testMultipartUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
-        LOGGER.info(
+        LOGGER.info {
             "Started testing if all required credentials assigned to user for multipart upload"
-        )
+        }
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
         val manager = create(bucketName, testFile, s3Client).get()
@@ -83,7 +83,7 @@ object S3BaseChecks {
             }
             s3Client.deleteObject(bucketName, testFile)
         }
-        LOGGER.info("Finished verification for multipart upload mode")
+        LOGGER.info { "Finished verification for multipart upload mode" }
     }
 
     /**
@@ -148,9 +148,9 @@ object S3BaseChecks {
     }
 
     fun testIAMUserHasListObjectPermission(s3: AmazonS3, bucketName: String?) {
-        LOGGER.info("Started testing if IAM user can call listObjects on the destination bucket")
+        LOGGER.info { "Started testing if IAM user can call listObjects on the destination bucket" }
         val request = ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1)
         s3.listObjects(request)
-        LOGGER.info("Finished checking for listObjects permission")
+        LOGGER.info { "Finished checking for listObjects permission" }
     }
 }

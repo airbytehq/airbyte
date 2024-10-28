@@ -40,6 +40,7 @@ import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,8 +67,8 @@ class MongoDbDebeziumPropertiesManagerTest {
 
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
-
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
@@ -79,7 +80,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
   }
 
@@ -96,7 +98,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
@@ -108,7 +111,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
   }
 
@@ -125,7 +129,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
@@ -137,7 +142,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
     assertEquals(MONGODB_POST_IMAGE_VALUE, debeziumProperties.get(MONGODB_POST_IMAGE_KEY));
   }
@@ -156,7 +162,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
@@ -168,7 +175,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
   }
 
@@ -185,7 +193,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
@@ -197,7 +206,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
   }
 
@@ -214,7 +224,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final Properties cdcProperties = new Properties();
     cdcProperties.put("test", "value");
 
-    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
+    final var cdcStreamList = createCdcStreamList(catalog);
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     assertEquals(18 + cdcProperties.size(), debeziumProperties.size());
@@ -226,7 +237,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertFalse(debeziumProperties.containsKey(MONGODB_PASSWORD_KEY));
     assertFalse(debeziumProperties.containsKey(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
-    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams, cdcStreamList),
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
   }
 
@@ -290,6 +302,13 @@ class MongoDbDebeziumPropertiesManagerTest {
       streams.add(new ConfiguredAirbyteStream().withStream(stream));
     }
     return streams;
+  }
+
+  private List<String> createCdcStreamList(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .toList();
   }
 
 }

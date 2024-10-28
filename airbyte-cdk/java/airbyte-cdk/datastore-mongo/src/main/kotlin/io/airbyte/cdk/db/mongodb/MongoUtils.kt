@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -25,11 +26,10 @@ import org.bson.codecs.jsr310.Jsr310CodecProvider
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.bson.types.Symbol
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object MongoUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(MongoUtils::class.java)
 
     // Shared constants
     const val MONGODB_SERVER_URL: String = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s"
@@ -115,10 +115,7 @@ object MongoUtils {
                 else -> value
             }
         } catch (e: Exception) {
-            LOGGER.error(
-                String.format("Failed to get BsonValue for field type %s", type),
-                e.message
-            )
+            LOGGER.error(e) { "Failed to get BsonValue for field type $type" }
             return value
         }
     }
@@ -127,10 +124,10 @@ object MongoUtils {
         val field = node.data
         if (node.hasChildren()) {
             val subFields =
-                node.children!!
-                    .stream()
-                    .map { obj: TreeNode<CommonField<BsonType>> -> nodeToCommonField(obj) }
-                    .toList()
+                node.children!!.map { obj: TreeNode<CommonField<BsonType>> ->
+                    nodeToCommonField(obj)
+                }
+
             return CommonField(field.name, field.type, subFields)
         } else {
             return CommonField(field.name, field.type)
@@ -148,7 +145,7 @@ object MongoUtils {
                 readDocument(reader, objectNode, columnNames)
             }
         } catch (e: Exception) {
-            LOGGER.error("Exception while parsing BsonDocument: {}", e.message)
+            LOGGER.error { "Exception while parsing BsonDocument: ${e.message}" }
             throw RuntimeException(e)
         }
     }
@@ -207,10 +204,9 @@ object MongoUtils {
                     if (data.isTextual) data.asText() else data.toString()
                 )
             } else {
-                LOGGER.debug(
-                    "WARNING Field list out of sync, Document doesn't contain field: {}",
-                    fieldName
-                )
+                LOGGER.debug {
+                    "WARNING Field list out of sync, Document doesn't contain field: $fieldName"
+                }
             }
         }
     }
@@ -221,7 +217,7 @@ object MongoUtils {
         fieldName: String
     ): JsonNode {
         reader.readStartArray()
-        val elements = Lists.newArrayList<Any?>()
+        val elements = Lists.newArrayList<Any>()
 
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
             val arrayFieldType = reader.currentBsonType
@@ -295,18 +291,15 @@ object MongoUtils {
     ): List<TreeNode<CommonField<BsonType>>> {
         val allkeys = HashSet(getFieldsName(collection))
 
-        return allkeys
-            .stream()
-            .map { key: String ->
-                val types = getTypes(collection, key)
-                val type = getUniqueType(types)
-                val fieldNode = TreeNode(CommonField(transformName(types, key), type))
-                if (type == BsonType.DOCUMENT) {
-                    setSubFields(collection, fieldNode, key)
-                }
-                fieldNode
+        return allkeys.map { key: String ->
+            val types = getTypes(collection, key)
+            val type = getUniqueType(types)
+            val fieldNode = TreeNode(CommonField(transformName(types, key), type))
+            if (type == BsonType.DOCUMENT) {
+                setSubFields(collection, fieldNode, key)
             }
-            .toList()
+            fieldNode
+        }
     }
 
     /**
@@ -456,7 +449,7 @@ object MongoUtils {
             // Override the default codec registry
             return document.toBsonDocument(BsonDocument::class.java, customCodecRegistry)
         } catch (e: Exception) {
-            LOGGER.error("Exception while converting Document to BsonDocument: {}", e.message)
+            LOGGER.error { "Exception while converting Document to BsonDocument: ${e.message}" }
             throw RuntimeException(e)
         }
     }

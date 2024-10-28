@@ -1,6 +1,4 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
 import json
@@ -13,9 +11,11 @@ from typing import Any, Dict, Iterable, List, Mapping
 
 import duckdb
 import pyarrow as pa
-from airbyte_cdk import AirbyteLogger
+
+import logging
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+
 
 logger = getLogger("airbyte")
 
@@ -163,7 +163,7 @@ class DestinationDuckdb(Destination):
             # local variable defined above.
             con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.

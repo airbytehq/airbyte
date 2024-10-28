@@ -8,7 +8,7 @@ data:
   icon: s3-glue.svg
   license: MIT
   name: S3 Glue
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

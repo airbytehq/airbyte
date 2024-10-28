@@ -473,7 +473,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))
+            .withIsResumable(true),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
@@ -481,7 +482,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+            .withSourceDefinedPrimaryKey(Collections.emptyList())
+            .withIsResumable(false),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
@@ -490,7 +492,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))
+            .withIsResumable(true)));
   }
 
   // Override from parent class as we're no longer including the legacy Data field.

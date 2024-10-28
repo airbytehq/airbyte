@@ -74,8 +74,13 @@ Generate/Find all requirements using this [external article](https://leapfin.com
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                           | Subject                                           |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------------ |
 | 0.2.6   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.2.5   | 2021-12-09 | [7757](https://github.com/airbytehq/airbyte/pull/7757) | Migrate to the CDK                                |
 | 0.2.4   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support   |
+
+</details>

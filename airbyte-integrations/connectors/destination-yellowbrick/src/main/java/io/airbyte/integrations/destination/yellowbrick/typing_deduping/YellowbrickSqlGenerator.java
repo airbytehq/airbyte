@@ -52,10 +52,10 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
     return new StreamId(
-        namingTransformer.getNamespace(namespace),
-        namingTransformer.convertStreamName(name),
-        namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
-        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
+        getNamingTransformer().getNamespace(namespace),
+        getNamingTransformer().convertStreamName(name),
+        getNamingTransformer().getNamespace(rawNamespaceOverride).toLowerCase(),
+        getNamingTransformer().convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
         namespace,
         name);
   }
@@ -106,12 +106,11 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             extractColumnAsJson(column.getKey(), column.getValue()),
             column.getValue(),
-            column.getKey().name(),
+            column.getKey().getName(),
             useExpensiveSaferCasting))
         .collect(Collectors.toList());
   }
 
-  @Override
   protected Field<?> castedField(
                                  final Field<?> field,
                                  final AirbyteType type,
@@ -124,33 +123,13 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
                                  final Field<?> field,
                                  final AirbyteType type,
                                  final boolean useExpensiveSaferCasting) {
-    if (type instanceof Struct) {
-      // If this field is a struct, verify that the raw data is an object.
-      return cast(
-          case_()
-              .when(field.isNull().or(jsonTypeof(field).ne("object")), val((Object) null))
-              .else_(field),
-          SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE));
-    } else if (type instanceof Array) {
-      // Do the same for arrays.
-      return cast(
-          case_()
-              .when(field.isNull().or(jsonTypeof(field).ne("array")), val((Object) null))
-              .else_(field),
-          SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE));
-    } else if (type == AirbyteProtocolType.UNKNOWN) {
-      return cast(field, SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE));
-    } else if (type == AirbyteProtocolType.STRING) {
-      return field;
-    } else {
-      final DataType<?> dialectType = toDialectType(type);
-      // jsonb can't directly cast to most types, so convert to text first.
-      // also convert jsonb null to proper sql null.
-      final Field<String> extractAsText = case_()
-          .when(field.isNull().or(jsonTypeof(field).eq("null")), val((String) null))
-          .else_(cast(field, SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE)));
-      return cast(extractAsText, dialectType);
-    }
+    final DataType<?> dialectType = toDialectType(type);
+    // jsonb can't directly cast to most types, so convert to text first.
+    // also convert jsonb null to proper sql null.
+    final Field<String> extractAsText = case_()
+        .when(field.isNull().or(jsonTypeof(field).eq("null")), val((String) null))
+        .else_(cast(field, SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE)));
+    return cast(extractAsText, dialectType);
   }
 
   // TODO this isn't actually used right now... can we refactor this out?
@@ -195,7 +174,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(extract).notIn("object", "null")),
-              val("Problem with `" + column.originalName() + "`"))
+              val("Problem with `" + column.getOriginalName() + "`"))
           .else_(val((String) null));
     } else if (type instanceof Array) {
       // Do the same for arrays.
@@ -203,7 +182,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
           .when(
               extract.isNotNull()
                   .and(jsonTypeof(extract).notIn("array", "null")),
-              val("Problem with `" + column.originalName() + "`"))
+              val("Problem with `" + column.getOriginalName() + "`"))
           .else_(val((String) null));
     } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
       // Unknown types require no casting, so there's never an error.
@@ -217,7 +196,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
               extract.isNotNull()
                   .and(jsonTypeof(extract).ne("null"))
                   .and(castedField(extract, type, true).isNull()),
-              val("Problem with `" + column.originalName() + "`"))
+              val("Problem with `" + column.getOriginalName() + "`"))
           .else_(val((String) null));
     }
   }
@@ -225,7 +204,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn, null)).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(getCdcDeletedAtColumn(), null)).ne("null"));
   }
 
   @Override
@@ -233,12 +212,12 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
     // literally identical to redshift's getRowNumber implementation, changes here probably should
     // be reflected there
     final List<Field<?>> primaryKeyFields =
-        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.getName()))).collect(Collectors.toList())
             : new ArrayList<>();
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
     // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.getName())))));
     orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
     return rowNumber()
         .over()
@@ -255,9 +234,9 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
       return field("SUBSTRING({0} FROM {1})", name(COLUMN_NAME_DATA), objectPattern);
     } else if (type != null && type instanceof Array) {
       String arrayPattern = String.format(":\\s*(\\[.*?\\])");
-      return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.originalName()), arrayPattern);
+      return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.getOriginalName()), arrayPattern);
     } else {
-      return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
+      return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.getOriginalName()));
     }
   }
 

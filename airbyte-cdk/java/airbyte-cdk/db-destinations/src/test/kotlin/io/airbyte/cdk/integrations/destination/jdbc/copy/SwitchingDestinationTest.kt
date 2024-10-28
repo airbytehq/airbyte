@@ -42,7 +42,7 @@ internal class SwitchingDestinationTest {
         val switchingDestination =
             SwitchingDestination(
                 SwitchingEnum::class.java,
-                { c: JsonNode? -> SwitchingEnum.INSERT },
+                { SwitchingEnum.INSERT },
                 destinationMap
             )
 
@@ -65,11 +65,7 @@ internal class SwitchingDestinationTest {
     @Throws(Exception::class)
     fun testCopy() {
         val switchingDestination =
-            SwitchingDestination(
-                SwitchingEnum::class.java,
-                { c: JsonNode? -> SwitchingEnum.COPY },
-                destinationMap
-            )
+            SwitchingDestination(SwitchingEnum::class.java, { SwitchingEnum.COPY }, destinationMap)
 
         switchingDestination.getConsumer(
             Mockito.mock(JsonNode::class.java),

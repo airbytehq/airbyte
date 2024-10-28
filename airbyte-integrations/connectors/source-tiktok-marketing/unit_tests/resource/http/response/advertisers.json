@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "advertiser_id": "872746382648",
+        "name": "test name",
+        "address": "test address"
+      }
+    ]
+  }
+}

@@ -4,10 +4,17 @@
 
 package io.airbyte.integrations.destination.databricks.jdbc
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.STRING
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -17,7 +24,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.ResultSet
@@ -25,18 +31,18 @@ import java.sql.SQLException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.*
+import java.util.Objects
+import java.util.Optional
+import java.util.UUID
 import kotlin.streams.asSequence
 
 class DatabricksDestinationHandler(
+    private val sqlGenerator: DatabricksSqlGenerator,
     private val databaseName: String,
     private val jdbcDatabase: JdbcDatabase,
 ) : DestinationHandler<MinimumDestinationState.Impl> {
 
     private val log = KotlinLogging.logger {}
-    private val abRawId = DatabricksSqlGenerator.AB_RAW_ID
-    private val abExtractedAt = DatabricksSqlGenerator.AB_EXTRACTED_AT
-    private val abMeta = DatabricksSqlGenerator.AB_META
 
     override fun execute(sql: Sql) {
         val transactions: List<List<String>> = sql.transactions
@@ -76,39 +82,59 @@ class DatabricksDestinationHandler(
             .map {
                 val namespace = it.id.finalNamespace
                 val name = it.id.finalName
-                val initialRawTableStatus =
-                    if (it.destinationSyncMode == DestinationSyncMode.OVERWRITE)
-                        InitialRawTableStatus(
-                            rawTableExists = false,
-                            hasUnprocessedRecords = false,
-                            maxProcessedTimestamp = Optional.empty(),
-                        )
-                    else getInitialRawTableState(it.id)
-                // finalTablePresent
+                val initialRawTableStatus = getInitialRawTableState(it.id, suffix = "")
+                val initialTempRawTableStatus =
+                    getInitialRawTableState(
+                        it.id,
+                        suffix = AbstractStreamOperation.TMP_TABLE_SUFFIX,
+                    )
                 if (
                     existingTables.contains(namespace) &&
                         existingTables[namespace]?.contains(name) == true
                 ) {
+                    // The final table exists. Do some extra querying to find out what it looks
+                    // like.
+                    val isFinalTableSchemaMismatch =
+                        !isSchemaMatch(it, existingTables[namespace]?.get(name)!!)
+                    val isFinalTableEmpty = isFinalTableEmpty(it.id)
                     DestinationInitialStatus(
                         it,
-                        true,
-                        initialRawTableStatus,
-                        !isSchemaMatch(it, existingTables[namespace]?.get(name)!!),
-                        isFinalTableEmpty(it.id),
-                        MinimumDestinationState.Impl(false),
+                        isFinalTablePresent = true,
+                        initialRawTableStatus = initialRawTableStatus,
+                        initialTempRawTableStatus = initialTempRawTableStatus,
+                        isFinalTableSchemaMismatch,
+                        isFinalTableEmpty,
+                        MinimumDestinationState.Impl(needsSoftReset = false),
+                        // for now, just use 0. this means we will always use a temp final table.
+                        // platform has a workaround for this, so it's OK.
+                        // TODO only fetch this on truncate syncs
+                        // TODO once we have destination state, use that instead of a query
+                        finalTableGenerationId = 0,
+                        finalTempTableGenerationId = null,
                     )
                 } else {
+                    // The final table doesn't exist, so no further querying to do.
                     DestinationInitialStatus(
                         it,
-                        false,
-                        initialRawTableStatus,
+                        isFinalTablePresent = false,
+                        initialRawTableStatus = initialRawTableStatus,
+                        initialTempRawTableStatus = initialTempRawTableStatus,
                         isSchemaMismatch = false,
                         isFinalTableEmpty = true,
-                        destinationState = MinimumDestinationState.Impl(false),
+                        destinationState = MinimumDestinationState.Impl(needsSoftReset = false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 }
             }
             .toList()
+    }
+
+    override fun createNamespaces(schemas: Set<String>) {
+        for (schema in schemas) {
+            // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
+            execute(sqlGenerator.createSchema(schema))
+        }
     }
 
     private fun findExistingTable(
@@ -120,7 +146,7 @@ class DatabricksDestinationHandler(
             """
             |SELECT table_schema, table_name, column_name, data_type, is_nullable
             |FROM ${databaseName.lowercase()}.information_schema.columns
-            |WHERE 
+            |WHERE
             |   table_catalog = ?
             |   AND table_schema IN ($paramHolder)
             |   AND table_name IN ($paramHolder)
@@ -161,18 +187,23 @@ class DatabricksDestinationHandler(
         tableDefinition: TableDefinition
     ): Boolean {
         val isAbRawIdMatch =
-            tableDefinition.columns.contains(abRawId) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_RAW_ID) &&
                 DatabricksSqlGenerator.toDialectType(STRING) ==
-                    tableDefinition.columns[abRawId]?.type
+                    tableDefinition.columns[COLUMN_NAME_AB_RAW_ID]?.type
         val isAbExtractedAtMatch =
-            tableDefinition.columns.contains(abExtractedAt) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_EXTRACTED_AT) &&
                 DatabricksSqlGenerator.toDialectType(TIMESTAMP_WITH_TIMEZONE) ==
-                    tableDefinition.columns[abExtractedAt]?.type
+                    tableDefinition.columns[COLUMN_NAME_AB_EXTRACTED_AT]?.type
         val isAbMetaMatch =
-            tableDefinition.columns.contains(abMeta) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_META) &&
                 DatabricksSqlGenerator.toDialectType(STRING) ==
-                    tableDefinition.columns[abMeta]?.type
-        if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch) return false
+                    tableDefinition.columns[COLUMN_NAME_AB_META]?.type
+        val isAbGenerationMatch =
+            tableDefinition.columns.contains(COLUMN_NAME_AB_GENERATION_ID) &&
+                DatabricksSqlGenerator.toDialectType(AirbyteProtocolType.INTEGER) ==
+                    tableDefinition.columns[COLUMN_NAME_AB_GENERATION_ID]?.type
+        if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch || !isAbGenerationMatch)
+            return false
 
         val expectedColumns =
             streamConfig.columns.entries.associate {
@@ -180,9 +211,14 @@ class DatabricksDestinationHandler(
             }
         val actualColumns =
             tableDefinition.columns.entries
-                .filter { (it.key != abRawId && it.key != abExtractedAt && it.key != abMeta) }
+                .filter {
+                    (it.key != COLUMN_NAME_AB_RAW_ID &&
+                        it.key != COLUMN_NAME_AB_EXTRACTED_AT &&
+                        it.key != COLUMN_NAME_AB_META &&
+                        it.key != COLUMN_NAME_AB_GENERATION_ID)
+                }
                 .associate {
-                    it.key!! to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
+                    it.key to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
                 }
         return actualColumns == expectedColumns
     }
@@ -215,16 +251,16 @@ class DatabricksDestinationHandler(
             }
     }
 
-    private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
+    private fun getInitialRawTableState(id: StreamId, suffix: String): InitialRawTableStatus {
         jdbcDatabase
             .executeMetadataQuery { metadata ->
                 // Handle resultset call in the function which will be closed
                 // after the scope is exited
                 val resultSet =
-                    metadata?.getTables(
+                    metadata.getTables(
                         databaseName,
                         id.rawNamespace,
-                        id.rawName,
+                        id.rawName + suffix,
                         null,
                     )
                 resultSet?.next() ?: false
@@ -241,14 +277,14 @@ class DatabricksDestinationHandler(
 
         val minExtractedAtLoadedNotNullQuery =
             """
-            |SELECT min(`${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}`) as last_loaded_at
-            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE)}
+            |SELECT min(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
+            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
             |WHERE ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} IS NULL
             |""".trimMargin()
         val maxExtractedAtQuery =
             """
-            |SELECT max(`${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}`) as last_loaded_at
-            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE)}
+            |SELECT max(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
+            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
         """.trimMargin()
 
         findLastLoadedTs(minExtractedAtLoadedNotNullQuery)
@@ -275,4 +311,6 @@ class DatabricksDestinationHandler(
     ) {
         // do Nothing
     }
+
+    fun query(query: String): List<JsonNode> = jdbcDatabase.queryJsons(query)
 }

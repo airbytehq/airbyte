@@ -9,12 +9,11 @@ import TabItem from '@theme/TabItem';
 
 [Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `webapp`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 ## Prerequisites
 
 ### Infrastructure Prerequisites
-
 For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
@@ -23,11 +22,18 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kubernetes Cluster       | Amazon EKS cluster running in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
+| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
 | Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                     |
 | Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                         |
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
+
+
+A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
+* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
+* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -113,9 +119,16 @@ stringData:
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+  # Azure Blob Storage Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+
   # AWS Secret Manager
   aws-secret-manager-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  # Azure Secret Manager
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 
 ```
 
@@ -227,7 +240,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -258,7 +272,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -345,23 +360,39 @@ Set `authenticationType` to `instanceProfile` if the compute infrastructure runn
 </TabItem>
 <TabItem value="GCS" label="GCS" default>
 
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
 ```yaml
 global:
   storage:
     type: "GCS"
-    storageSecretName: gcp-cred-secrets
+    storageSecretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
 </TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
+</TabItem>
+
 </Tabs>
 </details>
 
@@ -412,6 +443,25 @@ secretsManager:
 ```
 
 </TabItem>
+
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>
 
 </details>
@@ -453,14 +503,6 @@ spec:
                 port:
                   number: 8180
             path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
@@ -506,14 +548,6 @@ spec:
                 port:
                   number: 8180
             path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
@@ -599,7 +633,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
       },
       {
         "Effect": "Allow",
@@ -609,11 +643,11 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject",
+            "s3:DeleteObject"
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
-      },
-    ],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+    ]
 }
 ```
 

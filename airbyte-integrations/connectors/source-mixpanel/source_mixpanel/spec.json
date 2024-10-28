@@ -93,7 +93,7 @@
         "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated. If this option is not set, the connector will replicate data from up to one year ago by default.",
         "examples": ["2021-11-16"],
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
-        "format": "date"
+        "format": "date-time"
       },
       "end_date": {
         "order": 6,
@@ -102,7 +102,7 @@
         "description": "The date in the format YYYY-MM-DD. Any data after this date will not be replicated. Left empty to always sync to most recent date",
         "examples": ["2021-11-16"],
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
-        "format": "date"
+        "format": "date-time"
       },
       "region": {
         "order": 7,
@@ -119,6 +119,14 @@
         "type": "integer",
         "minimum": 1,
         "default": 30
+      },
+      "page_size": {
+        "order": 9,
+        "title": "Page Size",
+        "description": "The number of records to fetch per request for the engage stream. Default is 1000. If you are experiencing long sync times with this stream, try increasing this value.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000
       }
     }
   }

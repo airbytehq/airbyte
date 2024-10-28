@@ -47,3 +47,14 @@ poetry run auto-merge
 
 The execution will set the `GITHUB_STEP_SUMMARY` env var with a markdown summary of the PRs that
 have been merged.
+
+## Changelog
+
+### 0.1.2
+Set merge method to `squash`.
+
+### 0.1.1
+Consider skipped check runs as successful.
+
+### 0.1.0
+Initial release.

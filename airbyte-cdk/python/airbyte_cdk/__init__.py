@@ -37,22 +37,21 @@ from .sources.declarative.interpolation import InterpolatedString, InterpolatedB
 from .sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from .sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 
-from .sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
+from .sources.declarative.partition_routers import CartesianProductStreamSlicer, SinglePartitionRouter, SubstreamPartitionRouter
 from .sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from .sources.declarative.requesters import Requester, HttpRequester
 
 from .sources.declarative.requesters.error_handlers import BackoffStrategy
-from .sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from .sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
 from .sources.declarative.requesters.paginators.strategies import OffsetIncrement, CursorPaginationStrategy, PageIncrement, StopConditionPaginationStrategyDecorator
 
 from .sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
+from .sources.declarative.requesters.request_options.default_request_options_provider import DefaultRequestOptionsProvider
 from .sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from .sources.declarative.requesters.requester import HttpMethod
 from .sources.declarative.retrievers import SimpleRetriever
 from .sources.declarative.schema import JsonFileSchemaLoader
-from .sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from .sources.declarative.transformations.add_fields import AddFields, AddedFieldDefinition
 from .sources.declarative.transformations.transformation import RecordTransformation
 from .sources.declarative.types import FieldPointer
@@ -61,6 +60,8 @@ from .sources.message import InMemoryMessageRepository, MessageRepository
 from .sources.source import TState
 from .sources.streams.availability_strategy import AvailabilityStrategy
 from .sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, CachedLimiterSession, LimiterSession
+from .sources.streams.checkpoint import Cursor as LegacyCursor
+from .sources.streams.checkpoint import ResumableFullRefreshCursor
 from .sources.streams.concurrent.adapters import StreamFacade
 from .sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from .sources.streams.concurrent.cursor import Cursor
@@ -87,6 +88,10 @@ __all__ = [
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
+
+    # Checkpoint
+    "LegacyCursor",
+    "ResumableFullRefreshCursor",
 
     # Concurrent
     "ConcurrentCursor",
@@ -122,13 +127,14 @@ __all__ = [
     "BearerAuthenticator",
     "CartesianProductStreamSlicer",
     "CursorPaginationStrategy",
-    "DatetimeBasedCursor"
+    "DatetimeBasedCursor",
     "DeclarativeAuthenticator",
     "DeclarativeOauth2Authenticator",
     "DeclarativeSingleUseRefreshTokenOauth2Authenticator",
     "DeclarativeStream",
     "Decoder",
     "DefaultPaginator",
+    "DefaultRequestOptionsProvider",
     "DpathExtractor",
     "FieldPointer",
     "HttpMethod",
@@ -180,7 +186,7 @@ __all__ = [
     "HttpSubStream",
     "LimiterSession",
     "MovingWindowCallRatePolicy",
-    "MultipleTokenAuthenticator"
+    "MultipleTokenAuthenticator",
     "Oauth2Authenticator",
     "Rate",
     "SingleUseRefreshTokenOauth2Authenticator",
@@ -193,7 +199,11 @@ __all__ = [
 
     # Protocol classes
     "AirbyteStream",
-    "AirbyteConnectionStatus", "AirbyteMessage", "ConfiguredAirbyteCatalog", "Status", "Type",
+    "AirbyteConnectionStatus",
+    "AirbyteMessage",
+    "ConfiguredAirbyteCatalog",
+    "Status",
+    "Type",
     "OrchestratorType",
     "ConfiguredAirbyteStream",
     "DestinationSyncMode",

@@ -39,4 +39,4 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 :::
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset)
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear)

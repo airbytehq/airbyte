@@ -21,7 +21,7 @@ class Paginator(ABC, RequestOptionsProvider):
     """
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         """
         Reset the pagination's inner state
         """

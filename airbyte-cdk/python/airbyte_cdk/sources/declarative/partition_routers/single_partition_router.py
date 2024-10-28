@@ -5,12 +5,12 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
-class SinglePartitionRouter(StreamSlicer):
+class SinglePartitionRouter(PartitionRouter):
     """Partition router returning only a stream slice"""
 
     parameters: InitVar[Mapping[str, Any]]
@@ -49,3 +49,15 @@ class SinglePartitionRouter(StreamSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         yield StreamSlice(partition={}, cursor_slice={})
+
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        SinglePartitionRouter doesn't have parent streams
+        """
+        pass
+
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+        """
+        SinglePartitionRouter doesn't have parent streams
+        """
+        pass

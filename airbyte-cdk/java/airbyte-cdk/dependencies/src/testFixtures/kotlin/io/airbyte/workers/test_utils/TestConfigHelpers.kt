@@ -20,7 +20,7 @@ object TestConfigHelpers {
     @JvmOverloads
     fun createSyncConfig(
         multipleNamespaces: Boolean = false
-    ): ImmutablePair<Void?, StandardSyncInput> {
+    ): ImmutablePair<Void, StandardSyncInput> {
         val workspaceId = UUID.randomUUID()
         val sourceDefinitionId = UUID.randomUUID()
         val sourceId = UUID.randomUUID()

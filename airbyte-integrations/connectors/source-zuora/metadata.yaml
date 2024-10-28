@@ -16,7 +16,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-zuora
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

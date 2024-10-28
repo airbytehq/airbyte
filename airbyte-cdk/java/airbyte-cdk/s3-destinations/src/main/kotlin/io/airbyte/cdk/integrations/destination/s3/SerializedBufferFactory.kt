@@ -45,7 +45,8 @@ class SerializedBufferFactory {
         @JvmStatic
         fun getCreateFunction(
             config: S3DestinationConfig,
-            createStorageFunctionWithoutExtension: Function<String, BufferStorage>
+            createStorageFunctionWithoutExtension: Function<String, BufferStorage>,
+            useV2FieldNames: Boolean = false,
         ): BufferCreateFunction {
             val formatConfig = config.formatConfig!!
             logger.info { "S3 format config: $formatConfig" }
@@ -59,6 +60,7 @@ class SerializedBufferFactory {
                     return AvroSerializedBuffer.createFunction(
                         formatConfig as UploadAvroFormatConfig,
                         createStorageFunctionWithExtension,
+                        useV2FieldNames
                     )
                 }
                 FileUploadFormat.CSV -> {
@@ -70,6 +72,7 @@ class SerializedBufferFactory {
                     return CsvSerializedBuffer.createFunction(
                         formatConfig as UploadCsvFormatConfig,
                         createStorageFunctionWithExtension,
+                        useV2FieldNames
                     )
                 }
                 FileUploadFormat.JSONL -> {
@@ -81,13 +84,14 @@ class SerializedBufferFactory {
                     return JsonLSerializedBuffer.createBufferFunction(
                         formatConfig as UploadJsonlFormatConfig,
                         createStorageFunctionWithExtension,
+                        useV2FieldNames
                     )
                 }
                 FileUploadFormat.PARQUET -> {
                     // we can't choose the type of buffer storage with parquet because of how the
                     // underlying hadoop
                     // library is imposing file usage.
-                    return ParquetSerializedBuffer.createFunction(config)
+                    return ParquetSerializedBuffer.createFunction(config, useV2FieldNames)
                 }
                 else -> {
                     throw RuntimeException("Unexpected output format: ${Jsons.serialize(config)}")

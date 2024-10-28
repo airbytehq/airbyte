@@ -14,18 +14,34 @@ class RelationalDbDebeziumEventConverter(
     private val emittedAt: Instant
 ) : DebeziumEventConverter {
     override fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage {
-        val debeziumEvent = event.eventValueAsJson()
-        val before: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
-        val after: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.AFTER_EVENT)
-        val source: JsonNode = debeziumEvent.get(DebeziumEventConverter.Companion.SOURCE_EVENT)
+        val debeziumEvent = event.eventValueAsJson
+        val before: JsonNode? = debeziumEvent?.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
+        val after: JsonNode? = debeziumEvent?.get(DebeziumEventConverter.Companion.AFTER_EVENT)
+        val source: JsonNode =
+            checkNotNull(debeziumEvent?.get(DebeziumEventConverter.Companion.SOURCE_EVENT)) {
+                "ChangeEvent contains no source record $debeziumEvent"
+            }
 
-        val baseNode = (if (after.isNull) before else after) as ObjectNode
+        if (listOf(before, after).all { it == null }) {
+            throw IllegalStateException(
+                "ChangeEvent contains no before or after records $debeziumEvent"
+            )
+        }
+        // Value of before and after may be a null or a NullNode object,
+        // representing a "null" in json
+        val baseNode =
+            when (after?.isNull == true) {
+                true -> before
+                false -> after
+            }
+                as ObjectNode
+
         val data: JsonNode =
             DebeziumEventConverter.Companion.addCdcMetadata(
                 baseNode,
                 source,
                 cdcMetadataInjector,
-                after.isNull
+                after?.isNull == true
             )
         return DebeziumEventConverter.Companion.buildAirbyteMessage(
             source,

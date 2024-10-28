@@ -5,14 +5,15 @@ package io.airbyte.cdk.integrations.destination.gcs.util
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object GcsUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(GcsUtils::class.java)
+
     private val UUID_SCHEMA: Schema =
         LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
     private val TIMESTAMP_MILLIS_SCHEMA: Schema =
@@ -26,7 +27,7 @@ object GcsUtils {
         appendAirbyteFields: Boolean,
         useDestinationsV2Columns: Boolean
     ): Schema? {
-        LOGGER.info("Default schema.")
+        LOGGER.info { "Default schema." }
         val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name)
         val stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace)
         var builder = SchemaBuilder.record(stdName).namespace(stdNamespace)

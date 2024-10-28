@@ -144,7 +144,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             PostCommentVotes(**args),
             PostVotes(**args),
             tickets,
-            TicketMetrics(parent=tickets, **args),
+            TicketMetrics(**args),
         ]
         return streams
 

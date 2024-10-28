@@ -12,6 +12,13 @@
   - Resetting a single table within the connection without resetting the rest of the destination tables in that connection
 - Changing a column data type or removing a column might break connections.
 
+### Xmin Limitations
+There are some notable shortcomings associated with the Xmin replication method:
+- Unsupported DDL operations : This replication method cannot support row deletions.
+- Performance : Requires a full table scan, so can lead to poor performance.
+- Row-level granularity : The xmin column is stored at the row level. This means that a row will still be synced if it had been modified, regardless of whether the modification corresponded to the subset of columns the user is interested in.
+- Transaction ID (XID) wraparound : the transaction ID (aka xid) is represented by a 32-bit integer and has an upper limit value of 4,294,967,295. Once this value is reached, the xid wraps around and stops increasing monotonically. At this point, the xmin column cannot be reliably used as a cursor, which can lead to resyncing data that had already been synced. Also see the trouble-shooting section on Xmin wraparound below.
+
 ### Version Requirements
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
@@ -110,6 +117,10 @@ The root causes is that the WALs needed for the incremental sync has been remove
 ### Temporary File Size Limit
 
 Some larger tables may encounter an error related to the temporary file size limit such as `temporary file size exceeds temp_file_limit`. To correct this error increase the [temp_file_limit](https://postgresqlco.nf/doc/en/param/temp_file_limit/).
+
+### Xmin Wraparound
+
+When a database experiences Xmin wraparound, the replication performance will be degraded. Furthermore, data that has already been synced may be resynced again. When setting up a Postgres source connector or at the beginning of the sync, the connector will check if an Xmin wraparound exists. If so, the connector returns a config error, reminding the user to switch to the CDC replication method.
 
 ### (Advanced) Custom JDBC Connection Strings
 

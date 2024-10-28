@@ -6,6 +6,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "~3.10"
+jsonschema = "^4.22.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "5.6.4"
@@ -33,6 +34,8 @@ extend-exclude = """
     | airbyte-cdk/python/airbyte_cdk/sources/declarative/models
     | invalid
     | non_formatted_code
+    | airbyte-integrations/connectors/destination-duckdb
+    | airbyte-integrations/connectors/destination-snowflake-cortex
 )/
 """
 
@@ -87,6 +90,10 @@ skip_glob = [
     "**/connector_builder/generated/**",
     # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
     # correctly handles first-party imports in subdirectories.
+
+    # Migrated to Ruff:
+    "airbyte-integrations/connectors/destination-duckdb/**",
+    "airbyte-integrations/connectors/destination-snowflake-cortex/**"
 ]
 
 [tool.ruff.pylint]

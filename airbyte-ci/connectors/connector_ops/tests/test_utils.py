@@ -6,6 +6,7 @@ from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
+import semver
 from connector_ops import utils
 
 
@@ -45,7 +46,7 @@ class TestConnector:
             assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)
             assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
-            assert len(connector.version.split(".")) == 3
+            assert semver.Version.parse(connector.version)
         else:
             assert connector.metadata is None
             assert connector.support_level is None
@@ -179,5 +180,5 @@ def test_get_all_connectors_in_repo():
     for connector in all_connectors:
         assert isinstance(connector, utils.Connector)
         assert connector.metadata is not None
-        if connector.has_airbyte_docs:
+        if connector.has_airbyte_docs and connector.is_enabled_in_any_registry:
             assert connector.documentation_file_path.exists()

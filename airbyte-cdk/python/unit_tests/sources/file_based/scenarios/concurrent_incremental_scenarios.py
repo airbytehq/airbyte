@@ -86,6 +86,7 @@ single_csv_input_state_is_earlier_scenario_concurrent = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -166,6 +167,7 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -264,6 +266,7 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurre
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -323,6 +326,7 @@ single_csv_no_input_state_scenario_concurrent = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -438,6 +442,7 @@ multi_csv_same_timestamp_scenario_concurrent = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -534,6 +539,7 @@ single_csv_input_state_is_later_scenario_concurrent = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -660,6 +666,7 @@ multi_csv_different_timestamps_scenario_concurrent = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -795,6 +802,7 @@ multi_csv_per_timestamp_scenario_concurrent = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -952,6 +960,7 @@ multi_csv_skip_file_if_already_in_history_concurrent = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1098,6 +1107,7 @@ multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer 
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1225,6 +1235,7 @@ multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older 
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1352,6 +1363,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newe
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1533,6 +1545,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_olde
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1723,6 +1736,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -1905,6 +1919,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2087,6 +2102,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2203,6 +2219,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2210,12 +2227,12 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_
     .set_expected_records(
         [
             {
-                    "history": {
-                        "b.csv": "2023-06-05T03:54:07.000000Z",
-                        "c.csv": "2023-06-05T03:54:07.000000Z",
-                        "d.csv": "2023-06-05T03:54:07.000000Z",
-                    },
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
+                "history": {
+                    "b.csv": "2023-06-05T03:54:07.000000Z",
+                    "c.csv": "2023-06-05T03:54:07.000000Z",
+                    "d.csv": "2023-06-05T03:54:07.000000Z",
+                },
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
             }
         ]
     )
@@ -2320,6 +2337,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2458,6 +2476,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2598,6 +2617,7 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -2762,6 +2782,7 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

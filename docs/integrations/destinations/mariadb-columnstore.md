@@ -72,7 +72,10 @@ Using this feature requires additional configuration, when creating the destinat
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the MariaDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
@@ -84,3 +87,5 @@ Using this feature requires additional configuration, when creating the destinat
 | 0.1.2   | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description              |
 | 0.1.1   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key.              |
 | 0.1.0   | 2021-11-15 | [\#7961](https://github.com/airbytehq/airbyte/pull/7961) | Added MariaDB ColumnStore destination.                 |
+
+</details>

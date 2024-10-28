@@ -35,6 +35,7 @@ async def find_modified_internal_packages(pipeline_context: ClickPipelineContext
             pipeline_context.params["diffed_branch"],
             pipeline_context.params["is_local"],
             pipeline_context.params["ci_context"],
+            git_repo_url=pipeline_context.params["git_repo_url"],
         )
     )
     modified_packages = set()
@@ -112,7 +113,7 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
     """
     poetry_package_paths = await get_packages_to_run(pipeline_context)
     click.echo(f"Running poe tasks of the following packages: {', '.join([str(package_path) for package_path in poetry_package_paths])}")
-    dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Internal poetry packages CI")
+    dagger_client = await pipeline_context.get_dagger_client()
 
     poetry_package_poe_tasks_results: List[Tuple[Path, asyncer.SoonValue]] = []
     async with asyncer.create_task_group() as poetry_packages_task_group:

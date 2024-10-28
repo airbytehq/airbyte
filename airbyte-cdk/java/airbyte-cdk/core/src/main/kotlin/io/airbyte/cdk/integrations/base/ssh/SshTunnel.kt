@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
@@ -30,9 +31,8 @@ import org.apache.sshd.common.util.security.SecurityUtils
 import org.apache.sshd.core.CoreModuleProperties
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 // todo (cgardens) - this needs unit tests. it is currently tested transitively via source postgres
 // integration tests.
 /**
@@ -296,7 +296,7 @@ constructor(
         globalHeartbeatInterval: Duration,
         idleTimeout: Duration
     ): SshClient {
-        LOGGER.info("Creating SSH client with Heartbeat and Keepalive enabled")
+        LOGGER.info { "Creating SSH client with Heartbeat and Keepalive enabled" }
         val client = createClient()
         // Session level heartbeat using SSH_MSG_IGNORE every second.
         client.setSessionHeartbeat(
@@ -351,14 +351,9 @@ constructor(
             // try to connect
             tunnelLocalPort = address.port
 
-            LOGGER.info(
-                String.format(
-                    "Established tunneling session to %s:%d. Port forwarding started on %s ",
-                    remoteServiceHost,
-                    remoteServicePort,
-                    address.toInetSocketAddress()
-                )
-            )
+            LOGGER.info {
+                "Established tunneling session to $remoteServiceHost:$remoteServicePort. Port forwarding started on ${address.toInetSocketAddress()} "
+            }
             return session
         } catch (e: IOException) {
             if (
@@ -403,7 +398,7 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SshTunnel::class.java)
+
         const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
             "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again."
 
@@ -414,18 +409,19 @@ constructor(
         const val GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS: Long = 2000
         const val IDLE_TIMEOUT_KEY: String = "idle_timeout"
         const val IDLE_TIMEOUT_DEFAULT_INFINITE: Long = 0
+        const val TUNNEL_METHOD_KEY = "tunnel_method"
 
         const val TIMEOUT_MILLIS: Int = 15000 // 15 seconds
 
         @JvmStatic
         fun getInstance(config: JsonNode, hostKey: List<String>, portKey: List<String>): SshTunnel {
             val tunnelMethod =
-                Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+                Jsons.getOptional(config, TUNNEL_METHOD_KEY, TUNNEL_METHOD_KEY)
                     .map { method: JsonNode ->
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
                     .orElse(TunnelMethod.NO_TUNNEL)
-            LOGGER.info("Starting connection with method: {}", tunnelMethod)
+            LOGGER.info { "Starting connection with method: $tunnelMethod" }
 
             return SshTunnel(
                 config,
@@ -434,12 +430,12 @@ constructor(
                 null,
                 null,
                 tunnelMethod,
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-                Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_host")),
+                Jsons.getIntOrZero(config, TUNNEL_METHOD_KEY, "tunnel_port"),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "ssh_key")),
                 Strings.safeTrim(
-                    Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")
+                    Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user_password")
                 ),
                 Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
                 Jsons.getIntOrZero(config, portKey),
@@ -484,12 +480,12 @@ constructor(
         @Throws(Exception::class)
         fun getInstance(config: JsonNode, endPointKey: String): SshTunnel {
             val tunnelMethod =
-                Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+                Jsons.getOptional(config, TUNNEL_METHOD_KEY, TUNNEL_METHOD_KEY)
                     .map { method: JsonNode ->
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
                     .orElse(TunnelMethod.NO_TUNNEL)
-            LOGGER.info("Starting connection with method: {}", tunnelMethod)
+            LOGGER.info { "Starting connection with method: $tunnelMethod" }
 
             return SshTunnel(
                 config,
@@ -498,12 +494,12 @@ constructor(
                 endPointKey,
                 Jsons.getStringOrNull(config, endPointKey),
                 tunnelMethod,
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
-                Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
-                Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_host")),
+                Jsons.getIntOrZero(config, TUNNEL_METHOD_KEY, "tunnel_port"),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user")),
+                Strings.safeTrim(Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "ssh_key")),
                 Strings.safeTrim(
-                    Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")
+                    Jsons.getStringOrNull(config, TUNNEL_METHOD_KEY, "tunnel_user_password")
                 ),
                 null,
                 0,
@@ -519,7 +515,7 @@ constructor(
             portKey: List<String>,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }
@@ -532,7 +528,7 @@ constructor(
             endPointKey: String,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }

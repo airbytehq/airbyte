@@ -10,7 +10,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import parse, today
+from pendulum import duration, parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
@@ -49,8 +49,8 @@ from .utils import GAQL, logger, traced_exception
 
 
 class SourceGoogleAds(AbstractSource):
-    # Skip exceptions on missing streams
-    raise_exception_on_missing_stream = False
+    # Raise exceptions on missing streams
+    raise_exception_on_missing_stream = True
 
     @staticmethod
     def _validate_and_transform(config: Mapping[str, Any]):
@@ -62,7 +62,7 @@ class SourceGoogleAds(AbstractSource):
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v15/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v17/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
@@ -116,28 +116,13 @@ class SourceGoogleAds(AbstractSource):
     def get_customers(self, google_api: GoogleAds, config: Mapping[str, Any]) -> List[CustomerModel]:
         customer_status_filter = config.get("customer_status_filter", [])
         accounts = self._get_all_connected_accounts(google_api, customer_status_filter)
-        customers = CustomerModel.from_accounts(accounts)
-
-        # filter duplicates as one customer can be accessible from mutiple connected accounts
-        unique_customers = []
-        seen_ids = set()
-        for customer in customers:
-            if customer.id in seen_ids:
-                continue
-            seen_ids.add(customer.id)
-            unique_customers.append(customer)
-        customers = unique_customers
-        customers_dict = {customer.id: customer for customer in customers}
 
         # filter only selected accounts
         if config.get("customer_ids"):
-            customers = []
-            for customer_id in config["customer_ids"]:
-                if customer_id not in customers_dict:
-                    logging.warning(f"Customer with id {customer_id} is not accessible. Skipping it.")
-                else:
-                    customers.append(customers_dict[customer_id])
-        return customers
+            return CustomerModel.from_accounts_by_id(accounts, config["customer_ids"])
+
+        # all unique accounts
+        return CustomerModel.from_accounts(accounts)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -150,6 +135,13 @@ class SourceGoogleAds(AbstractSource):
     def is_custom_query_incremental(query: GAQL) -> bool:
         time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
         return time_segment_in_select and not time_segment_in_where
+
+    @staticmethod
+    def set_retention_period_and_slice_duration(stream: IncrementalCustomQuery, query: GAQL) -> IncrementalCustomQuery:
+        if query.resource_name == "click_view":
+            stream.days_of_data_storage = 90
+            stream.slice_duration = duration(days=0)
+        return stream
 
     def create_custom_query_stream(
         self,
@@ -173,7 +165,8 @@ class SourceGoogleAds(AbstractSource):
             incremental_config = non_manager_incremental_config
 
         if is_incremental:
-            return IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            incremental_query_stream = IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            return self.set_retention_period_and_slice_duration(incremental_query_stream, query)
         else:
             return CustomQuery(config=single_query_config, api=google_api, customers=customers)
 
@@ -199,17 +192,26 @@ class SourceGoogleAds(AbstractSource):
                     continue
 
                 # Add segments.date to where clause of incremental custom queries if they are not present.
-                # The same will be done during read, but with start and end date from config
+                # The same will be done during read, but with start and end date from config.
                 if self.is_custom_query_incremental(query):
-                    query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    # Set default date value 1 month ago, as some tables have a limited lookback time frame.
+                    month_back = today().subtract(months=1).to_date_string()
+                    start_date = config.get("start_date", month_back)
+
+                    query_date = month_back if start_date > month_back else start_date
+
+                    query = IncrementalCustomQuery.insert_segments_date_expr(query, query_date, query_date)
 
                 query = query.set_limit(1)
                 try:
+                    logger.info(f"Running the query for account {customer.id}: {query}")
                     response = google_api.send_request(
                         str(query),
                         customer_id=customer.id,
                         login_customer_id=customer.login_customer_id,
                     )
+                except AirbyteTracedException as e:
+                    raise e from e
                 except Exception as exc:
                     traced_exception(exc, customer.id, False, table_name)
                 # iterate over the response otherwise exceptions will not be raised!

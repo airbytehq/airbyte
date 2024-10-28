@@ -371,6 +371,281 @@
     "deleted_description": {
       "description": "Description of the reason for deletion.",
       "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The product's description.",
+      "type": ["null", "string"]
+    },
+    "description_html": {
+      "description": "The product's description in HTML format.",
+      "type": ["null", "string"]
+    },
+    "is_gift_card": {
+      "description": "Indicates whether the product is a gift card.",
+      "type": ["null", "boolean"]
+    },
+    "legacy_resource_id": {
+      "description": "The legacy resource ID of the product.",
+      "type": ["null", "string"]
+    },
+    "media_count": {
+      "description": "The total count of media (images/videos) associated with the product.",
+      "type": ["null", "integer"]
+    },
+    "online_store_preview_url": {
+      "description": "The URL for previewing the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "online_store_url": {
+      "description": "The URL of the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "total_inventory": {
+      "description": "The total inventory count of the product.",
+      "type": ["null", "integer"]
+    },
+    "total_variants": {
+      "description": "The total number of variants available for the product.",
+      "type": ["null", "integer"]
+    },
+    "tracks_inventory": {
+      "description": "Indicates whether inventory tracking is enabled for the product.",
+      "type": ["null", "boolean"]
+    },
+    "has_only_default_variant": {
+      "description": "Whether the product has only a single variant with the default option and value.",
+      "type": ["null", "boolean"]
+    },
+    "has_out_of_stock_variants": {
+      "description": "Whether the product has out of stock variants.",
+      "type": ["null", "boolean"]
+    },
+    "requires_sellin_plan": {
+      "description": "Whether the product can only be purchased with a selling plan (subscription)",
+      "type": ["null", "boolean"]
+    },
+    "price_range_v2": {
+      "description": "The price range of the product with prices formatted as decimals.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "max_variant_price": {
+          "description": "The highest variant's price.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "amount": {
+              "description": "Decimal money amount.",
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "description": "Currency of the money.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "min_variant_price": {
+          "description": "The lowest variant's price.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "amount": {
+              "description": "Decimal money amount.",
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "description": "Currency of the money.",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "featured_image": {
+      "description": "The featured image for the product.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "alt_text": {
+          "description": "A word or phrase to share the nature or contents of an image.",
+          "type": ["null", "string"]
+        },
+        "height": {
+          "description": "The original height of the image in pixels. Returns null if the image isn't hosted by Shopify.",
+          "type": ["null", "integer"]
+        },
+        "id": {
+          "description": "A unique ID for the image.",
+          "type": ["null", "string"]
+        },
+        "url": {
+          "description": "The location of the image as a URL.",
+          "type": ["null", "string"]
+        },
+        "width": {
+          "description": "The original width of the image in pixels. Returns null if the image isn't hosted by Shopify.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "seo": {
+      "description": "SEO information of the product.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "description": {
+          "description": "SEO Description.",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "SEO Title.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "featured_media": {
+      "description": "The featured media for the product.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "alt": {
+          "description": "A word or phrase to share the nature or contents of a media.",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "A globally-unique ID.",
+          "type": ["null", "string"]
+        },
+        "media_content_type": {
+          "description": "The media content type.",
+          "type": ["null", "string"]
+        },
+        "status": {
+          "description": "Current status of the media.",
+          "type": ["null", "string"]
+        },
+        "preview": {
+          "description": "The preview image for the media.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "status": {
+              "description": "Current status of the preview image.",
+              "type": ["null", "string"]
+            },
+            "image": {
+              "description": "The preview image for the media. Returns 'null' until status is 'READY'",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "description": "A unique ID for the image.",
+                  "type": ["null", "string"]
+                },
+                "alt_text": {
+                  "description": "A word or phrase to share the nature or contents of an image.",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "media_errors": {
+          "description": "Any errors which have occurred on the media.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "code": {
+                "description": "Code representing the type of error.",
+                "type": ["null", "string"]
+              },
+              "details": {
+                "description": "Additional details regarding the error.",
+                "type": ["null", "string"]
+              },
+              "message": {
+                "description": "Translated error message.",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "media_warnings": {
+          "description": "The warnings attached to the media.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "code": {
+                "description": "The code representing the type of warning.",
+                "type": ["null", "string"]
+              },
+              "message": {
+                "description": "Translated warning message.",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "feedback": {
+      "description": "Information about the product that's provided through resource feedback.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "details": {
+          "description": "List of AppFeedback detailing issues regarding a resource.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "app": {
+              "description": "The application associated to the feedback.",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "description": "A globally-unique ID.",
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "link": {
+              "description": "A link to where merchants can resolve errors.",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "description": "The URL that the link visits.",
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "messages": {
+              "description": "The feedback message presented to the merchant.",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "field": {
+                  "description": "The path to the input field that caused the error.",
+                  "type": ["null", "string"]
+                },
+                "message": {
+                  "description": "The error message.",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "description": "Summary of resource feedback pertaining to the resource.",
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

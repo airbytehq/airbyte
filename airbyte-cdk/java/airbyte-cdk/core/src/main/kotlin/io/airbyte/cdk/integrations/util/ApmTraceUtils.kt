@@ -34,7 +34,7 @@ object ApmTraceUtils {
      * @param tags A map of tags to be added to the currently active span.
      */
     @JvmOverloads
-    fun addTagsToTrace(tags: Map<String?, Any>, tagPrefix: String? = TAG_PREFIX) {
+    fun addTagsToTrace(tags: Map<String, Any>, tagPrefix: String? = TAG_PREFIX) {
         addTagsToTrace(GlobalTracer.get().activeSpan(), tags, tagPrefix)
     }
 
@@ -45,10 +45,10 @@ object ApmTraceUtils {
      * @param tags A map of tags to be added to the currently active span.
      * @param tagPrefix The prefix to be added to each custom tag name.
      */
-    fun addTagsToTrace(span: Span?, tags: Map<String?, Any>, tagPrefix: String?) {
+    fun addTagsToTrace(span: Span?, tags: Map<String, Any>, tagPrefix: String?) {
         if (span != null) {
             tags.entries.forEach(
-                Consumer { entry: Map.Entry<String?, Any> ->
+                Consumer { entry: Map.Entry<String, Any> ->
                     span.setTag(formatTag(entry.key, tagPrefix), entry.value.toString())
                 }
             )
@@ -83,12 +83,12 @@ object ApmTraceUtils {
      *
      * @param tags A map of tags to be added to the root span.
      */
-    fun addTagsToRootSpan(tags: Map<String?, Any>) {
+    fun addTagsToRootSpan(tags: Map<String, Any>) {
         val activeSpan = GlobalTracer.get().activeSpan()
         if (activeSpan is MutableSpan) {
             val localRootSpan = (activeSpan as MutableSpan).localRootSpan
             tags.entries.forEach(
-                Consumer { entry: Map.Entry<String?, Any> ->
+                Consumer { entry: Map.Entry<String, Any> ->
                     localRootSpan.setTag(formatTag(entry.key, TAG_PREFIX), entry.value.toString())
                 }
             )

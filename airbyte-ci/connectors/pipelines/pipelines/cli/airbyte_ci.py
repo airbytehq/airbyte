@@ -33,12 +33,15 @@ from pipelines.cli.click_decorators import (
 )
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
+from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, get_current_epoch_time
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, AIRBYTE_GITHUB_REPO_URL_PREFIX
+from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.models.secrets import InMemorySecretStore
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -62,7 +65,7 @@ def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
     if not gha_workflow_run_id:
         return None
 
-    return f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
+    return f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/actions/runs/{gha_workflow_run_id}"
 
 
 def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
@@ -72,7 +75,6 @@ def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
     can_get_pull_request = pull_request_number and ci_github_access_token
     if not can_get_pull_request:
         return None
-
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
 
@@ -147,7 +149,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
-@click.option("--git-repo-url", default=AIRBYTE_REPO_URL, envvar="CI_GIT_REPO_URL")
+@click.option("--git-repo-url", default=AIRBYTE_GITHUB_REPO_URL, envvar="CI_GIT_REPO_URL")
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
 @click.option(
@@ -161,19 +163,20 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
-@click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
+@click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str, callback=wrap_in_secret)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
-    "--ci-gcs-credentials",
+    "--ci-gcp-credentials",
     help="The service account to use during CI.",
     type=click.STRING,
     required=False,  # Not required for pre-release or local pipelines
     envvar="GCP_GSM_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
-@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
-@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
+@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str, callback=wrap_in_secret)
+@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str, callback=wrap_in_secret)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_ci_requirements_option()
 @click_track_command
@@ -206,6 +209,9 @@ async def airbyte_ci(ctx: click.Context) -> None:  # noqa D103
 
     if not ctx.obj["is_local"]:
         log_context_info(ctx)
+
+    if not ctx.obj.get("secret_stores", {}).get("in_memory"):
+        ctx.obj["secret_stores"] = {"in_memory": InMemorySecretStore()}
 
 
 if __name__ == "__main__":

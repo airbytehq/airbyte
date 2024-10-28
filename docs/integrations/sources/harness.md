@@ -47,7 +47,22 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                   | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------------- | :--------------------------------------------------- |
-| 0.1.0   | 2023-10-10 | [31103](https://github.com/airbytehq/airbyte/pull/31103)       | Migrate to low code                                  |
+| 0.1.10 | 2024-08-03 | [43172](https://github.com/airbytehq/airbyte/pull/43172) | Update dependencies |
+| 0.1.9 | 2024-07-27 | [42735](https://github.com/airbytehq/airbyte/pull/42735) | Update dependencies |
+| 0.1.8 | 2024-07-20 | [42221](https://github.com/airbytehq/airbyte/pull/42221) | Update dependencies |
+| 0.1.7 | 2024-07-13 | [41851](https://github.com/airbytehq/airbyte/pull/41851) | Update dependencies |
+| 0.1.6 | 2024-07-10 | [41426](https://github.com/airbytehq/airbyte/pull/41426) | Update dependencies |
+| 0.1.5 | 2024-07-09 | [41101](https://github.com/airbytehq/airbyte/pull/41101) | Update dependencies |
+| 0.1.4 | 2024-07-06 | [40788](https://github.com/airbytehq/airbyte/pull/40788) | Update dependencies |
+| 0.1.3 | 2024-06-25 | [40464](https://github.com/airbytehq/airbyte/pull/40464) | Update dependencies |
+| 0.1.2 | 2024-06-22 | [40051](https://github.com/airbytehq/airbyte/pull/40051) | Update dependencies |
+| 0.1.1 | 2024-05-20 | [38392](https://github.com/airbytehq/airbyte/pull/38392) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2023-10-10 | [31103](https://github.com/airbytehq/airbyte/pull/31103) | Migrate to low code |
 | 0.1.23  | 2021-11-16 | [153](https://github.com/faros-ai/airbyte-connectors/pull/153) | Add Harness source and Faros destination's converter |
+
+</details>

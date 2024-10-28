@@ -3,7 +3,7 @@
 Let's first start by cloning the repository, optionally forking it first
 
 ```bash
-git@github.com:airbytehq/airbyte.git
+git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 ```
 
@@ -14,13 +14,19 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-Select Python-source Set name to survey-monkey-demo
+Select Python CDK Source Set name to `survey-monkey-demo`
 
-Next change your working directory to the new connector module. Then create an initial python
-environment and install the dependencies required to run an API Source connector:
+Next change your working directory to the new connector module. Also change airbyte-cdk version
+to the one used for this tutorial in `pyproject.toml`:
 
 ```bash
 cd ../../connectors/source-survey-monkey-demo
+```
+
+Then create an initial python environment and install the dependencies required to run an API Source connector:
+
+```bash
+poetry lock
 poetry install --with dev
 ```
 

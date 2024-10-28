@@ -9,7 +9,7 @@ Airbyte uses different objects to store internal state and metadata. This data i
 - Using the default Postgres database that Airbyte spins-up as part of the Docker service described in the `docker-compose.yml` file: `airbyte/db`.
 - Through a dedicated custom Postgres instance \(the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file\). It's not a good practice to deploy mission-critical databases on Docker or Kubernetes.
   Using a dedicated instance will provide more reliability to your Airbyte deployment.
-  Moreover, using a Cloud-managed Postgres instance (such as AWS RDS our GCP Cloud SQL), you will benefit from automatic backup and fine-grained sizing. You can start with a pretty small instance, but according to your Airbyte usage, the job database might grow and require more storage if you are not truncating the job history.
+  Moreover, using a Cloud-managed Postgres instance (such as AWS RDS or GCP Cloud SQL), you will benefit from automatic backup and fine-grained sizing. You can start with a pretty small instance, but according to your Airbyte usage, the job database might grow and require more storage if you are not truncating the job history.
 
 The various entities are persisted in two internal databases:
 
@@ -24,10 +24,6 @@ Note that no actual data from the source \(or destination\) connectors ever tran
 If you need to interact with it, for example, to make back-ups or perform some clean-up maintenances, you can also gain access to the Export and Import functionalities of this database via the API or the UI \(in the Admin page, in the Configuration Tab\).
 
 ## Connecting to an External Postgres database
-
-:::info
-Currently, Airbyte requires connection to a Postgres 13 instance.
-:::
 
 Let's walk through what is required to use a Postgres instance that is not managed by Airbyte. First, for the sake of the tutorial, we will run a new instance of Postgres in its own docker container with the command below. If you already have Postgres running elsewhere, you can skip this step and use the credentials for that in future steps.
 

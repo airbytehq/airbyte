@@ -5,7 +5,7 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -14,7 +14,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
@@ -124,7 +123,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     def __init__(
         self,
-        authenticator: Union[AuthBase, HttpAuthenticator],
+        authenticator: AuthBase,
         start_date: str = None,
         lookback_window: int = 0,
         slice_step_map: Mapping[str, int] = None,
@@ -262,7 +261,7 @@ class TwilioNestedStream(TwilioStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self.authenticator)
+        return self.parent_stream(authenticator=self._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}
@@ -552,7 +551,7 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window)
+        return self.parent_stream(authenticator=self._session.auth, start_date=self._start_date, lookback_window=self._lookback_window)
 
 
 class UsageNestedStream(TwilioNestedStream):

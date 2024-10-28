@@ -6,11 +6,11 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
-from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v17.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
+from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
@@ -202,7 +202,7 @@ def test_page_token_expired_it_should_fail_date_range_1_day(config, customers):
     assert stream.get_query.call_count == 1
 
 
-@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, InternalServerError, DataLoss))
+@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, DataLoss))
 def test_retry_transient_errors(mocker, config, customers, error_cls):
     customer_id = next(iter(customers)).id
 
@@ -225,6 +225,35 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
     assert exception.value.message == "Error message"
 
+    assert mocked_search.call_count == 5
+    assert records == []
+
+
+def test_retry_500_raises_transient_error(mocker, config, customers):
+    customer_id = next(iter(customers)).id
+
+    mocker.patch("time.sleep")
+    credentials = config["credentials"]
+    credentials.update(use_proto_plus=True)
+    api = GoogleAds(credentials=credentials)
+    mocked_search = mocker.patch.object(api.ga_services["default"], "search", side_effect=InternalServerError("Internal Error encountered"))
+    incremental_stream_config = dict(
+        api=api,
+        conversion_window_days=config["conversion_window_days"],
+        start_date=config["start_date"],
+        end_date="2021-04-04",
+        customers=customers,
+    )
+    stream = ClickView(**incremental_stream_config)
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "default"}
+    records = []
+
+    with pytest.raises(AirbyteTracedException) as exception:
+        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
+
+    assert exception.value.internal_message == ("Internal Error encountered Unable to fetch data from Google Ads API due to "
+                                                "temporal error on the Google Ads server. Please retry again later. ")
+    assert exception.value.failure_type == FailureType.transient_error
     assert mocked_search.call_count == 5
     assert records == []
 

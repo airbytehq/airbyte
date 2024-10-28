@@ -15,7 +15,7 @@ from source_airtable.source import SourceAirtable
     "status, check_passed",
     [
         (200, (True, None)),
-        (401, (False, "401 Client Error: None for url: https://api.airtable.com/v0/meta/bases")),
+        (401, (False, "Unauthorized. Please ensure you are authenticated correctly.")),
     ],
     ids=["success", "fail"],
 )

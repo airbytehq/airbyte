@@ -1,13 +1,17 @@
-const visit = require("unist-util-visit").visit;
+const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
-const { isPypiConnector } = require("../connector_registry");
+const {
+  getLatestPythonCDKVersion,
+  parseCDKVersion,
+} = require("../connector_registry");
+const visit = require("unist-util-visit").visit;
 
-const toAttributes = (props) =>
-  Object.entries(props).map(([key, value]) => ({
-    type: "mdxJsxAttribute",
-    name: key,
-    value: value,
-  }));
+/**
+ * Convert a boolean to a string
+ *
+ * Why? Because MDX doesn't support passing boolean values properly
+ */
+const boolToBoolString = (bool) => (bool ? "TRUE" : "FALSE");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
@@ -15,6 +19,7 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
+    const latestPythonCdkVersion = await getLatestPythonCDKVersion();
 
     if (!registryEntry) return;
 
@@ -25,14 +30,31 @@ const plugin = () => {
         const originalTitle = node.children[0].value;
         const originalId = node.data.hProperties.id;
 
-        firstHeading = false;
-        node.children = [];
-        node.type = "mdxJsxFlowElement";
-        node.name = "HeaderDecoration";
-        node.attributes = toAttributes({
+        const rawCDKVersion = getFromPaths(
+          registryEntry,
+          "packageInfo_[oss|cloud].cdk_version"
+        );
+        const syncSuccessRate = getFromPaths(
+          registryEntry,
+          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate"
+        );
+        const usageRate = getFromPaths(
+          registryEntry,
+          "generated_[oss|cloud].metrics.[all|cloud|oss].usage"
+        );
+        const lastUpdated = getFromPaths(
+          registryEntry,
+          "generated_[oss|cloud].source_file_info.metadata_last_modified"
+        );
+
+        const { version, isLatest, url } = parseCDKVersion(
+          rawCDKVersion,
+          latestPythonCdkVersion
+        );
+
+        const attrDict = {
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: isPypiConnector(registryEntry),
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
@@ -40,7 +62,19 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           originalId,
-        });
+          cdkVersion: version,
+          isLatestCDKString: boolToBoolString(isLatest),
+          cdkVersionUrl: url,
+          syncSuccessRate,
+          usageRate,
+          lastUpdated,
+        };
+
+        firstHeading = false;
+        node.children = [];
+        node.type = "mdxJsxFlowElement";
+        node.name = "HeaderDecoration";
+        node.attributes = toAttributes(attrDict);
       }
     });
   };

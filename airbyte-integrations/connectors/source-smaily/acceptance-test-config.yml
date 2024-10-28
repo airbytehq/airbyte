@@ -4,13 +4,14 @@ connector_image: airbyte/source-smaily:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_smaily/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+        timeout_seconds: 420
   discovery:
     tests:
       - config_path: "secrets/config.json"

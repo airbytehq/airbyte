@@ -6,7 +6,7 @@ import pendulum
 import pytest
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_protocol.models import SyncMode
 from source_slack import SourceSlack
 from source_slack.components.channel_members_extractor import ChannelMembersExtractor

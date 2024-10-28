@@ -3,15 +3,15 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 class Cursor(ABC):
     """
-    Cursors are components that allow for incremental syncs. They keep track of what data has been consumed and slices the requests based on
-    that information.
+    Cursors are components that allow for checkpointing the current state of a sync. They keep track of what data has been consumed
+    and allows for syncs to be resumed from a specific point based on that information.
     """
 
     @abstractmethod
@@ -66,4 +66,12 @@ class Cursor(ABC):
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
         """
         Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """
+
+    @abstractmethod
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        """
+        Get the state value of a specific stream_slice. For incremental or resumable full refresh cursors which only manage state in
+        a single dimension this is the entire state object. For per-partition cursors used by substreams, this returns the state of
+        a specific parent delineated by the incoming slice's partition object.
         """

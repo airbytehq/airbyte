@@ -16,7 +16,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
 )
 from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
@@ -83,7 +83,7 @@ class UnitTests(GradleTask):
     with_test_artifacts = True
 
 
-def _create_integration_step_args_factory(context: ConnectorContext) -> Callable:
+def _create_integration_step_args_factory(context: ConnectorTestContext) -> Callable:
     """
     Create a function that can process the args for the integration step.
     """
@@ -109,7 +109,7 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
     return _create_integration_step_args
 
 
-def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
+def _get_normalization_steps(context: ConnectorTestContext) -> List[StepToRun]:
     normalization_image = f"{context.connector.normalization_repository}:dev"
     context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
     normalization_steps = [
@@ -123,35 +123,44 @@ def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
     return normalization_steps
 
 
-def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
+def _get_acceptance_test_steps(context: ConnectorTestContext) -> List[StepToRun]:
     """
     Generate the steps to run the acceptance tests for a Java connector.
     """
+
     # Run tests in parallel
     return [
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-            step=IntegrationTests(context),
+            step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
             args=_create_integration_step_args_factory(context),
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-            step=AcceptanceTests(context, True),
+            step=AcceptanceTests(
+                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=False
+            ),
             args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
     ]
 
 
-def get_test_steps(context: ConnectorContext) -> STEP_TREE:
+def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
     """
     Get all the tests steps for a Java connector.
     """
 
     steps: STEP_TREE = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
+            )
+        ],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,

@@ -208,6 +208,7 @@ single_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -279,6 +280,7 @@ single_partitioned_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -323,6 +325,7 @@ multi_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -468,6 +471,7 @@ parquet_various_types_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -555,6 +559,7 @@ parquet_file_with_decimal_no_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -609,6 +614,7 @@ parquet_file_with_decimal_as_string_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -659,6 +665,7 @@ parquet_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -711,6 +718,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -747,6 +755,7 @@ parquet_with_invalid_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

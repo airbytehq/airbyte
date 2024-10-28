@@ -8,8 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
-import io.airbyte.cdk.integrations.util.ApmTraceUtils
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
@@ -24,6 +23,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.validation.json.JsonSchemaValidator
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
@@ -34,9 +34,8 @@ import java.util.concurrent.*
 import java.util.function.Consumer
 import org.apache.commons.lang3.ThreadUtils
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate
  * methods on the integration. Keeps itself DRY for methods that are common between source and
@@ -110,20 +109,27 @@ internal constructor(
 
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
-    fun run(args: Array<String>) {
+    @JvmOverloads
+    fun run(
+        args: Array<String>,
+        exceptionHandler: ConnectorExceptionHandler = ConnectorExceptionHandler()
+    ) {
         val parsed = cliParser.parse(args)
         try {
-            runInternal(parsed)
+            runInternal(parsed, exceptionHandler)
         } catch (e: Exception) {
             throw e
         }
     }
 
     @Throws(Exception::class)
-    private fun runInternal(parsed: IntegrationConfig?) {
-        LOGGER.info("Running integration: {}", integration.javaClass.name)
-        LOGGER.info("Command: {}", parsed!!.command)
-        LOGGER.info("Integration config: {}", parsed)
+    private fun runInternal(
+        parsed: IntegrationConfig,
+        exceptionHandler: ConnectorExceptionHandler
+    ) {
+        LOGGER.info { "Running integration: ${integration.javaClass.name}" }
+        LOGGER.info { "Command: ${parsed.command}" }
+        LOGGER.info { "Integration config: $parsed" }
 
         try {
             when (parsed.command) {
@@ -175,10 +181,10 @@ internal constructor(
                     val catalog =
                         parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
                     val stateOptional =
-                        parsed.getStatePath().map { path: Path? -> parseConfig(path) }
+                        parsed.getStatePath().map { path: Path -> parseConfig(path) }
                     try {
                         if (featureFlags.concurrentSourceStreamRead()) {
-                            LOGGER.info("Concurrent source stream read enabled.")
+                            LOGGER.info { "Concurrent source stream read enabled." }
                             readConcurrent(config, catalog, stateOptional)
                         } else {
                             readSerial(config, catalog, stateOptional)
@@ -213,70 +219,21 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
-            // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
-            // attempt is made
-            // to
-            // find the root exception that corresponds to a configuration error. If that does not
-            // exist, we
-            // just return the original exception.
-            ApmTraceUtils.addExceptionToTrace(e)
-            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
-            // If the source connector throws a config error, a trace message with the relevant
-            // message should
-            // be surfaced.
-            if (parsed.command == Command.CHECK) {
-                // Currently, special handling is required for the CHECK case since the user display
-                // information in
-                // the trace message is
-                // not properly surfaced to the FE. In the future, we can remove this and just throw
-                // an exception.
-                outputRecordCollector.accept(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                        .withConnectionStatus(
-                            AirbyteConnectionStatus()
-                                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(
-                                    ConnectorExceptionUtil.getDisplayMessage(
-                                        rootConfigErrorThrowable
-                                    )
-                                )
-                        )
-                )
-                return
-            }
-
-            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
-                )
-                // On receiving a config error, the container should be immediately shut down.
-            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
-                AirbyteTraceMessageUtility.emitTransientErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
-                )
-                // On receiving a transient error, the container should be immediately shut down.
-                System.exit(1)
-            }
-            throw e
+            exceptionHandler.handleException(e, parsed.command, outputRecordCollector)
         }
-
-        LOGGER.info("Completed integration: {}", integration.javaClass.name)
+        LOGGER.info { "Completed integration: ${integration.javaClass.name}" }
     }
 
     private fun produceMessages(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
         recordCollector: Consumer<AirbyteMessage>
     ) {
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-            LOGGER.debug("Producing messages for stream {}...", s)
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+            LOGGER.debug { "Producing messages for stream $s..." }
         }
         messageIterator.forEachRemaining(recordCollector)
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-            LOGGER.debug("Finished producing messages for stream {}...", s)
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+            LOGGER.debug { "Finished producing messages for stream $s..." }
         }
     }
 
@@ -284,7 +241,7 @@ internal constructor(
     private fun readConcurrent(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
+        stateOptional: Optional<JsonNode>
     ) {
         val streams = source!!.readStreams(config, catalog, stateOptional.orElse(null))
 
@@ -301,7 +258,7 @@ internal constructor(
                      * stream consumer.
                      */
                     val partitionSize = streamConsumer.parallelism
-                    val partitions = Lists.partition(streams.stream().toList(), partitionSize)
+                    val partitions = Lists.partition(streams.toList(), partitionSize)
 
                     // Submit each stream partition for concurrent execution
                     partitions.forEach(
@@ -316,7 +273,7 @@ internal constructor(
                     }
                 }
         } catch (e: Exception) {
-            LOGGER.error("Unable to perform concurrent read.", e)
+            LOGGER.error(e) { "Unable to perform concurrent read." }
             throw e
         } finally {
             stopOrphanedThreads()
@@ -327,7 +284,7 @@ internal constructor(
     private fun readSerial(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
+        stateOptional: Optional<JsonNode>
     ) {
         try {
             source!!.read(config, catalog, stateOptional.orElse(null)).use { messageIterator ->
@@ -352,10 +309,49 @@ internal constructor(
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-                LOGGER.error("Failed to consume from stream {}.", s, e)
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+                LOGGER.error(e) { "Failed to consume from stream $s." }
             }
             throw RuntimeException(e)
+        }
+    }
+
+    data class OrphanedThreadInfo
+    private constructor(
+        val thread: Thread,
+        val threadCreationInfo: ThreadCreationInfo,
+        val lastStackTrace: List<StackTraceElement>
+    ) {
+        fun getLogString(): String {
+            return String.format(
+                "%s (%s)\n Thread stacktrace: %s",
+                thread.name,
+                thread.state,
+                lastStackTrace.joinToString("\n        at ")
+            )
+        }
+
+        companion object {
+            fun getAll(): List<OrphanedThreadInfo> {
+                return ThreadUtils.getAllThreads().mapNotNull { getForThread(it) }
+            }
+
+            fun getForThread(thread: Thread): OrphanedThreadInfo? {
+                val threadCreationInfo =
+                    getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
+                val stack = thread.stackTrace.asList()
+                if (threadCreationInfo == null) {
+                    return null
+                }
+                return OrphanedThreadInfo(thread, threadCreationInfo, stack)
+            }
+
+            // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the
+            // opened method
+            private val getMethod: Method =
+                ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also {
+                    it.isAccessible = true
+                }
         }
     }
 
@@ -368,27 +364,14 @@ internal constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunner::class.java)
         private val threadCreationInfo: InheritableThreadLocal<ThreadCreationInfo> =
             object : InheritableThreadLocal<ThreadCreationInfo>() {
-                override fun childValue(parentValue: ThreadCreationInfo): ThreadCreationInfo {
+                override fun childValue(parentValue: ThreadCreationInfo?): ThreadCreationInfo {
                     return ThreadCreationInfo()
                 }
             }
 
         const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
-
-        // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the
-        // opened method
-        private val getMethod: Method =
-            ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also {
-                it.isAccessible = true
-            }
-
-        @JvmStatic
-        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
-            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
-        }
 
         /**
          * Filters threads that should not be considered when looking for orphaned threads at
@@ -399,11 +382,11 @@ internal constructor(
          * active so long as the database connection pool is open.
          */
         @VisibleForTesting
-        private val orphanedThreadPredicates: MutableList<(Thread) -> Boolean> =
-            mutableListOf({ runningThread: Thread ->
-                (runningThread.name != Thread.currentThread().name &&
-                    !runningThread.isDaemon &&
-                    TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+        private val orphanedThreadPredicates: MutableList<(OrphanedThreadInfo) -> Boolean> =
+            mutableListOf({ runningThreadInfo: OrphanedThreadInfo ->
+                (runningThreadInfo.thread.name != Thread.currentThread().name &&
+                    !runningThreadInfo.thread.isDaemon &&
+                    TYPE_AND_DEDUPE_THREAD_NAME != runningThreadInfo.thread.name)
             })
 
         const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
@@ -420,7 +403,7 @@ internal constructor(
             consumer: SerializedAirbyteMessageConsumer,
             inputStream: InputStream = System.`in`
         ) {
-            LOGGER.info("Starting buffered read of input stream")
+            LOGGER.info { "Starting buffered read of input stream" }
             consumer.start()
             inputStream.bufferedReader(StandardCharsets.UTF_8).use {
                 var emptyLines = 0
@@ -434,24 +417,24 @@ internal constructor(
                         // TODO: Monitor the logs for occurrences of this log line and if this isn't
                         // an issue, remove it.
                         if (emptyLines % 1_000 == 0 && emptyLines < 10_000) {
-                            LOGGER.warn("Encountered $emptyLines empty lines during execution")
+                            LOGGER.warn { "Encountered $emptyLines empty lines during execution" }
                         }
                     }
                 }
                 if (emptyLines > 0) {
-                    LOGGER.warn("Encountered $emptyLines empty lines in the input stream.")
+                    LOGGER.warn { "Encountered $emptyLines empty lines in the input stream." }
                 }
             }
-            LOGGER.info("Finished buffered read of input stream")
+            LOGGER.info { "Finished buffered read of input stream" }
         }
 
         @JvmStatic
-        fun addOrphanedThreadFilter(predicate: (Thread) -> (Boolean)) {
+        fun addOrphanedThreadFilter(predicate: (OrphanedThreadInfo) -> (Boolean)) {
             orphanedThreadPredicates.add(predicate)
         }
 
-        fun filterOrphanedThread(thread: Thread): Boolean {
-            return orphanedThreadPredicates.all { it(thread) }
+        fun filterOrphanedThread(threadInfo: OrphanedThreadInfo): Boolean {
+            return orphanedThreadPredicates.all { it(threadInfo) }
         }
 
         /**
@@ -481,17 +464,17 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread).toList()
-            if (runningThreads.isNotEmpty()) {
-                LOGGER.warn(
+            val runningThreadInfos = OrphanedThreadInfo.getAll().filter(::filterOrphanedThread)
+            if (runningThreadInfos.isNotEmpty()) {
+                LOGGER.warn {
                     """
                   The main thread is exiting while children non-daemon threads from a connector are still active.
                   Ideally, this situation should not happen...
                   Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-                  The main thread is: {}
-                  """.trimIndent(),
-                    dumpThread(currentThread)
-                )
+                  The main thread is: ${dumpThread(currentThread)}
+                  """.trimIndent()
+                }
+
                 val scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor(
                         BasicThreadFactory
@@ -501,18 +484,15 @@ internal constructor(
                             .daemon(true)
                             .build()
                     )
-                for (runningThread in runningThreads) {
-                    val str =
-                        "Active non-daemon thread: " +
-                            dumpThread(runningThread) +
-                            "\ncreationStack=${getThreadCreationInfo(runningThread)}"
-                    LOGGER.warn(str)
+                for (runningThreadInfo in runningThreadInfos) {
+                    val str = "Active non-daemon thread info: ${runningThreadInfo.getLogString()}"
+                    LOGGER.warn { str }
                     // even though the main thread is already shutting down, we still leave some
                     // chances to the children
                     // threads to close properly on their own.
                     // So, we schedule an interrupt hook after a fixed time delay instead...
                     scheduledExecutorService.schedule(
-                        { runningThread.interrupt() },
+                        { runningThreadInfo.thread.interrupt() },
                         interruptTimeDelay.toLong(),
                         interruptTimeUnit
                     )
@@ -520,13 +500,13 @@ internal constructor(
                 scheduledExecutorService.schedule(
                     {
                         if (
-                            ThreadUtils.getAllThreads().stream().anyMatch { runningThread: Thread ->
+                            ThreadUtils.getAllThreads().any { runningThread: Thread ->
                                 !runningThread.isDaemon && runningThread.name != currentThread.name
                             }
                         ) {
-                            LOGGER.error(
+                            LOGGER.error {
                                 "Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n"
-                            )
+                            }
                             exitHook.run()
                         }
                     },
@@ -537,6 +517,7 @@ internal constructor(
         }
 
         private fun dumpThread(thread: Thread): String {
+            OrphanedThreadInfo.getForThread(thread)
             return String.format(
                 "%s (%s)\n Thread stacktrace: %s",
                 thread.name,

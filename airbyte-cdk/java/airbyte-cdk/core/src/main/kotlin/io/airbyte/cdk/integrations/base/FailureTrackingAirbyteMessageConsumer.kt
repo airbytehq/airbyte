@@ -4,9 +4,9 @@
 package io.airbyte.cdk.integrations.base
 
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
  * the [AirbyteMessageConsumer] interface. The original interface methods are wrapped in generic
@@ -36,7 +36,7 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
         try {
             startTracked()
         } catch (e: Exception) {
-            LOGGER.error("Exception while starting consumer", e)
+            LOGGER.error(e) { "Exception while starting consumer" }
             hasFailed = true
             throw e
         }
@@ -58,7 +58,7 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
         try {
             acceptTracked(message)
         } catch (e: Exception) {
-            LOGGER.error("Exception while accepting message", e)
+            LOGGER.error(e) { "Exception while accepting message" }
             hasFailed = true
             throw e
         }
@@ -69,15 +69,10 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
     @Throws(Exception::class)
     override fun close() {
         if (hasFailed) {
-            LOGGER.warn("Airbyte message consumer: failed.")
+            LOGGER.warn { "Airbyte message consumer: failed." }
         } else {
-            LOGGER.info("Airbyte message consumer: succeeded.")
+            LOGGER.info { "Airbyte message consumer: succeeded." }
         }
         close(hasFailed)
-    }
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer::class.java)
     }
 }

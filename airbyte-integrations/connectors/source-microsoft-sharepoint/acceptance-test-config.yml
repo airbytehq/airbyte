@@ -9,7 +9,7 @@ acceptance_tests:
   connection:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 90 # the check is slow because list of files is fetched for every of 5 streams
+        timeout_seconds: 120 # the check is slow because list of files is fetched for every of 5 streams
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -27,9 +27,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600

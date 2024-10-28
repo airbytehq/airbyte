@@ -17,6 +17,7 @@ ALL_LANGUAGES = [
     ConnectorLanguage.JAVA,
     ConnectorLanguage.LOW_CODE,
     ConnectorLanguage.PYTHON,
+    ConnectorLanguage.MANIFEST_ONLY,
 ]
 
 ALL_TYPES = ["source", "destination"]
@@ -30,6 +31,7 @@ class CheckCategory(Enum):
     ASSETS = "💼 Assets"
     SECURITY = "🔒 Security"
     METADATA = "📝 Metadata"
+    TESTING = "🧪 Testing"
 
 
 class CheckStatus(Enum):
@@ -61,7 +63,6 @@ class CheckResult:
 
 
 class Check(ABC):
-
     requires_metadata: bool = True
     runs_on_released_connectors: bool = True
 
@@ -123,6 +124,15 @@ class Check(ABC):
         return ALL_TYPES
 
     @property
+    def applies_to_connector_ab_internal_sl(self) -> int:
+        """The connector ab_internal_s that the QA check applies to
+
+        Returns:
+            int: integer value for connector ab_internal_sl level
+        """
+        return 0
+
+    @property
     @abstractmethod
     def category(self) -> CheckCategory:
         """The category of the QA check
@@ -141,6 +151,15 @@ class Check(ABC):
 
         Returns:
             List[str]: None if connector's support levels that the QA check applies to is not specified
+        """
+        return None
+
+    @property
+    def applies_to_connector_cloud_usage(self) -> Optional[List[str]]:
+        """The connector's cloud usage level that the QA check applies to
+
+        Returns:
+            List[str]: None if connector's cloud usage levels that the QA check applies to is not specified
         """
         return None
 
@@ -171,6 +190,16 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.support_level} connectors",
+            )
+        if self.applies_to_connector_cloud_usage and connector.cloud_usage not in self.applies_to_connector_cloud_usage:
+            return self.skip(
+                connector,
+                f"Check does not apply to {connector.cloud_usage} connectors",
+            )
+        if connector.ab_internal_sl < self.applies_to_connector_ab_internal_sl:
+            return self.skip(
+                connector,
+                f"Check does not apply to connectors with sl < {self.applies_to_connector_ab_internal_sl}",
             )
         return self._run(connector)
 

@@ -68,28 +68,23 @@ definitions:
     requester: "#/definitions/requester"
     paginator: "#/definitions/cursor_paginator"
 
-  semi_incremental_retriever:
-    $ref: "#/definitions/base_retriever"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        type: RecordFilter
-        condition: "{{ record['createdAt'] >= stream_state.get('createdAt', config['start_date']) }}"
-
   # Base streams
   base_full_refresh_stream:
     type: DeclarativeStream
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_marketo/schemas/{{ parameters['name'] }}.json"
     primary_key: "id"
     retriever: "#/definitions/base_retriever"
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_full_refresh_stream"
-    retriever: "#/definitions/semi_incremental_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "createdAt"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime: "{{ config['start_date'] }}"
+      is_client_side_incremental: true
 
   base_incremental_stream:
     $ref: "#/definitions/base_full_refresh_stream"
@@ -116,6 +111,7 @@ definitions:
     name: "activity_types"
     $ref: "#/definitions/base_full_refresh_stream"
     $parameters:
+      name: "activity_types"
       path: "rest/v1/activities/types.json"
 
   segmentations_stream:
@@ -126,6 +122,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       paginator: "#/definitions/offset_paginator"
     $parameters:
+      name: "segmentations"
       path: "rest/asset/v1/segmentation.json"
 
   # Semi-Incremental streams
@@ -134,6 +131,7 @@ definitions:
     name: "campaigns"
     $ref: "#/definitions/base_semi_incremental_stream"
     $parameters:
+      name: "campaigns"
       path: "rest/v1/campaigns.json"
 
   lists_stream:
@@ -141,6 +139,7 @@ definitions:
     name: "lists"
     $ref: "#/definitions/base_semi_incremental_stream"
     $parameters:
+      name: "lists"
       path: "rest/v1/lists.json"
 
   # Incremental streams
@@ -166,6 +165,7 @@ definitions:
             path: ["updatedAt"]
             value: "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
     $parameters:
+      name: "programs"
       path: "rest/asset/v1/programs.json"
 
 streams:

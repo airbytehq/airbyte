@@ -1,1 +1,1 @@
-{"_airbyte_extracted_at": "1970-01-01T00:00:01.000000Z", "_airbyte_meta": {"changes":[]}, "id1": 1, "id2": 200, "updated_at": "2001-01-01T00:00:00.000000Z", "name": "Someone completely different"}
+{"_airbyte_extracted_at": "1970-01-01T00:00:01.000000Z", "_airbyte_generation_id": 43, "_airbyte_meta": {"sync_id": 42, "changes":[]}, "id1": 1, "id2": 200, "updated_at": "2001-01-01T00:00:00.000000Z", "name": "Someone completely different"}

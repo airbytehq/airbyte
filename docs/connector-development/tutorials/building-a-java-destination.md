@@ -1,4 +1,12 @@
+---
+displayed_sidebar: docs
+---
+
 # Building a Java Destination
+
+:::warning
+The template for building a Java Destination connector is currently unavailable. The Airbyte team is working on revamping the Java CDK.
+:::
 
 ## Summary
 

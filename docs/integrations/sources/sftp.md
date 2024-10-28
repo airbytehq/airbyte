@@ -105,6 +105,8 @@ This source provides a single stream per file with a dynamic schema. The current
 More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
@@ -113,3 +115,5 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 | 0.2.0   | 2024-01-15 | [34265](https://github.com/airbytehq/airbyte/pull/34265) | Remove LEGACY state flag                               |
 | 0.1.2   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.0   | 2021-24-05 |                                                          | Initial version                                        |
+
+</details>

@@ -5,18 +5,18 @@
 import logging
 from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from airbyte_cdk import AirbyteTracedException, BackoffStrategy
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests import HTTPError
+from airbyte_protocol.models import FailureType
 
 from .utils import get_analytics_columns, to_datetime_str
 
@@ -33,6 +33,77 @@ class RateLimitExceeded(Exception):
     pass
 
 
+class PinterestErrorHandler(ErrorHandler):
+    def __init__(self, logger: logging.Logger, stream_name: str) -> None:
+        self._logger = logger
+        self._stream_name = stream_name
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 60 * 10
+
+    def _handle_unknown_error(self, response: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
+        """
+        Error handling could potentially be improved. For example, connection errors are probably transient as we could retry.
+        """
+        if isinstance(response, Exception):
+            return ErrorResolution(
+                ResponseAction.FAIL,
+                FailureType.system_error,
+                f"Failed because of the following error: {response}",
+            )
+        return None
+
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        unhandled_error_resolution = self._handle_unknown_error(response)
+        if unhandled_error_resolution:
+            return unhandled_error_resolution
+
+        try:
+            resp = response.json()
+        except requests.exceptions.JSONDecodeError:
+            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
+
+        # when max rate limit exceeded, we should skip the stream.
+        if response.status_code == requests.codes.too_many_requests and (
+            isinstance(resp, dict) and resp.get("code", 0) == MAX_RATE_LIMIT_CODE
+        ):
+            self._logger.error(f"For stream {self._stream_name} Max Rate Limit exceeded.")
+            return ErrorResolution(
+                ResponseAction.FAIL,
+                FailureType.transient_error,
+                "Max Rate Limit exceeded",
+            )
+        elif response.status_code == requests.codes.too_many_requests or 500 <= response.status_code < 600:
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.transient_error,
+                f"Failed after retrying on status code {response.status_code}: {response.content}",
+            )
+        elif not response.ok:
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Response status code: {response.status_code}. Unexpected error. Failed.",
+            )
+
+        return ErrorResolution(ResponseAction.SUCCESS)
+
+
+def _create_retry_after_backoff_strategy() -> BackoffStrategy:
+    return WaitTimeFromHeaderBackoffStrategy(header="Retry-After", max_waiting_time_in_seconds=600, parameters={}, config={})
+
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
@@ -41,16 +112,22 @@ class PinterestStream(HttpStream, ABC):
     max_rate_limit_exceeded = False
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, config: Mapping[str, Any]):
+    def __init__(self, config: Mapping[str, Any]) -> None:
         super().__init__(authenticator=config["authenticator"])
         self.config = config
 
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return _create_retry_after_backoff_strategy()
+
+    def get_error_handler(self) -> ErrorHandler:
+        return PinterestErrorHandler(self.logger, self.name)
+
     @property
-    def start_date(self):
+    def start_date(self) -> str:
         return self.config["start_date"]
 
     @property
-    def window_in_days(self):
+    def window_in_days(self) -> int:
         return 30  # Set window_in_days to 30 days date range
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -77,30 +154,6 @@ class PinterestStream(HttpStream, ABC):
             for record in data:
                 yield record
 
-    def should_retry(self, response: requests.Response) -> bool:
-        try:
-            resp = response.json()
-        except requests.exceptions.JSONDecodeError:
-            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
-
-        if isinstance(resp, dict):
-            self.max_rate_limit_exceeded = resp.get("code", 0) == MAX_RATE_LIMIT_CODE
-        # when max rate limit exceeded, we should skip the stream.
-        if response.status_code == requests.codes.too_many_requests and self.max_rate_limit_exceeded:
-            self.logger.error(f"For stream {self.name} Max Rate Limit exceeded.")
-            setattr(self, "raise_on_http_errors", False)
-        return 500 <= response.status_code < 600
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if response.status_code == requests.codes.too_many_requests:
-            self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            sleep_time = float(response.headers.get("X-RateLimit-Reset", 0))
-            if sleep_time > 600:
-                raise RateLimitExceeded(
-                    f"Rate limit exceeded for stream {self.name}. Waiting time is longer than 10 minutes: {sleep_time}s."
-                )
-            return sleep_time
-
 
 class PinterestSubStream(HttpSubStream):
     def stream_slices(
@@ -116,110 +169,6 @@ class PinterestSubStream(HttpSubStream):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 yield {"parent": record, "sub_parent": stream_slice}
-
-
-class Boards(PinterestStream):
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "boards"
-
-
-class Catalogs(PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list"""
-
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "catalogs"
-
-
-class CatalogsFeeds(PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list"""
-
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "catalogs/feeds"
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        # Remove sensitive data
-        for record in super().parse_response(response, stream_state, **kwargs):
-            record.pop("credentials", None)
-            yield record
-
-
-class CatalogsProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
-    def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError
-    ) -> Dict[int, str]:
-        reasons_for_codes: Dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
-        reasons_for_codes[409] = "Can't access catalog product groups because there is no existing catalog."
-
-        return reasons_for_codes
-
-
-class CatalogsProductGroups(PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list"""
-
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "catalogs/product_groups"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return CatalogsProductGroupsAvailabilityStrategy()
-
-
-class AdAccounts(PinterestStream):
-    use_cache = True
-
-    def path(self, **kwargs) -> str:
-        return "ad_accounts"
-
-
-class BoardSections(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['parent']['id']}/sections"
-
-
-class BoardPins(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['parent']['id']}/pins"
-
-
-class BoardSectionPins(PinterestSubStream, PinterestStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
-
-
-class Audiences(PinterestSubStream, PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list"""
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/audiences"
-
-
-class Keywords(PinterestSubStream, PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/keywords/get"""
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['ad_account_id']}/keywords?ad_group_id={stream_slice['parent']['id']}"
-
-
-class ConversionTags(PinterestSubStream, PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list"""
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/conversion_tags"
-
-
-class CustomerLists(PinterestSubStream, PinterestStream):
-    """Docs: https://developers.pinterest.com/docs/api/v5/#tag/customer_lists"""
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/customer_lists"
 
 
 class IncrementalPinterestStream(PinterestStream, ABC):
@@ -283,7 +232,7 @@ class IncrementalPinterestStream(PinterestStream, ABC):
 class IncrementalPinterestSubStream(IncrementalPinterestStream):
     cursor_field = "updated_time"
 
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, **kwargs):
+    def __init__(self, parent: Stream, with_data_slices: bool = True, **kwargs) -> None:
         super().__init__(**kwargs)
         self.parent = parent
         self.with_data_slices = with_data_slices
@@ -301,6 +250,57 @@ class IncrementalPinterestSubStream(IncrementalPinterestStream):
                 yield parents_slice
 
 
+def _lookback_date_limit_reached(response: requests.Response) -> bool:
+    """
+    After few consecutive requests, analytics API return bad request error with 'You can only get data from the last 90 days' error
+    message. But with next request all working good. So, we wait 1 sec and request again if we get this issue.
+    """
+    if isinstance(response.json(), dict):
+        return response.json().get("code", 0) and response.status_code == 400
+    return False
+
+
+class PinterestAnalyticsErrorHandler(ErrorHandler):
+    def __init__(self, logger: logging.Logger, stream_name: str) -> None:
+        self._decorated = PinterestErrorHandler(logger, stream_name)
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 60 * 10
+
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response, requests.Response) and _lookback_date_limit_reached(response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.transient_error,
+                f"Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
+            )
+
+        return self._decorated.interpret_response(response)
+
+
+class AnalyticsApiBackoffStrategyDecorator(BackoffStrategy):
+    def __init__(self) -> None:
+        self._decorated = _create_retry_after_backoff_strategy()
+
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response) and _lookback_date_limit_reached(response_or_exception):
+            return 1
+        return self._decorated.backoff_time(response_or_exception)
+
+
 class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     primary_key = None
     cursor_field = "DATE"
@@ -308,25 +308,11 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     granularity = "DAY"
     analytics_target_ids = None
 
-    def lookback_date_limt_reached(self, response: requests.Response) -> bool:
-        """
-        After few consecutive requests analytics API return bad request error
-        with 'You can only get data from the last 90 days' error message.
-        But with next request all working good. So, we wait 1 sec and
-        request again if we get this issue.
-        """
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return AnalyticsApiBackoffStrategyDecorator()
 
-        if isinstance(response.json(), dict):
-            return response.json().get("code", 0) and response.status_code == 400
-        return False
-
-    def should_retry(self, response: requests.Response) -> bool:
-        return super().should_retry(response) or self.lookback_date_limt_reached(response)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if self.lookback_date_limt_reached(response):
-            return 1
-        return super().backoff_time(response)
+    def get_error_handler(self) -> ErrorHandler:
+        return PinterestAnalyticsErrorHandler(self.logger, self.name)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -345,84 +331,3 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
             params.update({self.analytics_target_ids: stream_slice["parent"]["id"]})
 
         return params
-
-
-class ServerSideFilterStream(IncrementalPinterestSubStream):
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
-        """
-        Endpoint does not provide query filtering params, but they provide us
-        cursor field in most cases, so we used that as incremental filtering
-        during the parsing.
-        """
-
-        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
-            yield record
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, stream_state, **kwargs):
-            yield from self.filter_by_state(stream_state=stream_state, record=record)
-
-
-class UserAccountAnalytics(PinterestAnalyticsStream):
-    data_fields = ["all", "daily_metrics"]
-    cursor_field = "date"
-
-    def path(self, **kwargs) -> str:
-        return "user_account/analytics"
-
-
-class AdAccountAnalytics(PinterestAnalyticsStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['parent']['id']}/analytics"
-
-
-class Campaigns(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/campaigns{params}"
-
-
-class CampaignAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "campaign_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/campaigns/analytics"
-
-
-class AdGroups(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        print(f"=========== stream_slice: {stream_slice} =====================")
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups{params}"
-
-
-class AdGroupAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "ad_group_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ad_groups/analytics"
-
-
-class Ads(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
-        super().__init__(parent, with_data_slices, **kwargs)
-        self.status_filter = status_filter
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
-        return f"ad_accounts/{stream_slice['parent']['id']}/ads{params}"
-
-
-class AdAnalytics(PinterestAnalyticsStream):
-    analytics_target_ids = "ad_ids"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ads/analytics"

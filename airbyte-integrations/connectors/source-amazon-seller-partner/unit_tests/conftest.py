@@ -12,7 +12,7 @@ os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
 @pytest.fixture
-def report_init_kwargs() -> Dict[str, Any]:
+def init_kwargs() -> Dict[str, Any]:
     return {
         "url_base": "https://test.url",
         "replication_start_date": "2022-09-01T00:00:00Z",
@@ -20,6 +20,14 @@ def report_init_kwargs() -> Dict[str, Any]:
         "period_in_days": 90,
         "report_options": None,
         "replication_end_date": None,
+    }
+
+
+@pytest.fixture
+def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
+    return {
+        "stream_name": "GET_TEST_REPORT",
+        **init_kwargs
     }
 
 

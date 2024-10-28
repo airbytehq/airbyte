@@ -4,7 +4,9 @@ connector_image: airbyte/source-datadog:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_datadog/spec.yaml"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.4.15" # Set default start and end date for incremental sync
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -25,18 +27,10 @@ acceptance_tests:
             bypass_reason: Sandbox account can't seed this stream
           - name: service_level_objectives
             bypass_reason: Sandbox account can't seed this stream
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          exact_order: no
+          - name: logs
+            bypass_reason: Sandbox account can't seed this stream
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
-  # TODO uncomment this block this block if your connector implements incremental sync:
-  #    tests:
-  #      - config_path: "secrets/config.json"
-  #        configured_catalog_path: "integration_tests/configured_catalog.json"
-  #        future_state:
-  #          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

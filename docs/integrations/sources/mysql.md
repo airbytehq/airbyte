@@ -7,10 +7,9 @@ Airbyte's certified MySQL connector offers the following features:
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
-
+<!-- env:oss -->
 **Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
-
-![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
+<!-- /env:oss -->
 
 ## Quick Start
 
@@ -78,12 +77,6 @@ binlog_expire_logs_seconds  = 864000
 #### Step 3: Create a new MySQL source in Airbyte UI
 
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `MySQL`, then create a new MySQL source.
-
-<HideInUI>
-
-![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
-
-</HideInUI>
 
 To fill out the required information:
 
@@ -228,8 +221,35 @@ Any database or table encoding combination of charset and collation is supported
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.3   | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                      |
+| 3.7.2   | 2024-09-05 | [45181](https://github.com/airbytehq/airbyte/pull/45181)                                                          | Fix incorrect categorizing resumable/nonresumable full refresh streams.                                                                         |
+| 3.7.1   | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK. |
+| 3.7.0   | 2024-08-13 | [44013](https://github.com/airbytehq/airbyte/pull/44013)   | Upgrading to Debezium 2.7.1.Final                                                                                                               |
+| 3.6.9   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410)   | Adopt latest CDK.                                                                                                                               |
+| 3.6.8   | 2024-07-30 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                                                               |
+| 3.6.7   | 2024-07-30 | [42550](https://github.com/airbytehq/airbyte/pull/42550)   | Correctly report stream states.                                                                                                                 |
+| 3.6.6   | 2024-07-29 | [42852](https://github.com/airbytehq/airbyte/pull/42852)   | Bump CDK version to latest to use new bug fixes on error translation.                                                                           |
+| 3.6.5   | 2024-07-24 | [42417](https://github.com/airbytehq/airbyte/pull/42417)   | Handle null error message in ConnectorExceptionHandler.                                                                                         |
+| 3.6.4   | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421)   | Remove final transient error emitter iterators.                                                                                                 |
+| 3.6.3   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024)   | Fix a NPE bug on resuming from a failed attempt.                                                                                                |
+| 3.6.2   | 2024-07-17 | [42087](https://github.com/airbytehq/airbyte/pull/42087)   | Adding more error translations for MySql source.                                                                                                |
+| 3.6.1   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122)   | Improve wass error message + logging.                                                                                                           |
+| 3.6.0   | 2024-07-17 | [40208](https://github.com/airbytehq/airbyte/pull/40208)   | Start using the new error MySql source error handler that comes with a new error translation layer.                                             | 
+| 3.5.1   | 2024-07-17 | [42043](https://github.com/airbytehq/airbyte/pull/42043)   | Adopt latest CDK + fixes.                                                                                                                       |
+| 3.5.0   | 2024-07-11 | [38240](https://github.com/airbytehq/airbyte/pull/38240)   | Implement WASS.                                                                                                                                 |
+| 3.4.12  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516)   | Remove dbz heartbeat.                                                                                                                           |
+| 3.4.11  | 2024-06-26 | [40561](https://github.com/airbytehq/airbyte/pull/40561)   | Support PlanetScale MySQL's per-query row limit.                                                                                                |
+| 3.4.10  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349)   | Full refresh stream sending internal count metadata.                                                                                            |
+| 3.4.9   | 2024-06-11 | [39405](https://github.com/airbytehq/airbyte/pull/39405)   | Adopt latest CDK.                                                                                                                               |
+| 3.4.8   | 2024-06-05 | [39144](https://github.com/airbytehq/airbyte/pull/39144)   | Upgrade Debezium to 2.5.4                                                                                                                       |
+| 3.4.7   | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584)   | Set is_resumable flag in discover.                                                                                                              |
+| 3.4.6   | 2024-05-29 | [38538](https://github.com/airbytehq/airbyte/pull/38538)   | Exit connector when encountering a config error.                                                                                                |
+| 3.4.5   | 2024-05-23 | [38198](https://github.com/airbytehq/airbyte/pull/38198)   | Sync sending trace status messages indicating progress.                                                                                         |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)   | disable counts in full refresh stream in state message.                                                                                         |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104)   | Handle transient error messages.                                                                                                                |
 | 3.4.2   | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046)   | Resumeable refresh should run only if there is source defined pk.                                                                               |
@@ -399,3 +419,5 @@ Any database or table encoding combination of charset and collation is supported
 | 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                                                |
 | 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                                                        |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                                                         |
+
+</details>

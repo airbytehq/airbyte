@@ -16,19 +16,21 @@ async def dagger_file_exists(dir: Directory, path: Path | str) -> bool:
         return False
 
 
-async def dagger_read_file(dir: Directory, path: Path | str) -> str:
-    content = await dir.file(str(path)).contents()
+async def dagger_read_file(directory: Directory, path: Path | str) -> str:
+    if str(path) not in await directory.entries():
+        raise FileNotFoundError(f"File {path} not found in directory {directory}")
+    content = await directory.file(str(path)).contents()
     return content
 
 
-def dagger_write_file(dir: Directory, path: Path | str, new_content: str) -> Directory:
-    dir = dir.with_new_file(str(path), contents=new_content)
-    return dir
+def dagger_write_file(directory: Directory, path: Path | str, new_content: str) -> Directory:
+    directory = directory.with_new_file(str(path), contents=new_content)
+    return directory
 
 
-async def dagger_export_file(dir: Directory, path: Path | str) -> bool:
-    success = await dir.file(str(path)).export(str(path))
-    return success
+async def dagger_export_file(directory: Directory, path: Path | str) -> bool:
+    await directory.file(str(path)).export(str(path))
+    return True
 
 
 async def dagger_dir_exists(dir: Directory, path: Path | str) -> bool:

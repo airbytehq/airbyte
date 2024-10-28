@@ -1,5 +1,5 @@
-{"_airbyte_extracted_at": "1970-01-01T00:00:02.000000Z", "_airbyte_meta":{"changes":[]}, "id1": 1, "id2": 200, "updated_at": "2000-01-02T00:00:00.000000Z", "name": "Alice", "address": {"city": "Seattle", "state": "WA"}}
+{"_airbyte_extracted_at": "1970-01-01T00:00:02.000000Z", "_airbyte_generation_id": 43, "_airbyte_meta": {"sync_id": 42, "changes":[]}, "id1": 1, "id2": 200, "updated_at": "2000-01-02T00:00:00.000000Z", "name": "Alice", "address": {"city": "Seattle", "state": "WA"}}
 // Delete Bob, updated Charlie
-{"_airbyte_extracted_at": "1970-01-01T00:00:02.000000Z", "_airbyte_meta":{"changes":[{"field":"address","change":"NULLED","reason":"SOURCE_RETRIEVAL_ERROR"}]}, "id1": 2, "id2": 200, "updated_at": "2000-01-02T00:03:00.000000Z", "name": "Charlie", "age": 42, "registration_date": "2023-12-23", "address": {"city": "San Francisco", "state": "CA"}}
+{"_airbyte_extracted_at": "1970-01-01T00:00:02.000000Z", "_airbyte_generation_id": 43, "_airbyte_meta": {"sync_id": 42, "changes":[{"field":"address","change":"NULLED","reason":"SOURCE_RETRIEVAL_ERROR"}]}, "id1": 2, "id2": 200, "updated_at": "2000-01-02T00:03:00.000000Z", "name": "Charlie", "age": 42, "registration_date": "2023-12-23", "address": {"city": "San Francisco", "state": "CA"}}
 // Record before meta in raw table will continue to have errors.
 {"_airbyte_extracted_at": "1970-01-01T00:00:01.000000Z", "_airbyte_meta": {"errors":[]}, "id1": 3, "id2": 200, "updated_at": "2000-01-01T00:04:00.000000Z", "name": "a\bb\fc\nd\re\tf`~!@#$%^&*()_+-=[]\\{}|'\",./<>?"}

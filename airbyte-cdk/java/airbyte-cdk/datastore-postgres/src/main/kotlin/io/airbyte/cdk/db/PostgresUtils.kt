@@ -18,11 +18,13 @@ object PostgresUtils {
         val jsonNodes =
             database.bufferedResultSetQuery(
                 { conn: Connection ->
-                    conn.createStatement().executeQuery("select * from pg_current_wal_lsn()")
+                    conn
+                        .createStatement()
+                        .executeQuery(
+                            "SELECT CASE WHEN pg_is_in_recovery() THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END AS pg_current_wal_lsn;"
+                        )
                 },
-                { resultSet: ResultSet? ->
-                    JdbcUtils.defaultSourceOperations.rowToJson(resultSet!!)
-                }
+                { resultSet: ResultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet) }
             )
 
         Preconditions.checkState(jsonNodes.size == 1)

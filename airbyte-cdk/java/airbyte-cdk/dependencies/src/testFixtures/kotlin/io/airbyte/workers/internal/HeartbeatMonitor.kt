@@ -21,7 +21,7 @@ constructor(
     private val heartBeatFreshDuration: Duration?,
     private val nowSupplier: Supplier<Instant>
 ) {
-    private val lastBeat = AtomicReference<Instant?>(null)
+    private val lastBeat = AtomicReference<Instant>(null)
 
     constructor(
         heartBeatFreshDuration: Duration?

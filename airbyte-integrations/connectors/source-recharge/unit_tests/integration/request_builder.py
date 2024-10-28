@@ -18,15 +18,14 @@ def get_stream_request(stream_name: str) -> RequestBuilder:
 
 
 class RequestBuilder:
-
     @classmethod
     def get_endpoint(cls, endpoint: str) -> RequestBuilder:
         return cls(endpoint=endpoint)
 
     def __init__(self, endpoint: str) -> None:
         self._endpoint: str = endpoint
-        self._api_version: str = "2021-11"
         self._query_params: MutableMapping[str, Any] = {}
+        self._headers: MutableMapping[str, str] = {"X-Recharge-Version": "2021-11"}
 
     def with_limit(self, limit: int) -> RequestBuilder:
         self._query_params["limit"] = limit
@@ -41,12 +40,17 @@ class RequestBuilder:
         self._query_params["cursor"] = next_page_token
         return self
 
+    def with_access_token(self, access_token: str) -> RequestBuilder:
+        self._headers["X-Recharge-Access-Token"] = access_token
+        return self
+
+    def with_old_api_version(self, api_version: str) -> RequestBuilder:
+        self._headers["X-Recharge-Version"] = api_version
+        return self
+
     def build(self) -> HttpRequest:
         return HttpRequest(
             url=f"https://api.rechargeapps.com/{self._endpoint}",
             query_params=self._query_params,
-            headers={
-                "X-Recharge-Version": self._api_version,
-                "X-Recharge-Access-Token": ACCESS_TOKEN,
-            },
+            headers=self._headers,
         )

@@ -7,7 +7,7 @@ from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, fin
 
 
 class JobCreateResponseBuilder:
-    def __init__(self):
+    def __init__(self) -> None:
         self._response = {
            "id": "any_id",
            "operation": "query",
@@ -37,7 +37,7 @@ class JobCreateResponseBuilder:
 
 
 class JobInfoResponseBuilder:
-    def __init__(self):
+    def __init__(self) -> None:
         self._response = find_template("job_response", __file__)
         self._status_code = 200
 

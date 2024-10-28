@@ -29,12 +29,12 @@ import org.apache.logging.log4j.util.Strings
 class NormalizationLogParser {
     val dbtErrors: MutableList<String> = ArrayList()
 
-    fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage?> {
+    fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage> {
         return bufferedReader.lines().flatMap { line: String -> this.toMessages(line) }
     }
 
     @VisibleForTesting
-    fun toMessages(line: String): Stream<AirbyteMessage?> {
+    fun toMessages(line: String): Stream<AirbyteMessage> {
         if (Strings.isEmpty(line)) {
             return Stream.of(logMessage(AirbyteLogMessage.Level.INFO, ""))
         }
@@ -51,7 +51,7 @@ class NormalizationLogParser {
      *
      * This is needed for dbt < 1.0.0, which don't support json-format logs.
      */
-    private fun nonJsonLineToMessage(line: String): Stream<AirbyteMessage?> {
+    private fun nonJsonLineToMessage(line: String): Stream<AirbyteMessage> {
         // Super hacky thing to try and detect error lines
         if (line.contains("[error]")) {
             dbtErrors.add(line)
@@ -64,7 +64,7 @@ class NormalizationLogParser {
      * emit it without change), or it's dbt json log, and we need to do some extra work to convert
      * it to a log message + aggregate error logs.
      */
-    private fun jsonToMessage(jsonLine: JsonNode): Stream<AirbyteMessage?> {
+    private fun jsonToMessage(jsonLine: JsonNode): Stream<AirbyteMessage> {
         val message = Jsons.tryObject(jsonLine, AirbyteMessage::class.java)
         if (message.isPresent) {
             // This line is already an AirbyteMessage; we can just return it directly
@@ -117,7 +117,7 @@ class NormalizationLogParser {
                 normalizationLogParser.create(
                     BufferedReader(InputStreamReader(System.`in`, StandardCharsets.UTF_8))
                 )
-            airbyteMessageStream.forEachOrdered { message: AirbyteMessage? ->
+            airbyteMessageStream.forEachOrdered { message: AirbyteMessage ->
                 println(Jsons.serialize(message))
             }
 

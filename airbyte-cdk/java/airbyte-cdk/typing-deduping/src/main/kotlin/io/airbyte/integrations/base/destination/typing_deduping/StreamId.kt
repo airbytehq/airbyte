@@ -42,8 +42,9 @@ data class StreamId(
         return "$quote$finalNamespace$quote.$quote$finalName$suffix$quote"
     }
 
-    fun rawTableId(quote: String): String {
-        return "$quote$rawNamespace$quote.$quote$rawName$quote"
+    @JvmOverloads
+    fun rawTableId(quote: String, suffix: String = ""): String {
+        return "$quote$rawNamespace$quote.$quote$rawName$suffix$quote"
     }
 
     fun finalName(quote: String): String {

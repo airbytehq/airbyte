@@ -7,23 +7,23 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.networknt.schema.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.IOException
-import java.net.URI
-import java.net.URISyntaxException
-import java.util.stream.Collectors
 import me.andrz.jackson.JsonContext
 import me.andrz.jackson.JsonReferenceException
 import me.andrz.jackson.JsonReferenceProcessor
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: URI?) {
-    private val jsonSchemaFactory: JsonSchemaFactory =
+private val LOGGER = KotlinLogging.logger {}
+
+class JsonSchemaValidator
+@VisibleForTesting
+constructor(private val schemaLocation: SchemaLocation) {
+    public val jsonSchemaFactory: JsonSchemaFactory =
         JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)
     private val schemaToValidators: MutableMap<String, JsonSchema> = HashMap()
 
-    constructor() : this(DEFAULT_BASE_URI)
+    constructor() : this(DEFAULT_BASE_SCHEMA_LOCATION)
 
     /**
      * Create and cache a schema validator for a particular schema. This validator is used when
@@ -77,11 +77,10 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
     fun test(schemaJson: JsonNode, objectJson: JsonNode): Boolean {
         val validationMessages = validateInternal(schemaJson, objectJson)
 
-        if (!validationMessages.isEmpty()) {
-            LOGGER.info(
-                "JSON schema validation failed. \nerrors: {}",
-                validationMessages.joinToString(", ")
-            )
+        if (validationMessages.isNotEmpty()) {
+            LOGGER.info {
+                "JSON schema validation failed. \nerrors: ${validationMessages.joinToString(", ")}"
+            }
         }
 
         return validationMessages.isEmpty()
@@ -89,23 +88,20 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
 
     fun validate(schemaJson: JsonNode, objectJson: JsonNode): Set<String> {
         return validateInternal(schemaJson, objectJson)
-            .stream()
             .map { obj: ValidationMessage -> obj.message }
-            .collect(Collectors.toSet())
+            .toSet()
     }
 
-    fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<String>> {
-        return validateInternal(schemaJson, objectJson)
-            .stream()
-            .map { obj: ValidationMessage -> obj.arguments }
-            .collect(Collectors.toList())
+    fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<Any>> {
+        return validateInternal(schemaJson, objectJson).map { obj: ValidationMessage ->
+            obj.arguments
+        }
     }
 
-    fun getValidationMessagePaths(schemaJson: JsonNode, objectJson: JsonNode): List<String> {
-        return validateInternal(schemaJson, objectJson)
-            .stream()
-            .map { obj: ValidationMessage -> obj.path }
-            .collect(Collectors.toList())
+    fun getValidationMessagePaths(schemaJson: JsonNode, objectJson: JsonNode): List<Any> {
+        return validateInternal(schemaJson, objectJson).map { obj: ValidationMessage ->
+            obj.evaluationPath
+        }
     }
 
     @Throws(JsonValidationException::class)
@@ -169,33 +165,26 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
                 }
         }
 
-        val context =
-            ValidationContext(
-                jsonSchemaFactory.uriFactory,
-                null,
-                metaschema,
-                jsonSchemaFactory,
+        val context = ValidationContext(metaschema, jsonSchemaFactory, null)
+
+        val schema =
+            jsonSchemaFactory.create(
+                context,
+                schemaLocation,
+                JsonNodePath(context.config.pathType),
+                schemaJson,
                 null
             )
-        val schema = JsonSchema(context, baseUri, schemaJson)
         return schema
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(JsonSchemaValidator::class.java)
 
         // This URI just needs to point at any path in the same directory as
         // /app/WellKnownTypes.json
         // It's required for the JsonSchema#validate method to resolve $ref correctly.
-        private var DEFAULT_BASE_URI: URI? = null
-
-        init {
-            try {
-                DEFAULT_BASE_URI = URI("file:///app/nonexistent_file.json")
-            } catch (e: URISyntaxException) {
-                throw RuntimeException(e)
-            }
-        }
+        private var DEFAULT_BASE_SCHEMA_LOCATION: SchemaLocation =
+            SchemaLocation.of("file:///app/nonexistent_file.json")
 
         /**
          * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to

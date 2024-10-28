@@ -8,7 +8,7 @@ data:
   icon: elasticsearch.svg
   license: MIT
   name: ElasticSearch
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
       enabled: true

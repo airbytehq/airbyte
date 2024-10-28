@@ -55,7 +55,7 @@ Each instance of the connector must be updated separately. If you have created m
    This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 
@@ -107,7 +107,7 @@ Each instance of the connector must be updated separately. If you have created m
    This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 

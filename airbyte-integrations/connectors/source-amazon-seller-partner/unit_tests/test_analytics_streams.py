@@ -12,13 +12,13 @@ from source_amazon_seller_partner.streams import AnalyticsStream, IncrementalAna
 
 
 class SomeAnalyticsStream(AnalyticsStream):
-    name = "GET_ANALYTICS_STREAM"
+    report_name = "GET_ANALYTICS_STREAM"
     result_key = "result_key"
     availability_sla_days = 3
 
 
 class SomeIncrementalAnalyticsStream(IncrementalAnalyticsStream):
-    name = "GET_INCREMENTAL_ANALYTICS_STREAM"
+    report_name = "GET_INCREMENTAL_ANALYTICS_STREAM"
     result_key = "result_key"
     availability_sla_days = 3
     cursor_field = "endDate"
@@ -106,7 +106,7 @@ class TestIncrementalAnalyticsStream:
     def test_get_updated_state(self, report_init_kwargs, current_stream_state, latest_record, expected_date):
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     @pytest.mark.parametrize(
         ("start_date", "end_date", "stream_state", "fixed_period_in_days", "expected_slices"),

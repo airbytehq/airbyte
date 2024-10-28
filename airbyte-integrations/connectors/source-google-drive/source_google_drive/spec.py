@@ -6,8 +6,8 @@
 from typing import Any, Dict, Literal, Union
 
 import dpath.util
+from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 

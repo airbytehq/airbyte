@@ -7,4 +7,4 @@
 // * includes.period -> includes_period
 // columns with issues:
 // * endswithbackslash\ -> nulled out, and no error in airbyte_meta. This actually extracts the value correctly if _airbyte_data is a JSON column, but JSON_VALUE seems to return null if the data is a string and the key contains a backslash.
-{"_airbyte_raw_id": "7e7330a1-42fb-41ec-a955-52f18bd61964", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_meta": {"errors": []}, "id1": 1, "id2": 100, "updated_at": "2023-01-01T02:00:00Z", "_starts_with_dollar_sign": "foo", "includes_doublequote": "foo", "includes_singlequote": "foo", "includes_backtick": "foo", "includes_period": "foo", "includes__doubledollar": "foo"}
+{"_airbyte_raw_id": "7e7330a1-42fb-41ec-a955-52f18bd61964", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_meta": {"changes": []}, "id1": 1, "id2": 100, "updated_at": "2023-01-01T02:00:00Z", "_starts_with_dollar_sign": "foo", "includes_doublequote": "foo", "includes_singlequote": "foo", "includes_backtick": "foo", "includes_period": "foo", "includes__doubledollar": "foo"}

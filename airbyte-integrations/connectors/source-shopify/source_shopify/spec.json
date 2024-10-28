@@ -97,6 +97,28 @@
         "title": "Add `user_id` to Transactions (slower)",
         "description": "Defines which API type (REST/BULK) to use to fetch `Transactions` data. If you are a `Shopify Plus` user, leave the default value to speed up the fetch.",
         "default": false
+      },
+      "job_product_variants_include_pres_prices": {
+        "type": "boolean",
+        "title": "Add `Presentment prices` to Product Variants",
+        "description": "If enabled, the `Product Variants` stream attempts to include `Presentment prices` field (may affect the performance).",
+        "default": true
+      },
+      "job_termination_threshold": {
+        "type": "integer",
+        "title": "BULK Job termination threshold",
+        "description": "The max time in seconds, after which the single BULK Job should be `CANCELED` and retried. The bigger the value the longer the BULK Job is allowed to run.",
+        "default": 7200,
+        "minimum": 3600,
+        "maximum": 21600
+      },
+      "job_checkpoint_interval": {
+        "type": "integer",
+        "title": "BULK Job checkpoint (rows collected)",
+        "description": "The threshold, after which the single BULK Job should be checkpointed.",
+        "default": 100000,
+        "minimum": 15000,
+        "maximum": 200000
       }
     }
   },

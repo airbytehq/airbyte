@@ -159,9 +159,17 @@
       "format": "date-time"
     },
     "updated_at": {
-      "description": "Timestamp when the ticket was last updated",
+      "description": "Datetime when the ticket last created a ticket event",
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "_ab_updated_at": {
+      "description": "Cursor field managed by Airbyte to enable incremental mode for the stream",
+      "type": ["null", "integer"]
+    },
+    "generated_timestamp": {
+      "description": "Timestamp of when record was last updated",
+      "type": ["null", "integer"]
     },
     "url": {
       "description": "URL link to the ticket details",

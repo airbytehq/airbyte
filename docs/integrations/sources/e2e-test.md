@@ -67,6 +67,9 @@ This mode is also excluded from the Cloud variant of this connector.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
 | Version | Date       | Pull request                                                                                                      | Subject                                                                                               |
@@ -85,3 +88,5 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 | 0.1.2   | 2022-10-18 | [\#18100](https://github.com/airbytehq/airbyte/pull/18100)                                                        | Set supported sync mode on streams                                                                    |
 | 0.1.1   | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217)                                                          | Fix sleep time in infinite feed mode.                                                                 |
 | 0.1.0   | 2021-07-23 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) [\#4939](https://github.com/airbytehq/airbyte/pull/4939) | Initial release.                                                                                      |
+
+</details>

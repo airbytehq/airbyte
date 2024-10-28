@@ -23,6 +23,19 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "createdBy": {
+      "description": "The application that created the discount reedem code.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "updated_at": {
       "description": "The date and time when the discount code was last updated",
       "type": ["null", "string"],
@@ -35,6 +48,64 @@
     "discount_type": {
       "description": "The type of discount applied by the discount code, such as a percentage or fixed amount off",
       "type": ["null", "string"]
+    },
+    "typename": {
+      "description": "The typename of the discount",
+      "type": ["null", "string"]
+    },
+    "starts_at": {
+      "description": "The date and time when the discount code is activated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ends_at": {
+      "description": "The date and time when the discount code is deactivated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "status": {
+      "description": "The status of the Discount",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the discount.",
+      "type": ["null", "string"]
+    },
+    "usage_limit": {
+      "description": "The maximum number of times that the discount can be used.",
+      "type": ["null", "integer"]
+    },
+    "applies_once_per_customer": {
+      "description": "Whether the discount can be applied only once per customer.",
+      "type": ["null", "boolean"]
+    },
+    "async_usage_count": {
+      "description": "The number of times that the discount has been used.",
+      "type": ["null", "integer"]
+    },
+    "codes_count": {
+      "description": "The number of redeem codes for the discount.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "count": {
+          "description": "The count of elements.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "total_sales": {
+      "description": "The total sales from orders where the discount was used.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currency_code": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "admin_graphql_api_id": {
       "description": "The unique identifier for the discount code in the Shopify Admin GraphQL API",

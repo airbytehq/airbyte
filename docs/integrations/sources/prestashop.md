@@ -100,7 +100,10 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
@@ -113,3 +116,5 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | 0.3.0   | 2022-11-08 | [#18927](https://github.com/airbytehq/airbyte/pull/18927) | Migrate connector from Alpha (Python) to Beta (YAML)                            |
 | 0.2.0   | 2022-10-31 | [#18599](https://github.com/airbytehq/airbyte/pull/18599) | Only https scheme is allowed                                                    |
 | 0.1.0   | 2021-07-02 | [#4465](https://github.com/airbytehq/airbyte/pull/4465)   | Initial implementation                                                          |
+
+</details>

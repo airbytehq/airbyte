@@ -24,10 +24,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          # the `product_variants` steam schema has changed, mainly:
-          # see this PR: https://github.com/airbytehq/airbyte/pull/37767
-          disable_for_version: "2.0.8"
   basic_read:
     tests:
       - config_path: "secrets/config_transactions_with_user_id.json"

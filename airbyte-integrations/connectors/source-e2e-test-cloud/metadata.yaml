@@ -8,7 +8,7 @@ data:
   icon: airbyte.svg
   license: MIT
   name: End-to-End Testing (Mock API)
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

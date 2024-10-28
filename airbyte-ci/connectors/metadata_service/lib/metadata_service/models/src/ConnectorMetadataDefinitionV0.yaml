@@ -70,6 +70,9 @@ properties:
       protocolVersion:
         type: string
         description: the Airbyte Protocol version supported by the connector
+      erdUrl:
+        type: string
+        description: The URL where you can visualize the ERD
       connectorSubtype:
         type: string
         enum:
@@ -91,7 +94,7 @@ properties:
         items:
           type: string
         default: []
-      registries:
+      registryOverrides:
         anyOf:
           - type: object
             additionalProperties: false
@@ -122,3 +125,6 @@ properties:
         default: false
       generated:
         "$ref": GeneratedFields.yaml
+      supportsFileTransfer:
+        type: boolean
+        default: false

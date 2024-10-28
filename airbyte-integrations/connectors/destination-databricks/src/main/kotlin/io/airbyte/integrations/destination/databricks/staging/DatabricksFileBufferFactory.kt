@@ -36,32 +36,37 @@ object DatabricksFileBufferFactory {
                                 JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                                 JavaBaseConstants.COLUMN_NAME_DATA,
-                                JavaBaseConstants.COLUMN_NAME_AB_META
+                                JavaBaseConstants.COLUMN_NAME_AB_META,
+                                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                             )
                         }
 
                         override fun getDataRow(
                             id: UUID,
-                            recordMessage: AirbyteRecordMessage
+                            recordMessage: AirbyteRecordMessage,
+                            generationId: Long,
+                            syncId: Long,
                         ): List<Any> {
-                            TODO("Not yet implemented")
+                            throw NotImplementedError()
                         }
 
                         override fun getDataRow(formattedData: JsonNode): List<Any> {
-                            TODO("Not yet implemented")
+                            throw NotImplementedError()
                         }
 
                         override fun getDataRow(
                             id: UUID,
                             formattedString: String,
                             emittedAt: Long,
-                            formattedAirbyteMetaString: String
+                            formattedAirbyteMetaString: String,
+                            generationId: Long,
                         ): List<Any> {
                             return listOf(
                                 id,
                                 Instant.ofEpochMilli(emittedAt),
                                 formattedString,
-                                formattedAirbyteMetaString
+                                formattedAirbyteMetaString,
+                                generationId,
                             )
                         }
                     }
