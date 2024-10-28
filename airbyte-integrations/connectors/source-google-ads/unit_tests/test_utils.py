@@ -93,7 +93,7 @@ def test_parse_GAQL_ok():
 def test_parse_GAQL_fail(config):
     with pytest.raises(AirbyteTracedException) as e:
         SourceGoogleAds._validate_and_transform(config)
-    expected_message = "The custom GAQL query test_table failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v15/query_validator"
+    expected_message = "The custom GAQL query test_table failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v17/query_validator"
     assert e.value.message == expected_message
 
 

@@ -32,7 +32,7 @@ jobs:
         with:
           context: "master"
           ci_job_key: "weekly_alpha_test"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
