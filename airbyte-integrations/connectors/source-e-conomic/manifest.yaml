@@ -1,0 +1,7052 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for e-conomic enables seamless integration with the
+  e-conomic accounting platform. It allows users to efficiently extract
+  financial data such as invoices, accounts, customers, and transactions from
+  e-conomic and sync it to your preferred data warehouse or analytics tool. This
+  connector simplifies data flow management, facilitating automated data
+  extraction for comprehensive financial reporting and analysis.
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    units:
+      type: DeclarativeStream
+      name: units
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /units
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - unitNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/units"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - accountNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    journals:
+      type: DeclarativeStream
+      name: journals
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /journals
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - journalNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/journals"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - productNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    app_roles:
+      type: DeclarativeStream
+      name: app_roles
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app-roles
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - roleNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/app_roles"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - customerNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    employees:
+      type: DeclarativeStream
+      name: employees
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employees
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - employeeNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /suppliers
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - supplierNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    vat-types:
+      type: DeclarativeStream
+      name: vat-types
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vat-types
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - vatTypeNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vat-types"
+    vat_zones:
+      type: DeclarativeStream
+      name: vat_zones
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vat-zones
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - vatZoneNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vat_zones"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /currencies
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - code
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /departments
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - departmentNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    sent_orders:
+      type: DeclarativeStream
+      name: sent_orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/sent
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - orderNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sent_orders"
+    sent_quotes:
+      type: DeclarativeStream
+      name: sent_quotes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /quotes/sent
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - quoteNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sent_quotes"
+    draft_orders:
+      type: DeclarativeStream
+      name: draft_orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/drafts
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - orderNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/draft_orders"
+    draft_quotes:
+      type: DeclarativeStream
+      name: draft_quotes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /quotes/drafts
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - quoteNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/draft_quotes"
+    vat_accounts:
+      type: DeclarativeStream
+      name: vat_accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vat-accounts
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - vatCode
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vat_accounts"
+    paid_invoices:
+      type: DeclarativeStream
+      name: paid_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/paid
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - bookedInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/paid_invoices"
+    payment_terms:
+      type: DeclarativeStream
+      name: payment_terms
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /payment-terms
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - paymentTermsNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payment_terms"
+    payment_types:
+      type: DeclarativeStream
+      name: payment_types
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /payment-types
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - paymentTypeNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payment_types"
+    sent_invoices:
+      type: DeclarativeStream
+      name: sent_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/sent
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sent_invoices"
+    draft_invoices:
+      type: DeclarativeStream
+      name: draft_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/drafts
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - draftInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/draft_invoices"
+    product_groups:
+      type: DeclarativeStream
+      name: product_groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product-groups
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - productGroupNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_groups"
+    total_invoices:
+      type: DeclarativeStream
+      name: total_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/totals
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/total_invoices"
+    archived_orders:
+      type: DeclarativeStream
+      name: archived_orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/archived
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - orderNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/archived_orders"
+    archived_quotes:
+      type: DeclarativeStream
+      name: archived_quotes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /quotes/archived
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - quoteNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/archived_quotes"
+    booked_invoices:
+      type: DeclarativeStream
+      name: booked_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/booked
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - bookedInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/booked_invoices"
+    customer_groups:
+      type: DeclarativeStream
+      name: customer_groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customer-groups
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - customerGroupNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_groups"
+    unpaid_invoices:
+      type: DeclarativeStream
+      name: unpaid_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/unpaid
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - bookedInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unpaid_invoices"
+    accounting_years:
+      type: DeclarativeStream
+      name: accounting_years
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting-years
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - year
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounting_years"
+    not_due_invoices:
+      type: DeclarativeStream
+      name: not_due_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/not-due
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - bookedInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/not_due_invoices"
+    overdue_invoices:
+      type: DeclarativeStream
+      name: overdue_invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/overdue
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - bookedInvoiceNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/overdue_invoices"
+    departmental_distributions:
+      type: DeclarativeStream
+      name: departmental_distributions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skippages
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /departmental-distributions
+          http_method: GET
+          request_headers:
+            X-AgreementGrantToken: "{{ config[\"agreement_grant_token\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      primary_key:
+        - departmentalDistributionNumber
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departmental_distributions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://restapi.e-conomic.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"app_secret_token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-AppSecretToken
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/accounting_years"
+  - $ref: "#/definitions/streams/app_roles"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/customer_groups"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/departmental_distributions"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/journals"
+  - $ref: "#/definitions/streams/payment_terms"
+  - $ref: "#/definitions/streams/payment_types"
+  - $ref: "#/definitions/streams/product_groups"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/draft_quotes"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/units"
+  - $ref: "#/definitions/streams/vat_accounts"
+  - $ref: "#/definitions/streams/vat-types"
+  - $ref: "#/definitions/streams/vat_zones"
+  - $ref: "#/definitions/streams/sent_quotes"
+  - $ref: "#/definitions/streams/archived_quotes"
+  - $ref: "#/definitions/streams/draft_invoices"
+  - $ref: "#/definitions/streams/booked_invoices"
+  - $ref: "#/definitions/streams/paid_invoices"
+  - $ref: "#/definitions/streams/overdue_invoices"
+  - $ref: "#/definitions/streams/unpaid_invoices"
+  - $ref: "#/definitions/streams/not_due_invoices"
+  - $ref: "#/definitions/streams/total_invoices"
+  - $ref: "#/definitions/streams/sent_invoices"
+  - $ref: "#/definitions/streams/draft_orders"
+  - $ref: "#/definitions/streams/sent_orders"
+  - $ref: "#/definitions/streams/archived_orders"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - app_secret_token
+      - agreement_grant_token
+    properties:
+      app_secret_token:
+        type: string
+        description: >-
+          Your private token that identifies your app. Find it in your e-conomic
+          account settings.
+        name: app_secret_token
+        order: 0
+        title: App Secret Token
+        airbyte_secret: true
+      agreement_grant_token:
+        type: string
+        description: >-
+          Token that identifies the grant issued by an agreement, allowing your
+          app to access data. Obtain it from your e-conomic account settings.
+        name: agreement_grant_token
+        order: 1
+        title: Agreement Grant Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://restdocs.e-conomic.com/
+  testedStreams:
+    units:
+      hasRecords: true
+      streamHash: 927ee6a8e8b4c495fbb1d3a0f875024927b8bc3e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: true
+      streamHash: e0a93b9dfb073d0036263ff021f6602439300f6b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    journals:
+      hasRecords: true
+      streamHash: 17082ac31ac7ae4042e435352ea51f67df66811b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: 1c22486b1ecc86dc4d93eb3d07a3df120a0ee2b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    app_roles:
+      hasRecords: true
+      streamHash: faa17330b5271e80f45fbc2e0a332e9a9bf9edf1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: bb55e7d7f20383fd4bb60cd431870b6205143985
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employees:
+      hasRecords: true
+      streamHash: ff9f7b76986f7af9ee84934d54c8e0195c87ec38
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppliers:
+      hasRecords: true
+      streamHash: 9b870e076ec25245410e1b8c41e5360cd314c767
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vat-types:
+      hasRecords: true
+      streamHash: c4e4d7dee5e560d5dacf0b2843565d6610aaa82e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vat_zones:
+      hasRecords: true
+      streamHash: 0fa9e2e89ec6c86e0b25ad8b9d0119cd783845b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    currencies:
+      hasRecords: true
+      streamHash: 051ea5972922f1aa2831c44c1df376bb14a8309a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    departments:
+      hasRecords: true
+      streamHash: 2eb947e493f69fdd2b782f7086b7e00452ff7d4b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sent_orders:
+      hasRecords: true
+      streamHash: 5f5d474a1f2867069de0ff0e7b537813ddcde6c2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sent_quotes:
+      hasRecords: true
+      streamHash: e699b8627cfebb701e67e0a0ab7224cc14409c08
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    draft_orders:
+      hasRecords: true
+      streamHash: 02a8e3b65f4fa0c2dd3b7c24ebc02e68983522ad
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    draft_quotes:
+      hasRecords: true
+      streamHash: 661b079c0d711e505664ac00305c558dfe3f85da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vat_accounts:
+      hasRecords: true
+      streamHash: d648c65212720ae7566dcaf6490aa8c77819e727
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    paid_invoices:
+      hasRecords: true
+      streamHash: c2def7996a523fdd39d61321ee95fda20aef5fa2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payment_terms:
+      hasRecords: true
+      streamHash: 80678e3509f1b7807160bbed2eb46a36a96dcfec
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payment_types:
+      hasRecords: true
+      streamHash: 647ace19e558c93db93df03a718ce0bbd86c68bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sent_invoices:
+      hasRecords: true
+      streamHash: 1aa39528ce530e5c8457cc2b86a069d46aa65752
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    draft_invoices:
+      hasRecords: true
+      streamHash: 81fdb385e3ec7784cc651f02538d73f663ac8a12
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_groups:
+      hasRecords: true
+      streamHash: ffba46fa0aaeb9c4b524d03144c35525bd5d3a66
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    total_invoices:
+      hasRecords: true
+      streamHash: 4a4609ed6304e3bb96bc939414e4de1674db58b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    archived_orders:
+      hasRecords: true
+      streamHash: e855cf3c70f39c24492ebac8549babf73f781603
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    archived_quotes:
+      hasRecords: true
+      streamHash: 34390dc5c1a7930c2f853b6f5a5368a975064587
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    booked_invoices:
+      hasRecords: true
+      streamHash: 3dbe9119db1773a399c68ab03a3a7e46451271c5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customer_groups:
+      hasRecords: true
+      streamHash: 1b6df748b66eee85b8d393a464c9c1a691fd67a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    unpaid_invoices:
+      hasRecords: true
+      streamHash: 7f130cdbb35c2979359ccf682b34048a7a7c076d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounting_years:
+      hasRecords: true
+      streamHash: e35ac7344fe85423f7234037f3ed7749ac9a2fe4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    not_due_invoices:
+      hasRecords: true
+      streamHash: e95ee49bc140964d503705fa50a061f6729efa6c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    overdue_invoices:
+      hasRecords: true
+      streamHash: d28ffc6647c9573fc9674463a27f53a2fece5644
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    departmental_distributions:
+      hasRecords: true
+      streamHash: 0f2cb5c746e7893b09e879960cbf771260ea02e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    units: true
+    accounts: true
+    journals: true
+    products: true
+    app_roles: true
+    customers: true
+    employees: true
+    suppliers: true
+    vat-types: true
+    vat_zones: true
+    currencies: true
+    departments: true
+    sent_orders: true
+    sent_quotes: true
+    draft_orders: true
+    draft_quotes: true
+    vat_accounts: true
+    paid_invoices: true
+    payment_terms: true
+    payment_types: true
+    sent_invoices: true
+    draft_invoices: true
+    product_groups: true
+    total_invoices: true
+    archived_orders: true
+    archived_quotes: true
+    booked_invoices: true
+    customer_groups: true
+    unpaid_invoices: true
+    accounting_years: true
+    not_due_invoices: true
+    overdue_invoices: true
+    departmental_distributions: true
+
+schemas:
+  units:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - unitNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - string
+          - "null"
+      unitNumber:
+        type: number
+    additionalProperties: true
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - accountNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          departmentNumber:
+            type:
+              - number
+              - "null"
+      vatAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          vatCode:
+            type:
+              - string
+              - "null"
+      accountType:
+        type:
+          - string
+          - "null"
+      debitCredit:
+        type:
+          - string
+          - "null"
+      accountNumber:
+        type: number
+      accountingYears:
+        type:
+          - string
+          - "null"
+      totalFromAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+      blockDirectEntries:
+        type:
+          - boolean
+          - "null"
+      departmentalDistribution:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          distributionType:
+            type:
+              - string
+              - "null"
+          departmentalDistributionNumber:
+            type:
+              - number
+              - "null"
+    additionalProperties: true
+  journals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - journalNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      entries:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          contraAccounts:
+            type:
+              - object
+              - "null"
+            properties:
+              customerPayments:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  accountNumber:
+                    type:
+                      - number
+                      - "null"
+          voucherNumbers:
+            type:
+              - object
+              - "null"
+            properties:
+              minimumVoucherNumber:
+                type:
+                  - number
+                  - "null"
+          entryTypeRestrictedTo:
+            type:
+              - string
+              - "null"
+      vouchers:
+        type:
+          - string
+          - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          financeVoucher:
+            type:
+              - string
+              - "null"
+          manualCustomerInvoice:
+            type:
+              - string
+              - "null"
+      journalNumber:
+        type: number
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - productNumber
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          products:
+            type:
+              - string
+              - "null"
+          unitNumber:
+            type:
+              - number
+              - "null"
+      barred:
+        type:
+          - boolean
+          - "null"
+      barCode:
+        type:
+          - string
+          - "null"
+      pricing:
+        type:
+          - object
+          - "null"
+        properties:
+          currencySpecificSalesPrices:
+            type:
+              - string
+              - "null"
+      invoices:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          booked:
+            type:
+              - string
+              - "null"
+          drafts:
+            type:
+              - string
+              - "null"
+      costPrice:
+        type:
+          - number
+          - "null"
+      salesPrice:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      minimumStock:
+        type:
+          - number
+          - "null"
+      productGroup:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          accrual:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              balance:
+                type:
+                  - number
+                  - "null"
+              vatAccount:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  vatCode:
+                    type:
+                      - string
+                      - "null"
+              accountType:
+                type:
+                  - string
+                  - "null"
+              debitCredit:
+                type:
+                  - string
+                  - "null"
+              accountNumber:
+                type:
+                  - number
+                  - "null"
+              accountingYears:
+                type:
+                  - string
+                  - "null"
+              blockDirectEntries:
+                type:
+                  - boolean
+                  - "null"
+          products:
+            type:
+              - string
+              - "null"
+          salesAccounts:
+            type:
+              - string
+              - "null"
+          productGroupNumber:
+            type:
+              - number
+              - "null"
+      productNumber:
+        type: string
+      recommendedPrice:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  app_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - roleNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      roleNumber:
+        type: number
+      requiredModules:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            self:
+              type:
+                - string
+                - "null"
+            moduleNumber:
+              type:
+                - number
+                - "null"
+    additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - customerNumber
+    properties:
+      ean:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      barred:
+        type:
+          - boolean
+          - "null"
+      totals:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          booked:
+            type:
+              - string
+              - "null"
+          drafts:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      vatZone:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          vatZoneNumber:
+            type:
+              - number
+              - "null"
+      contacts:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      invoices:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          booked:
+            type:
+              - string
+              - "null"
+          drafts:
+            type:
+              - string
+              - "null"
+      attention:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerNumber:
+                type:
+                  - number
+                  - "null"
+          customerContactNumber:
+            type:
+              - number
+              - "null"
+      dueAmount:
+        type:
+          - number
+          - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          invoice:
+            type:
+              - string
+              - "null"
+          invoiceLine:
+            type:
+              - string
+              - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      mobilePhone:
+        type:
+          - string
+          - "null"
+      salesPerson:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          employeeNumber:
+            type:
+              - number
+              - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      customerGroup:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerGroupNumber:
+            type:
+              - number
+              - "null"
+      customerNumber:
+        type: number
+      customerContact:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerNumber:
+                type:
+                  - number
+                  - "null"
+          customerContactNumber:
+            type:
+              - number
+              - "null"
+      deliveryLocations:
+        type:
+          - string
+          - "null"
+      telephoneAndFaxNumber:
+        type:
+          - string
+          - "null"
+      defaultDeliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      eInvoicingDisabledByDefault:
+        type:
+          - boolean
+          - "null"
+      corporateIdentificationNumber:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - employeeNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      barred:
+        type:
+          - boolean
+          - "null"
+      customers:
+        type:
+          - string
+          - "null"
+      draftInvoices:
+        type:
+          - string
+          - "null"
+      employeeGroup:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          employeeGroupNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoices:
+        type:
+          - string
+          - "null"
+      employeeNumber:
+        type: number
+    additionalProperties: true
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - supplierNumber
+    properties:
+      zip:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      address:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      vatZone:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          vatZoneNumber:
+            type:
+              - number
+              - "null"
+      contacts:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      metaData:
+        type:
+          - object
+          - "null"
+        properties:
+          delete:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              httpMethod:
+                type:
+                  - string
+                  - "null"
+      attention:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - number
+              - "null"
+      bankAccount:
+        type:
+          - string
+          - "null"
+      costAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+      salesPerson:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          employeeNumber:
+            type:
+              - number
+              - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      supplierGroup:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          supplierGroupNumber:
+            type:
+              - number
+              - "null"
+      supplierNumber:
+        type: number
+      supplierContact:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - number
+              - "null"
+      remittanceAdvice:
+        type:
+          - object
+          - "null"
+        properties:
+          creditorId:
+            type:
+              - string
+              - "null"
+          paymentType:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              paymentTypeNumber:
+                type:
+                  - number
+                  - "null"
+      defaultInvoiceText:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  vat-types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - vatTypeNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      vatTypeNumber:
+        type: number
+    additionalProperties: true
+  vat_zones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - vatZoneNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      vatZoneNumber:
+        type: number
+      enabledForCustomer:
+        type:
+          - boolean
+          - "null"
+      enabledForSupplier:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - code
+    properties:
+      code:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      isoNumber:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - departmentNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      barred:
+        type:
+          - boolean
+          - "null"
+      departmentNumber:
+        type: number
+    additionalProperties: true
+  sent_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - orderNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          orderHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          upgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  sent_quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - quoteNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          quoteHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          cvr:
+            type:
+              - string
+              - "null"
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          orderUpgradeInstructions:
+            type:
+              - string
+              - "null"
+          draftInvoiceUpgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      quoteNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  draft_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - orderNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          orderHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          upgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  draft_quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - quoteNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          quoteHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          cvr:
+            type:
+              - string
+              - "null"
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          orderUpgradeInstructions:
+            type:
+              - string
+              - "null"
+          draftInvoiceUpgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      quoteNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  vat_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - vatCode
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+      vatCode:
+        type: string
+      vatType:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          vatTypeNumber:
+            type:
+              - number
+              - "null"
+      contraAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+      ratePercentage:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  paid_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - bookedInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      sent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      remainder:
+        type:
+          - number
+          - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      orderNumber:
+        type:
+          - number
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoiceNumber:
+        type: number
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      remainderInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  payment_terms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - paymentTermsNumber
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      daysOfCredit:
+        type:
+          - number
+          - "null"
+      paymentTermsType:
+        type:
+          - string
+          - "null"
+      creditCardCompany:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      paymentTermsNumber:
+        type: number
+      contraAccountForPrepaidAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+    additionalProperties: true
+  payment_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - paymentTypeNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      paymentTypeNumber:
+        type: number
+    additionalProperties: true
+  sent_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      self:
+        type:
+          - string
+          - "null"
+      sentBy:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      invoice:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          bookedInvoiceNumber:
+            type:
+              - number
+              - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  draft_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - draftInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          currentInvoiceHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+          textLine1:
+            type:
+              - string
+              - "null"
+          textLine2:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          cvr:
+            type:
+              - string
+              - "null"
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          bookingInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          other:
+            type:
+              - string
+              - "null"
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          vendorReference:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      draftInvoiceNumber:
+        type: number
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  product_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - productGroupNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      accrual:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          balance:
+            type:
+              - number
+              - "null"
+          vatAccount:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatCode:
+                type:
+                  - string
+                  - "null"
+          accountType:
+            type:
+              - string
+              - "null"
+          debitCredit:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+          accountingYears:
+            type:
+              - string
+              - "null"
+          blockDirectEntries:
+            type:
+              - boolean
+              - "null"
+      products:
+        type:
+          - string
+          - "null"
+      salesAccounts:
+        type:
+          - string
+          - "null"
+      productGroupNumber:
+        type: number
+    additionalProperties: true
+  total_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      self:
+        type:
+          - string
+          - "null"
+      booked:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          paid:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              invoiceCount:
+                type:
+                  - number
+                  - "null"
+              netAmountInBaseCurrency:
+                type:
+                  - number
+                  - "null"
+              grossRemainderInBaseCurrency:
+                type:
+                  - number
+                  - "null"
+          self:
+            type:
+              - string
+              - "null"
+          unpaid:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              overdue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  invoiceCount:
+                    type:
+                      - number
+                      - "null"
+                  netAmountInBaseCurrency:
+                    type:
+                      - number
+                      - "null"
+                  grossRemainderInBaseCurrency:
+                    type:
+                      - number
+                      - "null"
+              notOverdue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  invoiceCount:
+                    type:
+                      - number
+                      - "null"
+                  netAmountInBaseCurrency:
+                    type:
+                      - number
+                      - "null"
+              invoiceCount:
+                type:
+                  - number
+                  - "null"
+              netAmountInBaseCurrency:
+                type:
+                  - number
+                  - "null"
+              grossRemainderInBaseCurrency:
+                type:
+                  - number
+                  - "null"
+          invoiceCount:
+            type:
+              - number
+              - "null"
+          netAmountInBaseCurrency:
+            type:
+              - number
+              - "null"
+      drafts:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          invoiceCount:
+            type:
+              - number
+              - "null"
+          netAmountInBaseCurrency:
+            type:
+              - number
+              - "null"
+      predefinedPeriodFilters:
+        type:
+          - object
+          - "null"
+        properties:
+          lastWeek:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          lastYear:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          thisWeek:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          thisYear:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          lastMonth:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          thisMonth:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          lastSevenDays:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          lastThirtyDays:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          lastFifteenDays:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+    additionalProperties: true
+  archived_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - orderNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          orderHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          upgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  archived_quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - quoteNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      soap:
+        type:
+          - object
+          - "null"
+        properties:
+          quoteHandle:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          cvr:
+            type:
+              - string
+              - "null"
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+          mobilePhone:
+            type:
+              - string
+              - "null"
+          nemHandelType:
+            type:
+              - string
+              - "null"
+      templates:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          orderUpgradeInstructions:
+            type:
+              - string
+              - "null"
+          draftInvoiceUpgradeInstructions:
+            type:
+              - string
+              - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      attachment:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - string
+                      - "null"
+                  customerNumber:
+                    type:
+                      - number
+                      - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      quoteNumber:
+        type: number
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      orderNumberDb:
+        type:
+          - number
+          - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      marginPercentage:
+        type:
+          - number
+          - "null"
+      salesDocumentType:
+        type:
+          - string
+          - "null"
+      marginInBaseCurrency:
+        type:
+          - number
+          - "null"
+      costPriceInBaseCurrency:
+        type:
+          - number
+          - "null"
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  booked_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - bookedInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      sent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+          textLine1:
+            type:
+              - string
+              - "null"
+          textLine2:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      remainder:
+        type:
+          - number
+          - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      orderNumber:
+        type:
+          - number
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoiceNumber:
+        type: number
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      remainderInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  customer_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - customerGroupNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          balance:
+            type:
+              - number
+              - "null"
+          accountType:
+            type:
+              - string
+              - "null"
+          debitCredit:
+            type:
+              - string
+              - "null"
+          accountNumber:
+            type:
+              - number
+              - "null"
+          openingAccount:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              accountNumber:
+                type:
+                  - number
+                  - "null"
+          accountingYears:
+            type:
+              - string
+              - "null"
+          blockDirectEntries:
+            type:
+              - boolean
+              - "null"
+      customers:
+        type:
+          - string
+          - "null"
+      customerGroupNumber:
+        type: number
+    additionalProperties: true
+  unpaid_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - bookedInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      sent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+          textLine1:
+            type:
+              - string
+              - "null"
+          textLine2:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      remainder:
+        type:
+          - number
+          - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      orderNumber:
+        type:
+          - number
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoiceNumber:
+        type: number
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      remainderInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  accounting_years:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - year
+    properties:
+      self:
+        type:
+          - string
+          - "null"
+      year:
+        type: string
+      toDate:
+        type:
+          - string
+          - "null"
+      totals:
+        type:
+          - string
+          - "null"
+      entries:
+        type:
+          - string
+          - "null"
+      periods:
+        type:
+          - string
+          - "null"
+      fromDate:
+        type:
+          - string
+          - "null"
+      vouchers:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  not_due_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - bookedInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      sent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+          textLine1:
+            type:
+              - string
+              - "null"
+          textLine2:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      remainder:
+        type:
+          - number
+          - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      orderNumber:
+        type:
+          - number
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoiceNumber:
+        type: number
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      remainderInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  overdue_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - bookedInvoiceNumber
+    properties:
+      pdf:
+        type:
+          - object
+          - "null"
+        properties:
+          download:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      sent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - object
+          - "null"
+        properties:
+          heading:
+            type:
+              - string
+              - "null"
+          textLine1:
+            type:
+              - string
+              - "null"
+          textLine2:
+            type:
+              - string
+              - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          layoutNumber:
+            type:
+              - number
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          projectNumber:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          customerNumber:
+            type:
+              - number
+              - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      netAmount:
+        type:
+          - number
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          ean:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          vatZone:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+              vatZoneNumber:
+                type:
+                  - number
+                  - "null"
+              enabledForCustomer:
+                type:
+                  - boolean
+                  - "null"
+              enabledForSupplier:
+                type:
+                  - boolean
+                  - "null"
+          attention:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      remainder:
+        type:
+          - number
+          - "null"
+      vatAmount:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          salesPerson:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - number
+                  - "null"
+          customerContact:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+              customerContactNumber:
+                type:
+                  - number
+                  - "null"
+      grossAmount:
+        type:
+          - number
+          - "null"
+      orderNumber:
+        type:
+          - number
+          - "null"
+      exchangeRate:
+        type:
+          - number
+          - "null"
+      paymentTerms:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+          daysOfCredit:
+            type:
+              - number
+              - "null"
+          paymentTermsType:
+            type:
+              - string
+              - "null"
+          paymentTermsNumber:
+            type:
+              - number
+              - "null"
+      roundingAmount:
+        type:
+          - number
+          - "null"
+      deliveryLocation:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+          deliveryLocationNumber:
+            type:
+              - number
+              - "null"
+      bookedInvoiceNumber:
+        type: number
+      netAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+      remainderInBaseCurrency:
+        type:
+          - number
+          - "null"
+      grossAmountInBaseCurrency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  departmental_distributions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - departmentalDistributionNumber
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      self:
+        type:
+          - string
+          - "null"
+      barred:
+        type:
+          - boolean
+          - "null"
+      distributions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            department:
+              type:
+                - object
+                - "null"
+              properties:
+                self:
+                  type:
+                    - string
+                    - "null"
+                departmentNumber:
+                  type:
+                    - number
+                    - "null"
+            percentage:
+              type:
+                - number
+                - "null"
+      distributionType:
+        type:
+          - string
+          - "null"
+      departmentalDistributionNumber:
+        type: number
+    additionalProperties: true
