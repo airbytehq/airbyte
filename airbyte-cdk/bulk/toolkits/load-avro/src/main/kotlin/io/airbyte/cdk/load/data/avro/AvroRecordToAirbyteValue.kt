@@ -24,8 +24,10 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeType
-import io.airbyte.cdk.load.data.TimestampType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import org.apache.avro.generic.GenericArray
@@ -68,8 +70,11 @@ class AvroRecordToAirbyteValue {
                             throw IllegalArgumentException("Unsupported string type: $avroValue")
                     }
                 )
-            is TimeType -> throw UnsupportedOperationException("TimeType is not supported")
-            is TimestampType ->
+            is TimeTypeWithoutTimezone,
+            is TimeTypeWithTimezone ->
+                throw UnsupportedOperationException("TimeType is not supported")
+            is TimestampTypeWithoutTimezone,
+            is TimestampTypeWithTimezone ->
                 throw UnsupportedOperationException("TimestampType is not supported")
             is UnionType -> return tryConvertUnion(avroValue, schema)
             is UnknownType -> throw UnsupportedOperationException("UnknownType is not supported")
