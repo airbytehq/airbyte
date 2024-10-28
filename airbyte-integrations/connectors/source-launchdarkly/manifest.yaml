@@ -383,6 +383,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/environments"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
   base_requester:
     type: HttpRequester
     url_base: https://app.launchdarkly.com
@@ -407,6 +435,7 @@ streams:
   - $ref: "#/definitions/streams/destinations"
   - $ref: "#/definitions/streams/workflows"
   - $ref: "#/definitions/streams/environments"
+  - $ref: "#/definitions/streams/tags"
 
 spec:
   type: Spec
@@ -422,19 +451,19 @@ spec:
         type: string
         description: The API key to use for authentication
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       project_key:
         type: string
+        order: 1
         title: Project Key
         airbyte_secret: true
-        order: 1
       environment_key:
         type: string
+        order: 2
         title: Environment Key
         airbyte_secret: true
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -451,86 +480,94 @@ metadata:
     destinations: true
     workflows: true
     environments: true
+    tags: true
   testedStreams:
     members:
+      hasRecords: true
       streamHash: 17f7248a947cee56784d9935be02a27599ddde15
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     auditlogentries:
+      hasRecords: true
       streamHash: fe7076efd5bdca7bee0398c2f0ceb73452166b2e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     flags:
+      hasRecords: true
       streamHash: 81924fee07753dccd0093f7d13f7e895ddd05427
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     flagstatuses:
+      hasRecords: true
       streamHash: 08993598986886e6ebcbbc955a973aaaf21615f2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     projects:
+      hasRecords: true
       streamHash: 70651e8926c83559c5017d6250eae6c440180715
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     metrics:
+      hasRecords: true
       streamHash: 28f5e062d925144baa83e837fcaf2735deffe164
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     segments:
+      hasRecords: true
       streamHash: 5eeffb8bb83b42f0e40c8e3da637616694cf92fb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
+      hasRecords: true
       streamHash: ca5eefacfbab4b62f2f00fc35835d545942abd27
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     experiments:
+      hasRecords: true
       streamHash: 446d2a555557dd717fc91ea765c3e77b678770fb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     destinations:
+      hasRecords: true
       streamHash: 2a1340faed000aa908d191a05c6ed95887d534d7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     workflows:
+      hasRecords: true
       streamHash: 75df799db9e86c4f8933433f6a0210daf947f204
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     environments:
+      hasRecords: true
       streamHash: 79eaee0eb9ae65a8e65c218d586777fa45c4cedd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      streamHash: b900d1de7b623cc33b96fa3e78587d1edc8b6c8d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -2209,3 +2246,38 @@ schemas:
           - "null"
     required:
       - _id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      totalCount:
+        type:
+          - number
+          - "null"
