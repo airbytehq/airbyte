@@ -1,0 +1,1520 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for Clockodo enables seamless data integration between
+  Clockodo and your preferred data warehouse or destination. This connector
+  allows you to efficiently extract time tracking, project management, and
+  reporting data from Clockodo, providing accurate insights and facilitating
+  informed business decisions.
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/projects
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    absences:
+      type: DeclarativeStream
+      name: absences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/absences
+          http_method: GET
+          request_parameters:
+            year: "{{ config['year'] }}"
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - absences
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/absences"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/customers
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    entries:
+      type: DeclarativeStream
+      name: entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/entries
+          http_method: GET
+          request_parameters:
+            time_since: "{{ config[\"start_time\"] }}"
+            time_until: "{{ config[\"end_time\"] }}"
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entries"
+    holidays_carry:
+      type: DeclarativeStream
+      name: holidays_carry
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /holidayscarry
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - holidayscarry
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holidays_carry"
+    holidays_quota:
+      type: DeclarativeStream
+      name: holidays_quota
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /holidaysquota
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - holidaysquota
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holidays_quota"
+    lumpsum_services:
+      type: DeclarativeStream
+      name: lumpsum_services
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/lumpsumservices
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lumpSumServices
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lumpsum_services"
+    non_business_days:
+      type: DeclarativeStream
+      name: non_business_days
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /nonbusinessdays
+          http_method: GET
+          request_parameters:
+            year: "{{ config[\"year\"] }}"
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - nonbusinessdays
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/non_business_days"
+    overtime_carry:
+      type: DeclarativeStream
+      name: overtime_carry
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /overtimecarry
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - overtimecarry
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/overtime_carry"
+    services:
+      type: DeclarativeStream
+      name: services
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/services
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - services
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/services"
+    surcharges:
+      type: DeclarativeStream
+      name: surcharges
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/surcharges
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - surcharges
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surcharges"
+    target_hours:
+      type: DeclarativeStream
+      name: target_hours
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /targethours
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - targethours
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/target_hours"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/teams
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    user_reports:
+      type: DeclarativeStream
+      name: user_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /userreports
+          http_method: GET
+          request_parameters:
+            year: "{{ config[\"year\"] }}"
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - userreports
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_reports"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    customers_projects:
+      type: DeclarativeStream
+      name: customers_projects
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users/{{ stream_partition.user_id }}/access/customers-projects
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition.user_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_projects"
+    access_services:
+      type: DeclarativeStream
+      name: access_services
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users/{{ stream_partition.user_id }}/access/services
+          http_method: GET
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition.user_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/access_services"
+    work_times:
+      type: DeclarativeStream
+      name: work_times
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/workTimes
+          http_method: GET
+          request_parameters:
+            users_id: "{{ stream_partition.user_id }}"
+            date_since: "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
+            date_until: "{{ format_datetime(config[\"end_time\"], '%Y-%m-%d') }}"
+          request_headers:
+            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - work_time_days
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/work_times"
+  base_requester:
+    type: HttpRequester
+    url_base: https://my.clockodo.com/api
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_key\"] }}"
+      username: "{{ config[\"email_address\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/absences"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/entries"
+  - $ref: "#/definitions/streams/holidays_carry"
+  - $ref: "#/definitions/streams/holidays_quota"
+  - $ref: "#/definitions/streams/lumpsum_services"
+  - $ref: "#/definitions/streams/non_business_days"
+  - $ref: "#/definitions/streams/overtime_carry"
+  - $ref: "#/definitions/streams/services"
+  - $ref: "#/definitions/streams/surcharges"
+  - $ref: "#/definitions/streams/target_hours"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/user_reports"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/customers_projects"
+  - $ref: "#/definitions/streams/access_services"
+  - $ref: "#/definitions/streams/work_times"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - email_address
+      - external_application
+      - year
+      - start_time
+      - end_time
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it in the 'Personal data' section of your
+          Clockodo account.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      email_address:
+        type: string
+        description: >-
+          Your Clockodo account email address. Find it in your Clockodo account
+          settings.
+        name: email_address
+        order: 1
+        title: Email Address
+      external_application:
+        type: string
+        description: >-
+          Identification of the calling application, including the email address
+          of a technical contact person. Format: [name of application or
+          company];[email address].
+        name: external_application
+        order: 2
+        title: External Application Header
+        default: Airbyte
+      year:
+        type: integer
+        order: 3
+        title: Year
+      start_time:
+        type: string
+        order: 4
+        title: Start Time
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      end_time:
+        type: string
+        order: 5
+        title: End Time
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    absences: true
+    customers: true
+    entries: true
+    holidays_carry: true
+    holidays_quota: true
+    lumpsum_services: true
+    non_business_days: true
+    overtime_carry: true
+    services: true
+    surcharges: true
+    target_hours: true
+    teams: true
+    user_reports: true
+    users: true
+    customers_projects: true
+    access_services: true
+    work_times: true
+  testedStreams:
+    projects:
+      hasRecords: true
+      streamHash: c20ed7eae5fb167c882f3c6eb4a1d7cd55b2fd1b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    absences:
+      hasRecords: true
+      streamHash: 4d1bac0e109eb79525a88791182f00af535afe4b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: 89614c50d9d9288eaf9803b9df86b2f4701d4e81
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    entries:
+      hasRecords: true
+      streamHash: 5a19c75b62024b3a57e6db5c485e55a725a0382f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    holidays_carry:
+      hasRecords: true
+      streamHash: e48839eff131e148fe0fc088d169982751c78e81
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    holidays_quota:
+      hasRecords: true
+      streamHash: b9c95ec43672adfb723739044bb58a56dac3c908
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lumpsum_services:
+      hasRecords: true
+      streamHash: 4a184ac9dbd17e470dfe6e1ad2f5de90756df6dc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    non_business_days:
+      hasRecords: true
+      streamHash: d6b2b9aab81fb5559cedeea33da21494c060b407
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    overtime_carry:
+      hasRecords: true
+      streamHash: b2d2f23a96f7597fb258c8bf39582870782437d5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    services:
+      hasRecords: true
+      streamHash: 9be06dd127740d50ed61b7668eb2b3467f50e015
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    surcharges:
+      hasRecords: true
+      streamHash: 4d54a3384127ccd4e306d3622476667b53906fe7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    target_hours:
+      hasRecords: true
+      streamHash: d43471c2a05f4fdb9de873ed7c8665c752b16159
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: 799dd4476020338c6f755be19a044b1216a72426
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_reports:
+      hasRecords: true
+      streamHash: 344b3eba48273e3cf8e76b8aa111ac55aaef1572
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 27443691afdde08e4fa030a126c9d81c88483e44
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers_projects:
+      hasRecords: true
+      streamHash: 31a8f205c197128dd7fc90fecc3a61fbaf3d3505
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    access_services:
+      hasRecords: true
+      streamHash: 509f9d8d4361d6ee1f400565ebbf8aa893400f72
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    work_times:
+      hasRecords: true
+      streamHash: 50530cffc46c4ffbbcc2865f052e158105fb2a61
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://www.clockodo.com/en/api/
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      billable_default:
+        type:
+          - boolean
+          - "null"
+      billed_completely:
+        type:
+          - boolean
+          - "null"
+      budget_is_hours:
+        type:
+          - boolean
+          - "null"
+      budget_is_not_strict:
+        type:
+          - boolean
+          - "null"
+      budget_money:
+        type:
+          - number
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      customers_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      revenue_factor:
+        type:
+          - number
+          - "null"
+      test_data:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  absences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      approved_by:
+        type:
+          - number
+          - "null"
+      count_days:
+        type:
+          - number
+          - "null"
+      date_approved:
+        type:
+          - string
+          - "null"
+      date_since:
+        type:
+          - string
+          - "null"
+      date_until:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      status:
+        type:
+          - number
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      billable_default:
+        type:
+          - boolean
+          - "null"
+      color:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      test_data:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      billable:
+        type:
+          - number
+          - "null"
+      clocked:
+        type:
+          - boolean
+          - "null"
+      clocked_offline:
+        type:
+          - boolean
+          - "null"
+      customers_id:
+        type:
+          - number
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      hourly_rate:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      lumpsum_services_amount:
+        type:
+          - number
+          - "null"
+      lumpsum_services_id:
+        type:
+          - number
+          - "null"
+      projects_id:
+        type:
+          - number
+          - "null"
+      services_id:
+        type:
+          - number
+          - "null"
+      test_data:
+        type:
+          - boolean
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      texts_id:
+        type:
+          - number
+          - "null"
+      time_clocked_since:
+        type:
+          - string
+          - "null"
+      time_insert:
+        type:
+          - string
+          - "null"
+      time_last_change:
+        type:
+          - string
+          - "null"
+      time_last_change_work_time:
+        type:
+          - string
+          - "null"
+      time_since:
+        type:
+          - string
+          - "null"
+      time_until:
+        type:
+          - string
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  holidays_carry:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      note:
+        type:
+          - string
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  holidays_quota:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      note:
+        type:
+          - string
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+      year_since:
+        type:
+          - number
+          - "null"
+      year_until:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  lumpsum_services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  non_business_days:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      half_day:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      nonbusinessgroups_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  overtime_carry:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      hours:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      note:
+        type:
+          - string
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  surcharges:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accumulation:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      nonbusiness:
+        type:
+          - object
+          - "null"
+        properties:
+          percent:
+            type:
+              - number
+              - "null"
+          time_since:
+            type:
+              - string
+              - "null"
+          time_since_is_previous_day:
+            type:
+              - boolean
+              - "null"
+          time_until:
+            type:
+              - string
+              - "null"
+          time_until_is_next_day:
+            type:
+              - boolean
+              - "null"
+      nonbusiness_special:
+        type:
+          - object
+          - "null"
+        properties:
+          percent:
+            type:
+              - number
+              - "null"
+          time_since:
+            type:
+              - string
+              - "null"
+          time_since_is_previous_day:
+            type:
+              - boolean
+              - "null"
+          time_until:
+            type:
+              - string
+              - "null"
+          time_until_is_next_day:
+            type:
+              - boolean
+              - "null"
+      sunday:
+        type:
+          - object
+          - "null"
+        properties:
+          percent:
+            type:
+              - number
+              - "null"
+          time_since:
+            type:
+              - string
+              - "null"
+          time_since_is_previous_day:
+            type:
+              - boolean
+              - "null"
+          time_until:
+            type:
+              - string
+              - "null"
+          time_until_is_next_day:
+            type:
+              - boolean
+              - "null"
+    required:
+      - id
+  target_hours:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      compensation_daily:
+        type:
+          - number
+          - "null"
+      compensation_monthly:
+        type:
+          - number
+          - "null"
+      date_since:
+        type:
+          - string
+          - "null"
+      date_until:
+        type:
+          - string
+          - "null"
+      friday:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      monday:
+        type:
+          - number
+          - "null"
+      saturday:
+        type:
+          - number
+          - "null"
+      sunday:
+        type:
+          - number
+          - "null"
+      test_data:
+        type:
+          - boolean
+          - "null"
+      thursday:
+        type:
+          - number
+          - "null"
+      tuesday:
+        type:
+          - number
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+      wednesday:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      leader:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  user_reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      diff:
+        type:
+          - number
+          - "null"
+      holidays_carry:
+        type:
+          - number
+          - "null"
+      holidays_quota:
+        type:
+          - number
+          - "null"
+      overtime_carryover:
+        type:
+          - number
+          - "null"
+      overtime_reduced:
+        type:
+          - number
+          - "null"
+      sum_absence:
+        type:
+          - object
+          - "null"
+        properties:
+          home_office:
+            type:
+              - number
+              - "null"
+          maternity_protection:
+            type:
+              - number
+              - "null"
+          military_service:
+            type:
+              - number
+              - "null"
+          out_of_office:
+            type:
+              - number
+              - "null"
+          quarantine:
+            type:
+              - number
+              - "null"
+          regular_holidays:
+            type:
+              - number
+              - "null"
+          school:
+            type:
+              - number
+              - "null"
+          sick_child:
+            type:
+              - number
+              - "null"
+          sick_self:
+            type:
+              - number
+              - "null"
+          special_leaves:
+            type:
+              - number
+              - "null"
+      sum_hours:
+        type:
+          - number
+          - "null"
+      sum_reduction_planned:
+        type:
+          - number
+          - "null"
+      sum_reduction_used:
+        type:
+          - number
+          - "null"
+      sum_target:
+        type:
+          - number
+          - "null"
+      surcharges:
+        type:
+          - object
+          - "null"
+        properties:
+          night:
+            type:
+              - number
+              - "null"
+          night_increased:
+            type:
+              - number
+              - "null"
+          nonbusiness:
+            type:
+              - number
+              - "null"
+          nonbusiness_special:
+            type:
+              - number
+              - "null"
+          saturday:
+            type:
+              - number
+              - "null"
+          sunday:
+            type:
+              - number
+              - "null"
+      users_email:
+        type:
+          - string
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
+      users_name:
+        type:
+          - string
+          - "null"
+      workdays:
+        type:
+          - number
+          - "null"
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      absence_managers_id:
+        type:
+          - array
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      can_add_customers:
+        type:
+          - boolean
+          - "null"
+      can_generally_manage_absences:
+        type:
+          - boolean
+          - "null"
+      can_generally_see_absences:
+        type:
+          - boolean
+          - "null"
+      default_holidays_count:
+        type:
+          - boolean
+          - "null"
+      default_target_hours:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      initials:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      support_pin:
+        type:
+          - string
+          - "null"
+      timeformat_12h:
+        type:
+          - boolean
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      weekstart_monday:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  customers_projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add:
+        type:
+          - boolean
+          - "null"
+      edit:
+        type:
+          - boolean
+          - "null"
+      report:
+        type:
+          - boolean
+          - "null"
+      user_id:
+        type: number
+    required:
+      - user_id
+  access_services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add:
+        type:
+          - boolean
+          - "null"
+      user_id:
+        type: number
+    required:
+      - user_id
+  work_times:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      intervals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            time_since:
+              type:
+                - string
+                - "null"
+            time_until:
+              type:
+                - string
+                - "null"
+      offset:
+        type:
+          - number
+          - "null"
+      users_id:
+        type:
+          - number
+          - "null"
