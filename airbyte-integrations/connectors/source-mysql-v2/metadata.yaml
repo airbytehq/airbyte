@@ -25,6 +25,7 @@ data:
   supportLevel: community
   releases:
     enableProgressiveRollout: true
+    isReleaseCandidate: true
   tags:
     - language:java
 metadataSpecVersion: "1.0"
