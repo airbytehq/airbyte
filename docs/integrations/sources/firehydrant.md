@@ -1,0 +1,62 @@
+# FireHydrant
+The Airbyte connector for FireHydrant enables seamless data integration between FireHydrant and your data ecosystem. It allows you to efficiently extract incident management and reliability data from FireHydrant, empowering teams with valuable insights for post-incident analysis, reliability reporting, and proactive system monitoring. With this connector, users can automate the data flow and gain deeper visibility into incidents and response metrics, improving reliability and operational efficiency.
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `api_token` | `string` | API Token. Bot token to use for authenticating with the FireHydrant API. You can find or create a bot token by logging into your organization and visiting the Bot users page at https://app.firehydrant.io/organizations/bots. |  |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| enviroments | id | DefaultPaginator | ✅ |  ❌  |
+| services | id | DefaultPaginator | ✅ |  ❌  |
+| functionalities | id | DefaultPaginator | ✅ |  ❌  |
+| teams | id | DefaultPaginator | ✅ |  ❌  |
+| webhooks | id | DefaultPaginator | ✅ |  ❌  |
+| signals_on_call | id | DefaultPaginator | ✅ |  ❌  |
+| changes_events | id | DefaultPaginator | ✅ |  ❌  |
+| changes | id | DefaultPaginator | ✅ |  ❌  |
+| entitlements | slug | DefaultPaginator | ✅ |  ❌  |
+| incidents | id | DefaultPaginator | ✅ |  ❌  |
+| incident_roles | id | DefaultPaginator | ✅ |  ❌  |
+| incident_tags | name | DefaultPaginator | ✅ |  ❌  |
+| incident_types | id | DefaultPaginator | ✅ |  ❌  |
+| integrations | id | DefaultPaginator | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| reports | bucket | DefaultPaginator | ✅ |  ❌  |
+| runbook_actions | id | DefaultPaginator | ✅ |  ❌  |
+| runbook_executions | id | DefaultPaginator | ✅ |  ❌  |
+| runbooks | id | DefaultPaginator | ✅ |  ❌  |
+| runbook_audits | id | DefaultPaginator | ✅ |  ❌  |
+| nunc_connections | id | DefaultPaginator | ✅ |  ❌  |
+| measurement_definitions | id | DefaultPaginator | ✅ |  ❌  |
+| phases | id | DefaultPaginator | ✅ |  ❌  |
+| priorities | slug | DefaultPaginator | ✅ |  ❌  |
+| severities | slug | DefaultPaginator | ✅ |  ❌  |
+| severity_matrix_conditions | id | DefaultPaginator | ✅ |  ❌  |
+| severity_matrix_impacts | id | DefaultPaginator | ✅ |  ❌  |
+| scheduled_maintenances | id | DefaultPaginator | ✅ |  ❌  |
+| infrastructures | id | DefaultPaginator | ✅ |  ❌  |
+| custom_fields_definitions | field_id | DefaultPaginator | ✅ |  ❌  |
+| post_mortems_reports | id | DefaultPaginator | ✅ |  ❌  |
+| post_mortems_questions | id | DefaultPaginator | ✅ |  ❌  |
+| alerts | id | DefaultPaginator | ✅ |  ❌  |
+| tickets | id | DefaultPaginator | ✅ |  ❌  |
+| ticketing_projects | id | DefaultPaginator | ✅ |  ❌  |
+| ticketing_priorities | id | DefaultPaginator | ✅ |  ❌  |
+| ticketing_ticket_tags |  | DefaultPaginator | ✅ |  ❌  |
+| task_lists | id | DefaultPaginator | ✅ |  ❌  |
+| checklist_templates | id | DefaultPaginator | ✅ |  ❌  |
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.0.1 | 2024-10-28 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+
+</details>
