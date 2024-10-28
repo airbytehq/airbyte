@@ -31,6 +31,5 @@ data class MySqlPosition(val fileName: String, val position: Long) : Comparable<
     val cursorValue: Long
         get() = (fileExtension.toLong() shl Int.SIZE_BITS) or position
 
-    override fun compareTo(other: MySqlPosition): Int =
-        cursorValue.compareTo(other.cursorValue)
+    override fun compareTo(other: MySqlPosition): Int = cursorValue.compareTo(other.cursorValue)
 }
