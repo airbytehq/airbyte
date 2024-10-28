@@ -17,6 +17,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
+        isStreamSchemaRetroactive = false,
     ) {
     @Test
     override fun testBasicWrite() {
