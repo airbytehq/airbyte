@@ -10,7 +10,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
-from airbyte_cdk.sources.file_based.writers import FileTransferStreamWriter
+from airbyte_cdk.sources.file_based.writers.local_file_client import LocalFileTransferClient
 
 
 class _FileReader:
@@ -42,13 +42,13 @@ class BlobTransfer(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-        stream_writer: FileTransferStreamWriter = None,
     ) -> Iterable[Dict[str, Any]]:
         file_no = 0
         try:
             data_generator = self._file_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
+            local_writer = LocalFileTransferClient()
             for file_opened, file_size in data_generator:
-                yield from stream_writer.write(file.uri, file_opened, file_size, logger)
+                yield local_writer.write(file.uri, file_opened, file_size, logger)
                 file_no += 1
         except RecordParseError as parse_err:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=file_no) from parse_err

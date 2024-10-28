@@ -3,21 +3,24 @@
 import logging
 import os
 import time
+from io import IOBase
 
 import psutil
+
+from typing import Mapping, Any
 
 AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
 DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 class LocalFileTransferClient:
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the LocalFileTransferClient. It uses a default local directory for file saving.
         """
         self._local_directory = AIRBYTE_STAGING_DIRECTORY if os.path.exists(AIRBYTE_STAGING_DIRECTORY) else DEFAULT_LOCAL_DIRECTORY
 
-    def write(self, file_uri: str, fp, file_size: int, logger: logging.Logger):
+    def write(self, file_uri: str, fp: IOBase, file_size: int, logger: logging.Logger) -> Mapping[str, Any]:
         """
         Write the file to a local directory.
         """
