@@ -50,14 +50,14 @@ class LocalFileTransferClient:
 
         with open(local_file_path, "wb") as f:
             # Measure the time for reading
-            logger.info(f"Starting to read the file")
+            logger.info("Starting to read the file")
             start_read_time = time.time()
             file_content = fp.read()  # Read the file content
             read_duration = time.time() - start_read_time
             logger.info(f"Time taken to read the file: {read_duration:,.2f} seconds.")
 
             # Measure the time for writing
-            logger.info(f"Starting to write the file locally")
+            logger.info("Starting to write the file locally")
             start_write_time = time.time()
             f.write(file_content)
             write_duration = time.time() - start_write_time
