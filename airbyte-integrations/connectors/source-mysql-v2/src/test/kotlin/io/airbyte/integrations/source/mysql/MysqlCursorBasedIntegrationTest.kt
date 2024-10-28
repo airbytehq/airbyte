@@ -8,7 +8,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -93,7 +92,7 @@ class MysqlCursorBasedIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = JdbcAirbyteStreamFactory().createGlobal(discoveredStream)
+            val stream: AirbyteStream = MysqlSourceOperations().createGlobal(discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
