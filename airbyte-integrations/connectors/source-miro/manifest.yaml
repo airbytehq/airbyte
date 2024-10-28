@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -52,6 +52,9 @@ definitions:
     board_users:
       type: DeclarativeStream
       name: board_users
+      primary_key:
+        - id
+        - board_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -158,6 +161,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -305,7 +321,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     board_users:
-      streamHash: 6c6975a7f4e0050396d546006b0a84f29f3d02e5
+      streamHash: a01ce17994b85e3537874f5131c7412be618a3ce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -319,7 +335,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     board_tags:
-      streamHash: 95572f0dcbdd4cb4235283bdedb5ffee82945d70
+      streamHash: 4e20dcdc125625593cac6ac4c1e14d4a2804d9b2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
