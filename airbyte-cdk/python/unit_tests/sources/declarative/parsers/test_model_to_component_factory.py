@@ -19,15 +19,23 @@ from airbyte_cdk.sources.declarative.auth.token import (
 )
 from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
+from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    PerPartitionCursor,
+    PerPartitionWithGlobalCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
@@ -70,7 +78,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
@@ -115,7 +127,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -145,6 +156,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -180,11 +193,23 @@ list_stream:
     step: "P10D"
     cursor_field: "created"
     cursor_granularity: "PT0.000001S"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: before
     $parameters:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 check:
   type: CheckStream
   stream_names: ["list_stream"]
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] or 10 }}"
+  max_concurrency: 25
 spec:
   type: Spec
   documentation_url: https://airbyte.com/#yaml-from-manifest
@@ -241,7 +266,7 @@ spec:
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -249,7 +274,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
@@ -259,6 +284,14 @@ spec:
     assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
+
+    assert isinstance(stream.retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert stream.retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert stream.retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert stream.retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert stream.retriever.request_option_provider._partition_field_end.string == "end_time"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
@@ -290,6 +323,14 @@ spec:
     }
     advanced_auth = spec.advanced_auth
     assert advanced_auth.auth_flow_type.value == "oauth2.0"
+
+    concurrency_level = factory.create_component(
+        model_type=ConcurrencyLevelModel, component_definition=manifest["concurrency_level"], config=input_config
+    )
+    assert isinstance(concurrency_level, ConcurrencyLevel)
+    assert isinstance(concurrency_level._default_concurrency, InterpolatedString)
+    assert concurrency_level._default_concurrency.string == "{{ config['num_workers'] or 10 }}"
+    assert concurrency_level.max_concurrency == 25
 
 
 def test_interpolate_config():
@@ -566,7 +607,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -578,8 +618,26 @@ requester:
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['apikey'] }}"
+    type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
+    expiration_duration: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
   request_parameters:
     unit: "day"
 list_stream:
@@ -608,6 +666,8 @@ list_stream:
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
+    decoder:
+      $ref: "#/decoder"
     partition_router:
       type: ListPartitionRouter
       values: "{{config['repos']}}"
@@ -648,9 +708,9 @@ list_stream:
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+    assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
 
-    datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
+    datetime_stream_slicer = stream.retriever.stream_slicer._per_partition_cursor._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
     assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
     assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
@@ -671,7 +731,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -701,6 +760,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -775,7 +836,7 @@ spec:
     assert isinstance(stream.retriever.cursor, ResumableFullRefreshCursor)
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -783,7 +844,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
@@ -992,7 +1053,7 @@ list_stream:
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
-    assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
+    assert isinstance(stream.retriever.record_selector.record_filter._substream_cursor, PerPartitionWithGlobalCursor)
 
 
 def test_given_data_feed_and_client_side_incremental_then_raise_error():
@@ -1196,6 +1257,8 @@ requester:
   url_base: "https://api.sendgrid.com"
   authenticator:
     type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
     expiration_duration: P10D
     login_requester:
       path: /session
@@ -1999,7 +2062,7 @@ class TestCreateTransformations:
                 "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_incremental_and_partition_router",
         ),
         pytest.param(
@@ -2024,7 +2087,7 @@ class TestCreateTransformations:
                     "cursor_field": "b_key",
                 },
             ],
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
         pytest.param(None, None, SinglePartitionRouter, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
@@ -2061,15 +2124,16 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
+    print(stream.retriever.stream_slicer)
     assert isinstance(stream.retriever.stream_slicer, expected_type)
 
     if incremental and partition_router:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         if isinstance(partition_router, list) and len(partition_router) > 1:
             assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
     elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
 
@@ -2314,3 +2378,174 @@ def test_create_jwt_authenticator(config, manifest, expected):
         }
     )
     assert authenticator._get_jwt_payload() == jwt_payload
+
+
+def test_use_request_options_provider_for_datetime_based_cursor():
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    datetime_based_request_options_provider = DatetimeBasedRequestOptionsProvider(
+        start_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="after",
+            parameters={},
+        ),
+        end_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="before",
+            parameters={},
+        ),
+        config=config,
+        parameters={},
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=datetime_based_cursor,
+        request_options_provider=datetime_based_request_options_provider,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, DatetimeBasedCursor)
+    assert isinstance(retriever.stream_slicer, DatetimeBasedCursor)
+
+    assert isinstance(retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert retriever.request_option_provider._partition_field_end.string == "end_time"
+
+
+def test_do_not_separate_request_options_provider_for_non_datetime_based_cursor():
+    # This test validates that we're only using the dedicated RequestOptionsProvider for DatetimeBasedCursor and using the
+    # existing StreamSlicer for other types of cursors and partition routing. Once everything is migrated this test can be deleted
+
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    list_partition_router = ListPartitionRouter(
+        cursor_field="id",
+        values=["four", "oh", "eight"],
+        config=config,
+        parameters={},
+    )
+
+    per_partition_cursor = PerPartitionCursor(
+        cursor_factory=CursorFactory(lambda: datetime_based_cursor),
+        partition_router=list_partition_router,
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=per_partition_cursor,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, PerPartitionCursor)
+    assert isinstance(retriever.stream_slicer, PerPartitionCursor)
+
+    assert isinstance(retriever.request_option_provider, PerPartitionCursor)
+    assert isinstance(retriever.request_option_provider._cursor_factory, CursorFactory)
+    assert retriever.request_option_provider._partition_router == list_partition_router
+
+
+def test_use_default_request_options_provider():
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
+    assert isinstance(retriever.request_option_provider, DefaultRequestOptionsProvider)

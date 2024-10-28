@@ -3,10 +3,12 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -57,10 +59,19 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
     }
+
+    /** If configured max feed read time elapsed we exit with a transient error */
+    protected fun checkMaxReadTimeElapsed() {
+        sharedState.configuration.maxSnapshotReadDuration?.let {
+            if (java.time.Duration.between(sharedState.snapshotReadStartTime, Instant.now()) > it) {
+                throw TransientErrorException("Shutting down snapshot reader: max duration elapsed")
+            }
+        }
+    }
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -68,6 +79,12 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val numRecords = AtomicLong()
 
     override suspend fun run() {
+        /* Don't start read if we've gone over max duration.
+        We check for elapsed duration before reading and not while because
+        existing exiting with an exception skips checkpoint(), so any work we
+        did before time has elapsed will be wasted. */
+        checkMaxReadTimeElapsed()
+
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
@@ -99,7 +116,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -109,6 +126,12 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
+        /* Don't start read if we've gone over max duration.
+        We check for elapsed duration before reading and not while because
+        existing exiting with an exception skips checkpoint(), so any work we
+        did before time has elapsed will be wasted. */
+        checkMaxReadTimeElapsed()
+
         val fetchSize: Int = streamState.fetchSizeOrDefault
         val limit: Long = streamState.limit
         incumbentLimit.set(limit)
