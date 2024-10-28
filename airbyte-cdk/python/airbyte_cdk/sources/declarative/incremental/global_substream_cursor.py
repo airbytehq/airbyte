@@ -4,12 +4,32 @@
 
 import threading
 import time
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, TypeVar, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
+
+T = TypeVar("T")
+
+
+def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[T, bool]]:
+    """
+    Iterates over the given generator and returns a tuple containing the element and a flag
+    indicating whether it's the last element in the generator. If the generator is empty,
+    it returns an empty iterator.
+    """
+    iterator = iter(generator)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return  # Return an empty iterator
+
+    for next_item in iterator:
+        yield current, False
+        current = next_item
+    yield current, True
 
 
 class Timer:
@@ -25,7 +45,7 @@ class Timer:
 
     def finish(self) -> int:
         if self._start:
-            return int((time.perf_counter_ns() - self._start) // 1e9)
+            return ((time.perf_counter_ns() - self._start) / 1e9).__ceil__()
         else:
             raise RuntimeError("Global substream cursor timer not started")
 
@@ -52,6 +72,11 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._slice_semaphore = threading.Semaphore(0)  # Start with 0, indicating no slices being tracked
         self._all_slices_yielded = False
         self._lookback_window: Optional[int] = None
+        self._current_partition: Optional[Mapping[str, Any]] = None
+        self._last_slice: bool = False
+
+    def start_slices_generation(self) -> None:
+        self._timer.start()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
@@ -68,32 +93,40 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         * Setting `self._all_slices_yielded = True`. We do that before actually yielding the last slice as the caller of `stream_slices` might stop iterating at any point and hence the code after `yield` might not be executed
         * Yield the last slice. At that point, once there are as many slices yielded as closes, the global slice will be closed too
         """
-        previous_slice = None
-
         slice_generator = (
             StreamSlice(partition=partition, cursor_slice=cursor_slice)
             for partition in self._partition_router.stream_slices()
             for cursor_slice in self._stream_cursor.stream_slices()
         )
-        self._timer.start()
 
-        for slice in slice_generator:
-            if previous_slice is not None:
-                # Release the semaphore to indicate that a slice has been yielded
-                self._slice_semaphore.release()
-                yield previous_slice
+        self.start_slices_generation()
+        for slice, last in iterate_with_last_flag(slice_generator):
+            self._current_partition = slice.partition
+            self.register_slice(last)
+            yield slice
+        self._current_partition = None
+        self._last_slice = True
 
-            # Store the current slice as the previous slice for the next iteration
-            previous_slice = slice
+    def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
+        slice_generator = (
+            StreamSlice(partition=partition, cursor_slice=cursor_slice) for cursor_slice in self._stream_cursor.stream_slices()
+        )
 
-        # After all slices have been generated, release the semaphore one final time
-        # and flag that all slices have been yielded
+        yield from slice_generator
+
+    def register_slice(self, last: bool) -> None:
+        """
+        Tracks the processing of a stream slice.
+
+        Releases the semaphore for each slice. If it's the last slice (`last=True`),
+        sets `_all_slices_yielded` to `True` to indicate no more slices will be processed.
+
+        Args:
+            last (bool): True if the current slice is the last in the sequence.
+        """
         self._slice_semaphore.release()
-        self._all_slices_yielded = True
-
-        # Yield the last slice
-        if previous_slice is not None:
-            yield previous_slice
+        if last:
+            self._all_slices_yielded = True
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -125,7 +158,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             self._lookback_window = stream_state["lookback_window"]
             self._inject_lookback_into_stream_cursor(stream_state["lookback_window"])
 
-        self._stream_cursor.set_initial_state(stream_state["state"])
+        if "state" in stream_state:
+            self._stream_cursor.set_initial_state(stream_state["state"])
+        elif "states" not in stream_state:
+            # We assume that `stream_state` is in the old global format
+            # Example: {"global_state_format_key": "global_state_format_value"}
+            self._stream_cursor.set_initial_state(stream_state)
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
@@ -169,10 +207,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
                 self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
-    def get_stream_state(self) -> StreamState:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = True) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
 
-        parent_state = self._partition_router.get_stream_state()
+        parent_state = self._partition_router.get_stream_state(
+            partition=partition or self._current_partition, last=self._last_slice or last
+        )
         if parent_state:
             state["parent_state"] = parent_state
 

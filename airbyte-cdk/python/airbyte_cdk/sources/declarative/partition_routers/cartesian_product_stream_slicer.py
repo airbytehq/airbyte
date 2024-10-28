@@ -139,7 +139,7 @@ class CartesianProductStreamSlicer(PartitionRouter):
         for stream_slicer in self.stream_slicers:
             stream_slicer.set_initial_state(stream_state)
 
-    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+    def get_stream_state(self, partition: Optional[Mapping[str, Any]] = None, last: bool = False) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 
@@ -160,7 +160,8 @@ class CartesianProductStreamSlicer(PartitionRouter):
         """
         combined_state: dict[str, StreamState] = {}
         for s in self.stream_slicers:
-            parent_state = s.get_stream_state()
+            # Getting the initial state of the stream slicer
+            parent_state = s.get_stream_state(partition=None, last=last)
             if parent_state:
                 combined_state.update(parent_state)
         return combined_state
