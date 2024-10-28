@@ -1,40 +1,294 @@
-version: 4.3.2
+version: 5.15.0
+
 type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
-  - customers
+    - customers
+
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-      - results
-  paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: offset
-    page_size_option:
-      inject_into: request_parameter
-      field_name: limit
-      type: RequestOption
-    pagination_strategy:
-      type: OffsetIncrement
-      page_size: 500
-  requester:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customers
+          http_method: GET
+          request_parameters:
+            sort: lastModifiedAt asc
+            where: lastModifiedAt >= :date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: var.date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    discount_codes:
+      type: DeclarativeStream
+      name: discount_codes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: discount-codes
+          http_method: GET
+          request_parameters:
+            sort: lastModifiedAt asc
+            where: lastModifiedAt >= :date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: var.date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discount_codes"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: orders
+          http_method: GET
+          request_parameters:
+            sort: lastModifiedAt asc
+            where: lastModifiedAt >= :date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: var.date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    payments:
+      type: DeclarativeStream
+      name: payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: payments
+          http_method: GET
+          request_parameters:
+            sort: lastModifiedAt asc
+            where: lastModifiedAt >= :date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: var.date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payments"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          request_parameters:
+            sort: lastModifiedAt asc
+            where: lastModifiedAt >= :date
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: var.date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+  base_requester:
     type: HttpRequester
     url_base: >-
-      https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-      config['project_key'] }}
-    path: "{{ parameters.path }}"
-    http_method: GET
-    request_parameters:
-      sort: lastModifiedAt asc
-      where: lastModifiedAt >= :date
-    request_headers: {}
+      https://api.{{ config['region'] }}.{{ config['host']
+      }}.commercetools.com/{{ config['project_key'] }}
     authenticator:
       type: CustomAuthenticator
       class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
@@ -42,2650 +296,31 @@ definitions:
       client_secret: "{{ config['client_secret'] }}"
       refresh_request_body:
         scope: manage_project:{{ config['project_key'] }}
-      token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
+      token_refresh_endpoint: >-
+        https://auth.{{ config['region'] }}.{{ config['host']
+        }}.commercetools.com/oauth/token
       grant_type: client_credentials
       access_token_name: access_token
-    request_body_json: {}
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  base_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  customers_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          customerNumber:
-            type:
-            - 'null'
-            - string
-          key:
-            type:
-            - 'null'
-            - string
-          version:
-            type:
-            - 'null'
-            - number
-          createdAt:
-            type:
-            - 'null'
-            - string
-            format: ' date-time'
-          createdBy: created_by.json
-          lastModifiedAt:
-            type:
-            - 'null'
-            - string
-            format: ' date-time'
-          lastModifiedBy: last_modified_by.json
-          email:
-            type:
-            - 'null'
-            - string
-          password:
-            type:
-            - 'null'
-            - string
-          stores:
-            type:
-            - 'null'
-            - array
-            items: key_reference.json
-          firstName:
-            type:
-            - 'null'
-            - string
-          lastName:
-            type:
-            - 'null'
-            - string
-          middleName:
-            type:
-            - 'null'
-            - string
-          title:
-            type:
-            - 'null'
-            - string
-          salutation:
-            type:
-            - 'null'
-            - string
-          dateOfBirth:
-            type:
-            - 'null'
-            - string
-            format: date
-          companyName:
-            type:
-            - 'null'
-            - string
-          vatId:
-            type:
-            - 'null'
-            - string
-          addresses:
-            type:
-            - 'null'
-            - array
-            items: address.json
-          defaultShippingAddressId:
-            type:
-            - 'null'
-            - string
-          shippingAddressIds:
-            type:
-            - 'null'
-            - array
-          defaultBillingAddressId:
-            type:
-            - 'null'
-            - string
-          billingAddressIds:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - string
-          isEmailVerified:
-            type:
-            - 'null'
-            - boolean
-          externalId:
-            type:
-            - 'null'
-            - string
-          customerGroup: reference.json
-          custom: custom.json
-          locale:
-            type:
-            - 'null'
-            - string
-          authenticationMode:
-            type:
-            - 'null'
-            - string
-          lastMessageSequenceNumber:
-            type:
-            - 'null'
-            - integer
-          versionModifiedAt:
-            type:
-            - 'null'
-            - string
-  discount_codes_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          version:
-            type:
-            - 'null'
-            - number
-          createdAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          createdBy: created_by.json
-          lastModifiedAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          lastModifiedBy: last_modified_by.json
-          name: localized_string.json
-          description: localized_string.json
-          code:
-            type:
-            - 'null'
-            - string
-          cartDiscounts:
-            type:
-            - 'null'
-            - array
-            items: reference.json
-          groups:
-            type:
-            - 'null'
-            - array
-          isActive:
-            type:
-            - 'null'
-            - boolean
-          validFrom:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          validUntil:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          references:
-            type:
-            - 'null'
-            - array
-            items: reference.json
-          maxApplications:
-            type:
-            - 'null'
-            - number
-          maxApplicationsPerCustomer:
-            type:
-            - 'null'
-            - number
-          custom: custom.json
-          applicationVersion:
-            type:
-            - 'null'
-            - integer
-          attributeTypes:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-          cartFieldTypes:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-          customLineItemFieldTypes:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-          lineItemFieldTypes:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-          versionModifiedAt:
-            type:
-            - 'null'
-            - string
-  orders_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          version:
-            type:
-            - 'null'
-            - number
-          createdAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          createdBy: created_by.json
-          lastModifiedAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          lastModifiedBy: last_modified_by.json
-          completedAt:
-            type:
-            - 'null'
-            - integer
-            format: date-time
-          orderNumber:
-            type:
-            - 'null'
-            - string
-          customerId:
-            type:
-            - 'null'
-            - string
-          customerEmail:
-            type:
-            - 'null'
-            - string
-          anonymousId:
-            type:
-            - 'null'
-            - string
-          store: key_reference.json
-          lineItems:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - string
-                productId:
-                  type:
-                  - 'null'
-                  - string
-                name: localized_string.json
-                productSlug: localized_string.json
-                productType: reference.json
-                variant: product_variant.json
-                price: price.json
-                taxedPrice: taxed_item_price.json
-                totalPrice: money.json
-                quantity:
-                  type:
-                  - 'null'
-                  - number
-                addedAt:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-                state:
-                  type:
-                  - 'null'
-                  - array
-                  items: state.json
-                taxRate: taxrate.json
-                supplyChannel: reference.json
-                distributionChannel: reference.json
-                discountedPricePerQuantity: discounted_price_per_quantity.json
-                priceMode:
-                  type:
-                  - 'null'
-                  - string
-                lineItemMode:
-                  type:
-                  - 'null'
-                  - string
-                custom: custom.json
-                shippingDetails: shipping_details.json
-                lastModifiedAt:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-          customLineItems:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - string
-                name: localized_string.json
-                money: money.json
-                taxedPrice: taxed_item_price.json
-                totalPrice: money.json
-                slug:
-                  type:
-                  - 'null'
-                  - string
-                quantity:
-                  type:
-                  - 'null'
-                  - number
-                state:
-                  type:
-                  - 'null'
-                  - array
-                  items: state.json
-                taxCategory: reference.json
-                taxRate: taxrate.json
-                discountedPricePerQuantity:
-                  type:
-                  - 'null'
-                  - array
-                  items: discounted_price_per_quantity.json
-                custom: custom.json
-                shippingDetails: shipping_details.json
-          totalPrice: money.json
-          taxedPrice: taxed_price.json
-          shippingAddress: address.json
-          billingAddress: address.json
-          taxMode:
-            type:
-            - 'null'
-            - string
-          taxRoundingMode:
-            type:
-            - 'null'
-            - string
-          taxCalculationMode:
-            type:
-            - 'null'
-            - string
-          customerGroup: reference.json
-          country:
-            type:
-            - 'null'
-            - string
-          orderState:
-            type:
-            - 'null'
-            - string
-          state: reference.json
-          shipmentState:
-            type:
-            - 'null'
-            - string
-          paymentState:
-            type:
-            - 'null'
-            - string
-          shippingInfo:
-            type:
-            - 'null'
-            - object
-            properties:
-              shippingMethodName:
-                type:
-                - 'null'
-                - string
-              price: money.json
-              shippingRate:
-                type:
-                - 'null'
-                - object
-                properties:
-                  price: money.json
-                  freeAbove: money.json
-                  tiers:
-                    type:
-                    - 'null'
-                    - array
-                  isMatching:
-                    type:
-                    - 'null'
-                    - boolean
-              taxedPrice: taxed_item_price.json
-              taxRate: taxrate.json
-              taxCategory: reference.json
-              shippingMethod: reference.json
-              deliveries:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    id:
-                      type:
-                      - 'null'
-                      - string
-                    createdAt:
-                      type:
-                      - 'null'
-                      - string
-                      format: date-time
-                    items:
-                      type:
-                      - 'null'
-                      - array
-                      items:
-                        type:
-                        - 'null'
-                        - object
-                        properties:
-                          id:
-                            type:
-                            - 'null'
-                            - string
-                          quantity:
-                            type:
-                            - 'null'
-                            - number
-                    parcels:
-                      type:
-                      - 'null'
-                      - array
-                      items:
-                        type:
-                        - 'null'
-                        - object
-                        properties:
-                          id:
-                            type:
-                            - 'null'
-                            - string
-                          createdAt:
-                            type:
-                            - 'null'
-                            - string
-                            format: date-time
-                          measurements:
-                            type:
-                            - 'null'
-                            - string
-                          trackingData:
-                            type:
-                            - 'null'
-                            - object
-                            properties:
-                              trackingId:
-                                type:
-                                - 'null'
-                                - string
-                              carrier:
-                                type:
-                                - 'null'
-                                - string
-                              provider:
-                                type:
-                                - 'null'
-                                - string
-                              providerTransaction:
-                                type:
-                                - 'null'
-                                - string
-                              isReturn:
-                                type:
-                                - 'null'
-                                - boolean
-                          items:
-                            type:
-                            - 'null'
-                            - array
-                            items:
-                              type:
-                              - 'null'
-                              - object
-                              properties:
-                                id:
-                                  type:
-                                  - 'null'
-                                  - string
-                                quantity:
-                                  type:
-                                  - 'null'
-                                  - number
-                    address: address.json
-              discountedPrice:
-                type:
-                - 'null'
-                - object
-                properties:
-                  value: money.json
-                  includedDiscounts:
-                    type:
-                    - 'null'
-                    - array
-                    items:
-                      type:
-                      - 'null'
-                      - object
-                      properties:
-                        discount: reference.json
-                        discountedAmount: money.json
-              shippingMethodState:
-                type:
-                - 'null'
-                - string
-          syncInfo:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              properties:
-                channel: reference.json
-                externalId:
-                  type:
-                  - 'null'
-                  - string
-                syncedAt:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-          returnInfo:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              properties:
-                items:
-                  type:
-                  - 'null'
-                  - array
-                  items:
-                    type:
-                    - 'null'
-                    - object
-                    properties:
-                      id:
-                        type:
-                        - 'null'
-                        - string
-                      type:
-                        type:
-                        - 'null'
-                        - string
-                      quantity:
-                        type:
-                        - 'null'
-                        - number
-                      lineItemId:
-                        type:
-                        - 'null'
-                        - string
-                      comment:
-                        type:
-                        - 'null'
-                        - string
-                      shipmentState:
-                        type:
-                        - 'null'
-                        - string
-                      paymentState:
-                        type:
-                        - 'null'
-                        - string
-                      lastModifiedAt:
-                        type:
-                        - 'null'
-                        - string
-                        format: date-time
-                      createdAt:
-                        type:
-                        - 'null'
-                        - string
-                        format: date-time
-                returnTrackingId:
-                  type:
-                  - 'null'
-                  - string
-                returnDate:
-                  type:
-                  - 'null'
-                  - string
-                  format: date-time
-          discountCodes:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              properties:
-                discountCode: reference.json
-                state:
-                  type:
-                  - 'null'
-                  - string
-          refusedGifts:
-            type:
-            - 'null'
-            - array
-            items: reference.json
-          lastMessageSequenceNumber:
-            type:
-            - 'null'
-            - number
-          cart: reference.json
-          custom: custom.json
-          paymentInfo:
-            type:
-            - 'null'
-            - object
-            properties:
-              payments:
-                type:
-                - 'null'
-                - array
-                items: reference.json
-          locale:
-            type:
-            - 'null'
-            - string
-          inventoryMode:
-            type:
-            - 'null'
-            - string
-          shippingRateInput: localized_string.json
-          origin:
-            type:
-            - 'null'
-            - string
-          directDiscounts:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - string
-          shipping:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - string
-          shippingMode:
-            type:
-            - 'null'
-            - string
-          taxedShippingPrice:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-          transactionFee:
-            type:
-            - 'null'
-            - boolean
-          type:
-            type:
-            - 'null'
-            - string
-          versionModifiedAt:
-            type:
-            - 'null'
-            - string
-          itemShippingAddresses:
-            type:
-            - 'null'
-            - array
-            items: address.json
-  payments_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          key:
-            type:
-            - 'null'
-            - string
-          version:
-            type:
-            - 'null'
-            - number
-          createdAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          createdBy: created_by.json
-          lastModifiedAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          lastModifiedBy: last_modified_by.json
-          customer: reference.json
-          anonymousId:
-            type:
-            - 'null'
-            - string
-          interfaceId:
-            type:
-            - 'null'
-            - string
-          amountPlanned: money.json
-          paymentMethodInfo:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-            properties:
-              paymentInterface:
-                type:
-                - 'null'
-                - string
-              method:
-                type:
-                - 'null'
-                - string
-              name: localized_string.json
-          paymentStatus:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-            properties:
-              interfaceCode:
-                type:
-                - 'null'
-                - string
-              interfaceText:
-                type:
-                - 'null'
-                - string
-              state: reference.json
-          transactions:
-            type:
-            - 'null'
-            - array
-            items:
-              type:
-              - 'null'
-              - object
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - string
-                timestamp:
-                  type:
-                  - 'null'
-                  - string
-                type:
-                  type:
-                  - 'null'
-                  - string
-                amount: money.json
-                interactionId:
-                  type:
-                  - 'null'
-                  - string
-                state:
-                  type:
-                  - 'null'
-                  - string
-          interfaceInteractions:
-            type:
-            - 'null'
-            - array
-            items: custom.json
-          custom: custom.json
-  products_stream:
-    type: DeclarativeStream
-    primary_key: id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: >-
-          https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-          config['project_key'] }}
-        path: "{{ parameters.path }}"
-        http_method: GET
-        request_parameters:
-          sort: lastModifiedAt asc
-          where: lastModifiedAt >= :date
-        request_headers: {}
-        authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-          client_id: "{{ config['client_id'] }}"
-          client_secret: "{{ config['client_secret'] }}"
-          refresh_request_body:
-            scope: manage_project:{{ config['project_key'] }}
-          token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-          grant_type: client_credentials
-          access_token_name: access_token
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          inject_into: request_parameter
-          field_name: limit
-          type: RequestOption
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 500
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastModifiedAt
-      cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: var.date
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            type:
-            - 'null'
-            - string
-          key:
-            type:
-            - 'null'
-            - string
-          version:
-            type:
-            - 'null'
-            - number
-          createdAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          createdBy: created_by.json
-          lastModifiedAt:
-            type:
-            - 'null'
-            - string
-            format: date-time
-          lastModifiedBy: last_modified_by.json
-          productType: reference.json
-          masterData:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-            properties:
-              published:
-                type:
-                - 'null'
-                - boolean
-              current: product_data.json
-              staged: product_data.json
-              hasStagedChanges:
-                type:
-                - 'null'
-                - boolean
-          taxCategory: reference.json
-          state: reference.json
-          reviewRatingStatistics:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-            properties:
-              averageRating:
-                type:
-                - 'null'
-                - number
-              highestRating:
-                type:
-                - 'null'
-                - number
-              lowestRating:
-                type:
-                - 'null'
-                - number
-              count:
-                type:
-                - 'null'
-                - number
-              ratingsDistribution:
-                type:
-                - 'null'
-                - object
-                additionalProperties: true
-          lastMessageSequenceNumber:
-            type:
-            - 'null'
-            - integer
-          lastVariantId:
-            type:
-            - 'null'
-            - integer
-          versionModifiedAt:
-            type:
-            - 'null'
-            - string
+
 streams:
-- type: DeclarativeStream
-  primary_key: id
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type:
-          - 'null'
-          - string
-        customerNumber:
-          type:
-          - 'null'
-          - string
-        key:
-          type:
-          - 'null'
-          - string
-        version:
-          type:
-          - 'null'
-          - number
-        createdAt:
-          type:
-          - 'null'
-          - string
-          format: ' date-time'
-        createdBy: created_by.json
-        lastModifiedAt:
-          type:
-          - 'null'
-          - string
-          format: ' date-time'
-        lastModifiedBy: last_modified_by.json
-        email:
-          type:
-          - 'null'
-          - string
-        password:
-          type:
-          - 'null'
-          - string
-        stores:
-          type:
-          - 'null'
-          - array
-          items: key_reference.json
-        firstName:
-          type:
-          - 'null'
-          - string
-        lastName:
-          type:
-          - 'null'
-          - string
-        middleName:
-          type:
-          - 'null'
-          - string
-        title:
-          type:
-          - 'null'
-          - string
-        salutation:
-          type:
-          - 'null'
-          - string
-        dateOfBirth:
-          type:
-          - 'null'
-          - string
-          format: date
-        companyName:
-          type:
-          - 'null'
-          - string
-        vatId:
-          type:
-          - 'null'
-          - string
-        addresses:
-          type:
-          - 'null'
-          - array
-          items: address.json
-        defaultShippingAddressId:
-          type:
-          - 'null'
-          - string
-        shippingAddressIds:
-          type:
-          - 'null'
-          - array
-        defaultBillingAddressId:
-          type:
-          - 'null'
-          - string
-        billingAddressIds:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - string
-        isEmailVerified:
-          type:
-          - 'null'
-          - boolean
-        externalId:
-          type:
-          - 'null'
-          - string
-        customerGroup: reference.json
-        custom: custom.json
-        locale:
-          type:
-          - 'null'
-          - string
-        authenticationMode:
-          type:
-          - 'null'
-          - string
-        lastMessageSequenceNumber:
-          type:
-          - 'null'
-          - integer
-        versionModifiedAt:
-          type:
-          - 'null'
-          - string
-  name: "customers"
-- type: DeclarativeStream
-  primary_key: id
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type:
-          - 'null'
-          - string
-        version:
-          type:
-          - 'null'
-          - number
-        createdAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        createdBy: created_by.json
-        lastModifiedAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        lastModifiedBy: last_modified_by.json
-        name: localized_string.json
-        description: localized_string.json
-        code:
-          type:
-          - 'null'
-          - string
-        cartDiscounts:
-          type:
-          - 'null'
-          - array
-          items: reference.json
-        groups:
-          type:
-          - 'null'
-          - array
-        isActive:
-          type:
-          - 'null'
-          - boolean
-        validFrom:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        validUntil:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        references:
-          type:
-          - 'null'
-          - array
-          items: reference.json
-        maxApplications:
-          type:
-          - 'null'
-          - number
-        maxApplicationsPerCustomer:
-          type:
-          - 'null'
-          - number
-        custom: custom.json
-        applicationVersion:
-          type:
-          - 'null'
-          - integer
-        attributeTypes:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-        cartFieldTypes:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-        customLineItemFieldTypes:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-        lineItemFieldTypes:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-        versionModifiedAt:
-          type:
-          - 'null'
-          - string
-  name: "discount_codes"
-- type: DeclarativeStream
-  primary_key: id
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type:
-          - 'null'
-          - string
-        version:
-          type:
-          - 'null'
-          - number
-        createdAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        createdBy: created_by.json
-        lastModifiedAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        lastModifiedBy: last_modified_by.json
-        completedAt:
-          type:
-          - 'null'
-          - integer
-          format: date-time
-        orderNumber:
-          type:
-          - 'null'
-          - string
-        customerId:
-          type:
-          - 'null'
-          - string
-        customerEmail:
-          type:
-          - 'null'
-          - string
-        anonymousId:
-          type:
-          - 'null'
-          - string
-        store: key_reference.json
-        lineItems:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            properties:
-              id:
-                type:
-                - 'null'
-                - string
-              productId:
-                type:
-                - 'null'
-                - string
-              name: localized_string.json
-              productSlug: localized_string.json
-              productType: reference.json
-              variant: product_variant.json
-              price: price.json
-              taxedPrice: taxed_item_price.json
-              totalPrice: money.json
-              quantity:
-                type:
-                - 'null'
-                - number
-              addedAt:
-                type:
-                - 'null'
-                - string
-                format: date-time
-              state:
-                type:
-                - 'null'
-                - array
-                items: state.json
-              taxRate: taxrate.json
-              supplyChannel: reference.json
-              distributionChannel: reference.json
-              discountedPricePerQuantity: discounted_price_per_quantity.json
-              priceMode:
-                type:
-                - 'null'
-                - string
-              lineItemMode:
-                type:
-                - 'null'
-                - string
-              custom: custom.json
-              shippingDetails: shipping_details.json
-              lastModifiedAt:
-                type:
-                - 'null'
-                - string
-                format: date-time
-        customLineItems:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            properties:
-              id:
-                type:
-                - 'null'
-                - string
-              name: localized_string.json
-              money: money.json
-              taxedPrice: taxed_item_price.json
-              totalPrice: money.json
-              slug:
-                type:
-                - 'null'
-                - string
-              quantity:
-                type:
-                - 'null'
-                - number
-              state:
-                type:
-                - 'null'
-                - array
-                items: state.json
-              taxCategory: reference.json
-              taxRate: taxrate.json
-              discountedPricePerQuantity:
-                type:
-                - 'null'
-                - array
-                items: discounted_price_per_quantity.json
-              custom: custom.json
-              shippingDetails: shipping_details.json
-        totalPrice: money.json
-        taxedPrice: taxed_price.json
-        shippingAddress: address.json
-        billingAddress: address.json
-        taxMode:
-          type:
-          - 'null'
-          - string
-        taxRoundingMode:
-          type:
-          - 'null'
-          - string
-        taxCalculationMode:
-          type:
-          - 'null'
-          - string
-        customerGroup: reference.json
-        country:
-          type:
-          - 'null'
-          - string
-        orderState:
-          type:
-          - 'null'
-          - string
-        state: reference.json
-        shipmentState:
-          type:
-          - 'null'
-          - string
-        paymentState:
-          type:
-          - 'null'
-          - string
-        shippingInfo:
-          type:
-          - 'null'
-          - object
-          properties:
-            shippingMethodName:
-              type:
-              - 'null'
-              - string
-            price: money.json
-            shippingRate:
-              type:
-              - 'null'
-              - object
-              properties:
-                price: money.json
-                freeAbove: money.json
-                tiers:
-                  type:
-                  - 'null'
-                  - array
-                isMatching:
-                  type:
-                  - 'null'
-                  - boolean
-            taxedPrice: taxed_item_price.json
-            taxRate: taxrate.json
-            taxCategory: reference.json
-            shippingMethod: reference.json
-            deliveries:
-              type:
-              - 'null'
-              - array
-              items:
-                type:
-                - 'null'
-                - object
-                properties:
-                  id:
-                    type:
-                    - 'null'
-                    - string
-                  createdAt:
-                    type:
-                    - 'null'
-                    - string
-                    format: date-time
-                  items:
-                    type:
-                    - 'null'
-                    - array
-                    items:
-                      type:
-                      - 'null'
-                      - object
-                      properties:
-                        id:
-                          type:
-                          - 'null'
-                          - string
-                        quantity:
-                          type:
-                          - 'null'
-                          - number
-                  parcels:
-                    type:
-                    - 'null'
-                    - array
-                    items:
-                      type:
-                      - 'null'
-                      - object
-                      properties:
-                        id:
-                          type:
-                          - 'null'
-                          - string
-                        createdAt:
-                          type:
-                          - 'null'
-                          - string
-                          format: date-time
-                        measurements:
-                          type:
-                          - 'null'
-                          - string
-                        trackingData:
-                          type:
-                          - 'null'
-                          - object
-                          properties:
-                            trackingId:
-                              type:
-                              - 'null'
-                              - string
-                            carrier:
-                              type:
-                              - 'null'
-                              - string
-                            provider:
-                              type:
-                              - 'null'
-                              - string
-                            providerTransaction:
-                              type:
-                              - 'null'
-                              - string
-                            isReturn:
-                              type:
-                              - 'null'
-                              - boolean
-                        items:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type:
-                            - 'null'
-                            - object
-                            properties:
-                              id:
-                                type:
-                                - 'null'
-                                - string
-                              quantity:
-                                type:
-                                - 'null'
-                                - number
-                  address: address.json
-            discountedPrice:
-              type:
-              - 'null'
-              - object
-              properties:
-                value: money.json
-                includedDiscounts:
-                  type:
-                  - 'null'
-                  - array
-                  items:
-                    type:
-                    - 'null'
-                    - object
-                    properties:
-                      discount: reference.json
-                      discountedAmount: money.json
-            shippingMethodState:
-              type:
-              - 'null'
-              - string
-        syncInfo:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            properties:
-              channel: reference.json
-              externalId:
-                type:
-                - 'null'
-                - string
-              syncedAt:
-                type:
-                - 'null'
-                - string
-                format: date-time
-        returnInfo:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            properties:
-              items:
-                type:
-                - 'null'
-                - array
-                items:
-                  type:
-                  - 'null'
-                  - object
-                  properties:
-                    id:
-                      type:
-                      - 'null'
-                      - string
-                    type:
-                      type:
-                      - 'null'
-                      - string
-                    quantity:
-                      type:
-                      - 'null'
-                      - number
-                    lineItemId:
-                      type:
-                      - 'null'
-                      - string
-                    comment:
-                      type:
-                      - 'null'
-                      - string
-                    shipmentState:
-                      type:
-                      - 'null'
-                      - string
-                    paymentState:
-                      type:
-                      - 'null'
-                      - string
-                    lastModifiedAt:
-                      type:
-                      - 'null'
-                      - string
-                      format: date-time
-                    createdAt:
-                      type:
-                      - 'null'
-                      - string
-                      format: date-time
-              returnTrackingId:
-                type:
-                - 'null'
-                - string
-              returnDate:
-                type:
-                - 'null'
-                - string
-                format: date-time
-        discountCodes:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            properties:
-              discountCode: reference.json
-              state:
-                type:
-                - 'null'
-                - string
-        refusedGifts:
-          type:
-          - 'null'
-          - array
-          items: reference.json
-        lastMessageSequenceNumber:
-          type:
-          - 'null'
-          - number
-        cart: reference.json
-        custom: custom.json
-        paymentInfo:
-          type:
-          - 'null'
-          - object
-          properties:
-            payments:
-              type:
-              - 'null'
-              - array
-              items: reference.json
-        locale:
-          type:
-          - 'null'
-          - string
-        inventoryMode:
-          type:
-          - 'null'
-          - string
-        shippingRateInput: localized_string.json
-        origin:
-          type:
-          - 'null'
-          - string
-        directDiscounts:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - string
-        shipping:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - string
-        shippingMode:
-          type:
-          - 'null'
-          - string
-        taxedShippingPrice:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-        transactionFee:
-          type:
-          - 'null'
-          - boolean
-        type:
-          type:
-          - 'null'
-          - string
-        versionModifiedAt:
-          type:
-          - 'null'
-          - string
-        itemShippingAddresses:
-          type:
-          - 'null'
-          - array
-          items: address.json
-  name: "orders"
-- type: DeclarativeStream
-  primary_key: id
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type:
-          - 'null'
-          - string
-        key:
-          type:
-          - 'null'
-          - string
-        version:
-          type:
-          - 'null'
-          - number
-        createdAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        createdBy: created_by.json
-        lastModifiedAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        lastModifiedBy: last_modified_by.json
-        customer: reference.json
-        anonymousId:
-          type:
-          - 'null'
-          - string
-        interfaceId:
-          type:
-          - 'null'
-          - string
-        amountPlanned: money.json
-        paymentMethodInfo:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-          properties:
-            paymentInterface:
-              type:
-              - 'null'
-              - string
-            method:
-              type:
-              - 'null'
-              - string
-            name: localized_string.json
-        paymentStatus:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-          properties:
-            interfaceCode:
-              type:
-              - 'null'
-              - string
-            interfaceText:
-              type:
-              - 'null'
-              - string
-            state: reference.json
-        transactions:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - object
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                - 'null'
-                - string
-              timestamp:
-                type:
-                - 'null'
-                - string
-              type:
-                type:
-                - 'null'
-                - string
-              amount: money.json
-              interactionId:
-                type:
-                - 'null'
-                - string
-              state:
-                type:
-                - 'null'
-                - string
-        interfaceInteractions:
-          type:
-          - 'null'
-          - array
-          items: custom.json
-        custom: custom.json
-  name: "payments"
-- type: DeclarativeStream
-  primary_key: id
-  retriever:
-    type: SimpleRetriever
-    requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/{{
-        config['project_key'] }}
-      path: "{{ parameters.path }}"
-      http_method: GET
-      request_parameters:
-        sort: lastModifiedAt asc
-        where: lastModifiedAt >= :date
-      request_headers: {}
-      authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.CommerceToolsOauth2Authenticator
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_request_body:
-          scope: manage_project:{{ config['project_key'] }}
-        token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
-        grant_type: client_credentials
-        access_token_name: access_token
-      request_body_json: {}
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - results
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: offset
-      page_size_option:
-        inject_into: request_parameter
-        field_name: limit
-        type: RequestOption
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 500
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: lastModifiedAt
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    start_time_option:
-      inject_into: request_parameter
-      field_name: var.date
-      type: RequestOption
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        id:
-          type:
-          - 'null'
-          - string
-        key:
-          type:
-          - 'null'
-          - string
-        version:
-          type:
-          - 'null'
-          - number
-        createdAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        createdBy: created_by.json
-        lastModifiedAt:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        lastModifiedBy: last_modified_by.json
-        productType: reference.json
-        masterData:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-          properties:
-            published:
-              type:
-              - 'null'
-              - boolean
-            current: product_data.json
-            staged: product_data.json
-            hasStagedChanges:
-              type:
-              - 'null'
-              - boolean
-        taxCategory: reference.json
-        state: reference.json
-        reviewRatingStatistics:
-          type:
-          - 'null'
-          - object
-          additionalProperties: true
-          properties:
-            averageRating:
-              type:
-              - 'null'
-              - number
-            highestRating:
-              type:
-              - 'null'
-              - number
-            lowestRating:
-              type:
-              - 'null'
-              - number
-            count:
-              type:
-              - 'null'
-              - number
-            ratingsDistribution:
-              type:
-              - 'null'
-              - object
-              additionalProperties: true
-        lastMessageSequenceNumber:
-          type:
-          - 'null'
-          - integer
-        lastVariantId:
-          type:
-          - 'null'
-          - integer
-        versionModifiedAt:
-          type:
-          - 'null'
-          - string
-  name: "products"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/discount_codes"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/payments"
+  - $ref: "#/definitions/streams/products"
+
 spec:
-  documentation_url: https://docs.airbyte.com/integrations/sources/commercetools
   type: Spec
   connection_specification:
-    additionalProperties: true
-    $schema: http://json-schema.org/draft-07/schema#
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-    - start_date
-    - client_id
-    - client_secret
-    - host
-    - project_key
-    - region
+      - start_date
+      - client_id
+      - client_secret
+      - host
+      - project_key
+      - region
     properties:
       start_date:
         type: string
@@ -2695,35 +330,972 @@ spec:
         order: 0
       client_id:
         type: string
+        description: Id of API Client.
         title: Client ID
         airbyte_secret: true
-        description: "Id of API Client."
         order: 1
       client_secret:
         type: string
+        description: The password of secret of API Client.
         title: Client secret
         airbyte_secret: true
-        description: "The password of secret of API Client."
         order: 2
       host:
-        title: Host
-        description: >-
-          The cloud provider your shop is hosted. See: https://docs.commercetools.com/api/authorization
-        enum:
-        - gcp
-        - aws
         type: string
+        description: >-
+          The cloud provider your shop is hosted. See:
+          https://docs.commercetools.com/api/authorization
+        title: Host
+        enum:
+          - gcp
+          - aws
         order: 3
       project_key:
-        title: Project key
-        description: The project key
         type: string
+        description: The project key
+        title: Project key
         order: 4
       region:
-        title: Region
-        description: The region of the platform.
         type: string
+        description: The region of the platform.
+        title: Region
         examples:
-        - "us-central1"
-        - "australia-southeast1"
+          - us-central1
+          - australia-southeast1
         order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: false
+    discount_codes: false
+    orders: false
+    payments: false
+    products: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      addresses:
+        type:
+          - "null"
+          - array
+        items: address.json
+      authenticationMode:
+        type:
+          - "null"
+          - string
+      billingAddressIds:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companyName:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: " date-time"
+      createdBy: created_by.json
+      custom: custom.json
+      customerGroup: reference.json
+      customerNumber:
+        type:
+          - "null"
+          - string
+      dateOfBirth:
+        type:
+          - "null"
+          - string
+        format: date
+      defaultBillingAddressId:
+        type:
+          - "null"
+          - string
+      defaultShippingAddressId:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      externalId:
+        type:
+          - "null"
+          - string
+      firstName:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      isEmailVerified:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      lastMessageSequenceNumber:
+        type:
+          - "null"
+          - integer
+      lastModifiedAt:
+        type:
+          - "null"
+          - string
+        format: " date-time"
+      lastModifiedBy: last_modified_by.json
+      lastName:
+        type:
+          - "null"
+          - string
+      locale:
+        type:
+          - "null"
+          - string
+      middleName:
+        type:
+          - "null"
+          - string
+      password:
+        type:
+          - "null"
+          - string
+      salutation:
+        type:
+          - "null"
+          - string
+      shippingAddressIds:
+        type:
+          - "null"
+          - array
+      stores:
+        type:
+          - "null"
+          - array
+        items: key_reference.json
+      title:
+        type:
+          - "null"
+          - string
+      vatId:
+        type:
+          - "null"
+          - string
+      versionModifiedAt:
+        type:
+          - "null"
+          - string
+  discount_codes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      description: localized_string.json
+      applicationVersion:
+        type:
+          - "null"
+          - integer
+      attributeTypes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      cartDiscounts:
+        type:
+          - "null"
+          - array
+        items: reference.json
+      cartFieldTypes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      code:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdBy: created_by.json
+      custom: custom.json
+      customLineItemFieldTypes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      groups:
+        type:
+          - "null"
+          - array
+      id:
+        type:
+          - "null"
+          - string
+      isActive:
+        type:
+          - "null"
+          - boolean
+      lastModifiedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModifiedBy: last_modified_by.json
+      lineItemFieldTypes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      maxApplications:
+        type:
+          - "null"
+          - number
+      maxApplicationsPerCustomer:
+        type:
+          - "null"
+          - number
+      name: localized_string.json
+      references:
+        type:
+          - "null"
+          - array
+        items: reference.json
+      validFrom:
+        type:
+          - "null"
+          - string
+        format: date-time
+      validUntil:
+        type:
+          - "null"
+          - string
+        format: date-time
+      versionModifiedAt:
+        type:
+          - "null"
+          - string
+  orders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      type:
+        type:
+          - "null"
+          - string
+      anonymousId:
+        type:
+          - "null"
+          - string
+      billingAddress: address.json
+      cart: reference.json
+      completedAt:
+        type:
+          - "null"
+          - integer
+        format: date-time
+      country:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdBy: created_by.json
+      custom: custom.json
+      customLineItems:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            custom: custom.json
+            discountedPricePerQuantity:
+              type:
+                - "null"
+                - array
+              items: discounted_price_per_quantity.json
+            id:
+              type:
+                - "null"
+                - string
+            money: money.json
+            name: localized_string.json
+            quantity:
+              type:
+                - "null"
+                - number
+            shippingDetails: shipping_details.json
+            slug:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - array
+              items: state.json
+            taxCategory: reference.json
+            taxRate: taxrate.json
+            taxedPrice: taxed_item_price.json
+            totalPrice: money.json
+      customerEmail:
+        type:
+          - "null"
+          - string
+      customerGroup: reference.json
+      customerId:
+        type:
+          - "null"
+          - string
+      directDiscounts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      discountCodes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            discountCode: reference.json
+            state:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - string
+      inventoryMode:
+        type:
+          - "null"
+          - string
+      itemShippingAddresses:
+        type:
+          - "null"
+          - array
+        items: address.json
+      lastMessageSequenceNumber:
+        type:
+          - "null"
+          - number
+      lastModifiedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModifiedBy: last_modified_by.json
+      lineItems:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            addedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            custom: custom.json
+            discountedPricePerQuantity: discounted_price_per_quantity.json
+            distributionChannel: reference.json
+            id:
+              type:
+                - "null"
+                - string
+            lastModifiedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            lineItemMode:
+              type:
+                - "null"
+                - string
+            name: localized_string.json
+            price: price.json
+            priceMode:
+              type:
+                - "null"
+                - string
+            productId:
+              type:
+                - "null"
+                - string
+            productSlug: localized_string.json
+            productType: reference.json
+            quantity:
+              type:
+                - "null"
+                - number
+            shippingDetails: shipping_details.json
+            state:
+              type:
+                - "null"
+                - array
+              items: state.json
+            supplyChannel: reference.json
+            taxRate: taxrate.json
+            taxedPrice: taxed_item_price.json
+            totalPrice: money.json
+            variant: product_variant.json
+      locale:
+        type:
+          - "null"
+          - string
+      orderNumber:
+        type:
+          - "null"
+          - string
+      orderState:
+        type:
+          - "null"
+          - string
+      origin:
+        type:
+          - "null"
+          - string
+      paymentInfo:
+        type:
+          - "null"
+          - object
+        properties:
+          payments:
+            type:
+              - "null"
+              - array
+            items: reference.json
+      paymentState:
+        type:
+          - "null"
+          - string
+      refusedGifts:
+        type:
+          - "null"
+          - array
+        items: reference.json
+      returnInfo:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            items:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  comment:
+                    type:
+                      - "null"
+                      - string
+                  createdAt:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  lastModifiedAt:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  lineItemId:
+                    type:
+                      - "null"
+                      - string
+                  paymentState:
+                    type:
+                      - "null"
+                      - string
+                  quantity:
+                    type:
+                      - "null"
+                      - number
+                  shipmentState:
+                    type:
+                      - "null"
+                      - string
+            returnDate:
+              type:
+                - "null"
+                - string
+              format: date-time
+            returnTrackingId:
+              type:
+                - "null"
+                - string
+      shipmentState:
+        type:
+          - "null"
+          - string
+      shipping:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      shippingAddress: address.json
+      shippingInfo:
+        type:
+          - "null"
+          - object
+        properties:
+          deliveries:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                address: address.json
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                id:
+                  type:
+                    - "null"
+                    - string
+                items:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      quantity:
+                        type:
+                          - "null"
+                          - number
+                parcels:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      createdAt:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      items:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            quantity:
+                              type:
+                                - "null"
+                                - number
+                      measurements:
+                        type:
+                          - "null"
+                          - string
+                      trackingData:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          carrier:
+                            type:
+                              - "null"
+                              - string
+                          isReturn:
+                            type:
+                              - "null"
+                              - boolean
+                          provider:
+                            type:
+                              - "null"
+                              - string
+                          providerTransaction:
+                            type:
+                              - "null"
+                              - string
+                          trackingId:
+                            type:
+                              - "null"
+                              - string
+          discountedPrice:
+            type:
+              - "null"
+              - object
+            properties:
+              includedDiscounts:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    discount: reference.json
+                    discountedAmount: money.json
+              value: money.json
+          price: money.json
+          shippingMethod: reference.json
+          shippingMethodName:
+            type:
+              - "null"
+              - string
+          shippingMethodState:
+            type:
+              - "null"
+              - string
+          shippingRate:
+            type:
+              - "null"
+              - object
+            properties:
+              freeAbove: money.json
+              isMatching:
+                type:
+                  - "null"
+                  - boolean
+              price: money.json
+              tiers:
+                type:
+                  - "null"
+                  - array
+          taxCategory: reference.json
+          taxRate: taxrate.json
+          taxedPrice: taxed_item_price.json
+      shippingMode:
+        type:
+          - "null"
+          - string
+      shippingRateInput: localized_string.json
+      state: reference.json
+      store: key_reference.json
+      syncInfo:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            channel: reference.json
+            externalId:
+              type:
+                - "null"
+                - string
+            syncedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+      taxCalculationMode:
+        type:
+          - "null"
+          - string
+      taxMode:
+        type:
+          - "null"
+          - string
+      taxRoundingMode:
+        type:
+          - "null"
+          - string
+      taxedPrice: taxed_price.json
+      taxedShippingPrice:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      totalPrice: money.json
+      transactionFee:
+        type:
+          - "null"
+          - boolean
+      versionModifiedAt:
+        type:
+          - "null"
+          - string
+  payments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      amountPlanned: money.json
+      anonymousId:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdBy: created_by.json
+      custom: custom.json
+      customer: reference.json
+      id:
+        type:
+          - "null"
+          - string
+      interfaceId:
+        type:
+          - "null"
+          - string
+      interfaceInteractions:
+        type:
+          - "null"
+          - array
+        items: custom.json
+      key:
+        type:
+          - "null"
+          - string
+      lastModifiedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModifiedBy: last_modified_by.json
+      paymentMethodInfo:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          method:
+            type:
+              - "null"
+              - string
+          name: localized_string.json
+          paymentInterface:
+            type:
+              - "null"
+              - string
+      paymentStatus:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          interfaceCode:
+            type:
+              - "null"
+              - string
+          interfaceText:
+            type:
+              - "null"
+              - string
+          state: reference.json
+      transactions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            amount: money.json
+            id:
+              type:
+                - "null"
+                - string
+            interactionId:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - string
+            timestamp:
+              type:
+                - "null"
+                - string
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdBy: created_by.json
+      id:
+        type:
+          - "null"
+          - string
+      key:
+        type:
+          - "null"
+          - string
+      lastMessageSequenceNumber:
+        type:
+          - "null"
+          - integer
+      lastModifiedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModifiedBy: last_modified_by.json
+      lastVariantId:
+        type:
+          - "null"
+          - integer
+      masterData:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          current: product_data.json
+          hasStagedChanges:
+            type:
+              - "null"
+              - boolean
+          published:
+            type:
+              - "null"
+              - boolean
+          staged: product_data.json
+      productType: reference.json
+      reviewRatingStatistics:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          averageRating:
+            type:
+              - "null"
+              - number
+          count:
+            type:
+              - "null"
+              - number
+          highestRating:
+            type:
+              - "null"
+              - number
+          lowestRating:
+            type:
+              - "null"
+              - number
+          ratingsDistribution:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+      state: reference.json
+      taxCategory: reference.json
+      versionModifiedAt:
+        type:
+          - "null"
+          - string
