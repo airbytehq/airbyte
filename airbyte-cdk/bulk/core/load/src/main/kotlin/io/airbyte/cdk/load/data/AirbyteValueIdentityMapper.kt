@@ -46,7 +46,10 @@ open class AirbyteValueIdentityMapper(
                 is TimestampTypeWithoutTimezone ->
                     mapTimestampWithoutTimezone(value as TimestampValue, path)
                 is NullType -> mapNull(path)
-                is UnknownType -> mapUnknown(value as UnknownValue, path)
+                is UnknownType -> {
+                    collectFailure(path)
+                    mapNull(path)
+                }
             }
         } catch (e: Exception) {
             collectFailure(path)
@@ -111,6 +114,4 @@ open class AirbyteValueIdentityMapper(
         value
 
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
-
-    open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
 }
