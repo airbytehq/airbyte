@@ -81,10 +81,8 @@ class S3MultipartUpload<T : OutputStream>(
 
     inner class UploadStream : OutputStream() {
         override fun close() = runBlocking {
-            workQueue.send {
-                if (closeOnce.setOnce()) {
-                    workQueue.close()
-                }
+            if (closeOnce.setOnce()) {
+                workQueue.send { workQueue.close() }
             }
         }
 
@@ -101,7 +99,6 @@ class S3MultipartUpload<T : OutputStream>(
 
         override fun write(b: ByteArray) = runBlocking {
             workQueue.send {
-                println("write[${response.uploadId}](${b.size})")
                 wrappingBuffer.write(b)
                 if (underlyingBuffer.size() >= partSize) {
                     uploadPart()
@@ -113,7 +110,6 @@ class S3MultipartUpload<T : OutputStream>(
     private suspend fun uploadPart() {
         streamProcessor.partFinisher.invoke(wrappingBuffer)
         val partNumber = uploadedParts.size + 1
-        println("uploadPart[${response.uploadId}](${partNumber}, size=${underlyingBuffer.size()})")
         val request = UploadPartRequest {
             uploadId = response.uploadId
             bucket = response.bucket
@@ -129,11 +125,9 @@ class S3MultipartUpload<T : OutputStream>(
             }
         )
         underlyingBuffer.reset()
-        println("after reset, size=${underlyingBuffer.size()}")
     }
 
     private suspend fun complete() {
-        println("complete()")
         if (underlyingBuffer.size() > 0) {
             uploadPart()
         }

@@ -18,6 +18,9 @@ import java.math.BigDecimal
  */
 class JsonToAirbyteValue {
     fun convert(json: JsonNode, schema: AirbyteType): AirbyteValue {
+        if (json.isNull) {
+            return NullValue
+        }
         try {
             return when (schema) {
                 is ArrayType -> toArray(json, schema.items.type)
@@ -31,8 +34,10 @@ class JsonToAirbyteValue {
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema -> toObjectWithoutSchema(json)
                 is StringType -> StringValue(json.asText())
-                is TimeType -> TimeValue(json.asText())
-                is TimestampType -> TimestampValue(json.asText())
+                is TimeTypeWithTimezone,
+                is TimeTypeWithoutTimezone -> TimeValue(json.asText())
+                is TimestampTypeWithTimezone,
+                is TimestampTypeWithoutTimezone -> TimestampValue(json.asText())
                 is UnionType -> toUnion(json, schema.options)
                 is UnknownType -> UnknownValue("From $schema: $json")
             }
@@ -101,6 +106,11 @@ class JsonToAirbyteValue {
         return ObjectValue(
             values =
                 schema.properties
+                    // Note that this will create an ObjectValue where properties in the schema
+                    // might not exist in the value.
+                    // This matches JSON behavior (i.e. explicit null != property not set),
+                    // but we maybe would prefer to set an explicit NullValue.
+                    .filter { (name, _) -> json.has(name) }
                     .mapValues { (name, field) -> convert(json.get(name), field.type) }
                     .toMap(LinkedHashMap())
         )
@@ -172,8 +182,10 @@ class JsonToAirbyteValue {
             is ObjectTypeWithoutSchema,
             is ObjectTypeWithEmptySchema -> json.isObject
             is StringType -> json.isTextual
-            is TimeType -> json.isTextual
-            is TimestampType -> json.isTextual
+            is TimeTypeWithTimezone,
+            is TimeTypeWithoutTimezone,
+            is TimestampTypeWithTimezone,
+            is TimestampTypeWithoutTimezone -> json.isTextual
             is UnionType -> schema.options.any { matchesStrictly(it, json) }
             is UnknownType -> false
         }

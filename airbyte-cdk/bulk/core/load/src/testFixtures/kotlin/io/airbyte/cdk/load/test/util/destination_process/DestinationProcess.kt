@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -44,6 +43,9 @@ interface DestinationProcess {
      * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
+
+    /** Terminate the destination as immediately as possible. */
+    fun kill()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -57,7 +59,7 @@ abstract class DestinationProcessFactory {
 
     abstract fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess

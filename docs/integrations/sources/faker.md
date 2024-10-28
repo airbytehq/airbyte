@@ -103,7 +103,9 @@ None!
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-| :---------- | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.20-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
+| 6.2.19-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/47221)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.18-rc.1 | 2024-10-09 | [46678](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.17      | 2024-10-05 | [46398](https://github.com/airbytehq/airbyte/pull/46398)                                                              | Update dependencies                                                                                             |
 | 6.2.16      | 2024-09-28 | [46207](https://github.com/airbytehq/airbyte/pull/46207)                                                              | Update dependencies                                                                                             |
