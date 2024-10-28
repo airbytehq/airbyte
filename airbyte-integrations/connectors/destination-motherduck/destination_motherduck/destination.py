@@ -12,8 +12,6 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 from urllib.parse import urlparse
 
-from py import process
-
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
@@ -24,7 +22,6 @@ from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
-
 
 logger = getLogger("airbyte")
 
