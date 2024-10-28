@@ -577,6 +577,7 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     cursor_field = "last-updated-date"
     replication_start_date_limit_in_days = 30
 
+
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
