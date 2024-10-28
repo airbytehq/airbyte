@@ -49,7 +49,7 @@ class TestVersionIncrementCheck:
         result = version_increment_check.validate()
         assert not result.success
         assert (
-            version_increment_check.failure_message
+            result.stderr
             == f"The dockerImageTag in {METADATA_FILE_NAME} was not incremented. Master version is {version_increment_check.master_connector_version}, current version is {version_increment_check.current_connector_version}"
         )
 
@@ -60,7 +60,7 @@ class TestVersionIncrementCheck:
         result = version_increment_check.validate()
         assert not result.success
         assert (
-            version_increment_check.failure_message
+            result.stderr
             == f"Master and current version are release candidates but they have different major, minor or patch versions. Release candidates should only differ in the prerelease part. Master version is {version_increment_check.master_connector_version}, current version is {version_increment_check.current_connector_version}"
         )
 

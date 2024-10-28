@@ -137,8 +137,8 @@ class VersionIncrementCheck(VersionCheck):
         return bool(
             self.master_connector_version.prerelease
             and self.current_connector_version.prerelease
-            and "-rc" in self.master_connector_version.prerelease
-            and "-rc" in self.current_connector_version.prerelease
+            and "rc" in self.master_connector_version.prerelease
+            and "rc" in self.current_connector_version.prerelease
         )
 
     def have_same_major_minor_patch(self) -> bool:
