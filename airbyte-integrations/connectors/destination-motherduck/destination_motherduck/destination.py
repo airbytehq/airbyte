@@ -12,9 +12,19 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 from urllib.parse import urlparse
 
+from typing_extensions import override
+
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from airbyte_cdk.sql._processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
@@ -22,6 +32,7 @@ from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
+
 
 logger = getLogger("airbyte")
 
@@ -100,6 +111,7 @@ class DestinationMotherDuck(Destination):
         """Return the given identifier, quoted."""
         return f'"{identifier}"'
 
+    @override
     def write(
         self,
         config: Mapping[str, Any],
@@ -193,6 +205,21 @@ class DestinationMotherDuck(Destination):
         # flush any remaining messages
         self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
 
+    def read_written(
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+    ) -> Iterable[AirbyteMessage]:
+        """Run a `read` operation on the data that is stored in the destination.
+
+        The `config` object should be the normal destination config and the `configured_catalog`
+        should be the catalog sent from the source when writing the data.
+
+        Related: See the `read` method for an operation that uses self-discovered catalog to read
+        the data.
+        """
+        raise NotImplementedError
+
     def _flush_buffer(
         self,
         buffer: Dict[str, Dict[str, List[Any]]],
@@ -212,6 +239,7 @@ class DestinationMotherDuck(Destination):
                 )
                 processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
 
+    @override
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
@@ -260,3 +288,31 @@ class DestinationMotherDuck(Destination):
 
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
+    def discover(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+    ) -> AirbyteCatalog:
+        """Discover the schema of the destination.
+
+        The config is expected to be the same as the config used when configuring for writing to the
+        destination.
+        """
+        raise NotImplementedError
+
+    def read(
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+    ) -> Iterable[AirbyteMessage]:
+        """Read from the destination as if it were a source.
+
+        This method should return a stream of messages that represent the data that is stored in the
+        destination. The catalog provided should be based on the self-discovered catalog of the
+        destination.
+
+        Related: See the `read_written` method for an operation that uses the catalog sent from the
+        source when writing the data.
+        """
+        raise NotImplementedError
