@@ -1,0 +1,2072 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Attio Airbyte Connector enables seamless integration with Attio, a modern
+  CRM platform. This connector allows you to easily extract, sync, and manage
+  data from Attio, such as contacts, accounts, and interactions, directly into
+  your preferred data destinations. With this integration, businesses can
+  streamline workflows, perform advanced analytics, and create automated
+  pipelines for their CRM data, ensuring data consistency and accessibility
+  across tools.
+
+check:
+  type: CheckStream
+  stream_names:
+    - objects
+
+definitions:
+  streams:
+    meta:
+      type: DeclarativeStream
+      name: meta
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /self
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - workspace_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - list_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - list_id
+              value: "{{ record[\"id\"][\"list_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    notes:
+      type: DeclarativeStream
+      name: notes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - note_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - note_id
+              value: "{{ record[\"id\"][\"note_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: false
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - task_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - task_id
+              value: "{{ record[\"id\"][\"task_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    entries:
+      type: DeclarativeStream
+      name: entries
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists/{{ stream_partition.list_id }}/entries/query
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/lists"
+              parent_key: list_id
+              partition_field: list_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entries"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - entry_id
+              value: "{{ record[\"id\"][\"entry_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - list_id
+              value: "{{ record[\"id\"][\"list_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    objects:
+      type: DeclarativeStream
+      name: objects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /objects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - object_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/objects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - object_id
+              value: "{{ record[\"id\"][\"object_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    records:
+      type: DeclarativeStream
+      name: records
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /objects/{{ stream_partition.object_slug }}/records/query
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/objects"
+              parent_key: api_slug
+              partition_field: object_slug
+      primary_key:
+        - record_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/records"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - object_id
+              value: "{{ record[\"id\"][\"object_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - record_id
+              value: "{{ record[\"id\"][\"record_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - webhook_id
+              value: "{{ record[\"id\"][\"webhook_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    object_attributes:
+      type: DeclarativeStream
+      name: object_attributes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /objects/{{ stream_partition.object_id }}/attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/objects"
+              parent_key: object_id
+              partition_field: object_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/object_attributes"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - object_id
+              value: "{{ record[\"id\"][\"object_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+    workspace_members:
+      type: DeclarativeStream
+      name: workspace_members
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspace_members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - workspace_member_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspace_members"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_id
+              value: "{{ record[\"id\"][\"workspace_id\"] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - workspace_member_id
+              value: "{{ record[\"id\"][\"workspace_member_id\"] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - id
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.attio.com/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"bearer_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/objects"
+  - $ref: "#/definitions/streams/object_attributes"
+  - $ref: "#/definitions/streams/records"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/meta"
+  - $ref: "#/definitions/streams/entries"
+  - $ref: "#/definitions/streams/workspace_members"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bearer_token
+    properties:
+      bearer_token:
+        type: string
+        description: >-
+          Permanent Bearer Token for accessing the Attio API. Obtain it from
+          your Attio account settings or API management page.
+        name: bearer_token
+        order: 0
+        title: Bearer Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.attio.com/reference/get_v2-objects
+  testedStreams:
+    meta:
+      hasRecords: true
+      streamHash: 24c77e405ac3fa2233ed54836af010a62f935326
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists:
+      hasRecords: true
+      streamHash: fdd3b7f77378b8bf91ced5aa5822b885c3cae586
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      hasRecords: true
+      streamHash: 4e0d47f6bdd72f86727e43af5018f1d080bf4e0b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tasks:
+      hasRecords: true
+      streamHash: 25bc2caf9862e9ee73c26c97a07f91afeb65464b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    entries:
+      hasRecords: true
+      streamHash: db8d86e7318b3dae4ddd39c0faa6f00becde7ddc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    objects:
+      hasRecords: true
+      streamHash: 8601ef937fa327d058fb5faa89c904a552485396
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    records:
+      hasRecords: true
+      streamHash: 5625fafcd9653a4601d4b1e43ef8fabd396bd4df
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: 11493212016ab90d2fbf514199f60d6841c7d2bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    object_attributes:
+      hasRecords: true
+      streamHash: 01319ca1364b88578450c3032f5f1ce32bf81c59
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workspace_members:
+      hasRecords: true
+      streamHash: 79686fc001acc89c34f733b4453fd386b182d524
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    meta: true
+    lists: true
+    notes: false
+    tasks: false
+    entries: false
+    objects: true
+    records: false
+    webhooks: true
+    object_attributes: false
+    workspace_members: false
+
+schemas:
+  meta:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - workspace_id
+    properties:
+      aud:
+        type:
+          - string
+          - "null"
+      iat:
+        type:
+          - number
+          - "null"
+      iss:
+        type:
+          - string
+          - "null"
+      sub:
+        type:
+          - string
+          - "null"
+      scope:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      client_id:
+        type:
+          - string
+          - "null"
+      token_type:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type: string
+      workspace_name:
+        type:
+          - string
+          - "null"
+      workspace_slug:
+        type:
+          - string
+          - "null"
+      authorized_by_workspace_member_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - list_id
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      list_id:
+        type: string
+      api_slug:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      parent_object:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_by_actor:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      workspace_member_access:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            level:
+              type:
+                - string
+                - "null"
+            workspace_member_id:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - note_id
+    properties:
+      title:
+        type:
+          - string
+          - "null"
+      note_id:
+        type: string
+      created_at:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      parent_object:
+        type:
+          - string
+          - "null"
+      created_by_actor:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      parent_record_id:
+        type:
+          - string
+          - "null"
+      content_plaintext:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - task_id
+    properties:
+      task_id:
+        type: string
+      assignees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            referenced_actor_id:
+              type:
+                - string
+                - "null"
+            referenced_actor_type:
+              type:
+                - string
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deadline_at:
+        type:
+          - string
+          - "null"
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      linked_records:
+        type:
+          - array
+          - "null"
+      created_by_actor:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      content_plaintext:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      list_id:
+        type:
+          - string
+          - "null"
+      entry_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entry_values:
+        type:
+          - object
+          - "null"
+        properties:
+          rate:
+            type:
+              - array
+              - "null"
+          owner:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                referenced_actor_id:
+                  type:
+                    - string
+                    - "null"
+                referenced_actor_type:
+                  type:
+                    - string
+                    - "null"
+          skill:
+            type:
+              - array
+              - "null"
+          rating:
+            type:
+              - array
+              - "null"
+          status:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                status:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        object_id:
+                          type:
+                            - string
+                            - "null"
+                        status_id:
+                          type:
+                            - string
+                            - "null"
+                        attribute_id:
+                          type:
+                            - string
+                            - "null"
+                        workspace_id:
+                          type:
+                            - string
+                            - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    is_archived:
+                      type:
+                        - boolean
+                        - "null"
+                    celebration_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          entry_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          assignment:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          created_by:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                referenced_actor_id:
+                  type:
+                    - string
+                    - "null"
+                referenced_actor_type:
+                  type:
+                    - string
+                    - "null"
+          skill_level:
+            type:
+              - array
+              - "null"
+          status_note:
+            type:
+              - array
+              - "null"
+          compensation:
+            type:
+              - array
+              - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      parent_object:
+        type:
+          - string
+          - "null"
+      parent_record_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  objects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - object_id
+    properties:
+      api_slug:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      created_at:
+        type:
+          - string
+          - "null"
+      plural_noun:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      singular_noun:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - record_id
+    properties:
+      values:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          team:
+            type:
+              - array
+              - "null"
+          domains:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                domain:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                root_domain:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          twitter:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          facebook:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          linkedin:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          logo_url:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          angellist:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          instagram:
+            type:
+              - array
+              - "null"
+          record_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                option:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        object_id:
+                          type:
+                            - string
+                            - "null"
+                        option_id:
+                          type:
+                            - string
+                            - "null"
+                        attribute_id:
+                          type:
+                            - string
+                            - "null"
+                        workspace_id:
+                          type:
+                            - string
+                            - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    is_archived:
+                      type:
+                        - boolean
+                        - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          created_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          created_by:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                referenced_actor_type:
+                  type:
+                    - string
+                    - "null"
+          employee_range:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                option:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        object_id:
+                          type:
+                            - string
+                            - "null"
+                        option_id:
+                          type:
+                            - string
+                            - "null"
+                        attribute_id:
+                          type:
+                            - string
+                            - "null"
+                        workspace_id:
+                          type:
+                            - string
+                            - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    is_archived:
+                      type:
+                        - boolean
+                        - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          foundation_date:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          associated_deals:
+            type:
+              - array
+              - "null"
+          last_interaction:
+            type:
+              - array
+              - "null"
+          next_interaction:
+            type:
+              - array
+              - "null"
+          primary_location:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                line_1:
+                  type:
+                    - string
+                    - "null"
+                region:
+                  type:
+                    - string
+                    - "null"
+                latitude:
+                  type:
+                    - string
+                    - "null"
+                locality:
+                  type:
+                    - string
+                    - "null"
+                postcode:
+                  type:
+                    - string
+                    - "null"
+                longitude:
+                  type:
+                    - string
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                country_code:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          estimated_arr_usd:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                option:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        object_id:
+                          type:
+                            - string
+                            - "null"
+                        option_id:
+                          type:
+                            - string
+                            - "null"
+                        attribute_id:
+                          type:
+                            - string
+                            - "null"
+                        workspace_id:
+                          type:
+                            - string
+                            - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    is_archived:
+                      type:
+                        - boolean
+                        - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          first_interaction:
+            type:
+              - array
+              - "null"
+          funding_raised_usd:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                currency_code:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                currency_value:
+                  type:
+                    - number
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          last_call_interaction:
+            type:
+              - array
+              - "null"
+          next_call_interaction:
+            type:
+              - array
+              - "null"
+          first_call_interaction:
+            type:
+              - array
+              - "null"
+          last_email_interaction:
+            type:
+              - array
+              - "null"
+          twitter_follower_count:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - number
+                    - "null"
+                active_from:
+                  type:
+                    - string
+                    - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                created_by_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+          first_email_interaction:
+            type:
+              - array
+              - "null"
+          last_calendar_interaction:
+            type:
+              - array
+              - "null"
+          next_calendar_interaction:
+            type:
+              - array
+              - "null"
+          strongest_connection_user:
+            type:
+              - array
+              - "null"
+          first_calendar_interaction:
+            type:
+              - array
+              - "null"
+          strongest_connection_strength:
+            type:
+              - array
+              - "null"
+          last_in_person_meeting_interaction:
+            type:
+              - array
+              - "null"
+          next_in_person_meeting_interaction:
+            type:
+              - array
+              - "null"
+          first_in_person_meeting_interaction:
+            type:
+              - array
+              - "null"
+          strongest_connection_strength_legacy:
+            type:
+              - array
+              - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      record_id:
+        type: string
+      created_at:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      status:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      target_url:
+        type:
+          - string
+          - "null"
+      webhook_id:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            filter:
+              type:
+                - object
+                - "null"
+              properties:
+                $or:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      field:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      operator:
+                        type:
+                          - string
+                          - "null"
+            event_type:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  object_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      config:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - object
+              - "null"
+            properties:
+              display_type:
+                type:
+                  - string
+                  - "null"
+              default_currency_code:
+                type:
+                  - string
+                  - "null"
+          record_reference:
+            type:
+              - object
+              - "null"
+            properties:
+              allowed_object_ids:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+      api_slug:
+        type:
+          - string
+          - "null"
+      is_unique:
+        type:
+          - boolean
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_required:
+        type:
+          - boolean
+          - "null"
+      is_writable:
+        type:
+          - boolean
+          - "null"
+      relationship:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - object
+              - "null"
+            properties:
+              object_id:
+                type:
+                  - string
+                  - "null"
+              attribute_id:
+                type:
+                  - string
+                  - "null"
+              workspace_id:
+                type:
+                  - string
+                  - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      default_value:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          template:
+            type:
+              - string
+              - "null"
+      is_multiselect:
+        type:
+          - boolean
+          - "null"
+      is_system_attribute:
+        type:
+          - boolean
+          - "null"
+      is_default_value_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  workspace_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - workspace_member_id
+    properties:
+      last_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      access_level:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      workspace_member_id:
+        type: string
+    additionalProperties: true
