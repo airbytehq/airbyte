@@ -1,11 +1,8 @@
-version: 5.12.0
+version: 5.15.0
 
 type: DeclarativeSource
 
-description: |-
-  Website: https://www.zoho.com/desk
-  API Docs: https://desk.zoho.com/DeskAPIDocument#Introduction
-  Auth Docs: https://desk.zoho.com/DeskAPIDocument#OauthTokens
+description: This directory contains the manifest-only connector for source-zoho-desk
 
 check:
   type: CheckStream
@@ -78,12 +75,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -102,12 +93,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -115,14 +100,14 @@ definitions:
               parent_key: id
               partition_field: agent_id
               stream:
-                $ref: "#/definitions/streams/all_agents"
+                $ref: "#/definitions/streams/list_agents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/agent"
-    all_agents:
+    list_agents:
       type: DeclarativeStream
-      name: all_agents
+      name: list_agents
       primary_key:
         - id
       retriever:
@@ -143,14 +128,18 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/all_agents"
+          $ref: "#/schemas/list_agents"
     agent_details_by_id:
       type: DeclarativeStream
       name: agent_details_by_id
@@ -168,16 +157,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -185,7 +164,7 @@ definitions:
               parent_key: id
               partition_field: agent_id
               stream:
-                $ref: "#/definitions/streams/all_agents"
+                $ref: "#/definitions/streams/list_agents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -207,23 +186,13 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/profiles"
-    roles:
+    list_roles:
       type: DeclarativeStream
-      name: roles
+      name: list_roles
       primary_key:
         - id
       retriever:
@@ -232,11 +201,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /roles
           http_method: GET
-          request_parameters:
-            limit: "{{ config['limit'] }}"
-            isDefault: "{{ config['isdefault'] }}"
-            isVisible: "{{ config['isvisible'] }}"
-            searchStr: "{{ config['searchstr'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -249,14 +213,18 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/roles"
+          $ref: "#/schemas/list_roles"
     teams:
       type: DeclarativeStream
       name: teams
@@ -274,16 +242,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - teams
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -299,20 +257,12 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /teams/{{ stream_partition.team_id }}/members
           http_method: GET
-          request_parameters:
-            include: "{{ config[\"include\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - members
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -325,9 +275,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/team_members"
-    departments:
+    list_departments:
       type: DeclarativeStream
-      name: departments
+      name: list_departments
       retriever:
         type: SimpleRetriever
         requester:
@@ -345,14 +295,18 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/departments"
+          $ref: "#/schemas/list_departments"
     channels:
       type: DeclarativeStream
       name: channels
@@ -370,23 +324,13 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channels"
-    tickets:
+    list_tickets:
       type: DeclarativeStream
-      name: tickets
+      name: list_tickets
       primary_key:
         - id
       retriever:
@@ -407,17 +351,21 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tickets"
-    all_threads:
+          $ref: "#/schemas/list_tickets"
+    list_all_threads:
       type: DeclarativeStream
-      name: all_threads
+      name: list_all_threads
       primary_key:
         - id
       retriever:
@@ -438,10 +386,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -449,11 +401,11 @@ definitions:
               parent_key: id
               partition_field: ticket_id
               stream:
-                $ref: "#/definitions/streams/tickets"
+                $ref: "#/definitions/streams/list_tickets"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/all_threads"
+          $ref: "#/schemas/list_all_threads"
     get_latest_thread:
       type: DeclarativeStream
       name: get_latest_thread
@@ -470,16 +422,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -487,7 +429,7 @@ definitions:
               parent_key: id
               partition_field: ticket_id
               stream:
-                $ref: "#/definitions/streams/tickets"
+                $ref: "#/definitions/streams/list_tickets"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -515,10 +457,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -538,23 +484,13 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/webhooks"
-    accounts:
+    list_accounts:
       type: DeclarativeStream
-      name: accounts
+      name: list_accounts
       primary_key:
         - id
       retriever:
@@ -575,17 +511,21 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/accounts"
-    contracts:
+          $ref: "#/schemas/list_accounts"
+    list_contracts:
       type: DeclarativeStream
-      name: contracts
+      name: list_contracts
       primary_key:
         - id
       retriever:
@@ -606,10 +546,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -617,14 +561,14 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: "#/definitions/streams/accounts"
+                $ref: "#/definitions/streams/list_accounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/contracts"
-    tasks:
+          $ref: "#/schemas/list_contracts"
+    list_tasks:
       type: DeclarativeStream
-      name: tasks
+      name: list_tasks
       primary_key:
         - id
       retriever:
@@ -645,17 +589,21 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tasks"
-    products:
+          $ref: "#/schemas/list_tasks"
+    list_products:
       type: DeclarativeStream
-      name: products
+      name: list_products
       primary_key:
         - id
       retriever:
@@ -676,17 +624,21 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/products"
-    articles:
+          $ref: "#/schemas/list_products"
+    list_articles:
       type: DeclarativeStream
-      name: articles
+      name: list_articles
       primary_key:
         - id
       retriever:
@@ -701,23 +653,13 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/articles"
-    events:
+          $ref: "#/schemas/list_articles"
+    list_events:
       type: DeclarativeStream
-      name: events
+      name: list_events
       primary_key:
         - id
       retriever:
@@ -738,14 +680,18 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
-            inject_on_first_request: false
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/events"
+          $ref: "#/schemas/list_events"
     modules:
       type: DeclarativeStream
       name: modules
@@ -763,23 +709,13 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/modules"
-    users:
+    list_users:
       type: DeclarativeStream
-      name: users
+      name: list_users
       primary_key:
         - id
       retriever:
@@ -800,6 +736,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 50
@@ -807,7 +747,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/users"
+          $ref: "#/schemas/list_users"
     ticket_activities:
       type: DeclarativeStream
       name: ticket_activities
@@ -831,10 +771,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -842,14 +786,14 @@ definitions:
               parent_key: id
               partition_field: ticket_id
               stream:
-                $ref: "#/definitions/streams/tickets"
+                $ref: "#/definitions/streams/list_tickets"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ticket_activities"
-    product_attachments:
+    list_attachments:
       type: DeclarativeStream
-      name: product_attachments
+      name: list_attachments
       retriever:
         type: SimpleRetriever
         requester:
@@ -867,6 +811,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
@@ -878,11 +826,11 @@ definitions:
               parent_key: id
               partition_field: product_id
               stream:
-                $ref: "#/definitions/streams/products"
+                $ref: "#/definitions/streams/list_products"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/product_attachments"
+          $ref: "#/schemas/list_attachments"
     product:
       type: DeclarativeStream
       name: product
@@ -899,16 +847,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: false
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -916,7 +854,7 @@ definitions:
               parent_key: id
               partition_field: product_id
               stream:
-                $ref: "#/definitions/streams/products"
+                $ref: "#/definitions/streams/list_products"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -944,10 +882,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
-            inject_on_first_request: false
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -955,14 +897,14 @@ definitions:
               parent_key: id
               partition_field: task_id
               stream:
-                $ref: "#/definitions/streams/tasks"
+                $ref: "#/definitions/streams/list_tasks"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/task_attachments"
-    all_calls:
+    list_calls:
       type: DeclarativeStream
-      name: all_calls
+      name: list_calls
       primary_key:
         - id
       retriever:
@@ -983,6 +925,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
@@ -990,7 +936,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/all_calls"
+          $ref: "#/schemas/list_calls"
     call:
       type: DeclarativeStream
       name: call
@@ -1007,16 +953,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: false
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1024,14 +960,14 @@ definitions:
               parent_key: id
               partition_field: call_id
               stream:
-                $ref: "#/definitions/streams/all_calls"
+                $ref: "#/definitions/streams/list_calls"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/call"
-    call_comments:
+    list_call_comments:
       type: DeclarativeStream
-      name: call_comments
+      name: list_call_comments
       primary_key:
         - id
       retriever:
@@ -1052,10 +988,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1063,14 +1003,14 @@ definitions:
               parent_key: id
               partition_field: call_id
               stream:
-                $ref: "#/definitions/streams/all_calls"
+                $ref: "#/definitions/streams/list_calls"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/call_comments"
-    dashboard:
+          $ref: "#/schemas/list_call_comments"
+    dashboard_created_tickets:
       type: DeclarativeStream
-      name: dashboard
+      name: dashboard_created_tickets
       retriever:
         type: SimpleRetriever
         requester:
@@ -1082,16 +1022,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: false
         partition_router:
           - type: ListPartitionRouter
             values:
@@ -1109,53 +1039,145 @@ definitions:
             cursor_field: duration
             request_option:
               type: RequestOption
-              inject_into: request_parameter
               field_name: duration
+              inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/dashboard"
+          $ref: "#/schemas/dashboard_created_tickets"
+    list_user_groups:
+      type: DeclarativeStream
+      name: list_user_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_partition.user_id }}/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/list_users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_user_groups"
+    dashboard_onhold_tickets:
+      type: DeclarativeStream
+      name: dashboard_onhold_tickets
+      primary_key:
+        - value
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dashboards/onholdTickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ticketCount
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - date
+              - channel
+              - agent
+            cursor_field: groupBy
+            request_option:
+              type: RequestOption
+              field_name: groupBy
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - LAST_7_DAYS
+            cursor_field: duration
+            request_option:
+              type: RequestOption
+              field_name: duration
+              inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboard_onhold_tickets"
   base_requester:
     type: HttpRequester
     url_base: https://desk.zoho.com/api/v1
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: "{{ config[\"token_refresh_endpoint\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/organization"
   - $ref: "#/definitions/streams/all_organizations"
   - $ref: "#/definitions/streams/accessible_organizations"
   - $ref: "#/definitions/streams/agent"
-  - $ref: "#/definitions/streams/all_agents"
+  - $ref: "#/definitions/streams/list_agents"
   - $ref: "#/definitions/streams/agent_details_by_id"
   - $ref: "#/definitions/streams/profiles"
-  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/list_roles"
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/team_members"
-  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/list_departments"
   - $ref: "#/definitions/streams/channels"
-  - $ref: "#/definitions/streams/tickets"
-  - $ref: "#/definitions/streams/all_threads"
+  - $ref: "#/definitions/streams/list_tickets"
+  - $ref: "#/definitions/streams/list_all_threads"
   - $ref: "#/definitions/streams/get_latest_thread"
   - $ref: "#/definitions/streams/list_contacts"
   - $ref: "#/definitions/streams/webhooks"
-  - $ref: "#/definitions/streams/accounts"
-  - $ref: "#/definitions/streams/contracts"
-  - $ref: "#/definitions/streams/tasks"
-  - $ref: "#/definitions/streams/products"
-  - $ref: "#/definitions/streams/articles"
-  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/list_accounts"
+  - $ref: "#/definitions/streams/list_contracts"
+  - $ref: "#/definitions/streams/list_tasks"
+  - $ref: "#/definitions/streams/list_products"
+  - $ref: "#/definitions/streams/list_articles"
+  - $ref: "#/definitions/streams/list_events"
   - $ref: "#/definitions/streams/modules"
-  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/list_users"
   - $ref: "#/definitions/streams/ticket_activities"
-  - $ref: "#/definitions/streams/product_attachments"
+  - $ref: "#/definitions/streams/list_attachments"
   - $ref: "#/definitions/streams/product"
   - $ref: "#/definitions/streams/task_attachments"
-  - $ref: "#/definitions/streams/all_calls"
+  - $ref: "#/definitions/streams/list_calls"
   - $ref: "#/definitions/streams/call"
-  - $ref: "#/definitions/streams/call_comments"
-  - $ref: "#/definitions/streams/dashboard"
+  - $ref: "#/definitions/streams/list_call_comments"
+  - $ref: "#/definitions/streams/dashboard_created_tickets"
+  - $ref: "#/definitions/streams/list_user_groups"
+  - $ref: "#/definitions/streams/dashboard_onhold_tickets"
 
 spec:
   type: Spec
@@ -1163,282 +1185,321 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - client_id
+      - client_secret
+      - token_refresh_endpoint
+      - refresh_token
     properties:
-      api_key:
+      client_id:
         type: string
         order: 0
-        title: API Key
+        title: Client ID
         airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      token_refresh_endpoint:
+        type: string
+        name: token_refresh_endpoint
+        order: 2
+        title: Token Refresh Endpoint
+      refresh_token:
+        type: string
+        name: refresh_token
+        order: 3
+        title: OAuth Refresh Token
+        airbyte_secret: true
+      include_custom_domain:
+        type: boolean
+        order: 4
+        title: include Custom Domain
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     organization: true
-    all_organizations: false
+    all_organizations: true
     accessible_organizations: false
     agent: false
-    all_agents: false
-    agent_details_by_id: false
-    profiles: false
-    roles: false
-    teams: false
-    team_members: false
-    departments: false
-    channels: false
-    tickets: false
-    all_threads: false
-    get_latest_thread: false
-    list_contacts: false
-    webhooks: false
-    accounts: false
-    contracts: false
-    tasks: false
-    products: false
-    articles: false
-    events: false
-    modules: false
-    users: false
-    ticket_activities: false
-    product_attachments: false
-    product: false
+    list_agents: false
+    agent_details_by_id: true
+    profiles: true
+    list_roles: true
+    teams: true
+    team_members: true
+    list_departments: true
+    channels: true
+    list_tickets: true
+    list_all_threads: true
+    get_latest_thread: true
+    list_contacts: true
+    webhooks: true
+    list_accounts: true
+    list_contracts: true
+    list_tasks: true
+    list_products: true
+    list_articles: true
+    list_events: true
+    modules: true
+    list_users: true
+    ticket_activities: true
+    list_attachments: true
+    product: true
     task_attachments: false
-    all_calls: false
-    call: false
-    call_comments: false
-    dashboard: false
+    list_calls: true
+    call: true
+    list_call_comments: true
+    dashboard_created_tickets: true
+    list_user_groups: true
+    dashboard_onhold_tickets: true
   testedStreams:
     organization:
-      streamHash: 0000bf499161d1781994d9cf5ef603d9a01d43ee
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c7474fdc181562625a167a16855f8487649920e7
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     all_organizations:
-      streamHash: 12413f60ce4d3413c90efb163d9950afa71527eb
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 65331d4ff0ce0918979fa07398fc6cd189b6a8aa
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     accessible_organizations:
-      streamHash: 97f1daeeee5aa124cf3a2853dfdbd96304f2148b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 579a5a75e86b46a236f44e22399f0c2d2e2aaade
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     agent:
-      streamHash: 3efcb1d5760d27fd7c995b7a096ffd8243687afd
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    all_agents:
-      streamHash: 3786f8dca18dd111e0b6003c32d7e52910262413
+      streamHash: f29421eb7df4101ddb3cda487aa843ff2df20824
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_agents:
+      hasRecords: true
+      streamHash: 3d7c1c2deaaf9aca63175baade6df1760c8942e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     agent_details_by_id:
-      streamHash: 6a9cdd38f4d831f6420eafe512bb2cccc4f47e1b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 34c952e5f484b818dd88efe3b91906e235716ee1
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     profiles:
-      streamHash: d51ea79e5c85cc2ed0f249631d2f21f1c0cd46d9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    roles:
-      streamHash: 4488746dd8fc7927c139a99361e6ca8ebee363ee
+      streamHash: 665eac4c08235e16608481cc1e06207920a1b266
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_roles:
+      hasRecords: true
+      streamHash: ea36b640fed755bea0f3b0a8478da6ad12048b02
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
-      streamHash: 47a4831918ecf3776a3b7c8c60372165b18d5473
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: e50031af9f6d3cdfbd829e737581e72eed8a0293
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     team_members:
-      streamHash: dcac64c376fc6caa469660c19a0714d084449f60
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    departments:
-      streamHash: 8c7be153bb5e61a14fc28ee8761ceca4b3bb4f21
+      streamHash: 08adb08a9a2758a0b8d8878ec393c7b8f351eb53
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_departments:
+      hasRecords: true
+      streamHash: a52794803739fae526a5ea14c52730b27fce67be
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     channels:
-      streamHash: 8a094cb55b5b9b22c78ad4431258897d7b257931
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    tickets:
-      streamHash: 8a5574629e303285b4b3ad11c325ef1a6b64da39
+      streamHash: d9b6a1896c261d4f84327fdd15069fa77a8c1b1d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    all_threads:
-      streamHash: dbb3a954b1356aaedfe9885463cbabee69789695
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_tickets:
+      hasRecords: true
+      streamHash: 4d0886f40f123633c969d3344aa27a435bc75e2c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_all_threads:
+      hasRecords: true
+      streamHash: d49ff74630c3f0b00e6748e430acd013ee98815c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     get_latest_thread:
-      streamHash: 9367f223800a35b6ca8965f2d059a0a1d4c9b31b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 494839a05573d745a5d7f38ccbf2baaaacad70cd
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     list_contacts:
-      streamHash: d086ebd805b00f243b2fb256011565510939262d
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 5b5d8224e5f4824af32b711faabf6e1636ff7d79
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhooks:
-      streamHash: f5355a41cf8e0aedaae28453f883f51797d9448d
+      hasRecords: true
+      streamHash: fa1d5f9ab3643b61717ea63ba5f7d914c0d903f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_accounts:
+      hasRecords: true
+      streamHash: f423eacdfb8de296b15b8e72b15488ecd4c02ef6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_contracts:
+      hasRecords: true
+      streamHash: a722a43cb1fc8466921a60eff9c622ab89094f9a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_tasks:
+      hasRecords: true
+      streamHash: d8c270148e1e7c22005a136cdea2de5347b73245
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_products:
+      hasRecords: true
+      streamHash: 38a7ca22f0eec3037f47eb7906ddf0fdd85f98eb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_articles:
+      streamHash: d3b131b9cbd84461e43059802adb9bc32290d2a2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    accounts:
-      streamHash: 37ef3271bb9d9f5ecf7f708438bfda38d60c8e1b
-      hasResponse: true
-      responsesAreSuccessful: true
+    list_events:
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    contracts:
-      streamHash: c154c1d5247a95806c04302cd2ac94402f43ebda
+      streamHash: 1c50a3f32a4b9fb66c00b7fa3579eb8705e999bd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    tasks:
-      streamHash: bd00814dc568095ee29f3e695e68ea5bc5bbffc7
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    products:
-      streamHash: dfba46a18331a20e55c4ecadb19c5279297f03c3
-      hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    articles:
-      streamHash: 0a77ebab85df881cf50c137ed03c12490a3ccd79
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    events:
-      streamHash: fc1527057d33d92325fe4618631549ea9e4bcfd8
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
     modules:
-      streamHash: c41fc442d754f524449723cb3223f91f89881453
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    users:
-      streamHash: 1aa0db6a228aea5be6ac0939ecd83193608eda35
+      streamHash: 65b4ef477933db9cb4a76bcfdc51d5db8b7ce1cf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_users:
+      hasRecords: true
+      streamHash: 453457445af4b1492c7d425fe74d80ebd38e7408
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     ticket_activities:
-      streamHash: 56b94ce0b11851ca80808373e5349b0007c780d2
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    product_attachments:
-      streamHash: f0a8357e53bb0ffbd9e243f01657c5d59a324954
+      streamHash: 63924fcb8ee340210157fed5f0cb21d3501e1c47
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_attachments:
+      hasRecords: true
+      streamHash: 40fc06423f1035cc78f732dfb830d0b117658f0e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     product:
-      streamHash: 5466a10c011b8c7cd4f53690fe5c99ea464d5b74
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: b971c0e0e97fa2ae85acdb2f935f1d05b6314eac
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     task_attachments:
-      streamHash: 26d20d98e8b585210502e7cc1f74641fa8a67316
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    all_calls:
-      streamHash: c2431a9d4b58749878616ea7fe961debe9a2c595
+      streamHash: a6353a112894b0c954f4c621161a7d0b7252c083
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_calls:
+      hasRecords: true
+      streamHash: c29edb110ef142088a0fdcd7d7574024e67910a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     call:
-      streamHash: 3a3bc46c57095684683ed937bea82b5328d3086e
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    call_comments:
-      streamHash: 5b8b9b89a1f3e0fafeea6e1a81405d74e4cd20d4
+      streamHash: 2a0b4bd52569c5d0439fef01c208136f32b08e40
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    dashboard:
-      streamHash: 13adc1be8318368839153aa61bb2b48f021dea68
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_call_comments:
+      hasRecords: true
+      streamHash: 4ec232254a8f343213e09be088dd7be12025db28
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboard_created_tickets:
+      hasRecords: true
+      streamHash: b09e6d48aca75d2f9ca5926c3c0e4e2522ae2dbd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_user_groups:
+      hasRecords: true
+      streamHash: 581eb05ccdd057ca3e6fb991abc23a0842f22b3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboard_onhold_tickets:
+      hasRecords: true
+      streamHash: 88da2a446c150b77378a8fbc4d5d5edec6693e34
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://desk.zoho.com/DeskAPIDocument
 
@@ -1551,6 +1612,7 @@ schemas:
   all_organizations:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       city:
         type:
@@ -1652,10 +1714,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   accessible_organizations:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       city:
         type:
@@ -1757,10 +1819,10 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
   agent:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       aboutInfo:
         type:
@@ -1858,10 +1920,10 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  all_agents:
+  list_agents:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       aboutInfo:
         type:
@@ -1959,10 +2021,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   agent_details_by_id:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       aboutInfo:
         type:
@@ -2032,10 +2094,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   profiles:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -2672,6 +2734,10 @@ schemas:
                 type:
                   - boolean
                   - "null"
+              securitySettings:
+                type:
+                  - boolean
+                  - "null"
               shareSnippet:
                 type:
                   - boolean
@@ -2879,10 +2945,10 @@ schemas:
                   - "null"
     required:
       - id
-    additionalProperties: true
-  roles:
+  list_roles:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       description:
         type:
@@ -2920,10 +2986,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   teams:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       description:
         type:
@@ -2969,10 +3035,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   team_members:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       emailId:
         type:
@@ -3006,10 +3072,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  departments:
+  list_departments:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -3068,10 +3134,10 @@ schemas:
               type:
                 - string
                 - "null"
-    additionalProperties: true
   channels:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -3114,10 +3180,10 @@ schemas:
               - "null"
     required:
       - code
-    additionalProperties: true
-  tickets:
+  list_tickets:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       assigneeId:
         type:
@@ -3237,10 +3303,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  all_threads:
+  list_all_threads:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       actions:
         type:
@@ -3364,10 +3430,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   get_latest_thread:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       actions:
         type:
@@ -3503,10 +3569,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   list_contacts:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       accountCount:
         type:
@@ -3581,10 +3647,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   webhooks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -3631,10 +3697,10 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  accounts:
+  list_accounts:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       accountName:
         type:
@@ -3681,10 +3747,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  contracts:
+  list_contracts:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       accountId:
         type:
@@ -3739,10 +3805,10 @@ schemas:
               - "null"
     required:
       - id
-    additionalProperties: true
-  tasks:
+  list_tasks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       activityTime:
         type:
@@ -3845,10 +3911,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  products:
+  list_products:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       id:
         type: string
@@ -3866,10 +3932,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  articles:
+  list_articles:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       attachmentCount:
         type:
@@ -4206,10 +4272,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  events:
+  list_events:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       activityTime:
         type:
@@ -4312,10 +4378,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   modules:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       apiName:
         type:
@@ -4361,10 +4427,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  users:
+  list_users:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       emailAddress:
         type:
@@ -4390,10 +4456,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   ticket_activities:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       activityTime:
         type:
@@ -4512,10 +4578,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  product_attachments:
+  list_attachments:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -4550,10 +4616,10 @@ schemas:
               type:
                 - string
                 - "null"
-    additionalProperties: true
   product:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       cf:
         type:
@@ -4632,10 +4698,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   task_attachments:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       createdTime:
         type:
@@ -4661,10 +4727,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  all_calls:
+  list_calls:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       activityTime:
         type:
@@ -4775,10 +4841,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   call:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       description:
         type:
@@ -4901,10 +4967,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  call_comments:
+  list_call_comments:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       attachments:
         type:
@@ -4975,10 +5041,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
-  dashboard:
+  dashboard_created_tickets:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       avg:
         type:
@@ -5001,10 +5067,6 @@ schemas:
               type:
                 - string
                 - "null"
-            referenceValue:
-              type:
-                - string
-                - "null"
             value:
               type:
                 - string
@@ -5013,4 +5075,45 @@ schemas:
         type:
           - string
           - "null"
+  list_user_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      addedTime:
+        type:
+          - string
+          - "null"
+      helpCenterId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      logoUrl:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  dashboard_onhold_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - string
+          - "null"
+      value:
+        type: string
+    required:
+      - value
