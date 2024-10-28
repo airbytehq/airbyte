@@ -277,7 +277,7 @@ def test_write(
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
-            f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY key1"
+            f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
         result = cursor.fetchall()
 
@@ -319,7 +319,7 @@ def test_write_dupe(
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
-            f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY key1"
+            f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
         result = cursor.fetchall()
 
@@ -458,7 +458,7 @@ def test_large_number_of_writes(
     with con:
         cursor = con.execute(
             "SELECT count(1) "
-            f"FROM {test_schema_name}._airbyte_raw_{test_large_table_name}"
+            f"FROM {test_schema_name}.{test_large_table_name}"
         )
         result = cursor.fetchall()
     assert result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
