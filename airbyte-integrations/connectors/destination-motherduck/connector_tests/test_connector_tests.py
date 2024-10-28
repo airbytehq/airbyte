@@ -6,9 +6,11 @@ This is used to run the standard test suite for the destination connector.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from airbyte_connector_tester import DestinationTestSuiteBase
 from destination_motherduck.destination import DestinationMotherDuck
+from typing_extensions import override
 
 
 class TestStandardTestSuite(DestinationTestSuiteBase):
@@ -19,4 +21,7 @@ class TestStandardTestSuite(DestinationTestSuiteBase):
     """
 
     acceptance_test_file_path = Path("./acceptance-test-config.json")
-    connector_class = DestinationMotherDuck
+
+    @override
+    def new_connector(self, **kwargs: dict[str, Any]) -> DestinationMotherDuck:
+        return DestinationMotherDuck()
