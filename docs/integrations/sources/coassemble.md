@@ -26,6 +26,7 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.2 | 2024-10-28 | [47526](https://github.com/airbytehq/airbyte/pull/47526) | Update dependencies |
 | 0.0.1 | 2024-09-19 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

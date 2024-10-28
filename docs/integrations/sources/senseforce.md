@@ -87,7 +87,8 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.2 | 2024-10-28 | [47567](https://github.com/airbytehq/airbyte/pull/47567) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44073](https://github.com/airbytehq/airbyte/pull/44073) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-12 | [43865](https://github.com/airbytehq/airbyte/pull/43865) | Update dependencies |
 | 0.1.14 | 2024-08-10 | [43704](https://github.com/airbytehq/airbyte/pull/43704) | Update dependencies |
