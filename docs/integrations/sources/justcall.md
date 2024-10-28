@@ -7,8 +7,6 @@ JustCall connector enables seamless data integration by syncing call logs, conta
 |-------|------|-------------|---------------|
 | `api_key_2` | `string` | API Key.  |  |
 | `start_date` | `string` | Start date.  |  |
-| `order` | `string` | Order.  | desc |
-| `sort` | `string` | Sort.  | id |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
