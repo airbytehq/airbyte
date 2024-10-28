@@ -13,7 +13,7 @@ from ..response_builder import NEXT_PAGE_TOKEN, get_stream_record, get_stream_re
 from ..utils import StreamTestCase, config, get_cursor_value_from_state_message, read_full_refresh, read_incremental
 
 _STREAM_NAME = "events"
-_CURSOR_FIELD = "created_min"
+_CURSOR_FIELD = "created_at"
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -22,8 +22,12 @@ class TestFullRefresh(StreamTestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+        req = self.stream_request().with_limit(250).with_created_min(START_DATE).build()
+        print('!!!')
+        print(req)
+        print('!!!')
         http_mocker.get(
-            self.stream_request().with_limit(250).with_created_min(START_DATE).build(),
+            req,
             get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id", _CURSOR_FIELD)).build(),
         )
         output = read_full_refresh(self._config, _STREAM_NAME)
@@ -75,7 +79,7 @@ class TestIncremental(StreamTestCase):
             get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id", _CURSOR_FIELD)).build(),
         )
         http_mocker.get(
-            self.stream_request().with_limit(250).with_updated_at_min(START_DATE).build(),
+            self.stream_request().with_limit(250).with_created_min(START_DATE).build(),
             get_stream_response(_STREAM_NAME)
             .with_pagination()
             .with_record(get_stream_record(_STREAM_NAME, "id", _CURSOR_FIELD).with_cursor(min_cursor_value))
