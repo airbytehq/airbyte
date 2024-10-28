@@ -11,7 +11,6 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -86,25 +85,30 @@ class MysqlJdbcPartitionFactoryTest {
             )
         }
 
-        private fun streamFeedBootstrap(stream: Stream, incumbentStateValue: OpaqueStateValue? = null) =
+        private fun streamFeedBootstrap(
+            stream: Stream,
+            incumbentStateValue: OpaqueStateValue? = null
+        ) =
             StreamFeedBootstrap(
                 outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
-                metaFieldDecorator = object : MetaFieldDecorator {
-                    override val globalCursor: MetaField? = null
-                    override val globalMetaFields: Set<MetaField> = emptySet()
+                metaFieldDecorator =
+                    object : MetaFieldDecorator {
+                        override val globalCursor: MetaField? = null
+                        override val globalMetaFields: Set<MetaField> = emptySet()
 
-                    override fun decorateRecordData(
-                        timestamp: OffsetDateTime,
-                        globalStateValue: OpaqueStateValue?,
-                        stream: Stream,
-                        recordData: ObjectNode
-                    ) {}
-                },
-                stateQuerier = object : StateQuerier {
-                    override val feeds: List<Feed> = listOf(stream)
-                    override fun current(feed: Feed): OpaqueStateValue? =
-                        if (feed == stream) incumbentStateValue else null
-                },
+                        override fun decorateRecordData(
+                            timestamp: OffsetDateTime,
+                            globalStateValue: OpaqueStateValue?,
+                            stream: Stream,
+                            recordData: ObjectNode
+                        ) {}
+                    },
+                stateQuerier =
+                    object : StateQuerier {
+                        override val feeds: List<Feed> = listOf(stream)
+                        override fun current(feed: Feed): OpaqueStateValue? =
+                            if (feed == stream) incumbentStateValue else null
+                    },
                 stream,
             )
     }
@@ -157,7 +161,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
     }
 
@@ -176,7 +181,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
 
         assertTrue(jdbcPartition is MysqlJdbcSnapshotWithCursorPartition)
     }
@@ -196,7 +202,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        val jdbcPartition =
+            mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
     }
 
@@ -213,7 +220,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        val jdbcPartition =
+            mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertNull(jdbcPartition)
     }
 }
