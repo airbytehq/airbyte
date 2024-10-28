@@ -26,7 +26,7 @@ from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, file_trans
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
-from airbyte_cdk.sources.file_based.writers.stream_writer import FileTransferStreamWriter
+from airbyte_cdk.sources.file_based.writers import FileTransferStreamWriter
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message

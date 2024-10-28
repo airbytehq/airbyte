@@ -1,3 +1,3 @@
-from .file_based_stream_writer import AbstractFileBasedStreamWriter
+from .stream_writer import FileTransferStreamWriter
 
-__all__ = ["AbstractFileBasedStreamWriter"]
+__all__ = ["FileTransferStreamWriter"]
