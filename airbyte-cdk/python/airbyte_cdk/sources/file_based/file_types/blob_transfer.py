@@ -3,7 +3,7 @@
 #
 import logging
 from io import IOBase
-from typing import Any, Generator, Iterable, Dict, Optional, Tuple
+from typing import Any, Dict, Generator, Iterable, Optional, Tuple
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError

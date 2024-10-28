@@ -240,7 +240,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor], use_file_transfer:bool=False
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor], use_file_transfer: bool = False
     ) -> AbstractFileBasedStream:
         return DefaultFileBasedStream(
             config=stream_config,
