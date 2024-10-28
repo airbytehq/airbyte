@@ -33,6 +33,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      6.0.0:
+        message: "`sponsoredDisplayReportStream` stream have updated schemas and must be reset."
+        upgradeDeadline: "2024-11-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
       5.0.0:
         message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
         upgradeDeadline: "2024-03-27"
