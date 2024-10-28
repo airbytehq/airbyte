@@ -4,12 +4,18 @@
 
 package io.airbyte.integrations.destination.databricks.jdbc
 
-import io.airbyte.cdk.integrations.base.JavaBaseConstants as constants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT as AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID as AB_GENERATION
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT as AB_LOADED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META as AB_META
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID as AB_RAW_ID
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA as AB_DATA
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
@@ -17,34 +23,28 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.*
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
 import java.time.Instant
-import java.util.*
+import java.util.Optional
 
 class DatabricksSqlGenerator(
     private val namingTransformer: NamingConventionTransformer,
     private val unityCatalogName: String,
 ) : SqlGenerator {
 
-    private val log = KotlinLogging.logger {}
     private val cdcDeletedColumn = buildColumnId(CDC_DELETED_COLUMN_NAME)
     private val metaColumnTypeMap =
         mapOf(
             buildColumnId(AB_RAW_ID) to AirbyteProtocolType.STRING,
             buildColumnId(AB_EXTRACTED_AT) to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-            buildColumnId(AB_META) to AirbyteProtocolType.STRING
+            buildColumnId(AB_META) to AirbyteProtocolType.STRING,
+            buildColumnId(AB_GENERATION) to AirbyteProtocolType.INTEGER,
         )
 
     companion object {
         const val QUOTE = "`"
         const val CDC_DELETED_COLUMN_NAME = "_ab_cdc_deleted_at"
-        const val AB_RAW_ID = constants.COLUMN_NAME_AB_RAW_ID
-        const val AB_EXTRACTED_AT = constants.COLUMN_NAME_AB_EXTRACTED_AT
-        const val AB_LOADED_AT = constants.COLUMN_NAME_AB_LOADED_AT
-        const val AB_DATA = constants.COLUMN_NAME_DATA
-        const val AB_META = constants.COLUMN_NAME_AB_META
 
         fun toDialectType(type: AirbyteType): String {
             return when (type) {
@@ -82,11 +82,14 @@ class DatabricksSqlGenerator(
         name: String,
         rawNamespaceOverride: String
     ): StreamId {
+        // Databricks downcases all object names, so handle that here
         return StreamId(
-            namingTransformer.getNamespace(namespace),
-            namingTransformer.getIdentifier(name),
-            namingTransformer.getNamespace(rawNamespaceOverride),
-            namingTransformer.getIdentifier(StreamId.concatenateRawTableName(namespace, name)),
+            namingTransformer.getNamespace(namespace).lowercase(),
+            namingTransformer.getIdentifier(name).lowercase(),
+            namingTransformer.getNamespace(rawNamespaceOverride).lowercase(),
+            namingTransformer
+                .getIdentifier(StreamId.concatenateRawTableName(namespace, name))
+                .lowercase(),
             namespace,
             name,
         )
@@ -94,6 +97,7 @@ class DatabricksSqlGenerator(
 
     override fun buildColumnId(name: String, suffix: String?): ColumnId {
         val nameWithSuffix = name + suffix
+        // Databricks preserves column name casing, so do _not_ downcase here.
         return ColumnId(
             namingTransformer.getIdentifier(nameWithSuffix),
             name,
@@ -102,15 +106,22 @@ class DatabricksSqlGenerator(
     }
 
     // Start: Functions scattered over other classes needed for T+D
-    fun createRawTable(streamId: StreamId): Sql {
+    fun createRawTable(streamId: StreamId, suffix: String, replace: Boolean): Sql {
+        val createStatement =
+            if (replace) {
+                "CREATE OR REPLACE TABLE"
+            } else {
+                "CREATE TABLE IF NOT EXISTS"
+            }
         return Sql.of(
             """
-                CREATE TABLE IF NOT EXISTS $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName} (
+                $createStatement $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}$suffix (
                     $AB_RAW_ID STRING,
                     $AB_EXTRACTED_AT TIMESTAMP,
                     $AB_LOADED_AT TIMESTAMP,
                     $AB_DATA STRING,
-                    $AB_META STRING
+                    $AB_META STRING,
+                    $AB_GENERATION BIGINT
                 )
             """.trimIndent(),
         )
@@ -129,8 +140,8 @@ class DatabricksSqlGenerator(
         return Sql.of(
             """
             | UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
-            | SET ${constants.COLUMN_NAME_AB_LOADED_AT} = CURRENT_TIMESTAMP
-            | WHERE ${constants.COLUMN_NAME_AB_LOADED_AT} IS NULL
+            | SET $AB_LOADED_AT = CURRENT_TIMESTAMP
+            | WHERE $AB_LOADED_AT IS NULL
             | $extractedAtCondition
             | """.trimMargin()
         )
@@ -167,7 +178,7 @@ class DatabricksSqlGenerator(
     ): Sql {
 
         val addRecordsToFinalTable =
-            if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+            if (stream.postImportAction == ImportType.DEDUPE) {
                 upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
             } else {
                 insertNewRecordsNoDedupe(
@@ -360,6 +371,8 @@ class DatabricksSqlGenerator(
             """
             |to_json(
             |   named_struct(
+            |       "sync_id",
+            |       _airbyte_meta.sync_id,
             |       "changes",
             |       array_union(
             |           _airbyte_type_errors,
@@ -374,7 +387,7 @@ class DatabricksSqlGenerator(
         val selectFromRawTable =
             """SELECT
             |${projectionColumns.replaceIndent("   ")},
-            |   from_json($AB_META, 'STRUCT<`changes` : ARRAY<STRUCT<`field`: STRING, `change`: STRING, `reason`: STRING>>>') as `_airbyte_meta`,
+            |   from_json($AB_META, 'STRUCT<`sync_id` : BIGINT, `changes` : ARRAY<STRUCT<`field`: STRING, `change`: STRING, `reason`: STRING>>>') as `_airbyte_meta`,
             |${typeCastErrorsArray.replaceIndent("   ")} as `_airbyte_type_errors`
             |FROM
             |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}

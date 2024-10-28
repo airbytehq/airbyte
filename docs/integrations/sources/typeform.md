@@ -101,6 +101,22 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.3.17 | 2024-10-05 | [46479](https://github.com/airbytehq/airbyte/pull/46479) | Update dependencies |
+| 1.3.16 | 2024-09-28 | [46170](https://github.com/airbytehq/airbyte/pull/46170) | Update dependencies |
+| 1.3.15 | 2024-09-21 | [45495](https://github.com/airbytehq/airbyte/pull/45495) | Update dependencies |
+| 1.3.14 | 2024-09-07 | [45269](https://github.com/airbytehq/airbyte/pull/45269) | Update dependencies |
+| 1.3.13 | 2024-08-31 | [45016](https://github.com/airbytehq/airbyte/pull/45016) | Update dependencies |
+| 1.3.12 | 2024-08-24 | [44690](https://github.com/airbytehq/airbyte/pull/44690) | Update dependencies |
+| 1.3.11 | 2024-08-17 | [44315](https://github.com/airbytehq/airbyte/pull/44315) | Update dependencies |
+| 1.3.10 | 2024-08-12 | [43875](https://github.com/airbytehq/airbyte/pull/43875) | Update dependencies |
+| 1.3.9 | 2024-08-10 | [43496](https://github.com/airbytehq/airbyte/pull/43496) | Update dependencies |
+| 1.3.8 | 2024-08-03 | [43212](https://github.com/airbytehq/airbyte/pull/43212) | Update dependencies |
+| 1.3.7 | 2024-07-27 | [42726](https://github.com/airbytehq/airbyte/pull/42726) | Update dependencies |
+| 1.3.6 | 2024-07-20 | [42183](https://github.com/airbytehq/airbyte/pull/42183) | Update dependencies |
+| 1.3.5 | 2024-07-13 | [41739](https://github.com/airbytehq/airbyte/pull/41739) | Update dependencies |
+| 1.3.4 | 2024-07-10 | [41434](https://github.com/airbytehq/airbyte/pull/41434) | Update dependencies |
+| 1.3.3 | 2024-07-09 | [41228](https://github.com/airbytehq/airbyte/pull/41228) | Update dependencies |
+| 1.3.2 | 2024-07-06 | [40821](https://github.com/airbytehq/airbyte/pull/40821) | Update dependencies |
 | 1.3.1 | 2024-06-26 | [40382](https://github.com/airbytehq/airbyte/pull/40382) | Update dependencies |
 | 1.3.0 | 2024-06-21 | [40176](https://github.com/airbytehq/airbyte/pull/40176) | Fix pagination for stream `Responses` |
 | 1.2.10 | 2024-06-22 | [40112](https://github.com/airbytehq/airbyte/pull/40112) | Update dependencies |

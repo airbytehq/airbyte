@@ -41,6 +41,23 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.1.22 | 2024-10-12 | [46808](https://github.com/airbytehq/airbyte/pull/46808) | Update dependencies |
+| 0.1.21 | 2024-10-05 | [46452](https://github.com/airbytehq/airbyte/pull/46452) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [46111](https://github.com/airbytehq/airbyte/pull/46111) | Update dependencies |
+| 0.1.19 | 2024-09-21 | [45775](https://github.com/airbytehq/airbyte/pull/45775) | Update dependencies |
+| 0.1.18 | 2024-09-14 | [45506](https://github.com/airbytehq/airbyte/pull/45506) | Update dependencies |
+| 0.1.17 | 2024-09-07 | [45294](https://github.com/airbytehq/airbyte/pull/45294) | Update dependencies |
+| 0.1.16 | 2024-08-31 | [45053](https://github.com/airbytehq/airbyte/pull/45053) | Update dependencies |
+| 0.1.15 | 2024-08-24 | [44712](https://github.com/airbytehq/airbyte/pull/44712) | Update dependencies |
+| 0.1.14 | 2024-08-17 | [44358](https://github.com/airbytehq/airbyte/pull/44358) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43738](https://github.com/airbytehq/airbyte/pull/43738) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43692](https://github.com/airbytehq/airbyte/pull/43692) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [42757](https://github.com/airbytehq/airbyte/pull/42757) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42338](https://github.com/airbytehq/airbyte/pull/42338) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41757](https://github.com/airbytehq/airbyte/pull/41757) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41466](https://github.com/airbytehq/airbyte/pull/41466) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41306](https://github.com/airbytehq/airbyte/pull/41306) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40881](https://github.com/airbytehq/airbyte/pull/40881) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40378](https://github.com/airbytehq/airbyte/pull/40378) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40024](https://github.com/airbytehq/airbyte/pull/40024) | Update dependencies |
 | 0.1.3 | 2024-06-13 | [37595](https://github.com/airbytehq/airbyte/pull/37595) | Change `last_records` to `last_record` |

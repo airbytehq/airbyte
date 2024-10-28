@@ -92,7 +92,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final Instant emittedAt,
                                                                              final boolean decorateWithStartedStatus,
-                                                                             final boolean decorateWithCompletedStatus) {
+                                                                             final boolean decorateWithCompletedStatus,
+                                                                             final Optional<Duration> cdcInitialLoadTimeout) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -107,7 +108,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
               new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
 
-        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt, cdcInitialLoadTimeout));
         if (decorateWithCompletedStatus) {
           iteratorList.add(new StreamStatusTraceEmitterIterator(
               new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
@@ -121,7 +122,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(
                                                                     @NotNull ConfiguredAirbyteStream airbyteStream,
                                                                     @NotNull TableInfo<CommonField<MysqlType>> table,
-                                                                    @NotNull Instant emittedAt) {
+                                                                    @NotNull Instant emittedAt,
+                                                                    @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
 
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
@@ -134,7 +136,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream));
+            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream), emittedAt,
+            cdcInitialLoadTimeout);
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);

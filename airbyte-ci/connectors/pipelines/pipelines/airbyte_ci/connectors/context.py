@@ -56,7 +56,6 @@ class ConnectorContext(PipelineContext):
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
-        reporting_slack_channel: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
         should_save_report: bool = True,
         code_tests_only: bool = False,
@@ -67,6 +66,8 @@ class ConnectorContext(PipelineContext):
         docker_hub_password: Optional[Secret] = None,
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
+        genai_api_key: Optional[Secret] = None,
+        dbdocs_token: Optional[Secret] = None,
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
@@ -88,7 +89,6 @@ class ConnectorContext(PipelineContext):
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
-            reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
@@ -116,6 +116,8 @@ class ConnectorContext(PipelineContext):
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
+        self.genai_api_key = genai_api_key
+        self.dbdocs_token = dbdocs_token
         self.concurrent_cat = concurrent_cat
         self.targeted_platforms = targeted_platforms
         super().__init__(
@@ -131,7 +133,6 @@ class ConnectorContext(PipelineContext):
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
-            reporting_slack_channel=reporting_slack_channel,
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
             ci_gcp_credentials=ci_gcp_credentials,
@@ -169,6 +170,10 @@ class ConnectorContext(PipelineContext):
     @property
     def live_tests_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-ci/connectors/live-tests")
+
+    @property
+    def erd_package_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-ci/connectors/erd")
 
     @property
     def should_save_updated_secrets(self) -> bool:
@@ -258,11 +263,8 @@ class ConnectorContext(PipelineContext):
         await asyncify(update_commit_status_check)(**self.github_commit_status)
 
         if self.should_send_slack_message:
-            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
+            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.get_slack_channels(), self.slack_webhook)  # type: ignore
 
         # Supress the exception if any
         return True
-
-    def create_slack_message(self) -> str:
-        raise NotImplementedError

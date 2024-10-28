@@ -7,12 +7,13 @@ from unittest.mock import ANY, MagicMock, call
 
 import pytest
 from airbyte_cdk.destinations.vector_db_based import ProcessingConfigModel, Writer
-from airbyte_cdk.models.airbyte_protocol import (
+from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     Level,
     Type,
 )
@@ -61,7 +62,7 @@ def test_write(omit_raw_text: bool):
     """
     config_model = ProcessingConfigModel(chunk_overlap=0, chunk_size=1000, metadata_fields=None, text_fields=["column_name"])
 
-    configured_catalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_obj({"streams": [generate_stream()]})
+    configured_catalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalogSerializer.load({"streams": [generate_stream()]})
     # messages are flushed after 32 records or after a state message, so this will trigger two batches to be processed
     input_messages = [_generate_record_message(i) for i in range(BATCH_SIZE + 5)]
     state_message = AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage())
@@ -126,7 +127,7 @@ def test_write_stream_namespace_split():
     """
     config_model = ProcessingConfigModel(chunk_overlap=0, chunk_size=1000, metadata_fields=None, text_fields=["column_name"])
 
-    configured_catalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_obj(
+    configured_catalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalogSerializer.load(
         {
             "streams": [
                 generate_stream(),

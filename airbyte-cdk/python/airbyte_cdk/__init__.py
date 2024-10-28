@@ -47,6 +47,7 @@ from .sources.declarative.requesters.paginators.strategies import OffsetIncremen
 
 from .sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
+from .sources.declarative.requesters.request_options.default_request_options_provider import DefaultRequestOptionsProvider
 from .sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from .sources.declarative.requesters.requester import HttpMethod
 from .sources.declarative.retrievers import SimpleRetriever
@@ -59,6 +60,8 @@ from .sources.message import InMemoryMessageRepository, MessageRepository
 from .sources.source import TState
 from .sources.streams.availability_strategy import AvailabilityStrategy
 from .sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, CachedLimiterSession, LimiterSession
+from .sources.streams.checkpoint import Cursor as LegacyCursor
+from .sources.streams.checkpoint import ResumableFullRefreshCursor
 from .sources.streams.concurrent.adapters import StreamFacade
 from .sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from .sources.streams.concurrent.cursor import Cursor
@@ -85,6 +88,10 @@ __all__ = [
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
+
+    # Checkpoint
+    "LegacyCursor",
+    "ResumableFullRefreshCursor",
 
     # Concurrent
     "ConcurrentCursor",
@@ -127,6 +134,7 @@ __all__ = [
     "DeclarativeStream",
     "Decoder",
     "DefaultPaginator",
+    "DefaultRequestOptionsProvider",
     "DpathExtractor",
     "FieldPointer",
     "HttpMethod",

@@ -198,7 +198,7 @@ public class PostgresUtils {
   public static void advanceLsn(final JdbcDatabase database) {
     try {
       if (database.getMetaData().getDatabaseMajorVersion() < POSTGRESQL_VERSION_15) {
-        database.executeWithinTransaction(EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS);
+        database.executeWithinTransaction(EPHEMERAL_HEARTBEAT_CREATE_STATEMENTS, true);
         LOGGER.info("Succesfully forced LSN advancement by creating & dropping an ephemeral heartbeat aggregate");
       }
     } catch (final Exception e) {

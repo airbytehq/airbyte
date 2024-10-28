@@ -14,7 +14,7 @@ Learn more about contributing to Airbyte [here](/contributing-to-airbyte/).
 
 ## Connector Support Levels
 
-Airbyte uses a tiered system for connectors to help you understand what to expect from a connector. In short, there are three tiers: Certified Connectors, Community Connectors, and Custom Connectors. Review the documentation on [connector support levels](./connector-support-levels.md) for details on each tier.
+Airbyte uses a tiered system for connectors to help you understand what to expect from a connector. In short, there are three tiers: Airbyte Connectors, Marketplace Connectors, and Custom Connectors. Review the documentation on [connector support levels](./connector-support-levels.md) for details on each tier.
 
 _[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
 

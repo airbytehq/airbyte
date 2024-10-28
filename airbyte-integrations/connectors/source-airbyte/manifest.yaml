@@ -1,0 +1,383 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - Jobs
+
+definitions:
+  streams:
+    Jobs:
+      type: DeclarativeStream
+      name: Jobs
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://api.airbyte.com/v1/jobs
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            orderBy: updatedAt|DESC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/Connections"
+              parent_key: connectionId
+              request_option:
+                type: RequestOption
+                field_name: connectionId
+                inject_into: request_parameter
+              partition_field: connectionId
+      primary_key:
+        - jobId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Jobs"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastUpdatedAt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updatedAtStart
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%MZ"
+    Workspaces:
+      type: DeclarativeStream
+      name: Workspaces
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://api.airbyte.com/v1/workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - workspaceId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Workspaces"
+    Connections:
+      type: DeclarativeStream
+      name: Connections
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://api.airbyte.com/v1/connections
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            includeDeleted: "false"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - connectionId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Connections"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.airbyte.com/v1/
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: token
+        url_base: https://api.airbyte.com/v1/applications
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers: {}
+        request_body_json:
+          client_id: "{{ config['client_id'] }}"
+          grant-type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+        request_parameters: {}
+      session_token_path:
+        - access_token
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/Jobs"
+  - $ref: "#/definitions/streams/Connections"
+  - $ref: "#/definitions/streams/Workspaces"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        order: 1
+        title: client_id
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      client_secret:
+        type: string
+        order: 2
+        title: client_secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Jobs:
+      hasRecords: true
+      streamHash: ffbb1a10bf9fdc313adb2d1d6f20e3c098e8f860
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Workspaces:
+      hasRecords: true
+      streamHash: 2429308a22a9631fb84976c3d8304e50a6fb8fd9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Connections:
+      hasRecords: true
+      streamHash: d79005bbf9ee139a7fea9bcbb3e469d5faaf29ba
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Jobs: true
+    Workspaces: true
+    Connections: true
+
+schemas:
+  Jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - jobId
+      - lastUpdatedAt
+    properties:
+      jobId:
+        type: number
+      status:
+        type:
+          - string
+          - "null"
+      jobType:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      rowsSynced:
+        type:
+          - number
+          - "null"
+      bytesSynced:
+        type:
+          - number
+          - "null"
+      connectionId:
+        type:
+          - string
+          - "null"
+      lastUpdatedAt:
+        type: string
+    additionalProperties: true
+  Workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - workspaceId
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type: string
+      dataResidency:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Connections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - connectionId
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      prefix:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - object
+          - "null"
+        properties:
+          basicTiming:
+            type:
+              - string
+              - "null"
+          scheduleType:
+            type:
+              - string
+              - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+      connectionId:
+        type: string
+      dataResidency:
+        type:
+          - string
+          - "null"
+      destinationId:
+        type:
+          - string
+          - "null"
+      configurations:
+        type:
+          - object
+          - "null"
+        properties:
+          streams:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                syncMode:
+                  type:
+                    - string
+                    - "null"
+                primaryKey:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                cursorField:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+      namespaceFormat:
+        type:
+          - string
+          - "null"
+      namespaceDefinition:
+        type:
+          - string
+          - "null"
+      nonBreakingSchemaUpdatesBehavior:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

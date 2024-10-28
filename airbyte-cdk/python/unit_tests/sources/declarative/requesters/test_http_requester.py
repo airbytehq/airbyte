@@ -415,7 +415,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             {"k": [1, 2]},
             "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
             id="test-key-with-list-to-be-interpolated",
-        )
+        ),
     ],
 )
 def test_request_param_interpolation(request_parameters, config, expected_query_params):
@@ -464,8 +464,7 @@ def test_request_param_interpolation_with_incorrect_values(request_parameters, c
         requester.send_request()
 
     assert (
-        error.value.args[0]
-        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
+        error.value.args[0] == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
     )
 
 
@@ -649,6 +648,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     assert sent_request.url == expected_full_url
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}
@@ -669,6 +669,7 @@ def test_request_attempt_count_is_tracked_across_retries(http_requester_factory)
     assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_factory):
     request_mock = MagicMock(spec=requests.PreparedRequest)
     request_mock.headers = {}

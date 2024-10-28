@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class CsvSerializedBuffer(
     bufferStorage: BufferStorage,
     private val csvSheetGenerator: CsvSheetGenerator,
-    compression: Boolean
+    compression: Boolean,
 ) : BaseSerializedBuffer(bufferStorage) {
     private var csvPrinter: CSVPrinter? = null
     private var csvFormat: CSVFormat
@@ -63,8 +63,10 @@ class CsvSerializedBuffer(
      */
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
-    override fun writeRecord(record: AirbyteRecordMessage) {
-        csvPrinter!!.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record))
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
+        csvPrinter!!.printRecord(
+            csvSheetGenerator.getDataRow(UUID.randomUUID(), record, generationId, syncId)
+        )
     }
 
     @Throws(IOException::class)
@@ -115,7 +117,8 @@ class CsvSerializedBuffer(
         @Suppress("DEPRECATION")
         fun createFunction(
             config: UploadCsvFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            useV2FieldNames: Boolean = false
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
@@ -148,6 +151,7 @@ class CsvSerializedBuffer(
                                 ),
                             ),
                         config,
+                        useV2FieldNames,
                     )
                 val csvSettings =
                     CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)

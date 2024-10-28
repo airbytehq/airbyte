@@ -1,5 +1,256 @@
 # Changelog
 
+## 5.17.0
+Add Per Partition with Global fallback Cursor 
+
+## 5.16.0
+Better structured error log messages in connector_builder module, with message / internal_message / stacktrace split into separate fields
+
+## 5.15.0
+Add new Error:
+No DBURL given
+
+sql [-hnr] [--table-size] [--db-size] [-p pass-through] [-s string] dburl [command] module for SQL-based destinations
+
+## 5.14.1
+HttpClient: Fixes issue where oauth authenticators would not refresh on backed off retries.
+
+## 5.14.0
+Fix yielding parent records in SubstreamPartitionRouter
+
+## 5.13.0
+Add extra fields to StreamSlice
+
+## 5.12.1
+Low Code: Removes deprecated `class_types_registry` and `default_implementation_registry`
+
+## 5.12.0
+Low Code: Adds `XmlDecoder` component
+
+## 5.11.1
+Low Code: Consolidate manifest decoder selection under `SimpleRetriever`, `AsyncRetriever`, and `SessionTokenAuthenticator`
+
+## 5.11.0
+concurrent-cdk: add per slice tracking of the most recent cursor
+
+## 5.10.3
+do not raise exception on missing stream by default
+
+## 5.10.2
+Remove PrintBuffer optimization due to dropped records
+
+## 5.10.1
+Async job component: improve memory usage
+
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
+## 5.9.0
+concurrent-cdk: change stream availability strategy to always available
+
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
+## 5.8.0
+Async job component: support Salesforce
+
+## 5.7.5
+Have headers match during HTTP cache hit
+
+## 5.7.4
+Always return a connection status even if an exception was raised
+
+## 5.7.3
+fix connector builder output serialization
+
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
+## 5.7.1
+add python-snappy to file-based dependencies
+
+## 5.7.0
+concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
+
+## 5.6.0
+Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
+
+## 5.5.2
+Fix pandas missing dependency
+
+## 5.5.1
+Bug fix: Return a connection status failure on an expected check failure
+
+## 5.5.0
+Declarative async job components
+
+## 5.4.0
+add migration of global stream_state to per_partition format
+
+## 5.3.0
+Connector builder: add flag to disable cache
+
+## 5.2.1
+Fix error in incremental sync docs
+
+## 5.2.0
+Add Global Parent State Cursor
+
+## 5.1.0
+Add limitation for number of partitions to PerPartitionCursor
+
+## 5.0.1
+Fix source-declarative-manifest
+
+## 5.0.0
+Replace pydantic BaseModel with dataclass
+
+## 4.6.2
+use orjson instead of json to speed up JSON parsing
+
+## 4.6.1
+Update json error message parser to identify additional error message fields in response bodies
+
+## 4.6.0
+Raise exceptions in file-based check, improve UI errors
+
+## 4.5.4
+add codeflash to dev environment
+
+## 4.5.3
+Cache the result of interpolated strings when the evaluated value is equal to its raw representation
+
+## 4.5.2
+CDK: refactor error handling in abstract source
+
+## 4.5.1
+Added support for RFR for Full-Refresh Substreams
+
+## 4.5.0
+Stop support for incoming legacy state message format
+
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
+## 4.4.1
+Added test utils for integration tests
+
+## 4.4.0
+file-based cdk: add excel file type support
+
+## 4.3.3
+Have better fallback error message on HTTP error
+
+## 4.3.2
+Ensure at least one element returned by decoder
+
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
+## 4.3.0
+Add PrintBuffer to emit records in batches
+
+## 4.2.0
+Resumable full refresh: Add SubstreamResumableFullRefreshCursor to Python CDK to allow connectors to allow checkpointing on parent records
+
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
+## 4.0.2
+Add ability to stop stream when retry-after is greater than a duration
+
+## 4.0.1
+Fix case where stream wont have a state attribute and needs to resolve get_updated_state
+
+## 4.0.0
+- General performance enhancement
+- Dropping Python 3.9 support
+
+## 3.9.6
+fix declarative schema refs for Decoder
+
+## 3.9.5
+Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
+
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
+## 3.9.3
+add name property to http_client for convenience
+
+## 3.9.2
+low-code: fix record selector factory when using custom components
+
+## 3.9.1
+ fix OOM on predicate for streamable responses
+
+## 3.9.0
+low code: add new Decoders: JsonlDecoder, IterableDecoder
+
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
+## 3.8.1
+CDK: fix handling for rate limit errors when checking connection
+
+## 3.8.0
+resumable full refresh: Automatically apply RFR to streams (not including substreams) that are not incremental and implement next_page_token
+
+## 3.7.0
+Deprecate AvailabilityStrategy
+
+## 3.6.0
+CDK: add not exiting when rate limited
+
+## 3.5.3
+Add failure_type to HttpResponseFilter(retry after pypi read error)
+
+## 3.5.2
+Add failure_type to HttpResponseFilter
+
+## 3.5.1
+Remove 3.11-style union
+
+## 3.5.0
+Clean invalid fields from configured catalog
+
+## 3.4.1
+resumable full refresh: Fix bug where checkpoint reader stops syncing too early if first partition is complete
+
+## 3.4.0
+file-based cdk: add config option to limit number of files for schema discover
+resumable full refresh: Fix bug for substreams depending on RFR parent stream would not paginate over parent
+
+## 3.3.0
+CDK: add incomplete status to availability check during read
+
+## 3.2.1
+CDK: flush buffer for each RATE_LIMITED message print
+
+## 3.2.0
+CDK: add running stream status with rate limit reason to backoff approach
+
+## 3.1.0
+CDK: add incomplete stream status to nonexistent stream handling
+
+## 3.0.0
+Integrate HttpClient into HttpStream class. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
+## 2.4.0
+CDK: Add support for input format parsing at jinja macro format_datetime
+
+## 2.3.1
+
+
+## 2.3.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.2.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.1.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
 ## 2.0.0
 Update  dependency to pydantic v2, and  dependency to pydantic v2 models. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
 
@@ -16,10 +267,10 @@ Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
 Exclude airbyte-cdk modules from schema discovery
 
 ## 1.7.0
-add  from  to 
+add  from  to
 
 ## 1.6.0
-add  from  to 
+add  from  to
 
 ## 1.5.6
 Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
@@ -43,7 +294,7 @@ Fix client_side_incremental end_datetime comparison
 Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
 
 ## 1.4.0
-low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
+low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter
 
 ## 1.3.3
 Mock server tests: adding 'discover' as part of the entrypoint_wrapper

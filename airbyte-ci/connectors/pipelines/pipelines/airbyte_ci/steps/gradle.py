@@ -10,7 +10,7 @@ import pipelines.dagger.actions.system.docker
 import requests
 from dagger import CacheSharingMode, CacheVolume, Container, ExecError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import AMAZONCORRETTO_IMAGE
+from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME, AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.hacks import never_fail_exec
 from pipelines.helpers.utils import dagger_directory_as_zip_file, sh_dash_c
@@ -83,7 +83,6 @@ class GradleTask(Step, ABC):
             ".root",
             ".env",
             "build.gradle",
-            "deps.toml",
             "gradle.properties",
             "gradle",
             "gradlew",
@@ -96,6 +95,8 @@ class GradleTask(Step, ABC):
             "tools/lib/lib.sh",
             "pyproject.toml",
         ] + self.build_include
+        # Support the edge case where the airbyte repo is used as a git submodule.
+        include += [f"{AIRBYTE_SUBMODULE_DIR_NAME}/{i}" for i in include]
 
         yum_packages_to_install = [
             "docker",  # required by :integrationTestJava.
@@ -201,7 +202,7 @@ class GradleTask(Step, ABC):
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
             # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
-            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
+            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"], use_entrypoint=True)
 
         # Run the gradle task that we actually care about.
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"

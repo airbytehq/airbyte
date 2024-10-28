@@ -38,6 +38,19 @@ const parseCDKVersion = (connectorCdkVersion, latestPythonCdkVersion, latestJava
   }
 };
 
+function getSupportLevelDisplay(rawSupportLevel) {
+  switch (rawSupportLevel) {
+    case "certified":
+      return "Airbyte Connector";
+    case "community":
+      return "Marketplace";
+    case "archived":
+      return "Archived";
+    default:
+      return null;
+  }
+}
+
 module.exports = {
   REGISTRY_URL,
   catalog: fetchCatalog(),
@@ -46,4 +59,5 @@ module.exports = {
   },
   getLatestPythonCDKVersion,
   parseCDKVersion,
+  getSupportLevelDisplay,
 };

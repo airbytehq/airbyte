@@ -4,10 +4,12 @@
 package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
-import java.util.*
+import java.time.Duration
+import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 
 internal class CompletableFuturesTest {
@@ -43,6 +45,41 @@ internal class CompletableFuturesTest {
                 .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
 
         Assertions.assertEquals(failureMessages, mutableListOf("Fail 5", "Fail 6"))
+    }
+
+    @Test
+    fun allOfEmptyList() {
+        Assertions.assertTimeoutPreemptively(Duration.ofSeconds(5)) {
+            Assertions.assertEquals(
+                emptyList<String>(),
+                CompletableFutures.allOf(emptyList<CompletableFuture<String>>())
+                    .toCompletableFuture()
+                    .join(),
+            )
+        }
+    }
+
+    @Test
+    fun testFutureThrowingThrowable() {
+        val errorMessage = "Throwable1"
+        try {
+            val result =
+                CompletableFutures.allOf(
+                        listOf(CompletableFuture.failedFuture<Int>(Throwable(errorMessage)))
+                    )
+                    .toCompletableFuture()
+                    .get()
+            val failureMessages =
+                result
+                    .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
+                    .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
+            Assertions.assertEquals(
+                listOf(errorMessage),
+                failureMessages,
+            )
+        } catch (t: Throwable) {
+            fail(t)
+        }
     }
 
     private fun returnSuccessWithDelay(value: Int, delayMs: Long): CompletableFuture<Int> {

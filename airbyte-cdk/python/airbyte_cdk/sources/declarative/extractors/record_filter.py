@@ -3,9 +3,9 @@
 #
 import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionWithGlobalCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
@@ -33,7 +33,12 @@ class RecordFilter:
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
+        kwargs = {
+            "stream_state": stream_state,
+            "stream_slice": stream_slice,
+            "next_page_token": next_page_token,
+            "stream_slice.extra_fields": stream_slice.extra_fields if stream_slice else {},
+        }
         for record in records:
             if self._filter_interpolator.eval(self.config, record=record, **kwargs):
                 yield record
@@ -48,11 +53,14 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     """
 
     def __init__(
-        self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs: Any
+        self,
+        date_time_based_cursor: DatetimeBasedCursor,
+        substream_cursor: Optional[Union[PerPartitionWithGlobalCursor, GlobalSubstreamCursor]],
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
-        self._per_partition_cursor = per_partition_cursor
+        self._substream_cursor = substream_cursor
 
     @property
     def _cursor_field(self) -> str:
@@ -98,11 +106,9 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
         :param StreamSlice stream_slice: Current Stream slice
         :return Optional[str]: cursor_value in case it was found, otherwise None.
         """
-        if self._per_partition_cursor:
-            # self._per_partition_cursor is the same object that DeclarativeStream uses to save/update stream_state
-            partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
-            return partition_state.get(self._cursor_field) if partition_state else None
-        return stream_state.get(self._cursor_field)
+        state = (self._substream_cursor or self._date_time_based_cursor).select_state(stream_slice)
+
+        return state.get(self._cursor_field) if state else None
 
     def _get_filter_date(self, state_value: Optional[str]) -> datetime.datetime:
         start_date_parsed = self._start_date_from_config

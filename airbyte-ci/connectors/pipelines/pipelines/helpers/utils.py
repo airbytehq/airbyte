@@ -28,12 +28,11 @@ if TYPE_CHECKING:
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
-AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
-IGNORED_FILE_EXTENSIONS = [".md"]
+IGNORED_FILE_EXTENSIONS: List[str] = []
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -47,7 +46,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     Returns:
         bool: Whether the path exists in the container working directory.
     """
-    workdir = (await container.with_exec(["pwd"], skip_entrypoint=True).stdout()).strip()
+    workdir = (await container.with_exec(["pwd"]).stdout()).strip()
     mounts = await container.mounts()
     if workdir in mounts:
         expected_file_path = Path(workdir[1:]) / path

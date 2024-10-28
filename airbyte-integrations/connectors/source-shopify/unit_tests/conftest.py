@@ -38,7 +38,11 @@ def logger():
 
 @pytest.fixture
 def basic_config():
-    return {"shop": "test_shop", "credentials": {"auth_method": "api_password", "api_password": "api_password"}}
+    return {
+        "shop": "test_shop", 
+        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
+        "shop_id": 0,
+    }
 
 
 @pytest.fixture
@@ -48,6 +52,7 @@ def auth_config():
         "start_date": "2023-01-01",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "authenticator": None,
+        
     }
 
 
@@ -353,6 +358,35 @@ def bulk_job_failed_response():
         },
     }
 
+ 
+@pytest.fixture
+def bulk_job_failed_with_partial_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/123",
+                "status": "FAILED",
+                "errorCode": "INTERNAL_SERVER_ERROR",
+                "objectCount": "432",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
+                "bulk-123456789.jsonl&response-content-type=application/jsonl"
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 20000.0,
+                    "currentlyAvailable": 19999,
+                    "restoreRate": 1000.0
+                }
+            }
+        }
+    }
+
 
 @pytest.fixture
 def bulk_job_timeout_response():
@@ -391,6 +425,118 @@ def bulk_job_running_response():
                 "status": "RUNNING",
                 "errorCode": None,
                 "objectCount": "0",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+    
+    
+@pytest.fixture
+def bulk_job_running_with_object_count_and_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
+                "errorCode": None,
+                "objectCount": "15",
+                "fileSize": None,
+                "url": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8',
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_canceled_with_object_count_and_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "CANCELED",
+                "errorCode": None,
+                "objectCount": "15",
+                "fileSize": None,
+                "url": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8',
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_running_with_object_count_no_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
+                "errorCode": None,
+                "objectCount": "4",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_canceled_with_object_count_no_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "CANCELED",
+                "errorCode": None,
+                "objectCount": "4",
                 "fileSize": None,
                 "url": None,
                 "partialDataUrl": None,
@@ -539,7 +685,9 @@ def product_images_jsonl_content_example():
 {"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","height":280,"alt":"","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","width":265,"__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"Product","id":"gid:\/\/shopify\/Product\/456"}
 {"__typename":"MediaImage","createdAt":"2021-06-23T01:09:47Z","updatedAt":"2023-04-24T17:27:15Z","image":{"url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587"},"__parentId":"gid:\/\/shopify\/Product\/456"}
-{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/222","height":1467,"alt":"updated_mon_24.04.2023","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","width":2200,"__parentId":"gid:\/\/shopify\/Product\/456"}\n"""
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/222","height":1467,"alt":"updated_mon_24.04.2023","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","width":2200,"__parentId":"gid:\/\/shopify\/Product\/456"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/9062091161885"}
+{"__typename":"MediaImage","createdAt":"2024-06-12T23:41:27Z","updatedAt":"2024-06-12T23:41:28Z","image":null,"__parentId":"gid:\/\/shopify\/Product\/9062091161885"}\n"""
 
 
 @pytest.fixture
@@ -818,36 +966,7 @@ def product_images_response_expected_result():
 @pytest.fixture
 def product_variants_response_expected_result():
     return [
-        {
-            "id": 40091751448765,
-            "title": "Metal",
-            "price": 64.0,
-            "sku": "",
-            "position": 1,
-            "inventory_policy": "DENY",
-            "compare_at_price": None,
-            "inventory_management": "SHOPIFY",
-            "created_at": "2021-06-23T06:04:41+00:00",
-            "updated_at": "2023-10-27T16:56:50+00:00",
-            "taxable": True,
-            "barcode": None,
-            "weight": 0.0,
-            "weight_unit": "GRAMS",
-            "inventory_quantity": 6,
-            "requires_shipping": False,
-            "available_for_sale": True,
-            "display_name": "Waterproof iPhone Speaker - Metal",
-            "tax_code": "",
-            "grams": 0,
-            "old_inventory_quantity": 6,
-            "fulfillment_service": "manual",
-            "admin_graphql_api_id": "gid://shopify/ProductVariant/40091751448765",
-            "presentment_prices": [{"price": {"amount": 64.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
-            "product_id": 6796825198781,
-            "inventory_item_id": 42186366255293,
-            "image_id": None,
-            "shop_url": "test_shop",
-        },
+        # sorted records in ASC, check the `updated_at` field
         {
             "id": 41561955827901,
             "title": "Test Variant 1",
@@ -875,6 +994,36 @@ def product_variants_response_expected_result():
             "presentment_prices": [{"price": {"amount": 19.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
             "product_id": 6796220989629,
             "inventory_item_id": 43653682495677,
+            "image_id": None,
+            "shop_url": "test_shop",
+        },
+        {
+            "id": 40091751448765,
+            "title": "Metal",
+            "price": 64.0,
+            "sku": "",
+            "position": 1,
+            "inventory_policy": "DENY",
+            "compare_at_price": None,
+            "inventory_management": "SHOPIFY",
+            "created_at": "2021-06-23T06:04:41+00:00",
+            "updated_at": "2023-10-27T16:56:50+00:00",
+            "taxable": True,
+            "barcode": None,
+            "weight": 0.0,
+            "weight_unit": "GRAMS",
+            "inventory_quantity": 6,
+            "requires_shipping": False,
+            "available_for_sale": True,
+            "display_name": "Waterproof iPhone Speaker - Metal",
+            "tax_code": "",
+            "grams": 0,
+            "old_inventory_quantity": 6,
+            "fulfillment_service": "manual",
+            "admin_graphql_api_id": "gid://shopify/ProductVariant/40091751448765",
+            "presentment_prices": [{"price": {"amount": 64.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
+            "product_id": 6796825198781,
+            "inventory_item_id": 42186366255293,
             "image_id": None,
             "shop_url": "test_shop",
         },

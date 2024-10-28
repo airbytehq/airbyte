@@ -15,6 +15,15 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source trello test creds`
 and place them into `secrets/config.json`.
 
+### Locally running the connector
+
+```
+poetry run source-trello spec
+poetry run source-trello check --config secrets/config.json
+poetry run source-trello discover --config secrets/config.json
+poetry run source-trello read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+```
+
 ### Locally running the connector docker image
 
 #### Build

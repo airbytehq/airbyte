@@ -124,11 +124,11 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
         .with_workdir("airbyte_normalization")
         .with_exec(sh_dash_c(["mv * .."]))
         .with_workdir("/airbyte")
-        .with_exec(["rm", "-rf", "airbyte_normalization"])
+        .with_exec(["rm", "-rf", "airbyte_normalization"], use_entrypoint=True)
         .with_workdir("/airbyte/normalization_code")
-        .with_exec(["pip3", "install", "."])
+        .with_exec(["pip3", "install", "."], use_entrypoint=True)
         .with_workdir("/airbyte/normalization_code/dbt-template/")
-        .with_exec(["dbt", "deps"])
+        .with_exec(["dbt", "deps"], use_entrypoint=True)
         .with_workdir("/airbyte")
         .with_file(
             "run_with_normalization.sh",
@@ -174,8 +174,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_env_variable("APPLICATION", application)
         .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
-        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
     )
     return await finalize_build(context, connector_container)

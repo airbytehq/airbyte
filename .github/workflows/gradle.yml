@@ -39,6 +39,7 @@ jobs:
               - '**/*.gradle'
               - '**/*.kt'
               - 'airbyte-cdk/java/**/*'
+              - 'airbyte-cdk/bulk/**/*'
 
   run-check:
     needs:

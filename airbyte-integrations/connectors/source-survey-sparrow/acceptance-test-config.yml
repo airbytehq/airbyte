@@ -3,7 +3,7 @@
 connector_image: airbyte/source-survey-sparrow:dev
 tests:
   spec:
-    - spec_path: "source_survey_sparrow/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

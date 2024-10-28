@@ -83,7 +83,6 @@ async def generate(
     concurrency: int,
     rewrite: bool,
 ) -> None:
-
     logger = logging.getLogger(__name__)
     result_backends: List[ResultBackend] = []
     if output_directory:
@@ -104,7 +103,6 @@ async def generate(
         )
     else:
         logger.info(f"Generating insights for {len(connectors)} connectors.")
-
     semaphore = Semaphore(concurrency)
     soon_results = []
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
@@ -112,7 +110,7 @@ async def generate(
             for connector in connectors:
                 soon_results.append(
                     connector_task_group.soonify(generate_insights_for_connector)(
-                        dagger_client.pipeline(connector.technical_name),
+                        dagger_client,
                         connector,
                         semaphore,
                         rewrite,

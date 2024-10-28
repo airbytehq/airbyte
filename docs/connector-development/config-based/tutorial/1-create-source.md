@@ -14,7 +14,7 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-This will bring up an interactive helper application. Use the arrow keys to pick a template from the list. Select the `Configuration Based Source` template and then input the name of your connector. The application will create a new directory in `airbyte/airbyte-integrations/connectors/` with the name of your new connector.
+This will bring up an interactive helper application. Use the arrow keys to pick a template from the list. Select the `Low-code Source` template and then input the name of your connector. The application will create a new directory in `airbyte/airbyte-integrations/connectors/` with the name of your new connector.
 The generator will create a new module for your connector with the name `source-<connector-name>`.
 
 ```

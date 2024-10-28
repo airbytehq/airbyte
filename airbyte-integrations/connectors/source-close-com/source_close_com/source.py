@@ -96,7 +96,7 @@ class CloseComStreamCustomFields(CloseComStream):
         )
         resp.raise_for_status()
         resp_json: Mapping[str, Any] = resp.json()["data"]
-        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean"]} for data in resp_json}
+        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
 
     def get_json_schema(self):
         """Override default get_json_schema method to add custom fields to schema."""

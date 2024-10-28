@@ -18,29 +18,46 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
+### Set up Shopify
+
 <!-- env:cloud -->
 
 :::note
 For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
 :::
 
-### Airbyte Cloud
+<HideInUI>
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Shopify from the Source type dropdown.
+4. Enter a name for the Shopify connector.
+</HideInUI>
 
 #### Connect using OAuth2.0
 
-1. Select a **Source name**.
+1. Choose a **Source name**.
 2. Click **Authenticate your Shopify account**.
-3. Click **Install** to install the Airbyte application.
-4. Log in to your account, if you are not already logged in.
-5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
-6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
-8. Click **Set up source** and wait for the connection test to complete.
+3. Click **Install** to install the Airbyte application. Log in to your account, if you are not already logged in. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
+<FieldAnchor field="shop">
+4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
+</FieldAnchor>
+<FieldAnchor field="start_date">
+5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
+6. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-### Airbyte Open Source
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Shopify from the Source type dropdown.
+4. Enter a name for the Shopify connector.
 
 #### Create a custom app
 
@@ -106,11 +123,18 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 ## Supported sync modes
 
+The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
 
-## Supported streams
+## Supported Streams
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
@@ -148,6 +172,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Capturing deleted records
 
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
@@ -156,15 +183,11 @@ When a record is deleted, the connector outputs a record with the `ID` of that r
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
-## Data type mapping
-
-| Integration Type | Airbyte Type |
-| :--------------- | :----------- |
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
-| `boolean`        | `boolean`    |
+## Marketing Attribution data
+Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
+- `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
+- `Orders` (referring_site, source_name)
+- `Abandoned Checkouts` (referring_site, source_name)
 
 ## Features
 
@@ -174,8 +197,19 @@ Check the following Shopify documentation for more information about [retrieving
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
 
+## Data type map
+
+| Integration Type | Airbyte Type |
+|:-----------------|:-------------|
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
+| `boolean`        | `boolean`    |
+
 ## Limitations & Troubleshooting
 
+</HideInUI>
 <details>
 <summary>
 
@@ -205,13 +239,40 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 </details>
 
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.7 | 2024-10-14 | [46552](https://github.com/airbytehq/airbyte/pull/46552) | Add `parent state` tracking for BULK sub-streams |
+| 2.5.6 | 2024-10-12 | [46844](https://github.com/airbytehq/airbyte/pull/46844) | Update dependencies |
+| 2.5.5 | 2024-10-05 | [46578](https://github.com/airbytehq/airbyte/pull/46578) | Raise exception on missing stream |
+| 2.5.4 | 2024-10-05 | [45759](https://github.com/airbytehq/airbyte/pull/45759) | Update dependencies |
+| 2.5.3 | 2024-09-27 | [46095](https://github.com/airbytehq/airbyte/pull/46095) | Fixed duplicates for `Product Images`, `Metafield Product Images` and `Metafield Products` streams for Incremental syncs |
+| 2.5.2 | 2024-09-17 | [45633](https://github.com/airbytehq/airbyte/pull/45633) | Adds `read_inventory` as a required scope for `product_variants` stream |
+| 2.5.1 | 2024-09-14 | [45255](https://github.com/airbytehq/airbyte/pull/45255) | Update dependencies |
+| 2.5.0 | 2024-09-06 | [45190](https://github.com/airbytehq/airbyte/pull/45190) | Migrate to CDK v5 |
+| 2.4.24 | 2024-09-03 | [45116](https://github.com/airbytehq/airbyte/pull/45116) | Have message and description be nullable for custom_collections deleted events |
+| 2.4.23 | 2024-08-31 | [44971](https://github.com/airbytehq/airbyte/pull/44971) | Update dependencies |
+| 2.4.22 | 2024-08-24 | [44723](https://github.com/airbytehq/airbyte/pull/44723) | Update dependencies |
+| 2.4.21 | 2024-08-17 | [44318](https://github.com/airbytehq/airbyte/pull/44318) | Update dependencies |
+| 2.4.20 | 2024-08-12 | [43834](https://github.com/airbytehq/airbyte/pull/43834) | Update dependencies |
+| 2.4.19 | 2024-08-10 | [43194](https://github.com/airbytehq/airbyte/pull/43194) | Update dependencies |
+| 2.4.18 | 2024-08-06 | [43326](https://github.com/airbytehq/airbyte/pull/43326) | Added missing `type` type for `customer_journey_summary` field for `Customer Journey Summary` stream schema |
+| 2.4.17 | 2024-08-02 | [42973](https://github.com/airbytehq/airbyte/pull/42973) | Fixed `FAILED` Job handling for `no-checkpointing` BULK Streams, fixed STATE collision for REST Streams with `Deleted Events` |
+| 2.4.16 | 2024-07-21 | [42095](https://github.com/airbytehq/airbyte/pull/42095) | Added the `Checkpointing` for the `BULK` streams, fixed the `store` redirection |
+| 2.4.15 | 2024-07-27 | [42806](https://github.com/airbytehq/airbyte/pull/42806) | Update dependencies |
+| 2.4.14 | 2024-07-20 | [42150](https://github.com/airbytehq/airbyte/pull/42150) | Update dependencies |
+| 2.4.13 | 2024-07-13 | [41809](https://github.com/airbytehq/airbyte/pull/41809) | Update dependencies |
+| 2.4.12 | 2024-07-10 | [41103](https://github.com/airbytehq/airbyte/pull/41103) | Update dependencies |
+| 2.4.11 | 2024-07-09 | [41068](https://github.com/airbytehq/airbyte/pull/41068) | Added `options` field to `Product Variants` stream |
+| 2.4.10 | 2024-07-09 | [41042](https://github.com/airbytehq/airbyte/pull/41042) | Use latest `CDK`: 3.0.0 |
+| 2.4.9 | 2024-07-06 | [40768](https://github.com/airbytehq/airbyte/pull/40768) | Update dependencies |
+| 2.4.8 | 2024-07-03 | [40707](https://github.com/airbytehq/airbyte/pull/40707) | Fixed the bug when `product_images` stream emitted records with no `primary_key` |
+| 2.4.7 | 2024-06-27 | [40593](https://github.com/airbytehq/airbyte/pull/40593) | Use latest `CDK` version possible |
 | 2.4.6 | 2024-06-26 | [40526](https://github.com/airbytehq/airbyte/pull/40526) | Made `BULK Job termination threshold` limit adjustable from `input configuration`, increased the default value to `1 hour`. |
 | 2.4.5 | 2024-06-25 | [40484](https://github.com/airbytehq/airbyte/pull/40484) | Update dependencies |
 | 2.4.4 | 2024-06-19 | [39594](https://github.com/airbytehq/airbyte/pull/39594) | Extended the `Discount Codes`, `Fulfillment Orders`, `Inventory Items`, `Inventory Levels`, `Products`, `Product Variants` and `Transactions` stream schemas |
@@ -298,5 +359,3 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
 
 </details>
-
-</HideInUI>

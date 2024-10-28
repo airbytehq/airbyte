@@ -5,7 +5,7 @@
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.migrate_to_poetry.pipeline import run_connector_migration_to_poetry_pipeline
+from pipelines.airbyte_ci.connectors.migrate_to_poetry.pipeline import run_connector_migration_to_poetry_pipeline_wrapper
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
@@ -61,7 +61,7 @@ async def migrate_to_poetry(ctx: click.Context, changelog: bool, bump: str | Non
 
     await run_connectors_pipelines(
         connectors_contexts,
-        run_connector_migration_to_poetry_pipeline,
+        run_connector_migration_to_poetry_pipeline_wrapper,
         "Migration to poetry pipeline",
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],

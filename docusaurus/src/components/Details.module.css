@@ -1,0 +1,41 @@
+.details {
+  --docusaurus-details-decoration-color: var(--ifm-color-info-dark);
+  --docusaurus-details-transition: transform var(--ifm-transition-fast) ease;
+  border: 1px solid var(--ifm-color-info-dark);
+  margin: 0 0 var(--ifm-spacing-vertical);
+  --docusaurus-details-summary-arrow-size: 0.38rem;
+}
+
+.details > summary {
+  cursor: pointer;
+  list-style: none;
+  padding-left: 1rem;
+  position: relative;
+  display: flex;
+}
+
+.details>summary > p {
+  margin-bottom: 0;
+}
+
+.details > summary::before {
+  border-color: #0000 #0000 #0000 var(--docusaurus-details-decoration-color);
+  border-style: solid;
+  border-width: var(--docusaurus-details-summary-arrow-size);
+  content: "";
+  left: 0;
+  position: absolute;
+  top: 0.45rem;
+  transform: rotate(0);
+  transform-origin: calc(var(--docusaurus-details-summary-arrow-size) / 2) 50%;
+  transition: var(--docusaurus-details-transition);
+}
+
+.details[open] > summary::before {
+  transform: rotate(90deg);
+}
+.detailsContent {
+  border-top: 1px solid var(--docusaurus-details-decoration-color);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}

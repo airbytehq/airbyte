@@ -106,6 +106,17 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.2.0 | 2024-08-23 | [44617](https://github.com/airbytehq/airbyte/pull/44617) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-17 | [44264](https://github.com/airbytehq/airbyte/pull/44264) | Update dependencies |
+| 0.1.14 | 2024-08-12 | [43924](https://github.com/airbytehq/airbyte/pull/43924) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43562](https://github.com/airbytehq/airbyte/pull/43562) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43258](https://github.com/airbytehq/airbyte/pull/43258) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42701](https://github.com/airbytehq/airbyte/pull/42701) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42278](https://github.com/airbytehq/airbyte/pull/42278) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41827](https://github.com/airbytehq/airbyte/pull/41827) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41507](https://github.com/airbytehq/airbyte/pull/41507) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41244](https://github.com/airbytehq/airbyte/pull/41244) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40823](https://github.com/airbytehq/airbyte/pull/40823) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40394](https://github.com/airbytehq/airbyte/pull/40394) | Update dependencies |
 | 0.1.4 | 2024-06-23 | [39924](https://github.com/airbytehq/airbyte/pull/39924) | Update dependencies |
 | 0.1.3 | 2024-06-15 | [39509](https://github.com/airbytehq/airbyte/pull/39509) | Make connector compatible with Builder |

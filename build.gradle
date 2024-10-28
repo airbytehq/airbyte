@@ -6,8 +6,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7' apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
+    id 'com.github.spotbugs' version '6.0.7'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
 }
 
 allprojects {
@@ -16,6 +17,7 @@ allprojects {
     apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.google.devtools.ksp'
     apply plugin: 'idea'
 
 
@@ -101,6 +103,12 @@ allprojects {
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            preferProjectModules()
         }
     }
 

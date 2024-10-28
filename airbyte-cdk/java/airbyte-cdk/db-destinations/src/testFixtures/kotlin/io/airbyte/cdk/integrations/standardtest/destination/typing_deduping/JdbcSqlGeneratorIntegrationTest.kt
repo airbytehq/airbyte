@@ -7,12 +7,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
@@ -90,7 +92,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Throws(Exception::class)
     override fun createRawTable(streamId: StreamId) {
-        database.execute(
+        val columns =
             dslContext
                 .createTable(DSL.name(streamId.rawNamespace, streamId.rawName))
                 .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
@@ -98,8 +100,10 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 .column(COLUMN_NAME_AB_LOADED_AT, timestampWithTimeZoneType)
                 .column(COLUMN_NAME_DATA, structType.nullable(false))
                 .column(COLUMN_NAME_AB_META, structType.nullable(true))
-                .getSQL(ParamType.INLINED)
-        )
+        if (sqlGenerator.columns == DestinationColumns.V2_WITH_GENERATION) {
+            columns.column(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, SQLDataType.BIGINT)
+        }
+        database.execute(columns.getSQL(ParamType.INLINED))
     }
 
     @Throws(Exception::class)
@@ -118,7 +122,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     public override fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>) {
         insertRecords(
             DSL.name(streamId.rawNamespace, streamId.rawName),
-            JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+            sqlGenerator.columns.rawColumns,
             records,
             COLUMN_NAME_DATA,
             COLUMN_NAME_AB_META
@@ -143,9 +147,12 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         records: List<JsonNode>,
         generationId: Long,
     ) {
-        // TODO handle generation ID
         val columnNames =
-            if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
+            (if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES)
+                .toMutableList()
+        if (sqlGenerator.columns == DestinationColumns.V2_WITH_GENERATION) {
+            columnNames += COLUMN_NAME_AB_GENERATION_ID
+        }
         insertRecords(
             DSL.name(streamId.finalNamespace, streamId.finalName + suffix),
             columnNames,

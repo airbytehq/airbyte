@@ -104,6 +104,13 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         messages = list(self._stream.read_records_from_slice({"files": [RemoteFile(uri="uri", last_modified=self._NOW)]}))
         assert list(map(lambda message: message.record.data["data"], messages)) == [self._A_RECORD]
 
+    def test_when_transform_record_then_return_updated_record(self) -> None:
+        file = RemoteFile(uri="uri", last_modified=self._NOW)
+        last_updated = self._NOW.isoformat()
+        transformed_record = self._stream.transform_record(self._A_RECORD, file, last_updated)
+        assert transformed_record[self._stream.ab_last_mod_col] == last_updated
+        assert transformed_record[self._stream.ab_file_name_col] == file.uri
+
     def test_given_exception_when_read_records_from_slice_then_do_process_other_files(
         self,
     ) -> None:
@@ -181,6 +188,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._parser.infer_schema.return_value = {"data": {"type": "string"}}
         files = [RemoteFile(uri=f"file{i}", last_modified=self._NOW) for i in range(10)]
         self._stream_reader.get_matching_files.return_value = files
+        self._stream.config.recent_n_files_to_read_for_schema_discovery = 3
 
         schema = self._stream.get_json_schema()
 

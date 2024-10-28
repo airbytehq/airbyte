@@ -38,6 +38,18 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.1 | 2024-10-08 | [46652](https://github.com/airbytehq/airbyte/pull/46652) | Fix longitude regex matching |
+| 0.3.0 | 2024-08-26 | [44772](https://github.com/airbytehq/airbyte/pull/44772) | Refactor connector to manifest-only format |
+| 0.2.17 | 2024-08-24 | [44725](https://github.com/airbytehq/airbyte/pull/44725) | Update dependencies |
+| 0.2.16 | 2024-08-17 | [44236](https://github.com/airbytehq/airbyte/pull/44236) | Update dependencies |
+| 0.2.15 | 2024-08-12 | [43735](https://github.com/airbytehq/airbyte/pull/43735) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43217](https://github.com/airbytehq/airbyte/pull/43217) | Update dependencies |
+| 0.2.13 | 2024-07-27 | [42731](https://github.com/airbytehq/airbyte/pull/42731) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42389](https://github.com/airbytehq/airbyte/pull/42389) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41814](https://github.com/airbytehq/airbyte/pull/41814) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41592](https://github.com/airbytehq/airbyte/pull/41592) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41199](https://github.com/airbytehq/airbyte/pull/41199) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [40784](https://github.com/airbytehq/airbyte/pull/40784) | Update dependencies |
 | 0.2.7 | 2024-06-25 | [40408](https://github.com/airbytehq/airbyte/pull/40408) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40005](https://github.com/airbytehq/airbyte/pull/40005) | Update dependencies |
 | 0.2.5 | 2024-06-06 | [39170](https://github.com/airbytehq/airbyte/pull/39170) | [autopull] Upgrade base image to v1.2.2 |

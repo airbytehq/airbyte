@@ -30,9 +30,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
-import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.*;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
@@ -44,12 +41,12 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.cursor_based.MssqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager;
@@ -60,8 +57,6 @@ import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.Ini
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.debezium.connector.sqlserver.Lsn;
-import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyStoreException;
@@ -71,7 +66,6 @@ import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -239,20 +233,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly filtered (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
-          .stream()
-          .filter(this::isTableInRequestedSchema)
-          .toList();
-      for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
-      }
-      return resultInternals;
+      return schemas.stream().flatMap(schema -> {
+        LOGGER.info("Get columns for schema: {}", schema);
+        try {
+          return super.discoverInternal(database, schema).stream();
+        } catch (Exception e) {
+          throw new ConfigErrorException(String.format("Error getting columns for schema: %s", schema), e);
+        }
+      }).collect(toList());
     } else {
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return internals;
+      return super.discoverInternal(database);
     }
   }
 
@@ -294,12 +286,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     // return !nullValExist;
     // will enable after we have sent comms to users this affects
     return true;
-  }
-
-  private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
-    return schemas
-        .stream()
-        .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
   }
 
   @Override
@@ -437,7 +423,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,
-            emittedAt, true, true));
+            emittedAt, true, true, Optional.empty()));
 
         // Build Cursor based iterator
         final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
@@ -454,42 +440,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     LOGGER.info("using CDC: {}", false);
     return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
-  }
-
-  public AutoCloseableIterator<AirbyteMessage> getDebeziumSnapshotIterators(
-                                                                            final JsonNode config,
-                                                                            final ConfiguredAirbyteCatalog catalog,
-                                                                            final CdcTargetPosition<Lsn> targetPosition,
-                                                                            final Duration firstRecordWaitTime,
-                                                                            final Duration subsequentRecordWaitTime,
-                                                                            final MssqlCdcConnectorMetadataInjector cdcMetadataInjector,
-                                                                            final Properties properties,
-                                                                            final CdcStateHandler cdcStateHandler,
-                                                                            final Instant emittedAt) {
-
-    LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
-    final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(AirbyteDebeziumHandler.QUEUE_CAPACITY);
-
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
-    final var emptyHistory = new AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>(Optional.empty(), false);
-    final var schemaHistoryManager = AirbyteSchemaHistoryStorage.initializeDBHistory(emptyHistory, cdcStateHandler.compressSchemaHistoryForState());
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(properties, config, catalog, Collections.emptyList());
-    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(propertiesManager);
-    tableSnapshotPublisher.start(queue, offsetManager, Optional.of(schemaHistoryManager));
-
-    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
-        queue,
-        targetPosition,
-        tableSnapshotPublisher::hasClosed,
-        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime);
-
-    final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
-    return AutoCloseableIterators.concatWithEagerClose(
-        AutoCloseableIterators.transform(eventIterator, eventConverter::toAirbyteMessage),
-        AutoCloseableIterators.fromIterator(
-            MoreIterators.singletonIteratorFromSupplier(
-                cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   @Override
@@ -648,7 +598,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
       initialLoadStateManager = new MssqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-          initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
+          initPairToOrderedColumnInfoMap(database, catalog, tableNameToTable, getQuoteString()));
     }
   }
 

@@ -9,7 +9,17 @@ import sys
 
 import pytest
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteTraceMessage,
+    FailureType,
+    Level,
+    TraceType,
+)
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -43,16 +53,16 @@ def test_uncaught_exception_handler():
     )
 
     expected_log_message = AirbyteMessage(
-        type="LOG", log=AirbyteLogMessage(level="FATAL", message=f"{exception_message}\n{exception_trace}")
+        type=MessageType.LOG, log=AirbyteLogMessage(level=Level.FATAL, message=f"{exception_message}\n{exception_trace}")
     )
 
     expected_trace_message = AirbyteMessage(
-        type="TRACE",
+        type=MessageType.TRACE,
         trace=AirbyteTraceMessage(
-            type="ERROR",
+            type=TraceType.ERROR,
             emitted_at=0.0,
             error=AirbyteErrorTraceMessage(
-                failure_type="system_error",
+                failure_type=FailureType.system_error,
                 message="Something went wrong in the connector. See the logs for more details.",
                 internal_message=exception_message,
                 stack_trace=f"{exception_trace}\n",
@@ -70,10 +80,10 @@ def test_uncaught_exception_handler():
 
     log_output, trace_output = stdout_lines
 
-    out_log_message = AirbyteMessage.parse_obj(json.loads(log_output))
+    out_log_message = AirbyteMessageSerializer.load(json.loads(log_output))
     assert out_log_message == expected_log_message, "Log message should be emitted in expected form"
 
-    out_trace_message = AirbyteMessage.parse_obj(json.loads(trace_output))
+    out_trace_message = AirbyteMessageSerializer.load(json.loads(trace_output))
     assert out_trace_message.trace.emitted_at > 0
     out_trace_message.trace.emitted_at = 0.0  # set a specific emitted_at value for testing
     assert out_trace_message == expected_trace_message, "Trace message should be emitted in expected form"

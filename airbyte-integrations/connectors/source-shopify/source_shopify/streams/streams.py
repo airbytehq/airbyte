@@ -76,6 +76,7 @@ class Customers(IncrementalShopifyStream):
 
 
 class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
 
@@ -116,7 +117,6 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
-    # pin the api version
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
@@ -171,14 +171,17 @@ class ProductsGraphQl(IncrementalShopifyStream):
 
 
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: MetafieldProduct = MetafieldProduct
 
 
 class ProductImages(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: ProductImage = ProductImage
 
 
 class MetafieldProductImages(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
@@ -274,7 +277,6 @@ class OrderRefunds(IncrementalShopifyNestedStream):
 
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
-    # the updated stream works only with >= `2024-04` shopify api version
 
 
 class Transactions(IncrementalShopifySubstream):

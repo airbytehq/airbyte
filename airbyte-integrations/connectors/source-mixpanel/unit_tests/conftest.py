@@ -23,6 +23,7 @@ def config(start_date):
         "start_date": start_date,
         "end_date": start_date.add(days=31),
         "region": "US",
+        "page_size": 1000,
     }
 
 

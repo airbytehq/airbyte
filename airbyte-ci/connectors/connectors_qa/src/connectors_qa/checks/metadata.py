@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-
 import os
 from datetime import datetime, timedelta
 
@@ -40,8 +39,11 @@ class CheckConnectorLanguageTag(MetadataCheck):
 
     PYTHON_LANGUAGE_TAG = "language:python"
     JAVA_LANGUAGE_TAG = "language:java"
+    MANIFEST_ONLY_LANGUAGE_TAG = "language:manifest-only"
 
     def get_expected_language_tag(self, connector: Connector) -> str:
+        if (connector.code_directory / "manifest.yaml").exists():
+            return self.MANIFEST_ONLY_LANGUAGE_TAG
         if (connector.code_directory / consts.SETUP_PY_FILE_NAME).exists() or (
             connector.code_directory / consts.PYPROJECT_FILE_NAME
         ).exists():
@@ -145,7 +147,6 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     minimum_days_until_deadline = 7
 
     def _run(self, connector: Connector) -> CheckResult:
-
         # fetch the current branch version of the connector first.
         # we'll try and see if there are any breaking changes associated
         # with it next.

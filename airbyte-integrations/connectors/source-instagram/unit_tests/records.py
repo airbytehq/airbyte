@@ -427,3 +427,115 @@ expected_breakdown_record_transformed = {
     },
     "id": "17841457631192237/insights/follower_demographics/lifetime"
   }
+
+insights_record = {
+    "data": [
+      {
+        "name": "comments",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 7
+          }
+        ],
+        "title": "title1",
+        "description": "Description1.",
+        "id": "insta_id/insights/comments/lifetime"
+      },
+      {
+        "name": "ig_reels_avg_watch_time",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 11900
+          }
+        ],
+        "title": "2",
+        "description": "Description2.",
+        "id": "insta_id/insights/ig_reels_avg_watch_time/lifetime"
+      },
+      {
+        "name": "ig_reels_video_view_total_time",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 25979677
+          }
+        ],
+        "title": "title3",
+        "description": "Description3.",
+        "id": "insta_id/insights/ig_reels_video_view_total_time/lifetime"
+      },
+      {
+        "name": "likes",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 102
+          }
+        ],
+        "title": "title4",
+        "description": "Description4.",
+        "id": "insta_id/insights/likes/lifetime"
+      },
+      {
+        "name": "plays",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 2176
+          }
+        ],
+        "title": "title5",
+        "description": "Description5.",
+        "id": "insta_id/insights/plays/lifetime"
+      },
+      {
+        "name": "reach",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 1842
+          }
+        ],
+        "title": "title6",
+        "description": "Description6.",
+        "id": "insta_id/insights/reach/lifetime"
+      },
+      {
+        "name": "saved",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 7
+          }
+        ],
+        "title": "title7",
+        "description": "Description7.",
+        "id": "insta_id/insights/saved/lifetime"
+      },
+      {
+        "name": "shares",
+        "period": "lifetime",
+        "values": [
+          {
+            "value": 1
+          }
+        ],
+        "title": "title8",
+        "description": "Description8.",
+        "id": "insta_id/insights/shares/lifetime"
+      }
+    ]
+}
+
+insights_record_transformed = {
+    "comments": 7,
+    "ig_reels_avg_watch_time": 11900,
+    "ig_reels_video_view_total_time": 25979677,
+    "likes": 102,
+    "plays": 2176,
+    "reach": 1842,
+    "saved": 7,
+    "shares": 1,
+}

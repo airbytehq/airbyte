@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 import json
@@ -8,6 +9,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -147,8 +149,21 @@ class ActorType(Enum):
     DESTINATION = "destination"
 
 
+class ConnectionSubset(Enum):
+    """Signals which connection pool to consider for this live test — just the Airbyte sandboxes, or all possible connctions on Cloud."""
+
+    SANDBOXES = "sandboxes"
+    ALL = "all"
+
+
 @dataclass
 class ConnectorUnderTest:
+    """Represents a connector being tested.
+    In validation tests, there would be one connector under test.
+    When running regression tests, there would be two connectors under test: the target and the control versions of the same connector.
+    """
+
+    # connector image, assuming it's in the format "airbyte/{actor_type}-{connector_name}:{version}"
     image_name: str
     container: dagger.Container
     target_or_control: TargetOrControl
@@ -315,9 +330,35 @@ class ExecutionResult:
                 stream_schema_builder = SchemaBuilder()
                 stream_schema_builder.add_schema({"type": "object", "properties": {}})
                 stream_builders[stream] = stream_schema_builder
-            stream_builders[stream].add_object(record.record.data)
+            stream_builders[stream].add_object(self.get_obfuscated_types(record.record.data))
         self.logger.info("Stream schemas generated")
         return {stream: sort_dict_keys(stream_builders[stream].to_schema()) for stream in stream_builders}
+
+    @staticmethod
+    def get_obfuscated_types(data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Convert obfuscated records into a record whose values have the same type as the original values.
+        """
+        types = {}
+        for k, v in data.items():
+            if v.startswith("string_"):
+                types[k] = "a"
+            elif v.startswith("integer_"):
+                types[k] = 0
+            elif v.startswith("number_"):
+                types[k] = 0.1
+            elif v.startswith("boolean_"):
+                types[k] = True
+            elif v.startswith("null_"):
+                types[k] = None
+            elif v.startswith("array_"):
+                types[k] = []
+            elif v.startswith("object_"):
+                types[k] = {}
+            else:
+                types[k] = v
+
+        return types
 
     def get_records_per_stream(self, stream: str) -> Iterator[AirbyteMessage]:
         assert self.backend is not None, "Backend must be set to get records per stream"
@@ -348,6 +389,7 @@ class ExecutionResult:
                 statuses[message.trace.stream_status.stream_descriptor.name].append(message.trace.stream_status)
         return statuses
 
+    @cache
     def get_message_count_per_type(self) -> dict[AirbyteMessageType, int]:
         message_count: dict[AirbyteMessageType, int] = defaultdict(int)
         for message in self.airbyte_messages:
@@ -439,6 +481,9 @@ class ExecutionResult:
             self.logger.error(f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}")
             self.logger.error(f"Response: {response.text}")
         self.logger.info(f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}")
+
+    def __hash__(self):
+        return hash(self.connector_under_test.version)
 
 
 @dataclass(kw_only=True)

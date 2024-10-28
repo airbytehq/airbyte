@@ -20,11 +20,11 @@ from dagger import Secret as DaggerSecret
 from dagger import Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.consts import CIContext, ContextState
+from pipelines.consts import MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES, CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions
-from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
+from pipelines.helpers.utils import java_log_scrub_pattern
 from pipelines.models.reports import Report
 from pipelines.models.secrets import Secret, SecretStore
 
@@ -78,7 +78,6 @@ class PipelineContext:
         ci_context: Optional[str] = None,
         is_ci_optional: bool = False,
         slack_webhook: Optional[str] = None,
-        reporting_slack_channel: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
         ci_report_bucket: Optional[str] = None,
         ci_gcp_credentials: Optional[Secret] = None,
@@ -104,7 +103,6 @@ class PipelineContext:
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             is_ci_optional (bool, optional): Whether the CI is optional. Defaults to False.
             slack_webhook (Optional[str], optional): Slack webhook to send messages to. Defaults to None.
-            reporting_slack_channel (Optional[str], optional): Slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
         self.pipeline_name = pipeline_name
@@ -122,7 +120,6 @@ class PipelineContext:
         self.state = ContextState.INITIALIZED
         self.is_ci_optional = is_ci_optional
         self.slack_webhook = slack_webhook
-        self.reporting_slack_channel = reporting_slack_channel
         self.pull_request = pull_request
         self.logger = logging.getLogger(self.pipeline_name)
         self._dagger_client = None
@@ -159,7 +156,7 @@ class PipelineContext:
 
     @property
     def repo(self) -> GitRepository:
-        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+        return self.dagger_client.git(AIRBYTE_GITHUB_REPO_URL, keep_git_dir=True)
 
     @property
     def report(self) -> Report | ConnectorReport | None:
@@ -193,14 +190,14 @@ class PipelineContext:
             "target_url": target_url,
             "description": self.state.value["description"],
             "context": self.pipeline_name,
-            "should_send": self.is_pr,
+            "should_send": self._should_send_status_check(),
             "logger": self.logger,
             "is_optional": self.is_ci_optional,
         }
 
     @property
     def should_send_slack_message(self) -> bool:
-        return self.slack_webhook is not None and self.reporting_slack_channel is not None
+        return self.slack_webhook is not None
 
     @property
     def has_dagger_cloud_token(self) -> bool:
@@ -217,6 +214,13 @@ class PipelineContext:
     @property
     def remote_storage_enabled(self) -> bool:
         return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
+
+    def _should_send_status_check(self) -> bool:
+        should_send = self.is_pr or any(
+            self.pipeline_name.startswith(override) for override in MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES
+        )
+        self.logger.info(f"Should send status check: {should_send}")
+        return should_send
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.
@@ -260,6 +264,9 @@ class PipelineContext:
     def create_slack_message(self) -> str:
         raise NotImplementedError()
 
+    def get_slack_channels(self) -> List[str]:
+        raise NotImplementedError()
+
     async def __aenter__(self) -> PipelineContext:
         """Perform setup operation for the PipelineContext.
 
@@ -277,10 +284,8 @@ class PipelineContext:
         self.logger.info("Caching the latest CDK version...")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
-            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(
-                self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook  # type: ignore
-            )
+            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.get_slack_channels(), self.slack_webhook)  # type: ignore
         return self
 
     @staticmethod
@@ -336,9 +341,9 @@ class PipelineContext:
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
-            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
+            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook
             await asyncify(send_message_to_webhook)(
-                self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook  # type: ignore
+                self.create_slack_message(), self.get_slack_channels(), self.slack_webhook  # type: ignore
             )
         # supress the exception if it was handled
         return True

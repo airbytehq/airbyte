@@ -110,7 +110,71 @@
       "description": "Any discounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "object": {
+            "type": ["null", "string"]
+          },
+          "checkout_session": {
+            "type": ["null", "string"]
+          },
+          "coupon": {
+            "type": ["null", "object"],
+            "properties": {
+              "metadata": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {}
+              },
+              "valid": {
+                "type": ["null", "boolean"]
+              },
+              "livemode": {
+                "type": ["null", "boolean"]
+              },
+              "amount_off": {
+                "type": ["null", "integer"]
+              },
+              "redeem_by": {
+                "type": ["null", "integer"]
+              },
+              "duration_in_months": {
+                "type": ["null", "integer"]
+              },
+              "max_redemptions": {
+                "type": ["null", "integer"]
+              },
+              "currency": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "times_redeemed": {
+                "type": ["null", "integer"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "duration": {
+                "type": ["null", "string"]
+              },
+              "object": {
+                "type": ["null", "string"]
+              },
+              "percent_off": {
+                "type": ["null", "number"]
+              },
+              "created": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
       }
     },
     "discount": {
@@ -466,7 +530,7 @@
             "type": ["null", "boolean"]
           },
           "tax_rate": {
-            "type": ["null", "string"]
+            "$ref": "tax_rate.json"
           },
           "taxability_reason": {
             "type": ["null", "string"]

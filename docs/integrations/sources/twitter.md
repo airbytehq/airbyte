@@ -41,6 +41,16 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.2.0 | 2024-08-26 | [44777](https://github.com/airbytehq/airbyte/pull/44777) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-17 | [44289](https://github.com/airbytehq/airbyte/pull/44289) | Update dependencies |
+| 0.1.14 | 2024-08-12 | [43813](https://github.com/airbytehq/airbyte/pull/43813) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43509](https://github.com/airbytehq/airbyte/pull/43509) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43115](https://github.com/airbytehq/airbyte/pull/43115) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42830](https://github.com/airbytehq/airbyte/pull/42830) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42270](https://github.com/airbytehq/airbyte/pull/42270) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41910](https://github.com/airbytehq/airbyte/pull/41910) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41394](https://github.com/airbytehq/airbyte/pull/41394) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40900](https://github.com/airbytehq/airbyte/pull/40900) | Update dependencies |
 | 0.1.6 | 2024-06-25 | [40396](https://github.com/airbytehq/airbyte/pull/40396) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [40098](https://github.com/airbytehq/airbyte/pull/40098) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39154](https://github.com/airbytehq/airbyte/pull/39154) | [autopull] Upgrade base image to v1.2.2 |

@@ -158,7 +158,12 @@ abstract class AbstractJdbcSource<Datatype>(
                     )
             return augmentWithStreamStatus(
                 airbyteStream,
-                initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+                initialLoadHandler.getIteratorForStream(
+                    airbyteStream,
+                    table,
+                    Instant.now(),
+                    Optional.empty()
+                )
             )
         }
 

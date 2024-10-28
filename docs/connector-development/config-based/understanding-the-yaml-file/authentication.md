@@ -49,6 +49,8 @@ authenticator:
   api_token: "Bearer hello"
 ```
 
+For more information see [ApiKeyAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/ApiKeyAuthenticator)
+
 ### BearerAuthenticator
 
 The `BearerAuthenticator` is a specialized `ApiKeyAuthenticator` that always sets the header "Authorization" with the value `Bearer {token}`.
@@ -78,6 +80,8 @@ authenticator:
 ```
 
 More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
+
+For more information see [BearerAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/BearerAuthenticator)
 
 ### BasicHttpAuthenticator
 
@@ -119,6 +123,8 @@ authenticator:
   type: "BasicHttpAuthenticator"
   username: "hello"
 ```
+
+For more information see [BasicHttpAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/BasicHttpAuthenticator)
 
 ### OAuth
 
@@ -177,6 +183,29 @@ OAuth:
     grant_type:
       type: string
       default: "refresh_token"
+    refresh_token_updater:
+        title: Token Updater
+        description: When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.
+        properties:
+          refresh_token_name:
+            title: Refresh Token Property Name
+            description: The name of the property which contains the updated refresh token in the response from the token refresh endpoint.
+            type: string
+            default: "refresh_token"
+          access_token_config_path:
+            title: Config Path To Access Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "access_token"]
+          refresh_token_config_path:
+            title: Config Path To Refresh Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "refresh_token"]
 ```
 
 Example:
@@ -189,6 +218,8 @@ authenticator:
   client_secret: "{{ config['client_secret'] }}"
   refresh_token: ""
 ```
+
+For more information see [OAuthAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/OAuthAuthenticator)
 
 ### JWT Authenticator
 
@@ -342,6 +373,8 @@ authenticator:
   additional_jwt_payload:
     test: "test custom payload"
 ```
+
+For more information see [JwtAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/JwtAuthenticator)
 
 ## More readings
 

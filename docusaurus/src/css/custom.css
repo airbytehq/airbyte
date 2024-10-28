@@ -26,12 +26,19 @@
   --color-active-nav-item-background: #f4f4ff;
   --color-active-nav-item-text: var(--ifm-color-primary-darker);
 
+  --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
   --color-grey-400: hsl(240, 10%, 59%);
+  --color-grey-500: hsl(240, 10%, 49%);
   --color-grey-900: hsl(240, 19%, 18%);
   --color-green-50: hsl(184, 67%, 92%);
   --color-blue-30: hsl(240, 100%, 98%);
+  --color-dark-blue-700: hsl(236, 43%, 31%);
+  --color-red-400: hsl(0, 73%, 50%);
+
+  --modal-overlay-background: hsla(241, 51%, 20%, 50%);
+  --icon-background: transparent;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -48,9 +55,18 @@ html[data-theme="dark"] {
   --color-active-nav-item-text: var(--ifm-color-primary-lighter);
 
   --color-grey-40: hsl(240, 14%, 14%);
+  --color-grey-100: hsl(240, 15%, 15%);
   --color-grey-400: hsl(240, 13%, 72%);
+  --color-grey-500: hsl(240, 10%, 70%);
+  --color-grey-900: hsl(240, 10%, 90%);
   --color-green-50: hsl(184, 100%, 12%);
   --color-blue-30: hsl(252, 25%, 18%);
+  --color-dark-blue-700: hsl(240, 100%, 98%);
+  --color-white: hsl(0, 0%, 16%);
+  --color-red-400: hsl(0, 81%, 71%);
+
+  --modal-overlay-background: hsla(236, 11%, 42%, 70%);
+  --icon-background: hsl(0, 0%, 100%);
 }
 
 .docusaurus-highlight-code-line {

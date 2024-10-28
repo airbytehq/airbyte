@@ -69,6 +69,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                          | ✔                   | ✔                   |
 | [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                | ✔                   | ✔                   |
 | [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                  | ✔                   | ✔                   |
+| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.com/docs/api/subscriptions?lang=curl#retrieve_with_scheduled_changes)           | ✔                   | ✔                   |
 | [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                    | ✔                   | ✔                   |
 | [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                            | ✔                   | ✔                   |
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                  | ✔                   | ✔                   |
@@ -103,6 +104,24 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.16 | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies |
+| 0.6.15 | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies |
+| 0.6.14 | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams |
+| 0.6.13 | 2024-10-01 | [46294](https://github.com/airbytehq/airbyte/pull/46294) | Update CDK version to `^5`, increased the `maxSecondsBetweenMessages` to 6 hours |
+| 0.6.12 | 2024-09-28 | [46169](https://github.com/airbytehq/airbyte/pull/46169) | Update dependencies |
+| 0.6.11 | 2024-09-21 | [45805](https://github.com/airbytehq/airbyte/pull/45805) | Update dependencies |
+| 0.6.10 | 2024-09-14 | [45254](https://github.com/airbytehq/airbyte/pull/45254) | Update dependencies |
+| 0.6.9 | 2024-08-31 | [45028](https://github.com/airbytehq/airbyte/pull/45028) | Update dependencies |
+| 0.6.8 | 2024-08-24 | [44662](https://github.com/airbytehq/airbyte/pull/44662) | Update dependencies |
+| 0.6.7 | 2024-08-17 | [44265](https://github.com/airbytehq/airbyte/pull/44265) | Update dependencies |
+| 0.6.6 | 2024-08-10 | [43640](https://github.com/airbytehq/airbyte/pull/43640) | Update dependencies |
+| 0.6.5 | 2024-08-03 | [43081](https://github.com/airbytehq/airbyte/pull/43081) | Update dependencies |
+| 0.6.4 | 2024-07-27 | [42626](https://github.com/airbytehq/airbyte/pull/42626) | Update dependencies |
+| 0.6.3 | 2024-07-20 | [42296](https://github.com/airbytehq/airbyte/pull/42296) | Update dependencies |
+| 0.6.2 | 2024-07-13 | [41691](https://github.com/airbytehq/airbyte/pull/41691) | Update dependencies |
+| 0.6.1 | 2024-07-10 | [41113](https://github.com/airbytehq/airbyte/pull/41113) | Update dependencies |
+| 0.6.0 | 2024-07-10 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | Adds new stream `subscription_with_scheduled_changes` |
+| 0.5.5 | 2024-07-06 | [40965](https://github.com/airbytehq/airbyte/pull/40965) | Update dependencies |
 | 0.5.4 | 2024-06-25 | [40332](https://github.com/airbytehq/airbyte/pull/40332) | Update dependencies |
 | 0.5.3 | 2024-06-23 | [40074](https://github.com/airbytehq/airbyte/pull/40074) | Update dependencies |
 | 0.5.2 | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | [autopull] Upgrade base image to v1.2.2 |

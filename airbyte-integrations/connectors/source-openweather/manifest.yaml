@@ -1,0 +1,265 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - onecall
+
+definitions:
+  streams:
+    onecall:
+      type: DeclarativeStream
+      name: onecall
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: onecall
+          http_method: GET
+          request_parameters:
+            lat: >-
+              {% if -90.00 <= config['lat']|float <= 90.00 %}{{ config['lat']
+              }}{% else %} WRONG LATITUDE{% endif %}
+            lon: >-
+              {% if -180.00 <= config['lon']|float <= 180.00 %}{{ config['lon']
+              }}{% else %}WRONG LONGITUDE{% endif %}
+            appid: "{{ config['appid'] }}"
+            lang: "{{ config.get('lang')}}"
+            units: "{{ config.get('units')}}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 500
+                    action: RETRY
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/onecall"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.openweathermap.org/data/3.0/
+
+streams:
+  - $ref: "#/definitions/streams/onecall"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - appid
+      - lat
+      - lon
+    properties:
+      appid:
+        type: string
+        description: API KEY
+        airbyte_secret: true
+        order: 0
+      lang:
+        type: string
+        description: >-
+          You can use lang parameter to get the output in your language. The
+          contents of the description field will be translated. See <a
+          href="https://openweathermap.org/api/one-call-api#multi">here</a> for
+          the list of supported languages.
+        enum:
+          - af
+          - al
+          - ar
+          - az
+          - bg
+          - ca
+          - cz
+          - da
+          - de
+          - el
+          - en
+          - eu
+          - fa
+          - fi
+          - fr
+          - gl
+          - he
+          - hi
+          - hr
+          - hu
+          - id
+          - it
+          - ja
+          - kr
+          - la
+          - lt
+          - mk
+          - "no"
+          - nl
+          - pl
+          - pt
+          - pt_br
+          - ro
+          - ru
+          - sv
+          - se
+          - sk
+          - sl
+          - sp
+          - es
+          - sr
+          - th
+          - tr
+          - ua
+          - uk
+          - vi
+          - zh_cn
+          - zh_tw
+          - zu
+        examples:
+          - en
+          - fr
+          - pt_br
+          - uk
+          - zh_cn
+          - zh_tw
+        order: 1
+      lat:
+        type: string
+        description: >-
+          Latitude, decimal (-90; 90). If you need the geocoder to automatic
+          convert city names and zip-codes to geo coordinates and the other way
+          around, please use the OpenWeather Geocoding API
+        pattern: ^[-]?\d{1,2}(\.\d+)?$
+        examples:
+          - "45.7603"
+          - "-21.249107858038816"
+        order: 2
+      lon:
+        type: string
+        description: >-
+          Longitude, decimal (-180; 180). If you need the geocoder to automatic
+          convert city names and zip-codes to geo coordinates and the other way
+          around, please use the OpenWeather Geocoding API
+        pattern: ^[-]?\d{1,3}(\.\d+)?$
+        examples:
+          - "4.835659"
+          - "-70.39482074115321"
+        order: 3
+      only_current:
+        type: boolean
+        description: True for particular day
+        example:
+          - "true"
+        order: 4
+      units:
+        type: string
+        description: >-
+          Units of measurement. standard, metric and imperial units are
+          available. If you do not use the units parameter, standard units will
+          be applied by default.
+        enum:
+          - standard
+          - metric
+          - imperial
+        examples:
+          - standard
+          - metric
+          - imperial
+        order: 5
+    additionalProperties: true
+
+schemas:
+  onecall:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      alerts:
+        type: array
+        description: Weather alerts for the requested location
+      current:
+        type: object
+        description: Contains current weather data
+        additionalProperties: true
+        properties:
+          clouds:
+            type: number
+            description: Cloudiness percentage
+          dew_point:
+            type: number
+            description: Dew point temperature
+          dt:
+            type: number
+            description: Time of the data forecasted
+          feels_like:
+            type: number
+            description: Apparent (feels like) temperature
+          humidity:
+            type: number
+            description: Humidity percentage
+          pressure:
+            type: number
+            description: Atmospheric pressure on the sea level
+          rain:
+            type: object
+            description: Information about precipitation in the last hour
+            additionalProperties: true
+            properties:
+              1h:
+                type: number
+                description: Rain volume for the last hour
+          sunrise:
+            type: number
+            description: Sunrise time
+          sunset:
+            type: number
+            description: Sunset time
+          temp:
+            type: number
+            description: Temperature
+          uvi:
+            type: number
+            description: UV index
+          visibility:
+            type: number
+            description: Visibility distance
+          weather:
+            type: array
+            description: Weather condition
+          wind_deg:
+            type: number
+            description: Wind direction in degrees
+          wind_speed:
+            type: number
+            description: Wind speed in meters per second
+      daily:
+        type: array
+        description: Weather forecast for the next 7 days
+      hourly:
+        type: array
+        description: Weather forecast for the next 48 hours
+      lat:
+        type: number
+        description: Latitude of the requested location
+      lon:
+        type: number
+        description: Longitude of the requested location
+      minutely:
+        type: array
+        description: Minute forecast for the next hour
+      timezone:
+        type: string
+        description: Time zone name for the requested location
+      timezone_offset:
+        type: number
+        description: Time offset in seconds from UTC

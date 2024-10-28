@@ -38,7 +38,10 @@ Each stream will be output into a BigQuery table.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                           | Subject                       |
-| :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
+|:--------| :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.0 | 2024-10-14 | [46874](https://github.com/airbytehq/airbyte/pull/46874) | Bump Airbyte CDK version to 5.13 |
+| 0.1.8 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.7 | 2024-07-06 | [40834](https://github.com/airbytehq/airbyte/pull/40834) | Update dependencies |
 | 0.1.6 | 2024-06-25 | [40477](https://github.com/airbytehq/airbyte/pull/40477) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [40053](https://github.com/airbytehq/airbyte/pull/40053) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39149](https://github.com/airbytehq/airbyte/pull/39149) | [autopull] Upgrade base image to v1.2.2 |

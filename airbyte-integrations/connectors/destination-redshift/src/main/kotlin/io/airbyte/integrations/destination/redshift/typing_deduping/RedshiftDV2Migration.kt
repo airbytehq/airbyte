@@ -34,6 +34,7 @@ class RedshiftDV2Migration(
             RedshiftState(
                 needsSoftReset = false,
                 isAirbyteMetaPresentInRaw = false,
+                isGenerationIdPresent = false
             ),
             true,
         )

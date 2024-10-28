@@ -25,7 +25,7 @@ jobs:
         with:
           subcommand: "metadata deploy orchestrator"
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -40,7 +40,7 @@ jobs:
         with:
           subcommand: "metadata deploy orchestrator"
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}

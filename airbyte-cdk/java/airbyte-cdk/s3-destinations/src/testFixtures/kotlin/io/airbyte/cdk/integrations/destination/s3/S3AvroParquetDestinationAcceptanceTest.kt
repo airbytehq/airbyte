@@ -21,8 +21,17 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 
 abstract class S3AvroParquetDestinationAcceptanceTest
-protected constructor(fileUploadFormat: FileUploadFormat) :
-    S3DestinationAcceptanceTest(fileUploadFormat) {
+protected constructor(
+    fileUploadFormat: FileUploadFormat,
+    expectUnionsPromotedToDisjointRecords: Boolean = false,
+) :
+    S3DestinationAcceptanceTest(
+        fileUploadFormat,
+        supportsChangeCapture = true,
+        expectNumericTimestamps = true,
+        expectSchemalessObjectsCoercedToStrings = true,
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
+    ) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
@@ -33,6 +42,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
         val config = this.getConfig()
         val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
         for (stream in catalog.streams) {

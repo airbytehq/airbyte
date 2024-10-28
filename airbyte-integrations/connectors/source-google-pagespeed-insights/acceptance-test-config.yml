@@ -4,7 +4,7 @@ connector_image: airbyte/source-google-pagespeed-insights:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_google_pagespeed_insights/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -20,9 +20,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        # Using expect_records we can make sure that our "categories-array" spec
-        # really works and produces multiple category request params
+        empty_streams:
+          []
+          # Using expect_records we can make sure that our "categories-array" spec
+          # really works and produces multiple category request params
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: yes
@@ -35,6 +36,10 @@ acceptance_tests:
         ignored_fields:
           pagespeed:
             - name: lighthouseResult
-              bypass_reason: "This differs between two runs, as they are newly generated per run"
+              bypass_reason:
+                "This differs between two runs, as they are newly generated
+                per run"
             - name: analysisUTCTimestamp
-              bypass_reason: "This differs between two runs, as they are newly generated per run"
+              bypass_reason:
+                "This differs between two runs, as they are newly generated
+                per run"

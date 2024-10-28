@@ -75,6 +75,24 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.26 | 2024-10-12 | [46801](https://github.com/airbytehq/airbyte/pull/46801) | Update dependencies |
+| 0.3.25 | 2024-10-05 | [46448](https://github.com/airbytehq/airbyte/pull/46448) | Update dependencies |
+| 0.3.24 | 2024-09-28 | [46129](https://github.com/airbytehq/airbyte/pull/46129) | Update dependencies |
+| 0.3.23 | 2024-09-21 | [45770](https://github.com/airbytehq/airbyte/pull/45770) | Update dependencies |
+| 0.3.22 | 2024-09-14 | [45519](https://github.com/airbytehq/airbyte/pull/45519) | Update dependencies |
+| 0.3.21 | 2024-09-07 | [45316](https://github.com/airbytehq/airbyte/pull/45316) | Update dependencies |
+| 0.3.20 | 2024-08-31 | [45002](https://github.com/airbytehq/airbyte/pull/45002) | Update dependencies |
+| 0.3.19 | 2024-08-24 | [44629](https://github.com/airbytehq/airbyte/pull/44629) | Update dependencies |
+| 0.3.18 | 2024-08-17 | [44343](https://github.com/airbytehq/airbyte/pull/44343) | Update dependencies |
+| 0.3.17 | 2024-08-12 | [43759](https://github.com/airbytehq/airbyte/pull/43759) | Update dependencies |
+| 0.3.16 | 2024-08-10 | [43698](https://github.com/airbytehq/airbyte/pull/43698) | Update dependencies |
+| 0.3.15 | 2024-08-03 | [43107](https://github.com/airbytehq/airbyte/pull/43107) | Update dependencies |
+| 0.3.14 | 2024-07-27 | [42752](https://github.com/airbytehq/airbyte/pull/42752) | Update dependencies |
+| 0.3.13 | 2024-07-20 | [42308](https://github.com/airbytehq/airbyte/pull/42308) | Update dependencies |
+| 0.3.12 | 2024-07-13 | [41701](https://github.com/airbytehq/airbyte/pull/41701) | Update dependencies |
+| 0.3.11 | 2024-07-10 | [41352](https://github.com/airbytehq/airbyte/pull/41352) | Update dependencies |
+| 0.3.10 | 2024-07-09 | [41258](https://github.com/airbytehq/airbyte/pull/41258) | Update dependencies |
+| 0.3.9 | 2024-07-06 | [40958](https://github.com/airbytehq/airbyte/pull/40958) | Update dependencies |
 | 0.3.8 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 0.3.7 | 2024-06-25 | [40298](https://github.com/airbytehq/airbyte/pull/40298) | Update dependencies |
 | 0.3.6 | 2024-06-22 | [40031](https://github.com/airbytehq/airbyte/pull/40031) | Update dependencies |

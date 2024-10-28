@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models.airbyte_protocol import AdvancedAuth, ConnectorSpecification  # type: ignore [attr-defined]
+from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, ConnectorSpecificationSerializer  # type: ignore [attr-defined]
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
 
 
@@ -36,7 +36,7 @@ class Spec:
         if self.advanced_auth:
             self.advanced_auth.auth_flow_type = self.advanced_auth.auth_flow_type.value  # type: ignore # We know this is always assigned to an AuthFlow which has the auth_flow_type field
             # Map CDK AuthFlow model to protocol AdvancedAuth model
-            obj["advanced_auth"] = AdvancedAuth.parse_obj(self.advanced_auth.dict())
+            obj["advanced_auth"] = self.advanced_auth.dict()
 
         # We remap these keys to camel case because that's the existing format expected by the rest of the platform
-        return ConnectorSpecification.parse_obj(obj)
+        return ConnectorSpecificationSerializer.load(obj)

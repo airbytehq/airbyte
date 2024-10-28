@@ -114,11 +114,12 @@ def test_min_max_datetime_lazy_eval():
 
 
 @pytest.mark.parametrize(
-    "input_datetime", [
+    "input_datetime",
+    [
         pytest.param("2022-01-01T00:00:00", id="test_create_min_max_datetime_from_string"),
         pytest.param(InterpolatedString.create("2022-01-01T00:00:00", parameters={}), id="test_create_min_max_datetime_from_string"),
-        pytest.param(MinMaxDatetime("2022-01-01T00:00:00", parameters={}), id="test_create_min_max_datetime_from_minmaxdatetime")
-    ]
+        pytest.param(MinMaxDatetime("2022-01-01T00:00:00", parameters={}), id="test_create_min_max_datetime_from_minmaxdatetime"),
+    ],
 )
 def test_create_min_max_datetime(input_datetime):
     minMaxDatetime = MinMaxDatetime.create(input_datetime, parameters={})

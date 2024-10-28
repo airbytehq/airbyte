@@ -103,6 +103,23 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.0  | 2024-10-06 | [46527](https://github.com/airbytehq/airbyte/pull/46527) | Migrate to Manifest-only |
+| 1.6.23 | 2024-10-05 | [46409](https://github.com/airbytehq/airbyte/pull/46409) | Update dependencies |
+| 1.6.22 | 2024-09-28 | [46162](https://github.com/airbytehq/airbyte/pull/46162) | Update dependencies |
+| 1.6.21 | 2024-09-21 | [45787](https://github.com/airbytehq/airbyte/pull/45787) | Update dependencies |
+| 1.6.20 | 2024-09-14 | [45550](https://github.com/airbytehq/airbyte/pull/45550) | Update dependencies |
+| 1.6.19 | 2024-09-07 | [45045](https://github.com/airbytehq/airbyte/pull/45045) | Update dependencies |
+| 1.6.18 | 2024-08-24 | [44745](https://github.com/airbytehq/airbyte/pull/44745) | Update dependencies |
+| 1.6.17 | 2024-08-17 | [44325](https://github.com/airbytehq/airbyte/pull/44325) | Update dependencies |
+| 1.6.16 | 2024-08-12 | [43915](https://github.com/airbytehq/airbyte/pull/43915) | Update dependencies |
+| 1.6.15 | 2024-08-10 | [43498](https://github.com/airbytehq/airbyte/pull/43498) | Update dependencies |
+| 1.6.14 | 2024-08-03 | [43110](https://github.com/airbytehq/airbyte/pull/43110) | Update dependencies |
+| 1.6.13 | 2024-07-27 | [42638](https://github.com/airbytehq/airbyte/pull/42638) | Update dependencies |
+| 1.6.12 | 2024-07-20 | [42226](https://github.com/airbytehq/airbyte/pull/42226) | Update dependencies |
+| 1.6.11 | 2024-07-13 | [41913](https://github.com/airbytehq/airbyte/pull/41913) | Update dependencies |
+| 1.6.10 | 2024-07-10 | [41502](https://github.com/airbytehq/airbyte/pull/41502) | Update dependencies |
+| 1.6.9 | 2024-07-09 | [41124](https://github.com/airbytehq/airbyte/pull/41124) | Update dependencies |
+| 1.6.8 | 2024-07-06 | [40989](https://github.com/airbytehq/airbyte/pull/40989) | Update dependencies |
 | 1.6.7 | 2024-06-25 | [40313](https://github.com/airbytehq/airbyte/pull/40313) | Update dependencies |
 | 1.6.6 | 2024-06-22 | [40027](https://github.com/airbytehq/airbyte/pull/40027) | Update dependencies |
 | 1.6.5 | 2024-06-06 | [39206](https://github.com/airbytehq/airbyte/pull/39206) | [autopull] Upgrade base image to v1.2.2 |

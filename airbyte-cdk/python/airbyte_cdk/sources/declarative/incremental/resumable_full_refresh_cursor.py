@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
 
 
 @dataclass
@@ -94,3 +95,26 @@ class ResumableFullRefreshCursor(DeclarativeCursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {}
+
+
+@dataclass
+class ChildPartitionResumableFullRefreshCursor(ResumableFullRefreshCursor):
+    """
+    The Sub-stream Resumable Cursor for Full-Refresh substreams.
+    Follows the parent type `ResumableFullRefreshCursor` with a small override,
+    to provide the ability to close the substream's slice once it has finished processing.
+
+    Check the `close_slice` method overide for more info about the actual behaviour of this cursor.
+    """
+
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
+        """
+        Once the current slice has finished syncing:
+         - paginator returns None
+         - no more slices to process
+
+        we assume that the records are processed and emitted already,
+        thus we have to set the cursor to ` __ab_full_refresh_sync_complete: true `,
+        otherwise there is a risk of Inf. Loop processing the same slice.
+        """
+        self._cursor = FULL_REFRESH_COMPLETE_STATE

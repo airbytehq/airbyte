@@ -79,6 +79,23 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 1.0.20 | 2024-10-12 | [46861](https://github.com/airbytehq/airbyte/pull/46861) | Update dependencies |
+| 1.0.19 | 2024-10-05 | [46394](https://github.com/airbytehq/airbyte/pull/46394) | Update dependencies |
+| 1.0.18 | 2024-09-28 | [46149](https://github.com/airbytehq/airbyte/pull/46149) | Update dependencies |
+| 1.0.17 | 2024-09-21 | [45783](https://github.com/airbytehq/airbyte/pull/45783) | Update dependencies |
+| 1.0.16 | 2024-09-14 | [45524](https://github.com/airbytehq/airbyte/pull/45524) | Update dependencies |
+| 1.0.15 | 2024-09-07 | [45301](https://github.com/airbytehq/airbyte/pull/45301) | Update dependencies |
+| 1.0.14 | 2024-08-31 | [45019](https://github.com/airbytehq/airbyte/pull/45019) | Update dependencies |
+| 1.0.13 | 2024-08-24 | [44624](https://github.com/airbytehq/airbyte/pull/44624) | Update dependencies |
+| 1.0.12 | 2024-08-17 | [44214](https://github.com/airbytehq/airbyte/pull/44214) | Update dependencies |
+| 1.0.11 | 2024-08-10 | [43558](https://github.com/airbytehq/airbyte/pull/43558) | Update dependencies |
+| 1.0.10 | 2024-08-03 | [43203](https://github.com/airbytehq/airbyte/pull/43203) | Update dependencies |
+| 1.0.9 | 2024-07-27 | [42669](https://github.com/airbytehq/airbyte/pull/42669) | Update dependencies |
+| 1.0.8 | 2024-07-20 | [42328](https://github.com/airbytehq/airbyte/pull/42328) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41727](https://github.com/airbytehq/airbyte/pull/41727) | Update dependencies |
+| 1.0.6 | 2024-07-10 | [41350](https://github.com/airbytehq/airbyte/pull/41350) | Update dependencies |
+| 1.0.5 | 2024-07-09 | [41119](https://github.com/airbytehq/airbyte/pull/41119) | Update dependencies |
+| 1.0.4 | 2024-07-06 | [40855](https://github.com/airbytehq/airbyte/pull/40855) | Update dependencies |
 | 1.0.3 | 2024-06-25 | [40278](https://github.com/airbytehq/airbyte/pull/40278) | Update dependencies |
 | 1.0.2 | 2024-06-22 | [40056](https://github.com/airbytehq/airbyte/pull/40056) | Update dependencies |
 | 1.0.1 | 2024-06-04 | [39036](https://github.com/airbytehq/airbyte/pull/39036) | [autopull] Upgrade base image to v1.2.1 |

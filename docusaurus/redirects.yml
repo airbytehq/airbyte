@@ -26,11 +26,15 @@
 - from: /cloud/dbt-cloud-integration
   to: /cloud/managing-airbyte-cloud/dbt-cloud-integration
 - from: /cloud/managing-airbyte-cloud/review-sync-summary
-  to: /cloud/managing-airbyte-cloud/review-sync-history
+  to: /cloud/managing-airbyte-cloud/review-connection-timeline
+- from: /cloud/managing-airbyte-cloud/review-sync-history
+  to: /cloud/managing-airbyte-cloud/review-connection-timeline
 - from: /cloud/managing-airbyte-cloud/review-connection-state
   to: /cloud/managing-airbyte-cloud/manage-connection-state
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
+- from: /cloud/managing-airbyte-cloud/manage-schema-changes
+  to: /using-airbyte/schema-change-management
 # November 2023 documentation restructure:
 - from:
     - /project-overview/product-support-levels
@@ -111,3 +115,6 @@
 - from:
     - /telemetry
   to: /operator-guides/telemetry
+- from:
+    - /deploying-airbyte/quickstart
+  to: /using-airbyte/getting-started/oss-quickstart

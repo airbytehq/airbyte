@@ -25,6 +25,7 @@ The Amplitude source connector supports the following streams:
 - [Average Session Length](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-average-session-length) \(Incremental sync\)
 - [Cohorts](https://www.docs.developers.amplitude.com/analytics/apis/behavioral-cohorts-api/#get-all-cohorts-response)
 - [Events](https://www.docs.developers.amplitude.com/analytics/apis/export-api/#response-schema) \(Incremental sync\)
+- [Events List](https://amplitude.com/docs/apis/analytics/dashboard-rest#get-events-list)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -57,6 +58,28 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.12 | 2024-10-12 | [46771](https://github.com/airbytehq/airbyte/pull/46771) | Update dependencies |
+| 0.6.11 | 2024-10-11 | [46736](https://github.com/airbytehq/airbyte/pull/46736) | Added possibility to toggle groupping by `Country` for `Active Users` stream |
+| 0.6.10 | 2024-10-05 | [46489](https://github.com/airbytehq/airbyte/pull/46489) | Update dependencies |
+| 0.6.9 | 2024-09-28 | [46121](https://github.com/airbytehq/airbyte/pull/46121) | Update dependencies |
+| 0.6.8 | 2024-09-21 | [45732](https://github.com/airbytehq/airbyte/pull/45732) | Update dependencies |
+| 0.6.7 | 2024-09-14 | [45501](https://github.com/airbytehq/airbyte/pull/45501) | Update dependencies |
+| 0.6.6 | 2024-09-07 | [45318](https://github.com/airbytehq/airbyte/pull/45318) | Update dependencies |
+| 0.6.5 | 2024-08-31 | [45047](https://github.com/airbytehq/airbyte/pull/45047) | Update dependencies |
+| 0.6.4 | 2024-08-24 | [44709](https://github.com/airbytehq/airbyte/pull/44709) | Update dependencies |
+| 0.6.3 | 2024-08-17 | [44250](https://github.com/airbytehq/airbyte/pull/44250) | Update dependencies |
+| 0.6.2 | 2024-08-12 | [43876](https://github.com/airbytehq/airbyte/pull/43876) | Update dependencies |
+| 0.6.1 | 2024-08-10 | [43473](https://github.com/airbytehq/airbyte/pull/43473) | Update dependencies |
+| 0.6.0 | 2024-08-08 | [43400](https://github.com/airbytehq/airbyte/pull/43400) | Add Events List Stream |
+| 0.5.1 | 2024-08-03 | [43267](https://github.com/airbytehq/airbyte/pull/43267) | Update dependencies |
+| 0.5.0 | 2024-08-01 | [42565](https://github.com/airbytehq/airbyte/pull/42565) | Migrate to CDK v4.0.2 |
+| 0.4.2 | 2024-07-27 | [42618](https://github.com/airbytehq/airbyte/pull/42618) | Update dependencies |
+| 0.4.1 | 2024-07-20 | [42302](https://github.com/airbytehq/airbyte/pull/42302) | Update dependencies |
+| 0.4.0 | 2024-07-17 | [42074](https://github.com/airbytehq/airbyte/pull/42074) | Migrate to CDK v1.8.0 |
+| 0.3.18 | 2024-07-13 | [41767](https://github.com/airbytehq/airbyte/pull/41767) | Update dependencies |
+| 0.3.17 | 2024-07-10 | [41537](https://github.com/airbytehq/airbyte/pull/41537) | Update dependencies |
+| 0.3.16 | 2024-07-09 | [41097](https://github.com/airbytehq/airbyte/pull/41097) | Update dependencies |
+| 0.3.15 | 2024-07-06 | [40982](https://github.com/airbytehq/airbyte/pull/40982) | Update dependencies |
 | 0.3.14 | 2024-06-25 | [40407](https://github.com/airbytehq/airbyte/pull/40407) | Update dependencies |
 | 0.3.13 | 2024-06-22 | [40108](https://github.com/airbytehq/airbyte/pull/40108) | Update dependencies |
 | 0.3.12 | 2024-06-06 | [39103](https://github.com/airbytehq/airbyte/pull/39103) | Use `CheckpointMixin` for state management |
@@ -101,6 +124,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 | 0.1.3 | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375) | Log Transient 404 Error in Events stream |
 | 0.1.2 | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active_users, and average_session_lengths streams |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for kubernetes support |
+| 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
 | 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
 
 </details>
