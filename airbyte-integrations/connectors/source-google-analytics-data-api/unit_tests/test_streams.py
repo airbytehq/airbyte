@@ -64,7 +64,8 @@ def test_request_params(patch_base_class):
 
 
 def test_request_body_json(patch_base_class):
-    request_body_params = {"stream_state": MagicMock(), "stream_slice": MagicMock(), "next_page_token": None}
+    stream_slice = {"startDate": "2024-01-01", "endDate": "2024-01-31"}
+    request_body_params = {"stream_state": MagicMock(), "stream_slice": stream_slice, "next_page_token": None}
 
     expected_body_json = {
         "metrics": [
