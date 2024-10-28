@@ -177,11 +177,15 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         parameters = [[entries_to_write[column_name][n] for column_name in column_names_list] for n in range(num_entries)]
         self._executemany(sql, parameters)
 
-    def _write_from_pa_table(self, table_name: str, pa_table: pa.Table) -> None:
+    def _write_from_pa_table(self, table_name: str, stream_name: str, pa_table: pa.Table) -> None:
         full_table_name = self._fully_qualified(table_name)
+        columns = list(self._get_sql_column_definitions(stream_name).keys())
+        if len(columns) != len(pa_table.column_names):
+            warnings.warn(f"Schema has colums: {columns}, buffer has columns: {pa_table.column_names}")
+        column_names = ", ".join(pa_table.column_names)
         sql = f"""
         -- Write from PyArrow table
-        INSERT INTO {full_table_name} SELECT * FROM pa_table
+        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM pa_table
         """
         self._execute_sql(sql)
 
@@ -277,7 +281,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         else:
             # DuckDB will automatically find and SELECT from the `pa_table`
             # local variable defined above.
-            self._write_from_pa_table(temp_table_name, pa_table)
+            self._write_from_pa_table(temp_table_name, stream_name, pa_table)
 
         temp_table_name_dedup = self._drop_duplicates(temp_table_name, stream_name)
 
