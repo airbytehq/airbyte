@@ -11,7 +11,7 @@ Airbyte connector for JustSift can help you sync data from the JustSift API
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | peoples | id | DefaultPaginator | ✅ |  ❌  |
-| fields | id | DefaultPaginator | ✅ |  ❌  |
+| fields | id | NoPaginator | ✅ |  ❌  |
 
 ## Changelog
 
