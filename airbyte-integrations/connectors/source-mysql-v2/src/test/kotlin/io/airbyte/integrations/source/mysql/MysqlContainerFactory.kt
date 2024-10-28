@@ -63,6 +63,20 @@ object MysqlContainerFactory {
             setMethodValue(UserDefinedCursor)
         }
 
+    @JvmStatic
+    fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
+            host = mySQLContainer.host
+            port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
+            username = mySQLContainer.username
+            password = mySQLContainer.password
+            jdbcUrlParams = ""
+            database = "test"
+            checkpointTargetIntervalSeconds = 60
+            concurrency = 1
+            setMethodValue(CdcCursor())
+        }
+
     fun MySQLContainer<*>.execAsRoot(sql: String) {
         val cleanSql: String = sql.trim().removeSuffix(";") + ";"
         log.info { "Executing SQL as root: $cleanSql" }

@@ -125,6 +125,7 @@ class CdcPartitionReader<T : Comparable<T>>(
 
         override fun accept(event: ChangeEvent<String?, String?>) {
             numEvents.incrementAndGet()
+            println("dbz event: $event")
             // Get SourceRecord object if possible.
             // This object is the preferred way to obtain the current position.
             val sourceRecord: SourceRecord? =

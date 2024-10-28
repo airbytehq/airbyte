@@ -29,7 +29,9 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLBooleanConverter
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLNumericConverter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.debezium.connector.mysql.MySqlConnector
@@ -116,7 +118,7 @@ class MySqlDebeziumOperations(
         val newGtidSet = availableGtidSet.subtract(savedGtidSet)
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
                 log.info {
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 }
@@ -394,11 +396,13 @@ class MySqlDebeziumOperations(
             .withDatabase("include.list", databaseName)
             .withOffset()
             .withSchemaHistory()
-            .with("converters", "datetime")
+            .with("converters", "datetime,numeric,boolean")
             .with(
                 "datetime.type",
                 MySQLDateTimeConverter::class.java.getName(),
             )
+            .with("numeric.type", MySQLNumericConverter::class.java.getName())
+            .with("boolean.type", MySQLBooleanConverter::class.java.getName())
             // TODO: add missing properties, like MySQL converters, etc. Do a full audit.
             .buildMap()
     }
