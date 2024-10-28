@@ -97,7 +97,7 @@ class AbstractFileBasedStreamReader(ABC):
         Utility method to get size of the read file, is required for stream writer implementation
         return size in bytes unit
         """
-        ...
+        return 0
 
     @staticmethod
     def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:

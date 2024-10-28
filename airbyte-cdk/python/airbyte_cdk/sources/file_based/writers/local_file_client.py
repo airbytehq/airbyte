@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from io import IOBase
-from typing import Any, Mapping
+from typing import Any, Dict
 
 import psutil
 
@@ -19,7 +19,7 @@ class LocalFileTransferClient:
         """
         self._local_directory = AIRBYTE_STAGING_DIRECTORY if os.path.exists(AIRBYTE_STAGING_DIRECTORY) else DEFAULT_LOCAL_DIRECTORY
 
-    def write(self, file_uri: str, fp: IOBase, file_size: int, logger: logging.Logger) -> Mapping[str, Any]:
+    def write(self, file_uri: str, fp: IOBase, file_size: int, logger: logging.Logger) -> Dict[str, Any]:
         """
         Write the file to a local directory.
         """
