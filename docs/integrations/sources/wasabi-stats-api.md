@@ -1,5 +1,11 @@
 # Wasabi
-Connector for https://www.wasabi.com stats API. API docs: https://docs.wasabi.com/docs/wasabi-stats-api
+Connector for https://www.wasabi.com stats API. 
+API docs: https://docs.wasabi.com/docs/wasabi-stats-api
+
+:::info
+This connector ingest stats information from Wasabi server. 
+It **does not** ingest content from files stored in Wasabi.
+:::
 
 ## Configuration
 
