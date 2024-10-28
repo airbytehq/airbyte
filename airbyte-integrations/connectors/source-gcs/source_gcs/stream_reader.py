@@ -19,6 +19,9 @@ from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
 
+# google can raise warnings for end user credentials, wrapping it to Logger
+logging.captureWarnings(True)
+
 ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
