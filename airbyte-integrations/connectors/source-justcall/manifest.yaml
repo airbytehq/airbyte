@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -26,6 +26,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2.1/users
           http_method: GET
+          request_parameters:
+            order: asc
         record_selector:
           type: RecordSelector
           extractor:
@@ -38,10 +40,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -58,9 +64,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2.1/calls
           http_method: GET
-          request_parameters:
-            sort: "{{ config['sort'] }}"
-            order: "{{ config['order'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -73,10 +76,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -90,12 +97,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: from_datetime
           inject_into: request_parameter
+          field_name: from_datetime
         end_time_option:
           type: RequestOption
-          field_name: to_datetime
           inject_into: request_parameter
+          field_name: to_datetime
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -116,7 +123,7 @@ definitions:
           path: /v2.1/texts
           http_method: GET
           request_parameters:
-            order: "{{ config[\"order\"] }}"
+            order: asc
         record_selector:
           type: RecordSelector
           extractor:
@@ -129,10 +136,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -146,12 +157,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: from_datetime
           inject_into: request_parameter
+          field_name: from_datetime
         end_time_option:
           type: RequestOption
-          field_name: to_datetime
           inject_into: request_parameter
+          field_name: to_datetime
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -177,6 +188,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -250,8 +275,6 @@ spec:
     required:
       - api_key_2
       - start_date
-      - order
-      - sort
     properties:
       api_key_2:
         type: string
@@ -260,30 +283,10 @@ spec:
         airbyte_secret: true
       start_date:
         type: string
-        order: 1
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-      order:
-        type: string
-        enum:
-          - desc
-          - asc
-        order: 2
-        title: Order
-        default: desc
-      sort:
-        type: string
-        enum:
-          - id
-          - justcall_number
-          - contact_number
-          - call_direction
-          - datetime
-          - agent_id
-        order: 3
-        title: Sort
-        default: id
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -296,47 +299,47 @@ metadata:
     agent_analytics: true
   testedStreams:
     users:
-      hasRecords: true
-      streamHash: e648a5d7db3d8a9bd79bf3156559fd7093a910fc
+      streamHash: ac7b29baae274f10dc3dfef5c43b45597ebd8fb4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     calls:
-      hasRecords: true
-      streamHash: a2831b807f32ff1fb9415f1f6ea9c51563806871
+      streamHash: 74823c398fdbc2b5c3d185ae3b14d6cf5e374a7a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sms:
-      hasRecords: true
-      streamHash: 511704e03566725c20ed428f1341f3e3db4c4183
+      streamHash: e4aabf593737d644f8939714707326ef65edcb5f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contacts:
-      hasRecords: true
-      streamHash: 10f245260e93f796519490983d8a935e45629565
+      streamHash: c3f166add6b295a9f7413b2f494b6ba1565cf17f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    phone_numbers:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    phone_numbers:
       streamHash: f0af01d236bb80a251d12b6985515ab1eaa85ffe
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    agent_analytics:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agent_analytics:
       streamHash: 3addd325eabbe919cbbcdff9967b3b46d0927f45
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://developer.justcall.io/reference/call_list_v21
 
