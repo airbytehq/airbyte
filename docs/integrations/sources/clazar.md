@@ -112,7 +112,6 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.4.2   | 2024-10-29 | [46949](https://github.com/airbytehq/airbyte/pull/46949) | Updated Clazar logo                                                       |
 | 0.4.1   | 2024-10-28 | [47598](https://github.com/airbytehq/airbyte/pull/47598) | Update dependencies                                                       |
 | 0.4.0   | 2024-08-30 | [44855](https://github.com/airbytehq/airbyte/pull/44855) | Using incremental APIs for online data                                    |
 | 0.3.0   | 2024-08-21 | [44523](https://github.com/airbytehq/airbyte/pull/44523) | Refactor connector to manifest-only format                                |
