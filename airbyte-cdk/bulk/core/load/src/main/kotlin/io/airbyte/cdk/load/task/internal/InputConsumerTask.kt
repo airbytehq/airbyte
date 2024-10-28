@@ -29,8 +29,8 @@ import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.InternalTask
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -39,7 +39,7 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
-interface InputConsumerTask : SyncTask, InternalTask
+interface InputConsumerTask : SyncLevel, InternalScope
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -159,6 +159,7 @@ class DefaultInputConsumerTask(
                     }
                 }
             }
+            syncManager.markInputConsumed()
         } finally {
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
