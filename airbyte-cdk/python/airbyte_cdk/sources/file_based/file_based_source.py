@@ -275,7 +275,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
         # emit all the errors collected

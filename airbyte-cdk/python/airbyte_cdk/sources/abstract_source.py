@@ -88,7 +88,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")

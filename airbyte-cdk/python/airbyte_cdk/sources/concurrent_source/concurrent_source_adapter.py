@@ -5,7 +5,7 @@
 import logging
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
@@ -38,7 +38,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         abstract_streams = self._select_abstract_streams(config, catalog)
         concurrent_stream_names = {stream.name for stream in abstract_streams}
