@@ -1,0 +1,1524 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Tremendous connector  enables seamless integration with Tremendous API. This
+  connector allows organizations to automate and sync reward, incentive, and
+  payout data, tapping into 2000+ payout methods, including ACH, gift cards,
+  PayPal, and prepaid cards, all from a single platform.
+
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+
+definitions:
+  streams:
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    funding_sources:
+      type: DeclarativeStream
+      name: funding_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/funding_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - funding_sources
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/funding_sources"
+    account_members:
+      type: DeclarativeStream
+      name: account_members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_members"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    exchange_rates:
+      type: DeclarativeStream
+      name: exchange_rates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/forex
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/exchange_rates"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    balance_transactions:
+      type: DeclarativeStream
+      name: balance_transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/balance_transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transactions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance_transactions"
+    rewards:
+      type: DeclarativeStream
+      name: rewards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/rewards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rewards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rewards"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config["environment"] }}.tremendous.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/funding_sources"
+  - $ref: "#/definitions/streams/account_members"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/exchange_rates"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/balance_transactions"
+  - $ref: "#/definitions/streams/rewards"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - environment
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. You can generate an API key through the Tremendous
+          dashboard under Team Settings > Developers. Save the key once you’ve
+          generated it.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      environment:
+        type: string
+        title: environment
+        enum:
+          - api
+          - testflight
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    orders: true
+    products: true
+    funding_sources: true
+    account_members: true
+    campaigns: true
+    exchange_rates: true
+    organizations: true
+    balance_transactions: true
+    rewards: true
+  testedStreams:
+    orders:
+      streamHash: 2743ffb5f4bbb2c337f4cb5f8a79702fb8e68725
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 22325cc7176801b049b5e1bfdd54fc6e5ea714ec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    funding_sources:
+      streamHash: 06dcd4a04c1ebd97832ba7c747bfbadb3f6cdb1e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account_members:
+      streamHash: 371cc88527067daa1f8b1752d31f516a2c676da7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigns:
+      streamHash: 15fed638e51342240d46f6efb8f3cb8e384db2aa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    exchange_rates:
+      streamHash: d0e60d7f78c7f71ff6ae4d874b884932704efd44
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: c1ab194ed5a9d57adf721f9d3d66ef97702cdbd3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    balance_transactions:
+      streamHash: feb3d41c59f6945d1abb1addf1686a4a1d19c29e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    rewards:
+      streamHash: 30f243c223daae7ffb4d35b4acfc8e6774daa11b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.tremendous.com/docs/introduction
+
+schemas:
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaign_id:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      payment:
+        type:
+          - object
+          - "null"
+        properties:
+          fees:
+            type:
+              - number
+              - "null"
+          subtotal:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+      rewards:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            delivery:
+              type:
+                - object
+                - "null"
+              properties:
+                method:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            order_id:
+              type:
+                - string
+                - "null"
+            recipient:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                currency_code:
+                  type:
+                    - string
+                    - "null"
+                denomination:
+                  type:
+                    - number
+                    - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      countries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            abbr:
+              type:
+                - string
+                - "null"
+      currency_codes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      disclosure:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      images:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            src:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      skus:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            max:
+              type:
+                - number
+                - "null"
+            min:
+              type:
+                - number
+                - "null"
+    required:
+      - id
+  funding_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          available_cents:
+            type:
+              - number
+              - "null"
+          pending_cents:
+            type:
+              - number
+              - "null"
+      method:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  account_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email_style:
+        type:
+          - object
+          - "null"
+        properties:
+          sender_name:
+            type:
+              - string
+              - "null"
+          subject_line:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      webpage_style:
+        type:
+          - object
+          - "null"
+        properties:
+          background_color:
+            type:
+              - string
+              - "null"
+          headline:
+            type:
+              - string
+              - "null"
+          logo_background_color:
+            type:
+              - string
+              - "null"
+          logo_image_height_px:
+            type:
+              - number
+              - "null"
+          logo_image_url:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  exchange_rates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      forex:
+        type:
+          - object
+          - "null"
+        properties:
+          AED:
+            type:
+              - number
+              - "null"
+          AFN:
+            type:
+              - number
+              - "null"
+          ALL:
+            type:
+              - number
+              - "null"
+          AMD:
+            type:
+              - number
+              - "null"
+          ANG:
+            type:
+              - number
+              - "null"
+          AOA:
+            type:
+              - number
+              - "null"
+          ARS:
+            type:
+              - number
+              - "null"
+          AUD:
+            type:
+              - number
+              - "null"
+          AWG:
+            type:
+              - number
+              - "null"
+          AZN:
+            type:
+              - number
+              - "null"
+          BAM:
+            type:
+              - number
+              - "null"
+          BBD:
+            type:
+              - number
+              - "null"
+          BDT:
+            type:
+              - number
+              - "null"
+          BGN:
+            type:
+              - number
+              - "null"
+          BHD:
+            type:
+              - number
+              - "null"
+          BIF:
+            type:
+              - number
+              - "null"
+          BMD:
+            type:
+              - number
+              - "null"
+          BND:
+            type:
+              - number
+              - "null"
+          BOB:
+            type:
+              - number
+              - "null"
+          BRL:
+            type:
+              - number
+              - "null"
+          BSD:
+            type:
+              - number
+              - "null"
+          BTC:
+            type:
+              - number
+              - "null"
+          BTN:
+            type:
+              - number
+              - "null"
+          BWP:
+            type:
+              - number
+              - "null"
+          BYN:
+            type:
+              - number
+              - "null"
+          BYR:
+            type:
+              - number
+              - "null"
+          BZD:
+            type:
+              - number
+              - "null"
+          CAD:
+            type:
+              - number
+              - "null"
+          CDF:
+            type:
+              - number
+              - "null"
+          CHF:
+            type:
+              - number
+              - "null"
+          CLF:
+            type:
+              - number
+              - "null"
+          CLP:
+            type:
+              - number
+              - "null"
+          CNH:
+            type:
+              - number
+              - "null"
+          CNY:
+            type:
+              - number
+              - "null"
+          COP:
+            type:
+              - number
+              - "null"
+          CRC:
+            type:
+              - number
+              - "null"
+          CUC:
+            type:
+              - number
+              - "null"
+          CUP:
+            type:
+              - number
+              - "null"
+          CVE:
+            type:
+              - number
+              - "null"
+          CZK:
+            type:
+              - number
+              - "null"
+          DJF:
+            type:
+              - number
+              - "null"
+          DKK:
+            type:
+              - number
+              - "null"
+          DOP:
+            type:
+              - number
+              - "null"
+          DZD:
+            type:
+              - number
+              - "null"
+          EGP:
+            type:
+              - number
+              - "null"
+          ERN:
+            type:
+              - number
+              - "null"
+          ETB:
+            type:
+              - number
+              - "null"
+          EUR:
+            type:
+              - number
+              - "null"
+          FJD:
+            type:
+              - number
+              - "null"
+          FKP:
+            type:
+              - number
+              - "null"
+          GBP:
+            type:
+              - number
+              - "null"
+          GEL:
+            type:
+              - number
+              - "null"
+          GGP:
+            type:
+              - number
+              - "null"
+          GHS:
+            type:
+              - number
+              - "null"
+          GIP:
+            type:
+              - number
+              - "null"
+          GMD:
+            type:
+              - number
+              - "null"
+          GNF:
+            type:
+              - number
+              - "null"
+          GTQ:
+            type:
+              - number
+              - "null"
+          GYD:
+            type:
+              - number
+              - "null"
+          HKD:
+            type:
+              - number
+              - "null"
+          HNL:
+            type:
+              - number
+              - "null"
+          HRK:
+            type:
+              - number
+              - "null"
+          HTG:
+            type:
+              - number
+              - "null"
+          HUF:
+            type:
+              - number
+              - "null"
+          IDR:
+            type:
+              - number
+              - "null"
+          ILS:
+            type:
+              - number
+              - "null"
+          IMP:
+            type:
+              - number
+              - "null"
+          INR:
+            type:
+              - number
+              - "null"
+          IQD:
+            type:
+              - number
+              - "null"
+          IRR:
+            type:
+              - number
+              - "null"
+          ISK:
+            type:
+              - number
+              - "null"
+          JEP:
+            type:
+              - number
+              - "null"
+          JMD:
+            type:
+              - number
+              - "null"
+          JOD:
+            type:
+              - number
+              - "null"
+          JPY:
+            type:
+              - number
+              - "null"
+          KES:
+            type:
+              - number
+              - "null"
+          KGS:
+            type:
+              - number
+              - "null"
+          KHR:
+            type:
+              - number
+              - "null"
+          KMF:
+            type:
+              - number
+              - "null"
+          KPW:
+            type:
+              - number
+              - "null"
+          KRW:
+            type:
+              - number
+              - "null"
+          KWD:
+            type:
+              - number
+              - "null"
+          KYD:
+            type:
+              - number
+              - "null"
+          KZT:
+            type:
+              - number
+              - "null"
+          LAK:
+            type:
+              - number
+              - "null"
+          LBP:
+            type:
+              - number
+              - "null"
+          LKR:
+            type:
+              - number
+              - "null"
+          LRD:
+            type:
+              - number
+              - "null"
+          LSL:
+            type:
+              - number
+              - "null"
+          LTL:
+            type:
+              - number
+              - "null"
+          LVL:
+            type:
+              - number
+              - "null"
+          LYD:
+            type:
+              - number
+              - "null"
+          MAD:
+            type:
+              - number
+              - "null"
+          MDL:
+            type:
+              - number
+              - "null"
+          MGA:
+            type:
+              - number
+              - "null"
+          MKD:
+            type:
+              - number
+              - "null"
+          MMK:
+            type:
+              - number
+              - "null"
+          MNT:
+            type:
+              - number
+              - "null"
+          MOP:
+            type:
+              - number
+              - "null"
+          MRU:
+            type:
+              - number
+              - "null"
+          MUR:
+            type:
+              - number
+              - "null"
+          MVR:
+            type:
+              - number
+              - "null"
+          MWK:
+            type:
+              - number
+              - "null"
+          MXN:
+            type:
+              - number
+              - "null"
+          MYR:
+            type:
+              - number
+              - "null"
+          MZN:
+            type:
+              - number
+              - "null"
+          NAD:
+            type:
+              - number
+              - "null"
+          NGN:
+            type:
+              - number
+              - "null"
+          NIO:
+            type:
+              - number
+              - "null"
+          NOK:
+            type:
+              - number
+              - "null"
+          NPR:
+            type:
+              - number
+              - "null"
+          NZD:
+            type:
+              - number
+              - "null"
+          OMR:
+            type:
+              - number
+              - "null"
+          PAB:
+            type:
+              - number
+              - "null"
+          PEN:
+            type:
+              - number
+              - "null"
+          PGK:
+            type:
+              - number
+              - "null"
+          PHP:
+            type:
+              - number
+              - "null"
+          PKR:
+            type:
+              - number
+              - "null"
+          PLN:
+            type:
+              - number
+              - "null"
+          PYG:
+            type:
+              - number
+              - "null"
+          QAR:
+            type:
+              - number
+              - "null"
+          RON:
+            type:
+              - number
+              - "null"
+          RSD:
+            type:
+              - number
+              - "null"
+          RUB:
+            type:
+              - number
+              - "null"
+          RWF:
+            type:
+              - number
+              - "null"
+          SAR:
+            type:
+              - number
+              - "null"
+          SBD:
+            type:
+              - number
+              - "null"
+          SCR:
+            type:
+              - number
+              - "null"
+          SDG:
+            type:
+              - number
+              - "null"
+          SEK:
+            type:
+              - number
+              - "null"
+          SGD:
+            type:
+              - number
+              - "null"
+          SHP:
+            type:
+              - number
+              - "null"
+          SLE:
+            type:
+              - number
+              - "null"
+          SLL:
+            type:
+              - number
+              - "null"
+          SOS:
+            type:
+              - number
+              - "null"
+          SRD:
+            type:
+              - number
+              - "null"
+          STD:
+            type:
+              - number
+              - "null"
+          SVC:
+            type:
+              - number
+              - "null"
+          SYP:
+            type:
+              - number
+              - "null"
+          SZL:
+            type:
+              - number
+              - "null"
+          THB:
+            type:
+              - number
+              - "null"
+          TJS:
+            type:
+              - number
+              - "null"
+          TMT:
+            type:
+              - number
+              - "null"
+          TND:
+            type:
+              - number
+              - "null"
+          TOP:
+            type:
+              - number
+              - "null"
+          TRY:
+            type:
+              - number
+              - "null"
+          TTD:
+            type:
+              - number
+              - "null"
+          TWD:
+            type:
+              - number
+              - "null"
+          TZS:
+            type:
+              - number
+              - "null"
+          UAH:
+            type:
+              - number
+              - "null"
+          UGX:
+            type:
+              - number
+              - "null"
+          USD:
+            type:
+              - number
+              - "null"
+          UYU:
+            type:
+              - number
+              - "null"
+          UZS:
+            type:
+              - number
+              - "null"
+          VEF:
+            type:
+              - number
+              - "null"
+          VES:
+            type:
+              - number
+              - "null"
+          VND:
+            type:
+              - number
+              - "null"
+          VUV:
+            type:
+              - number
+              - "null"
+          WST:
+            type:
+              - number
+              - "null"
+          XAF:
+            type:
+              - number
+              - "null"
+          XAG:
+            type:
+              - number
+              - "null"
+          XAU:
+            type:
+              - number
+              - "null"
+          XCD:
+            type:
+              - number
+              - "null"
+          XDR:
+            type:
+              - number
+              - "null"
+          XOF:
+            type:
+              - number
+              - "null"
+          XPF:
+            type:
+              - number
+              - "null"
+          YER:
+            type:
+              - number
+              - "null"
+          ZAR:
+            type:
+              - number
+              - "null"
+          ZMK:
+            type:
+              - number
+              - "null"
+          ZMW:
+            type:
+              - number
+              - "null"
+          ZWL:
+            type:
+              - number
+              - "null"
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  balance_transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+  rewards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          method:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      order_id:
+        type:
+          - string
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      value:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          denomination:
+            type:
+              - number
+              - "null"
+    required:
+      - id
