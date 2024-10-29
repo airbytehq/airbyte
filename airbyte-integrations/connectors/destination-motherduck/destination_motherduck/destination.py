@@ -30,6 +30,7 @@ from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
 
+
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
@@ -145,10 +146,12 @@ class DestinationMotherDuck(Destination):
             processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
-        records_buffered = 0
-        records_processed = 0
+        records_buffered: dict[str, int] = defaultdict(int)
+        records_processed: dict[str, int] = defaultdict(int)
+        records_since_last_checkpoint: dict[str, int] = defaultdict(int)
         for message in input_messages:
             if message.type == Type.STATE and message.state is not None:
+                stream_name = message.state.stream
                 # flush the buffer
                 self._flush_buffer(
                     buffer=buffer,
@@ -156,12 +159,16 @@ class DestinationMotherDuck(Destination):
                     db_path=path,
                     schema_name=schema_name,
                     motherduck_api_key=motherduck_api_key,
-                    stream_name=message.state.stream,
+                    stream_name=stream_name,
                 )
                 buffer = defaultdict(lambda: defaultdict(list))
+                records_buffered[stream_name] = 0
+
                 # Annotate the state message with the number of records processed
-                message.state.destinationStats = AirbyteStateStats(recordCount=records_buffered)
-                records_buffered = 0
+                message.state.destinationStats = AirbyteStateStats(
+                    recordCount=records_since_last_checkpoint[stream_name],
+                )
+                records_since_last_checkpoint[stream_name] = 0
 
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
@@ -181,14 +188,27 @@ class DestinationMotherDuck(Destination):
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
                 buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
-                records_buffered += 1
-                if records_buffered >= MAX_STREAM_BATCH_SIZE:
-                    logger.info(f"Loading {records_buffered:,} from buffer...")
-                    self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                records_buffered[stream_name] += 1
+                records_since_last_checkpoint[stream_name] += 1
+
+                if records_buffered[stream_name] >= MAX_STREAM_BATCH_SIZE:
+                    logger.info(
+                        f"Loading {records_buffered:,} records from '{stream_name}' stream buffer...",
+                    )
+                    self._flush_buffer(
+                        buffer=buffer,
+                        configured_catalog=configured_catalog,
+                        db_path=path,
+                        schema_name=schema_name,
+                        motherduck_api_key=motherduck_api_key,
+                        stream_name=stream_name,
+                    )
                     buffer = defaultdict(lambda: defaultdict(list))
-                    records_processed += records_buffered
-                    records_buffered = 0
-                    logger.info(f"Records loaded successfully. Total records processed: {records_processed:,}")
+                    records_processed[stream_name] += records_buffered[stream_name]
+                    records_buffered[stream_name] = 0
+                    logger.info(
+                        f"Records loaded successfully. Total '{stream_name}' records processed: {records_processed[stream_name]:,}",
+                    )
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
