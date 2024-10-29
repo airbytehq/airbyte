@@ -423,11 +423,10 @@ class IncrementalAcceptanceTests(Step):
         return failed_nodes
 
     def _get_master_metadata(self) -> Dict[str, Any]:
-        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
-        master_metadata = yaml.safe_load(raw_master_metadata.text)
-        if not master_metadata:
+        metadata_response = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
+        if not metadata_response.ok:
             raise FileNotFoundError(f"Could not fetch metadata file for {self.context.connector.technical_name} on master.")
-        return master_metadata
+        return yaml.safe_load(metadata_response.text)
 
     async def get_result_log_on_master(self, master_metadata: dict) -> Artifact:
         """Runs acceptance test on the released image of the connector and returns the report log.
