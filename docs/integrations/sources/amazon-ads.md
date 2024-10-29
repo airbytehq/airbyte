@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.0.20 | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies |
 | 5.0.19 | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies |
 | 5.0.18 | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies |
 | 5.0.17 | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies |
