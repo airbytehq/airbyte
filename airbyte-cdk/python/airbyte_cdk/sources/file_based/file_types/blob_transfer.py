@@ -6,7 +6,6 @@ from io import IOBase
 from typing import Any, Dict, Generator, Iterable, Optional, Tuple
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.writers.local_file_client import LocalFileTransferClient
@@ -49,8 +48,9 @@ class BlobTransfer:
             for file_opened, file_size in data_generator:
                 yield local_writer.write(file.uri, file_opened, file_size, logger)
                 file_no += 1
-        except RecordParseError as parse_err:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=file_no) from parse_err
+        except Exception as ex:
+            logger.error("An error has occurred while writing file: %s", str(ex))
+            raise ex
         finally:
             data_generator.close()
 
