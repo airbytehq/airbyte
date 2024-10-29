@@ -34,8 +34,6 @@ class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
         registration: CustomConverter.ConverterRegistration<SchemaBuilder>?
     ) {
         registration?.register(SchemaBuilder.bool()) { x ->
-            println("converting value: $x")
-            println("type: ${x::class}")
             if (x == null) {
                 return@register if (field!!.isOptional) {
                     null
