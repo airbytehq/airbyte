@@ -2797,7 +2797,6 @@ streams:
       - customer_id
       - entry_type
       - credit_block_per_unit_cost_basis
-      - description
       - credit_block_id
   transformations:
   - type: AddFields
@@ -3339,7 +3338,6 @@ schemas:
     - customer_id
     - entry_type
     - credit_block_per_unit_cost_basis
-    - description
     - credit_block_id
 spec:
   type: Spec
