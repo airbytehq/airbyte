@@ -9,16 +9,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import pyarrow as pa
-from airbyte_cdk import DestinationSyncMode
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Executable, TextClause, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
+from airbyte_cdk import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
+
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
@@ -164,12 +166,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str) -> None:
         column_names_list = list(buffer[stream_name].keys())
-        column_names = ", ".join(column_names_list)
+        column_names_str = ", ".join(map(self._quote_identifier, column_names_list))
         params = ", ".join(["?"] * len(column_names_list))
         sql = f"""
         -- Write with executemany
         INSERT INTO {self._fully_qualified(table_name)}
-            ({column_names})
+            ({column_names_str})
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]
