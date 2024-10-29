@@ -121,8 +121,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -193,8 +193,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -266,8 +266,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
         partition_router:
           - type: SubstreamPartitionRouter
@@ -284,20 +284,6 @@ definitions:
                 partition_field: model_id
                 stream:
                   $ref: "#/definitions/streams/models"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -346,8 +332,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -357,27 +343,13 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/worklows"
-    search_inputs:
+    app_inputs:
       type: DeclarativeStream
-      name: search_inputs
+      name: app_inputs
       primary_key:
         - id
       retriever:
@@ -429,27 +401,13 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/search_inputs"
-    input_jobs:
+          $ref: "#/schemas/app_inputs"
+    app_inputs_jobs:
       type: DeclarativeStream
-      name: input_jobs
+      name: app_inputs_jobs
       primary_key:
         - id
       retriever:
@@ -502,27 +460,13 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/input_jobs"
-    concepts:
+          $ref: "#/schemas/app_inputs_jobs"
+    app_concepts:
       type: DeclarativeStream
-      name: concepts
+      name: app_concepts
       primary_key:
         - id
       retriever:
@@ -575,34 +519,16 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/concepts"
+          $ref: "#/schemas/app_concepts"
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: Key {{ config["pat_key"] }}
-      inject_into:
-        type: RequestOption
-        field_name: Authorization
-        inject_into: header
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/applications"
@@ -610,9 +536,9 @@ streams:
   - $ref: "#/definitions/streams/models"
   - $ref: "#/definitions/streams/model_versions"
   - $ref: "#/definitions/streams/worklows"
-  - $ref: "#/definitions/streams/search_inputs"
-  - $ref: "#/definitions/streams/input_jobs"
-  - $ref: "#/definitions/streams/concepts"
+  - $ref: "#/definitions/streams/app_inputs"
+  - $ref: "#/definitions/streams/app_inputs_jobs"
+  - $ref: "#/definitions/streams/app_concepts"
 
 spec:
   type: Spec
@@ -620,18 +546,15 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - pat_key
+      - api_key
       - user_id
       - start_date
     properties:
-      pat_key:
+      api_key:
         type: string
-        description: >-
-          The personal access token found at
-          `https://clarifai.com/settings/security`
-        order: 0
-        title: PAT Key
+        title: API Key
         airbyte_secret: true
+        order: 0
       user_id:
         type: string
         description: User ID found in settings
@@ -652,64 +575,61 @@ metadata:
     models: true
     model_versions: true
     worklows: true
-    search_inputs: true
-    input_jobs: true
-    concepts: true
-  yamlComponents:
-    global:
-      - authenticator
+    app_inputs: true
+    app_inputs_jobs: true
+    app_concepts: true
   testedStreams:
     applications:
-      streamHash: 4c75e1b4bd20a99de4a6fed9f14afb345c376344
+      streamHash: 7e2444a1eb9792a977b9b4d29b3efaad631dbb5b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     datasets:
-      hasRecords: true
-      streamHash: 10d55b69da1ba511eda32c6653a082de509783ea
+      streamHash: 277102714313efee407ed87ca217b0974557e87a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     models:
-      hasRecords: true
-      streamHash: d453d731a769dc7c74601bc928badeed7f885cf7
+      streamHash: d04e9cb6340029639dd7b7ea1b10fe211655dfa7
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     model_versions:
-      hasRecords: true
-      streamHash: 336391bd32d48edf5c3d3f4d6175f090564a2096
+      streamHash: 3f6242e411f00bf0fe8f21d8c1fadf40b82986fc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     worklows:
-      streamHash: c77ef9a5e9a32646f178dc8ddaac8d1296bb6153
+      streamHash: 28467564977f3092be217f2c6f96db9bdafc7ee4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    search_inputs:
-      streamHash: 7bec0ee92457a95c048715b183a723b0789c90a6
+    app_inputs:
+      streamHash: cf291760c7b92a410463c0408c3a85e32a8c699c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    input_jobs:
-      streamHash: 56ed066c0e98e2054c3512d7b387252071d43457
+    app_inputs_jobs:
+      streamHash: a746c75b17c51a1d0f626c14b9af98ae0d390e99
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    concepts:
-      streamHash: f840e90ba04bc6325d535e8d19c5d43094fab36c
+    app_concepts:
+      streamHash: b3e2aba813f4f40de4470e38e55320020153ba91
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -874,6 +794,161 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      version:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          annotation_filter_config:
+            type:
+              - object
+              - "null"
+            properties:
+              annotation_filter:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  app_id:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  modified_at:
+                    type:
+                      - string
+                      - "null"
+                  user_id:
+                    type:
+                      - string
+                      - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          dataset_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              /:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  bounding_boxes_count:
+                    type:
+                      - string
+                      - "null"
+                  embeddings_count:
+                    type:
+                      - string
+                      - "null"
+                  frames_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_with_geo_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_with_metadata_count:
+                    type:
+                      - string
+                      - "null"
+                  masks_count:
+                    type:
+                      - string
+                      - "null"
+                  points_count:
+                    type:
+                      - string
+                      - "null"
+                  polygons_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_frame_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_input_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_region_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  regions_count:
+                    type:
+                      - string
+                      - "null"
+                  unlabeled_inputs_count:
+                    type:
+                      - string
+                      - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          request_origin:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              code:
+                type:
+                  - number
+                  - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - object
+              - "null"
+            properties:
+              gettable:
+                type:
+                  - number
+                  - "null"
       description:
         type:
           - string
@@ -955,6 +1030,10 @@ schemas:
                 - "null"
               properties:
                 type:
+                  type:
+                    - string
+                    - "null"
+                alt:
                   type:
                     - string
                     - "null"
@@ -1267,6 +1346,14 @@ schemas:
                     type:
                       - number
                       - "null"
+                  top1_accuracy:
+                    type:
+                      - number
+                      - "null"
+                  top5_accuracy:
+                    type:
+                      - number
+                      - "null"
           output_info:
             type:
               - object
@@ -1330,6 +1417,10 @@ schemas:
                   - object
                   - "null"
                 properties:
+                  concepts_mutually_exclusive:
+                    type:
+                      - boolean
+                      - "null"
                   max_concepts:
                     type:
                       - number
@@ -1343,7 +1434,15 @@ schemas:
                   - object
                   - "null"
                 properties:
+                  alignment_type:
+                    type:
+                      - string
+                      - "null"
                   detection_threshold:
+                    type:
+                      - number
+                      - "null"
+                  margin:
                     type:
                       - number
                       - "null"
@@ -1371,10 +1470,23 @@ schemas:
                     type:
                       - number
                       - "null"
+                  output_size:
+                    type:
+                      - number
+                      - "null"
                   select_concepts:
                     type:
                       - array
                       - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - string
+                            - "null"
           status:
             type:
               - object
@@ -2147,7 +2259,9 @@ schemas:
           - string
           - "null"
       created_at:
-        type: string
+        type:
+          - string
+          - "null"
       id:
         type: string
       import_info:
@@ -2159,56 +2273,6 @@ schemas:
           - object
           - "null"
         properties:
-          base_embed_model:
-            type:
-              - object
-              - "null"
-            properties:
-              app_id:
-                type:
-                  - string
-                  - "null"
-              check_consents:
-                type:
-                  - array
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              languages:
-                type:
-                  - array
-                  - "null"
-              languages_full:
-                type:
-                  - array
-                  - "null"
-              model_type_id:
-                type:
-                  - string
-                  - "null"
-              model_version:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  id:
-                    type:
-                      - string
-                      - "null"
-              toolkits:
-                type:
-                  - array
-                  - "null"
-              use_cases:
-                type:
-                  - array
-                  - "null"
-              user_id:
-                type:
-                  - string
-                  - "null"
           fields_map:
             type:
               - object
@@ -2232,7 +2296,15 @@ schemas:
                 type:
                   - string
                   - "null"
-              embeddings:
+              regions[...].data.concepts[...].id:
+                type:
+                  - string
+                  - "null"
+              regions[...].data.concepts[...].value:
+                type:
+                  - string
+                  - "null"
+              regions[...].region_info.bounding_box:
                 type:
                   - string
                   - "null"
@@ -2252,6 +2324,27 @@ schemas:
               min_value:
                 type:
                   - number
+                  - "null"
+          params:
+            type:
+              - object
+              - "null"
+            properties:
+              detection_threshold:
+                type:
+                  - number
+                  - "null"
+              max_concepts:
+                type:
+                  - number
+                  - "null"
+              min_value:
+                type:
+                  - number
+                  - "null"
+              select_concepts:
+                type:
+                  - array
                   - "null"
       status:
         type:
@@ -2285,7 +2378,6 @@ schemas:
               - "null"
     required:
       - id
-      - created_at
   worklows:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2335,7 +2427,9 @@ schemas:
           - array
           - "null"
       created_at:
-        type: string
+        type:
+          - string
+          - "null"
       id:
         type: string
       image:
@@ -2488,14 +2582,15 @@ schemas:
               - "null"
     required:
       - id
-      - created_at
-  search_inputs:
+  app_inputs:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       created_at:
-        type: string
+        type:
+          - string
+          - "null"
       data:
         type:
           - object
@@ -2594,14 +2689,15 @@ schemas:
               - "null"
     required:
       - id
-      - created_at
-  input_jobs:
+  app_inputs_jobs:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       created_at:
-        type: string
+        type:
+          - string
+          - "null"
       id:
         type: string
       modified_at:
@@ -2632,8 +2728,7 @@ schemas:
               - "null"
     required:
       - id
-      - created_at
-  concepts:
+  app_concepts:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2643,7 +2738,9 @@ schemas:
           - string
           - "null"
       created_at:
-        type: string
+        type:
+          - string
+          - "null"
       id:
         type: string
       language:
@@ -2673,4 +2770,3 @@ schemas:
               - "null"
     required:
       - id
-      - created_at
