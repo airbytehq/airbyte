@@ -88,6 +88,21 @@ class MysqlCdcIntegrationTest {
         }
     }
 
+    @Test
+    fun testFullRefresh() {
+        val fullRefreshCatalog =
+            configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
+        CliRunner.source("read", config(), fullRefreshCatalog).run()
+        // TODO: add assertions on run1 messages.
+
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
+            }
+        }
+    }
+
     companion object {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>

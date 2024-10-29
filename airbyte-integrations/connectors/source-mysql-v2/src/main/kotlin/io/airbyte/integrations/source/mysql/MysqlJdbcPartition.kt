@@ -177,7 +177,7 @@ sealed class MysqlJdbcResumablePartition(
 }
 
 /** Implementation of a [JdbcPartition] for a snapshot partition. */
-class MysqlJdbcSnapshotPartition(
+class MysqlJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
@@ -191,11 +191,38 @@ class MysqlJdbcSnapshotPartition(
         get() =
             MysqlJdbcStreamStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
-                primaryKeyCheckpoint = listOf(),
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlJdbcStreamStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+/** Implementation of a [JdbcPartition] for a snapshot partition. */
+class MysqlJdbcCdcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+
+    // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
+    // in RFR case.
+    override val completeState: OpaqueStateValue
+        get() =
+            MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+            )
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
