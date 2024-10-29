@@ -16,6 +16,14 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
     suspend fun <U> get(key: String, block: (InputStream) -> U): U
     suspend fun put(key: String, bytes: ByteArray): T
     suspend fun delete(remoteObject: T)
+
+    /**
+     * Streaming upload should provide an [OutputStream] managed within the lifecycle of [block].
+     * The stream should be closed after the block completes, however it should be safe for users of
+     * the stream to close early (some writers do this by default, especially those that write whole
+     * files). Specifically, the method should guarantee that no operations will be performed on the
+     * stream after [block] completes.
+     */
     suspend fun streamingUpload(key: String, block: suspend (OutputStream) -> Unit): T =
         streamingUpload(key, NoopProcessor, block)
     suspend fun <V : OutputStream> streamingUpload(
