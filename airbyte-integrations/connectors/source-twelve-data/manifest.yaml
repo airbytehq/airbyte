@@ -15,13 +15,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Stocks
+    - stocks
 
 definitions:
   streams:
-    Stocks:
+    stocks:
       type: DeclarativeStream
-      name: Stocks
+      name: stocks
       primary_key:
         - symbol
       retriever:
@@ -59,10 +59,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Stocks"
-    Forex Pairs:
+          $ref: "#/schemas/stocks"
+    forex_pairs:
       type: DeclarativeStream
-      name: Forex Pairs
+      name: forex_pairs
       primary_key:
         - symbol
       retriever:
@@ -98,10 +98,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Forex Pairs"
-    Crypto Currencies:
+          $ref: "#/schemas/forex_pairs"
+    crypto_currencies:
       type: DeclarativeStream
-      name: Crypto Currencies
+      name: crypto_currencies
       retriever:
         type: SimpleRetriever
         requester:
@@ -135,10 +135,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Crypto Currencies"
-    Funds:
+          $ref: "#/schemas/crypto_currencies"
+    funds:
       type: DeclarativeStream
-      name: Funds
+      name: funds
       primary_key:
         - symbol
       retriever:
@@ -178,10 +178,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Funds"
-    Bonds:
+          $ref: "#/schemas/funds"
+    bonds:
       type: DeclarativeStream
-      name: Bonds
+      name: bonds
       primary_key:
         - symbol
       retriever:
@@ -221,10 +221,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Bonds"
-    ETFs:
+          $ref: "#/schemas/bonds"
+    etfs:
       type: DeclarativeStream
-      name: ETFs
+      name: etfs
       primary_key:
         - symbol
       retriever:
@@ -263,10 +263,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ETFs"
-    Commodities:
+          $ref: "#/schemas/etfs"
+    commodities:
       type: DeclarativeStream
-      name: Commodities
+      name: commodities
       primary_key:
         - symbol
       retriever:
@@ -302,10 +302,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Commodities"
-    Exchanges:
+          $ref: "#/schemas/commodities"
+    exchanges:
       type: DeclarativeStream
-      name: Exchanges
+      name: exchanges
       primary_key:
         - code
       retriever:
@@ -343,10 +343,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Exchanges"
-    Cryptocurrency Exchanges:
+          $ref: "#/schemas/exchanges"
+    cryptocurrency_exchanges:
       type: DeclarativeStream
-      name: Cryptocurrency Exchanges
+      name: cryptocurrency_exchanges
       retriever:
         type: SimpleRetriever
         requester:
@@ -362,10 +362,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Cryptocurrency Exchanges"
-    Market State:
+          $ref: "#/schemas/cryptocurrency_exchanges"
+    market_state:
       type: DeclarativeStream
-      name: Market State
+      name: market_state
       primary_key:
         - code
       retriever:
@@ -385,28 +385,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Market State"
-    Instrument Type:
+          $ref: "#/schemas/market_state"
+    countries:
       type: DeclarativeStream
-      name: Instrument Type
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: instrument_type
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Instrument Type"
-    Countries:
-      type: DeclarativeStream
-      name: Countries
+      name: countries
       retriever:
         type: SimpleRetriever
         requester:
@@ -422,10 +404,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Countries"
-    Technical Indicators:
+          $ref: "#/schemas/countries"
+    technical_indicators:
       type: DeclarativeStream
-      name: Technical Indicators
+      name: technical_indicators
       retriever:
         type: SimpleRetriever
         requester:
@@ -441,10 +423,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Technical Indicators"
-    Time Series:
+          $ref: "#/schemas/technical_indicators"
+    time_series:
       type: DeclarativeStream
-      name: Time Series
+      name: time_series
       retriever:
         type: SimpleRetriever
         requester:
@@ -481,14 +463,20 @@ definitions:
               parent_key: symbol
               partition_field: symb
               stream:
-                $ref: "#/definitions/streams/Stocks"
+                $ref: "#/definitions/streams/stocks"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - symbol
+              value: "{{ stream_slice.symb }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Time Series"
-    Exchange Rate:
+          $ref: "#/schemas/time_series"
+    exchange_rate:
       type: DeclarativeStream
-      name: Exchange Rate
+      name: exchange_rate
       retriever:
         type: SimpleRetriever
         requester:
@@ -527,14 +515,14 @@ definitions:
               parent_key: symbol
               partition_field: symb
               stream:
-                $ref: "#/definitions/streams/Forex Pairs"
+                $ref: "#/definitions/streams/forex_pairs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Exchange Rate"
-    Quote:
+          $ref: "#/schemas/exchange_rate"
+    quote:
       type: DeclarativeStream
-      name: Quote
+      name: quote
       retriever:
         type: SimpleRetriever
         requester:
@@ -573,14 +561,14 @@ definitions:
               parent_key: symbol
               partition_field: symb
               stream:
-                $ref: "#/definitions/streams/Stocks"
+                $ref: "#/definitions/streams/stocks"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Quote"
-    Price:
+          $ref: "#/schemas/quote"
+    price:
       type: DeclarativeStream
-      name: Price
+      name: price
       retriever:
         type: SimpleRetriever
         requester:
@@ -619,14 +607,25 @@ definitions:
               parent_key: symbol
               partition_field: symb
               stream:
-                $ref: "#/definitions/streams/Stocks"
+                $ref: "#/definitions/streams/stocks"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - symbol
+              value: "{{ stream_slice.symb }}"
+        - type: AddFields
+          fields:
+            - path:
+                - timestamp
+              value: "{{ now_utc() }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Price"
-    EOD Price:
+          $ref: "#/schemas/price"
+    eod_price:
       type: DeclarativeStream
-      name: EOD Price
+      name: eod_price
       retriever:
         type: SimpleRetriever
         requester:
@@ -665,14 +664,14 @@ definitions:
               parent_key: symbol
               partition_field: symb
               stream:
-                $ref: "#/definitions/streams/Stocks"
+                $ref: "#/definitions/streams/stocks"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/EOD Price"
-    Mutual Funds:
+          $ref: "#/schemas/eod_price"
+    mutual_funds:
       type: DeclarativeStream
-      name: Mutual Funds
+      name: mutual_funds
       primary_key:
         - symbol
       retriever:
@@ -711,202 +710,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Mutual Funds"
-    MFs Family List:
-      type: DeclarativeStream
-      name: MFs Family List
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: mutual_funds/family
-          http_method: GET
-          request_parameters:
-            country: "{{ config[\"country\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - result
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/MFs Family List"
-    MFs Type List:
-      type: DeclarativeStream
-      name: MFs Type List
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: mutual_funds/type
-          http_method: GET
-          request_parameters:
-            country: "{{ config[\"country\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - result
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/MFs Type List"
-    ETFs List:
-      type: DeclarativeStream
-      name: ETFs List
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: etfs/list
-          http_method: GET
-          request_parameters:
-            country: "{{ config[\"country\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - result
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ETFs List"
-    ETFs Family:
-      type: DeclarativeStream
-      name: ETFs Family
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: etfs/family
-          http_method: GET
-          request_parameters:
-            country: "{{ config[\"country\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - result
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ETFs Family"
-    ETFs Type List:
-      type: DeclarativeStream
-      name: ETFs Type List
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: etfs/type
-          http_method: GET
-          request_parameters:
-            country: "{{ config[\"country\"] }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - result
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ETFs Type List"
+          $ref: "#/schemas/mutual_funds"
   base_requester:
     type: HttpRequester
     url_base: https://api.twelvedata.com/
@@ -919,30 +723,24 @@ definitions:
         inject_into: request_parameter
 
 streams:
-  - $ref: "#/definitions/streams/Stocks"
-  - $ref: "#/definitions/streams/Forex Pairs"
-  - $ref: "#/definitions/streams/Crypto Currencies"
-  - $ref: "#/definitions/streams/Funds"
-  - $ref: "#/definitions/streams/Bonds"
-  - $ref: "#/definitions/streams/ETFs"
-  - $ref: "#/definitions/streams/Commodities"
-  - $ref: "#/definitions/streams/Exchanges"
-  - $ref: "#/definitions/streams/Cryptocurrency Exchanges"
-  - $ref: "#/definitions/streams/Market State"
-  - $ref: "#/definitions/streams/Instrument Type"
-  - $ref: "#/definitions/streams/Countries"
-  - $ref: "#/definitions/streams/Technical Indicators"
-  - $ref: "#/definitions/streams/Time Series"
-  - $ref: "#/definitions/streams/Exchange Rate"
-  - $ref: "#/definitions/streams/Quote"
-  - $ref: "#/definitions/streams/Price"
-  - $ref: "#/definitions/streams/EOD Price"
-  - $ref: "#/definitions/streams/Mutual Funds"
-  - $ref: "#/definitions/streams/MFs Family List"
-  - $ref: "#/definitions/streams/MFs Type List"
-  - $ref: "#/definitions/streams/ETFs List"
-  - $ref: "#/definitions/streams/ETFs Family"
-  - $ref: "#/definitions/streams/ETFs Type List"
+  - $ref: "#/definitions/streams/stocks"
+  - $ref: "#/definitions/streams/forex_pairs"
+  - $ref: "#/definitions/streams/crypto_currencies"
+  - $ref: "#/definitions/streams/funds"
+  - $ref: "#/definitions/streams/bonds"
+  - $ref: "#/definitions/streams/etfs"
+  - $ref: "#/definitions/streams/commodities"
+  - $ref: "#/definitions/streams/exchanges"
+  - $ref: "#/definitions/streams/cryptocurrency_exchanges"
+  - $ref: "#/definitions/streams/market_state"
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/technical_indicators"
+  - $ref: "#/definitions/streams/time_series"
+  - $ref: "#/definitions/streams/exchange_rate"
+  - $ref: "#/definitions/streams/quote"
+  - $ref: "#/definitions/streams/price"
+  - $ref: "#/definitions/streams/eod_price"
+  - $ref: "#/definitions/streams/mutual_funds"
 
 spec:
   type: Spec
@@ -979,207 +777,172 @@ spec:
           15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month
         order: 4
         title: Interval
+        default: 1day
+        enum:
+          - 1min
+          - 5min
+          - 15min
+          - 30min
+          - 45min
+          - 1h
+          - 2h
+          - 4h
+          - 1day
+          - 1week
+          - 1month
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    Stocks: true
-    Forex Pairs: true
-    Crypto Currencies: true
-    Funds: true
-    Bonds: true
-    ETFs: true
-    Commodities: true
-    Exchanges: true
-    Cryptocurrency Exchanges: true
-    Market State: true
-    Instrument Type: true
-    Countries: true
-    Technical Indicators: true
-    Time Series: true
-    Exchange Rate: true
-    Quote: true
-    Price: true
-    EOD Price: true
-    Mutual Funds: true
-    MFs Family List: true
-    MFs Type List: true
-    ETFs List: true
-    ETFs Family: true
-    ETFs Type List: true
+    stocks: true
+    forex_pairs: true
+    crypto_currencies: true
+    funds: true
+    bonds: true
+    etfs: true
+    commodities: true
+    exchanges: true
+    cryptocurrency_exchanges: true
+    market_state: true
+    countries: true
+    technical_indicators: true
+    time_series: true
+    exchange_rate: true
+    quote: true
+    price: true
+    eod_price: true
+    mutual_funds: true
   testedStreams:
-    Stocks:
-      hasRecords: true
-      streamHash: a158beb0bbef099fc60346adb4688005f701fc02
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Forex Pairs:
-      hasRecords: true
-      streamHash: 7093b7d2e703c60de073e0f13af8caf7215a87d7
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Crypto Currencies:
-      hasRecords: true
-      streamHash: 98aba73994263e044f756f3e33a1949e818fd579
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Funds:
-      streamHash: a4ec617ef11157f1f018285f51bb00e9b2cbb282
+    stocks:
+      streamHash: 4b863774eab79d3aeb545e8de6148db646eea147
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Bonds:
-      streamHash: 2141110b7845299aa199eb589ad9bbc05de2b581
+    forex_pairs:
+      hasRecords: true
+      streamHash: 39ccfcb61cf6b3950efe5083711d5197a5f90ae3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crypto_currencies:
+      hasRecords: true
+      streamHash: 9e4e5f7f9c4482f5c045b71cef40092db7522679
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    funds:
+      hasRecords: true
+      streamHash: ac18d4344ed83dc98bf9f2352704bf58b799b7a1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bonds:
+      hasRecords: true
+      streamHash: 9ee6676dacba4c707cf5c5278f7f8af7bd36f06e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    etfs:
+      hasRecords: true
+      streamHash: 9f58a6726044448f1810bc5da257c4c2080f1ee5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    commodities:
+      hasRecords: true
+      streamHash: 1d487840bf8886616b2888af0404a9fe7bc5e09a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    exchanges:
+      streamHash: 033f2220b5fb652654deb85f284489cca4feebcb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    ETFs:
-      streamHash: bd27387254c9ee61eadb908d8ab7032fbaf7ea99
+    cryptocurrency_exchanges:
+      streamHash: 36aea471d85f85d0b73803180538d8a6d0b70e38
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Commodities:
-      streamHash: c2f0b041bd34660f5e6a5c6b659fc35a727514d5
+    market_state:
+      streamHash: fac5eb367a0eec75a806e8d4f2c70029a1a50a96
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Exchanges:
-      streamHash: 82ed914703e57636197592a1f259afe186cd61c9
+    countries:
+      streamHash: b215b99045447548c36d515bbcc4aa70a2746b45
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Cryptocurrency Exchanges:
-      streamHash: 1f94b9346cc25481dd1d53bfeb0baeaa4361ae53
+    technical_indicators:
+      streamHash: 3b83b8a0ae4f7ad9f682015c07e9a7c6f52ad8bc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Market State:
-      streamHash: 9b26c67ebd369d89c2e362fea6a17c8aebe7a4d8
+    time_series:
+      streamHash: 448a4106deda34a80acf800aac94adc94af9ea9f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Instrument Type:
-      streamHash: 121e5c73a55bece0b6d8c3615e51ed1d4b971436
+    exchange_rate:
+      streamHash: b9121603e1d5c1508475968c5734d81f5f36b2ef
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Countries:
-      streamHash: 632a974afd2ab7e54e21a900cac97003eb7fa6e9
+    quote:
+      streamHash: cd42b986b695c520d31f9976567a694110496072
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Technical Indicators:
-      streamHash: 22bdd83a7abb3e059b6f6cd6e557fe273c958b3d
+    price:
+      streamHash: f21ec3b74962655bcd0838580a99f3e719beb12c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Time Series:
-      streamHash: deb4fba5f561ce9e57055b505b519aed7a541b45
+    eod_price:
+      streamHash: c6d6ecbfa9091b0b9eb5a8c22d134f88dcf6f982
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Exchange Rate:
-      streamHash: 719202f86ee34ac5bf87d6bf0f7452a8f656c54e
-      hasResponse: true
-      responsesAreSuccessful: true
+    mutual_funds:
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Quote:
-      streamHash: 2e3059f6bbf174d5841432474c88c0d38a296ddc
+      streamHash: 729d0cb2ea3321afd57071a8b83f48ea008b33ac
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Price:
-      streamHash: 745a5ac627f72bcbb37d3d681137ffaf484aa314
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    EOD Price:
-      streamHash: f88c2d8b61b2712dba195336c65382ffc069846b
-      hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Mutual Funds:
-      streamHash: 7ed5f85099e468eaa890234999776a799ebaeebf
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    MFs Family List:
-      streamHash: 812934816565ad9c3257e1c707aad82566ae0ca9
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    MFs Type List:
-      streamHash: cfc53e98670638ca851829d2189866faecfc4370
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    ETFs List:
-      streamHash: ceda007ad2a4b5ac8bfbf216172cb810acfe81e9
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    ETFs Family:
-      streamHash: 9ae0eab55dfdee54d8bd0ea88889eb961299f64f
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    ETFs Type List:
-      streamHash: f1c197d741b0dae5056a7ebcddc49d5c352c2666
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
-  Stocks:
+  stocks:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1216,7 +979,7 @@ schemas:
         type: string
     required:
       - symbol
-  Forex Pairs:
+  forex_pairs:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1237,7 +1000,7 @@ schemas:
         type: string
     required:
       - symbol
-  Crypto Currencies:
+  crypto_currencies:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1262,7 +1025,7 @@ schemas:
         type:
           - string
           - "null"
-  Funds:
+  funds:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1299,7 +1062,7 @@ schemas:
         type: string
     required:
       - symbol
-  Bonds:
+  bonds:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1332,7 +1095,7 @@ schemas:
         type: string
     required:
       - symbol
-  ETFs:
+  etfs:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1365,7 +1128,7 @@ schemas:
         type: string
     required:
       - symbol
-  Commodities:
+  commodities:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1386,7 +1149,7 @@ schemas:
         type: string
     required:
       - symbol
-  Exchanges:
+  exchanges:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1407,7 +1170,7 @@ schemas:
           - "null"
     required:
       - code
-  Cryptocurrency Exchanges:
+  cryptocurrency_exchanges:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1416,7 +1179,7 @@ schemas:
         type:
           - string
           - "null"
-  Market State:
+  market_state:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1449,24 +1212,7 @@ schemas:
           - "null"
     required:
       - code
-  Instrument Type:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      result:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      status:
-        type:
-          - string
-          - "null"
-  Countries:
+  countries:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1499,7 +1245,7 @@ schemas:
         type:
           - string
           - "null"
-  Technical Indicators:
+  technical_indicators:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -11972,7 +11718,7 @@ schemas:
                     type:
                       - number
                       - "null"
-  Time Series:
+  time_series:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -11997,11 +11743,15 @@ schemas:
         type:
           - string
           - "null"
+      symbol:
+        type:
+          - string
+          - "null"
       volume:
         type:
           - string
           - "null"
-  Exchange Rate:
+  exchange_rate:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -12018,7 +11768,7 @@ schemas:
         type:
           - number
           - "null"
-  Quote:
+  quote:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -12124,7 +11874,7 @@ schemas:
         type:
           - string
           - "null"
-  Price:
+  price:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -12133,7 +11883,15 @@ schemas:
         type:
           - string
           - "null"
-  EOD Price:
+      symbol:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+  eod_price:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -12166,7 +11924,7 @@ schemas:
         type:
           - number
           - "null"
-  Mutual Funds:
+  mutual_funds:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -12211,873 +11969,3 @@ schemas:
         type: string
     required:
       - symbol
-  MFs Family List:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      Austria:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Brazil:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Canada:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Chile:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      China:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Denmark:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Egypt:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Estonia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Finland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      France:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Germany:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Hong Kong:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Hungary:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Iceland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      India:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Indonesia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Ireland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Israel:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Italy:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Japan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Lithuania:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Malaysia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Mexico:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Netherlands:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      New Zealand:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Norway:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Poland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Portugal:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Saudi Arabia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Singapore:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      South Africa:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      South Korea:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Spain:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Sweden:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Switzerland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Taiwan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Turkey:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United Kingdom:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United States:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-  MFs Type List:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      Austria:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Canada:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      China:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Denmark:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Estonia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      France:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Germany:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Hong Kong:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      India:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Ireland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Israel:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Italy:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Japan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Mexico:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Netherlands:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      New Zealand:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Poland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Singapore:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      South Africa:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Spain:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Sweden:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Switzerland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Taiwan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Turkey:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United Kingdom:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United States:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-  ETFs List:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      count:
-        type:
-          - number
-          - "null"
-      list:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            country:
-              type:
-                - string
-                - "null"
-            fund_family:
-              type:
-                - string
-                - "null"
-            fund_type:
-              type:
-                - string
-                - "null"
-            mic_code:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            symbol:
-              type:
-                - string
-                - "null"
-  ETFs Family:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      Australia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Austria:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Belgium:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Canada:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Denmark:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Finland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      France:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Germany:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Greece:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Hong Kong:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Hungary:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Indonesia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Ireland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Italy:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Japan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Mexico:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Netherlands:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Norway:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Poland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Portugal:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Russia:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Singapore:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      South Korea:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Spain:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Sweden:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Switzerland:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Taiwan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Thailand:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Turkey:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United Kingdom:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United States:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-  ETFs Type List:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      Japan:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Mexico:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Netherlands:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      Singapore:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      United States:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
