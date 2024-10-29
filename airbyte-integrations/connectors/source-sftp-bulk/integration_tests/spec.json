@@ -456,23 +456,6 @@
                     "use_records_transfer"
                   ],
                   "type": "string"
-                },
-                "use_records_transfer": {
-                  "title": "Transfer records",
-                  "description": "Transfer Records",
-                  "default": true,
-                  "order": 5,
-                  "airbyte_hidden": true,
-                  "type": "boolean"
-                },
-                "use_file_transfer": {
-                  "title": "Use File Transfer",
-                  "default": false,
-                  "const": false,
-                  "enum": [
-                    false
-                  ],
-                  "type": "boolean"
                 }
               },
               "description": "Send records to the destination, which will be processed as incoming data.",
@@ -492,15 +475,6 @@
                     "use_file_transfer"
                   ],
                   "type": "string"
-                },
-                "use_file_transfer": {
-                  "title": "Use File Transfer",
-                  "default": true,
-                  "const": true,
-                  "enum": [
-                    true
-                  ],
-                  "type": "boolean"
                 }
               },
               "description": "Send files to the destination, to be loaded to files storage destinations without parsing underlying data.",

@@ -63,5 +63,3 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     @classmethod
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/sftp-bulk"
-
-
