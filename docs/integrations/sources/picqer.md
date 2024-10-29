@@ -42,6 +42,7 @@ Configure the API key as your username and leave password field as blank
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.3 | 2024-10-29 | [47876](https://github.com/airbytehq/airbyte/pull/47876) | Update dependencies |
 | 0.0.2 | 2024-10-22 | [47235](https://github.com/airbytehq/airbyte/pull/47235) | Update dependencies |
 | 0.0.1 | 2024-09-05 | [45159](https://github.com/airbytehq/airbyte/pull/45159) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
