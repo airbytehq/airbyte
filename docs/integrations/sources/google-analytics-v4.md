@@ -276,9 +276,10 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.4.0   | 2024-07-01 | [40244](https://github.com/airbytehq/airbyte/pull/40244) | Deprecate the connector                  |
-| 0.3.3   | 2024-06-21 | [39940](https://github.com/airbytehq/airbyte/pull/39940) | Update dependencies |
-| 0.3.2   | 2024-06-04 | [38934](https://github.com/airbytehq/airbyte/pull/38934) | [autopull] Upgrade base image to v1.2.1 |
+| 0.4.1 | 2024-10-29 | [47766](https://github.com/airbytehq/airbyte/pull/47766) | Update dependencies |
+| 0.4.0 | 2024-07-01 | [40244](https://github.com/airbytehq/airbyte/pull/40244) | Deprecate the connector |
+| 0.3.3 | 2024-06-21 | [39940](https://github.com/airbytehq/airbyte/pull/39940) | Update dependencies |
+| 0.3.2 | 2024-06-04 | [38934](https://github.com/airbytehq/airbyte/pull/38934) | [autopull] Upgrade base image to v1.2.1 |
 | 0.3.1   | 2024-04-19 | [37432](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream                                                     |
 | 0.3.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                              |
 | 0.2.5   | 2024-02-09 | [35101](https://github.com/airbytehq/airbyte/pull/35101) | Manage dependencies with Poetry.                                                             |
