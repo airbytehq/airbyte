@@ -32,6 +32,8 @@ To get started, you need a valid API key.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.3 | 2024-10-29 | [47930](https://github.com/airbytehq/airbyte/pull/47930) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47603](https://github.com/airbytehq/airbyte/pull/47603) | Update dependencies |
 | 0.0.1 | 2024-09-12 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

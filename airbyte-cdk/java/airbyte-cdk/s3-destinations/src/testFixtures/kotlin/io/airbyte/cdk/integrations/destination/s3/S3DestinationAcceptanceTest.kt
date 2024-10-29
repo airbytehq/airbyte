@@ -260,7 +260,10 @@ protected constructor(
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     AirbyteStateMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))),
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                        )
                 ),
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.TRACE)
@@ -579,7 +582,7 @@ protected constructor(
      * unrelated catalog sync data is untouched too.
      */
     @Test
-    fun testOverwriteSyncWithGenerationId() {
+    open fun testOverwriteSyncWithGenerationId() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."

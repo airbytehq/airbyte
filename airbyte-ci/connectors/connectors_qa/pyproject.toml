@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.9.1"
+version = "1.10.0"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
