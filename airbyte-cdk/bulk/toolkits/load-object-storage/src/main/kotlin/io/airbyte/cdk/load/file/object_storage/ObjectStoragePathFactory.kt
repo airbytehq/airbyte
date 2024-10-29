@@ -20,6 +20,17 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+interface PathFactory {
+    fun getStagingDirectory(stream: DestinationStream): Path
+    fun getFinalDirectory(stream: DestinationStream): Path
+    fun getPathToFile(
+        stream: DestinationStream,
+        partNumber: Long?,
+        isStaging: Boolean = false,
+        extension: String? = null
+    ): Path
+}
+
 @Singleton
 @Secondary
 class ObjectStoragePathFactory(
@@ -27,7 +38,7 @@ class ObjectStoragePathFactory(
     formatConfigProvider: ObjectStorageFormatConfigurationProvider? = null,
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
     timeProvider: TimeProvider,
-) {
+) : PathFactory {
     private val loadedAt = timeProvider.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
     private val fileFormatExtension =
@@ -147,7 +158,7 @@ class ObjectStoragePathFactory(
         }
     }
 
-    fun getStagingDirectory(stream: DestinationStream): Path {
+    override fun getStagingDirectory(stream: DestinationStream): Path {
         val prefix =
             pathConfig.stagingPrefix
                 ?: Paths.get(pathConfig.prefix, DEFAULT_STAGING_PREFIX_SUFFIX).toString()
@@ -155,24 +166,26 @@ class ObjectStoragePathFactory(
         return Paths.get(prefix, path)
     }
 
-    fun getFinalDirectory(stream: DestinationStream): Path {
+    override fun getFinalDirectory(stream: DestinationStream): Path {
         val path = getFormattedPath(stream)
         return Paths.get(pathConfig.prefix, path)
     }
 
-    fun getPathToFile(
+    override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean = false,
-        extension: String? = defaultExtension
+        isStaging: Boolean,
+        extension: String?
     ): Path {
+        val extensionResolved = extension ?: defaultExtension
         val path =
             if (isStaging) {
                 getStagingDirectory(stream)
             } else {
                 getFinalDirectory(stream)
             }
-        val context = VariableContext(stream, extension = extension, partNumber = partNumber)
+        val context =
+            VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
         return path.resolve(fileName)
     }

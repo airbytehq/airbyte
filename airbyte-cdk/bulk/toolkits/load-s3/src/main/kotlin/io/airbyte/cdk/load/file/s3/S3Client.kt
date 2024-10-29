@@ -79,6 +79,10 @@ class S3Client(
         return S3Object(toKey, bucketConfig)
     }
 
+    override suspend fun move(key: String, toKey: String): S3Object {
+        return move(S3Object(key, bucketConfig), toKey)
+    }
+
     override suspend fun <R> get(key: String, block: (InputStream) -> R): R {
         val request = GetObjectRequest {
             bucket = bucketConfig.s3BucketName
@@ -92,6 +96,14 @@ class S3Client(
                     )
             block(inputStream)
         }
+    }
+
+    override suspend fun getMetadata(key: String): Map<String, String> {
+        val request = GetObjectRequest {
+            bucket = bucketConfig.s3BucketName
+            this.key = key
+        }
+        return client.getObject(request) { it.metadata ?: emptyMap() }
     }
 
     override suspend fun put(key: String, bytes: ByteArray): S3Object {
@@ -108,6 +120,14 @@ class S3Client(
         val request = DeleteObjectRequest {
             bucket = remoteObject.storageConfig.s3BucketName
             this.key = remoteObject.key
+        }
+        client.deleteObject(request)
+    }
+
+    override suspend fun delete(key: String) {
+        val request = DeleteObjectRequest {
+            bucket = bucketConfig.s3BucketName
+            this.key = key
         }
         client.deleteObject(request)
     }
