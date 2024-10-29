@@ -4,10 +4,9 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-    - graph.facebook.com
+      - graph.facebook.com
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
@@ -37,24 +36,24 @@ data:
           have been removed and new fields have been added for the stream `Page`.
         upgradeDeadline: 2024-04-18
         scopedImpact:
-        - scopeType: stream
-          impactedScopes: ["page"]
+          - scopeType: stream
+            impactedScopes: ["page"]
   tags:
-  - language:manifest-only
-  - cdk:low-code
+    - language:manifest-only
+    - cdk:low-code
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: facebook-pages_config_dev_null
-      id: 4446147a-669a-472b-bda8-6ee069eb3099
-  - suite: unitTests
-    # Disable acceptance tests for now
-    # No/Low cloud usage
-    # - suite: acceptanceTests
-    #   testSecrets:
-    #     - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
-    #       fileName: config.json
-    #       secretStore:
-    #         type: GSM
-    #         alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: facebook-pages_config_dev_null
+          id: 4446147a-669a-472b-bda8-6ee069eb3099
+    - suite: unitTests
+      # Disable acceptance tests for now
+      # No/Low cloud usage
+      # - suite: acceptanceTests
+      #   testSecrets:
+      #     - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
+      #       fileName: config.json
+      #       secretStore:
+      #         type: GSM
+      #         alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
