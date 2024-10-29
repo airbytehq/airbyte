@@ -50,6 +50,7 @@ interface AirbyteSchemaIdentityMapper {
     fun mapTimeTypeWithoutTimezone(schema: TimeTypeWithoutTimezone): AirbyteType = schema
     fun mapTimestampTypeWithTimezone(schema: TimestampTypeWithTimezone): AirbyteType = schema
     fun mapTimestampTypeWithoutTimezone(schema: TimestampTypeWithoutTimezone): AirbyteType = schema
+
     fun mapUnknown(schema: UnknownType): AirbyteType = schema
     fun mapField(field: FieldType): FieldType = FieldType(map(field.type), field.nullable)
 }

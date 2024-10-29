@@ -43,6 +43,7 @@ Steps:
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.2 | 2024-10-28 | [47550](https://github.com/airbytehq/airbyte/pull/47550) | Update dependencies |
 | 0.0.1 | 2024-09-12 | [45427](https://github.com/airbytehq/airbyte/pull/45427) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

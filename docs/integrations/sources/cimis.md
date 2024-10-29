@@ -33,6 +33,7 @@ To get started, register and request your appKey from the [CIMIS website](https:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.2 | 2024-10-28 | [47556](https://github.com/airbytehq/airbyte/pull/47556) | Update dependencies |
 | 0.0.1 | 2024-09-18 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>
