@@ -1,6 +1,4 @@
-# float
-source-float airbyte connector is designed to sync scheduling and resource management data between Float, a leading resource management platform, and external systems. 
-
+# Float
 Float.com enables teams to plan and allocate resources effectively, manage team availability, and track project timelines. This connector automates the data flow between Float and other platforms, ensuring that resource schedules and project plans are up-to-date across all tools you use.
 
 ## Configuration
@@ -8,6 +6,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `access_token` | `string` | Float Access Token. API token obtained from your Float Account Settings page |  |
+| `start_date` | `datetime` | Start Date. | |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -27,7 +26,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | project-tasks | task_meta_id | DefaultPaginator | ✅ |  ❌  |
 | milestones | milestone_id | DefaultPaginator | ✅ |  ❌  |
 | tasks | task_id | DefaultPaginator | ✅ |  ❌  |
-| logged-time | logged_time_id | DefaultPaginator | ✅ |  ❌  |
+| logged-time | logged_time_id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
