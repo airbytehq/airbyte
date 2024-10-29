@@ -27,6 +27,7 @@ logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
+MAX_STREAM_BATCH_SIZE = 50_000
 
 
 def validated_sql_name(sql_name: Any) -> str:
@@ -137,11 +138,14 @@ class DestinationMotherDuck(Destination):
             processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
+        records_buffered = 0
+        records_processed = 0
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
                 self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
                 buffer = defaultdict(lambda: defaultdict(list))
+                records_buffered = 0
 
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
@@ -157,9 +161,18 @@ class DestinationMotherDuck(Destination):
                         buffer[stream_name][column_name].append(data[column_name])
                     elif column_name not in AB_INTERNAL_COLUMNS:
                         buffer[stream_name][column_name].append(None)
+
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
                 buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
+                records_buffered += 1
+                if records_buffered >= MAX_STREAM_BATCH_SIZE:
+                    logger.info(f"Loading {records_buffered:,} from buffer...")
+                    self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                    buffer = defaultdict(lambda: defaultdict(list))
+                    records_processed += records_buffered
+                    records_buffered = 0
+                    logger.info(f"Records loaded successfully. Total records processed: {records_processed:,}")
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
