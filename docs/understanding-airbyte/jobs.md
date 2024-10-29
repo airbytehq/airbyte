@@ -11,9 +11,9 @@ Generally, there are 2 types of workload pods:
 
 
 
-| <div style="width:250px">![](../.gitbook/assets/replication_mono_pod.png) |                              <div style="width:250px">![](../.gitbook/assets/connector_pod.png)                               |
-|:-------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
-| <em>The source, destination and orchestrator all run in a single pod</em> | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em> |
+| <div style="width:250px">![](../.gitbook/assets/replication_mono_pod.png)</div> |<div style="width:250px">![](../.gitbook/assets/connector_pod.png)</div>                               |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------:|
+|    <em>The source, destination and orchestrator all run in a single pod</em>    | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em>  |
 
 ## Airbyte Middleware and Bookkeeping Containers
 
