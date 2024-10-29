@@ -39,6 +39,7 @@ from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
 
+
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
@@ -54,7 +55,7 @@ class PatchedAirbyteStateMessage(AirbyteStateMessage):
 
 
 @dataclass
-class HackedAirbyteMessage(AirbyteMessage):
+class PatchedAirbyteMessage(AirbyteMessage):
     """Keep all defaults but override the type used in `state`."""
 
     state: PatchedAirbyteStateMessage | None = None
@@ -62,7 +63,7 @@ class HackedAirbyteMessage(AirbyteMessage):
 
 
 PatchedAirbyteMessageSerializer: type = Serializer(
-    HackedAirbyteMessage,
+    PatchedAirbyteMessage,
     omit_none=True,
     custom_type_resolver=custom_type_resolver,
 )
