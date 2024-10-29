@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.util.deserializeToNode
 import org.apache.commons.csv.CSVRecord
@@ -63,7 +64,8 @@ class CsvRowToAirbyteValue {
                     .fields()
                     .asSequence()
                     .map { entry ->
-                        entry.key to entry.value.toAirbyteValue(field.properties[entry.key]!!.type)
+                        val type = field.properties[entry.key]?.type ?: UnknownType("unknown")
+                        entry.key to entry.value.toAirbyteValue(type)
                     }
                     .toMap(properties)
                 ObjectValue(properties)
