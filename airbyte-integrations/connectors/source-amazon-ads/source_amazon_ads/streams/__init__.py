@@ -10,11 +10,8 @@ from .attribution_report import (
 from .portfolios import Portfolios
 from .profiles import Profiles
 from .report_streams import (
-    SponsoredBrandsReportStream,
     SponsoredBrandsV3ReportStream,
-    SponsoredBrandsVideoReportStream,
     SponsoredDisplayReportStream,
-    SponsoredDisplayV3ReportStream,
     SponsoredProductsReportStream,
 )
 from .sponsored_brands import (
@@ -64,11 +61,8 @@ __all__ = [
     "SponsoredBrandsAdGroups",
     "SponsoredBrandsKeywords",
     "SponsoredDisplayReportStream",
-    "SponsoredDisplayV3ReportStream",
     "SponsoredProductsReportStream",
-    "SponsoredBrandsReportStream",
     "SponsoredBrandsV3ReportStream",
-    "SponsoredBrandsVideoReportStream",
     "AttributionReportPerformanceAdgroup",
     "AttributionReportPerformanceCampaign",
     "AttributionReportPerformanceCreative",

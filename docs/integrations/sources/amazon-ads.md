@@ -115,8 +115,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 - [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 - [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-- [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
-- [Display V3 Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview)
+- [Display Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview)
 - [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
@@ -139,7 +138,7 @@ Information about expected report generation waiting time can be found [here](ht
 ### Data type map
 
 | Integration Type         | Airbyte Type |
-| :----------------------- | :----------- |
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -154,7 +153,8 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.1.0   | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Add new stream: SponsoredDisplayV3 report                                                                       |
+| 6.0.0   | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3                                          |
+| 5.0.20  | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies                                                                                             |
 | 5.0.19  | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies                                                                                             |
 | 5.0.18  | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies                                                                                             |
 | 5.0.17  | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies                                                                                             |

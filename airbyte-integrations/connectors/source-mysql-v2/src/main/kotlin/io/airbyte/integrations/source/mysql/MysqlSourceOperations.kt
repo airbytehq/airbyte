@@ -1,10 +1,19 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
+import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
+import io.airbyte.cdk.discover.CdcStringMetaFieldType
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
@@ -49,17 +58,65 @@ import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
+import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumOperations
+import io.airbyte.integrations.source.mysql.cdc.MySqlPosition
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class MysqlSourceOperations :
+    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+
+    override val globalCursor: MetaField = MysqlCdcMetaFields.CDC_CURSOR
+
+    override val globalMetaFields: Set<MetaField> =
+        setOf(
+            MysqlCdcMetaFields.CDC_CURSOR,
+            CommonMetaField.CDC_UPDATED_AT,
+            CommonMetaField.CDC_DELETED_AT,
+            MysqlCdcMetaFields.CDC_LOG_FILE,
+            MysqlCdcMetaFields.CDC_LOG_POS
+        )
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {
+        recordData.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
+        )
+        recordData.set<JsonNode>(
+            MysqlCdcMetaFields.CDC_LOG_POS.id,
+            CdcIntegerMetaFieldType.jsonEncoder.encode(0),
+        )
+        if (globalStateValue == null) {
+            return
+        }
+        val debeziumState: DebeziumState =
+            MySqlDebeziumOperations.deserializeDebeziumState(globalStateValue)
+        val position: MySqlPosition = MySqlDebeziumOperations.position(debeziumState.offset)
+        recordData.set<JsonNode>(
+            MysqlCdcMetaFields.CDC_LOG_FILE.id,
+            CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),
+        )
+        recordData.set<JsonNode>(
+            MysqlCdcMetaFields.CDC_LOG_POS.id,
+            CdcIntegerMetaFieldType.jsonEncoder.encode(position.position),
+        )
+    }
+
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
             is SystemType -> leafType(type)

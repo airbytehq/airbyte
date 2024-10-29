@@ -11,212 +11,6 @@ from source_amazon_ads.schemas import Profile
 from source_amazon_ads.streams.report_streams.report_stream_models import RecordType, ReportInfo
 from source_amazon_ads.streams.report_streams.report_streams import ReportStream
 
-METRICS_MAP = {
-    "campaigns": [
-        "campaignName",
-        "campaignId",
-        "impressions",
-        "clicks",
-        "cost",
-        "currency",
-        "attributedConversions1d",
-        "attributedConversions7d",
-        "attributedConversions14d",
-        "attributedConversions30d",
-        "attributedConversions1dSameSKU",
-        "attributedConversions7dSameSKU",
-        "attributedConversions14dSameSKU",
-        "attributedConversions30dSameSKU",
-        "attributedUnitsOrdered1d",
-        "attributedUnitsOrdered7d",
-        "attributedUnitsOrdered14d",
-        "attributedUnitsOrdered30d",
-        "attributedSales1d",
-        "attributedSales7d",
-        "attributedSales14d",
-        "attributedSales30d",
-        "attributedSales1dSameSKU",
-        "attributedSales7dSameSKU",
-        "attributedSales14dSameSKU",
-        "attributedSales30dSameSKU",
-        "attributedOrdersNewToBrand14d",
-        "attributedSalesNewToBrand14d",
-        "attributedUnitsOrderedNewToBrand14d",
-        "costType",
-        "campaignBudget",
-        "campaignStatus",
-        "attributedBrandedSearches14d",
-        "attributedDetailPageView14d",
-        "viewAttributedBrandedSearches14d",
-        "viewAttributedConversions14d",
-        "viewAttributedDetailPageView14d",
-        "viewAttributedOrdersNewToBrand14d",
-        "viewAttributedSales14d",
-        "viewAttributedSalesNewToBrand14d",
-        "viewAttributedUnitsOrdered14d",
-        "viewAttributedUnitsOrderedNewToBrand14d",
-        "viewImpressions",
-    ],
-    "adGroups": [
-        "campaignName",
-        "campaignId",
-        "adGroupName",
-        "adGroupId",
-        "impressions",
-        "clicks",
-        "cost",
-        "currency",
-        "attributedConversions1d",
-        "attributedConversions7d",
-        "attributedConversions14d",
-        "attributedConversions30d",
-        "attributedConversions1dSameSKU",
-        "attributedConversions7dSameSKU",
-        "attributedConversions14dSameSKU",
-        "attributedConversions30dSameSKU",
-        "attributedUnitsOrdered1d",
-        "attributedUnitsOrdered7d",
-        "attributedUnitsOrdered14d",
-        "attributedUnitsOrdered30d",
-        "attributedSales1d",
-        "attributedSales7d",
-        "attributedSales14d",
-        "attributedSales30d",
-        "attributedSales1dSameSKU",
-        "attributedSales7dSameSKU",
-        "attributedSales14dSameSKU",
-        "attributedSales30dSameSKU",
-        "attributedOrdersNewToBrand14d",
-        "attributedUnitsOrderedNewToBrand14d",
-        "attributedBrandedSearches14d",
-        "attributedDetailPageView14d",
-        "bidOptimization",
-        "viewAttributedBrandedSearches14d",
-        "viewAttributedConversions14d",
-        "viewAttributedDetailPageView14d",
-        "viewAttributedOrdersNewToBrand14d",
-        "viewAttributedSales14d",
-        "viewAttributedSalesNewToBrand14d",
-        "viewAttributedUnitsOrdered14d",
-        "viewAttributedUnitsOrderedNewToBrand14d",
-        "viewImpressions",
-    ],
-    "productAds": [
-        "campaignName",
-        "campaignId",
-        "adGroupName",
-        "adGroupId",
-        "asin",
-        "sku",  # Available for seller accounts only.
-        "adId",
-        "impressions",
-        "clicks",
-        "cost",
-        "currency",
-        "attributedConversions1d",
-        "attributedConversions7d",
-        "attributedConversions14d",
-        "attributedConversions30d",
-        "attributedConversions1dSameSKU",
-        "attributedConversions7dSameSKU",
-        "attributedConversions14dSameSKU",
-        "attributedConversions30dSameSKU",
-        "attributedUnitsOrdered1d",
-        "attributedUnitsOrdered7d",
-        "attributedUnitsOrdered14d",
-        "attributedUnitsOrdered30d",
-        "attributedSales1d",
-        "attributedSales7d",
-        "attributedSales14d",
-        "attributedSales30d",
-        "attributedSales1dSameSKU",
-        "attributedSales7dSameSKU",
-        "attributedSales14dSameSKU",
-        "attributedSales30dSameSKU",
-        "attributedOrdersNewToBrand14d",
-        "attributedSalesNewToBrand14d",
-        "attributedUnitsOrderedNewToBrand14d",
-        "attributedBrandedSearches14d",
-        "attributedDetailPageView14d",
-        "viewAttributedBrandedSearches14d",
-        "viewAttributedConversions14d",
-        "viewAttributedDetailPageView14d",
-        "viewAttributedOrdersNewToBrand14d",
-        "viewAttributedSales14d",
-        "viewAttributedSalesNewToBrand14d",
-        "viewAttributedUnitsOrdered14d",
-        "viewAttributedUnitsOrderedNewToBrand14d",
-        "viewImpressions",
-    ],
-    "targets": [
-        "campaignName",
-        "campaignId",
-        "adGroupName",
-        "adGroupId",
-        "targetId",
-        "targetingExpression",
-        "targetingText",
-        "targetingType",
-        "impressions",
-        "clicks",
-        "cost",
-        "currency",
-        "attributedConversions1d",
-        "attributedConversions7d",
-        "attributedConversions14d",
-        "attributedConversions30d",
-        "attributedConversions1dSameSKU",
-        "attributedConversions7dSameSKU",
-        "attributedConversions14dSameSKU",
-        "attributedConversions30dSameSKU",
-        "attributedUnitsOrdered1d",
-        "attributedUnitsOrdered7d",
-        "attributedUnitsOrdered14d",
-        "attributedUnitsOrdered30d",
-        "attributedSales1d",
-        "attributedSales7d",
-        "attributedSales14d",
-        "attributedSales30d",
-        "attributedSales1dSameSKU",
-        "attributedSales7dSameSKU",
-        "attributedSales14dSameSKU",
-        "attributedSales30dSameSKU",
-        "attributedOrdersNewToBrand14d",
-        "attributedSalesNewToBrand14d",
-        "attributedUnitsOrderedNewToBrand14d",
-        "attributedBrandedSearches14d",
-        "attributedDetailPageView14d",
-        "viewAttributedBrandedSearches14d",
-        "viewAttributedConversions14d",
-        "viewAttributedDetailPageView14d",
-        "viewAttributedOrdersNewToBrand14d",
-        "viewAttributedSales14d",
-        "viewAttributedSalesNewToBrand14d",
-        "viewAttributedUnitsOrdered14d",
-        "viewAttributedUnitsOrderedNewToBrand14d",
-        "viewImpressions",
-    ],
-    "asins": [
-        "campaignName",
-        "campaignId",
-        "adGroupName",
-        "adGroupId",
-        "asin",
-        "otherAsin",
-        "sku",  # Available for seller accounts only.
-        "currency",
-        "attributedUnitsOrdered1dOtherSKU",
-        "attributedUnitsOrdered7dOtherSKU",
-        "attributedUnitsOrdered14dOtherSKU",
-        "attributedUnitsOrdered30dOtherSKU",
-        "attributedSales1dOtherSKU",
-        "attributedSales7dOtherSKU",
-        "attributedSales14dOtherSKU",
-        "attributedSales30dOtherSKU",
-    ],
-}
-
-
 METRICS_MAP_V3 = {
     "campaigns": [
         "addToCart",
@@ -484,7 +278,7 @@ METRICS_MAP_V3 = {
         "viewabilityRate",
         "viewClickThroughRate",
     ],  # 'date',
-    "asin": [
+    "asins": [
         "adGroupId",
         "adGroupName",
         "asinBrandHalo",
@@ -516,36 +310,8 @@ METRICS_MAP_V3 = {
 
 METRICS_TYPE_TO_ID_MAP = {"campaigns": "campaignId", "adGroups": "adGroupId", "productAds": "adId", "targets": "targetId", "asins": "asin"}
 
-TACTICS = ["T00020", "T00030"]
-
 
 class SponsoredDisplayReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports
-    """
-
-    def report_init_endpoint(self, record_type: str) -> str:
-        return f"/sd/{record_type}/report"
-
-    metrics_map = METRICS_MAP
-    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
-
-    def _get_init_report_body(self, report_date: str, record_type: str, profile):
-        for tactic in TACTICS:
-            metrics_list = self.metrics_map[record_type]
-            if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
-                return None
-            elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
-                # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
-                metrics_list = [m for m in metrics_list if m != "sku"]
-            yield {
-                "reportDate": report_date,
-                "tactic": tactic,
-                "metrics": ",".join(metrics_list),
-            }
-
-
-class SponsoredDisplayV3ReportStream(ReportStream):
     """
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports
     """
@@ -587,14 +353,13 @@ class SponsoredDisplayV3ReportStream(ReportStream):
             reportTypeId = "sdAdvertisedProduct"
             group_by = ["advertiser"]
 
-        elif record_type == "asin":
+        elif record_type == "asins":
             reportTypeId = "sdPurchasedProduct"
             group_by = ["asin"]
 
         elif record_type == "keywords" or record_type == "targets":
             group_by = ["targeting"]
             reportTypeId = "sdTargeting"
-            # filters = [{"field": "keywordType", "values": ["TARGETING_EXPRESSION", "TARGETING_EXPRESSION_PREDEFINED"]}]
 
             if record_type == "keywords":
                 filters = [{"field": "keywordType", "values": ["BROAD", "PHRASE", "EXACT"]}]
@@ -602,7 +367,7 @@ class SponsoredDisplayV3ReportStream(ReportStream):
         body = {
             "name": f"{record_type} report {report_date}",
             "startDate": report_date,
-            "endDate": report_date,  # pendulum.today().to_date_string(),
+            "endDate": report_date,
             "configuration": {
                 "adProduct": self.ad_product,
                 "groupBy": group_by,
