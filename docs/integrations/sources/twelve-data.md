@@ -12,7 +12,7 @@ Docs : https://twelvedata.com/docs
 | `country` | `string` | Country. Where instrument is traded |  |
 | `exchange` | `string` | Exchange. Where instrument is traded |  |
 | `symbol` | `string` | Symbol. Ticker of the instrument |  |
-| `interval` | `string` | Interval. Between two consecutive points in time series Supports: 1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month |  |
+| `interval` | `enum` | Interval. Between two consecutive points in time series Supports: 1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -36,11 +36,6 @@ Docs : https://twelvedata.com/docs
 | Price |  | No pagination | ✅ |  ❌  |
 | EOD Price |  | No pagination | ✅ |  ❌  |
 | Mutual Funds | symbol | No pagination | ✅ |  ❌  |
-| MFs Family List |  | No pagination | ✅ |  ❌  |
-| MFs Type List |  | No pagination | ✅ |  ❌  |
-| ETFs List |  | No pagination | ✅ |  ❌  |
-| ETFs Family |  | No pagination | ✅ |  ❌  |
-| ETFs Type List |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
