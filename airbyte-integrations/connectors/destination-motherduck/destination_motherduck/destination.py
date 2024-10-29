@@ -126,41 +126,15 @@ class DestinationMotherDuck(Destination):
         path = self._get_destination_path(path)
         schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+        processor = self._get_sql_processor(
+            configured_catalog=configured_catalog,
+            schema_name=schema_name,
+            db_path=path,
+            motherduck_token=motherduck_api_key,
+        )
 
         for configured_stream in configured_catalog.streams:
-            stream_name = configured_stream.stream.name
-            # TODO: we're calling private methods on processor, should move this to write_stream_data or similar
-            processor = self._get_sql_processor(
-                configured_catalog=configured_catalog,
-                schema_name=schema_name,
-                db_path=path,
-                motherduck_token=motherduck_api_key,
-            )
-            processor._ensure_schema_exists()
-
-            table_name = processor.normalizer.normalize(stream_name)
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                # delete the tables
-                logger.info(f"Dropping tables for overwrite: {table_name}")
-
-                processor._drop_temp_table(table_name, if_exists=True)
-
-            # Get the SQL column definitions
-            sql_columns = processor._get_sql_column_definitions(stream_name)
-            column_definition_str = ",\n                ".join(
-                f"{self._quote_identifier(column_name)} {sql_type}" for column_name, sql_type in sql_columns.items()
-            )
-
-            # create the table if needed
-            catalog_provider = CatalogProvider(configured_catalog)
-            primary_keys = catalog_provider.get_primary_keys(stream_name)
-            processor._create_table_if_not_exists(
-                table_name=table_name,
-                column_definition_str=column_definition_str,
-                primary_keys=primary_keys,
-            )
-
-            processor._ensure_compatible_table_schema(stream_name=stream_name, table_name=table_name)
+            processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
         for message in input_messages:
@@ -178,7 +152,7 @@ class DestinationMotherDuck(Destination):
                     continue
                 # add to buffer
                 record_meta: dict[str, str] = {}
-                for column_name in sql_columns:
+                for column_name in processor._get_sql_column_definitions(stream_name):
                     if column_name in data:
                         buffer[stream_name][column_name].append(data[column_name])
                     elif column_name not in AB_INTERNAL_COLUMNS:

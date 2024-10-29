@@ -263,6 +263,36 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             return new_table_name
         return table_name
 
+    def _ensure_table_exists(self, stream_name: str, table_name: str, sync_mode: DestinationSyncMode) -> None:
+        if sync_mode == DestinationSyncMode.overwrite:
+            # delete the tables
+            logger.info(f"Dropping tables for overwrite: {table_name}")
+
+            self._drop_temp_table(table_name, if_exists=True)
+
+        # Get the SQL column definitions
+        sql_columns = self._get_sql_column_definitions(stream_name)
+        column_definition_str = ",\n                ".join(
+            f"{self._quote_identifier(column_name)} {sql_type}" for column_name, sql_type in sql_columns.items()
+        )
+
+        # create the table if needed
+        primary_keys = self.catalog_provider.get_primary_keys(stream_name)
+        self._create_table_if_not_exists(
+            table_name=table_name,
+            column_definition_str=column_definition_str,
+            primary_keys=primary_keys,
+        )
+
+    def prepare_stream_table(self, stream_name: str, sync_mode: DestinationSyncMode) -> None:
+        """
+        Ensure schema and table exist, create any missing columns
+        """
+        self._ensure_schema_exists()
+        table_name = self.normalizer.normalize(stream_name)
+        self._ensure_table_exists(stream_name=stream_name, table_name=table_name, sync_mode=sync_mode)
+        self._ensure_compatible_table_schema(stream_name=stream_name, table_name=table_name)
+
     def write_stream_data_from_buffer(
         self,
         buffer: Dict[str, Dict[str, List[Any]]],

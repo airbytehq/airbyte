@@ -98,6 +98,11 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rand_string}"
 
 
+@pytest.fixture(scope="module")
+def other_test_table_name(test_table_name) -> str:
+    return test_table_name + "_other"
+
+
 @pytest.fixture
 def test_large_table_name() -> str:
     letters = string.ascii_lowercase
@@ -118,10 +123,24 @@ def table_schema() -> str:
 
 
 @pytest.fixture
+def other_table_schema() -> str:
+    schema = {
+        "type": "object",
+        "properties": {
+            "key3": {"type": ["null", "string"]},
+            "key4": {"type": ["null", "string"]},
+        },
+    }
+    return schema
+
+
+@pytest.fixture
 def configured_catalogue(
     test_table_name: str,
+    other_test_table_name: str,
     test_large_table_name: str,
     table_schema: str,
+    other_table_schema: str,
 ) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -133,6 +152,16 @@ def configured_catalogue(
         destination_sync_mode=DestinationSyncMode.append,
         primary_key=[["key1"]],
     )
+    other_append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=other_test_table_name,
+            json_schema=other_table_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+        primary_key=[["key3"]],
+    )
     append_stream_large = ConfiguredAirbyteStream(
         stream=AirbyteStream(
             name=test_large_table_name,
@@ -143,7 +172,7 @@ def configured_catalogue(
         destination_sync_mode=DestinationSyncMode.append,
         primary_key=[["key1"]],
     )
-    return ConfiguredAirbyteCatalog(streams=[append_stream, append_stream_large])
+    return ConfiguredAirbyteCatalog(streams=[append_stream, other_append_stream, append_stream_large])
 
 
 @pytest.fixture
@@ -227,6 +256,34 @@ def airbyte_message3():
     )
 
 
+@pytest.fixture
+def airbyte_message4(other_test_table_name: str):
+    fake = Faker()
+    Faker.seed(0)
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=other_test_table_name,
+            data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
+@pytest.fixture
+def airbyte_message5(other_test_table_name: str):
+    fake = Faker()
+    Faker.seed(1)
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=other_test_table_name,
+            data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
 @pytest.mark.disable_autouse
 def test_check_fails(invalid_config, request):
     destination = DestinationMotherDuck()
@@ -254,14 +311,23 @@ def test_write(
     airbyte_message1: AirbyteMessage,
     airbyte_message2: AirbyteMessage,
     airbyte_message3: AirbyteMessage,
+    airbyte_message4: AirbyteMessage,
+    airbyte_message5: AirbyteMessage,
     test_table_name: str,
     test_schema_name: str,
+    test_large_table_name: str,
 ):
     destination = DestinationMotherDuck()
     generator = destination.write(
         config,
         configured_catalogue,
-        [airbyte_message1, airbyte_message2, airbyte_message3],
+        [
+            airbyte_message1,
+            airbyte_message2,
+            airbyte_message3,
+            airbyte_message4,
+            airbyte_message5
+        ],
     )
 
     result = list(generator)
