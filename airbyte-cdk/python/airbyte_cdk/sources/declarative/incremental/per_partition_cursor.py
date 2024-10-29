@@ -40,7 +40,7 @@ class PerPartitionCursor(DeclarativeCursor):
     This approach avoids unnecessary switching to a global cursor due to temporary spikes in partition counts, ensuring that switching is only done when a sustained high number of partitions is observed.
     """
 
-    DEFAULT_MAX_PARTITIONS_NUMBER = 10000
+    DEFAULT_MAX_PARTITIONS_NUMBER = 2
     _NO_STATE: Mapping[str, Any] = {}
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
