@@ -41,6 +41,7 @@ Please read [How to get your APIs credentials](https://docs.dremio.com/software/
 
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
+| 0.2.1 | 2024-10-28 | [47633](https://github.com/airbytehq/airbyte/pull/47633) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44415](https://github.com/airbytehq/airbyte/pull/44415) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-17 | [44311](https://github.com/airbytehq/airbyte/pull/44311) | Update dependencies |
 | 0.1.14 | 2024-08-12 | [43785](https://github.com/airbytehq/airbyte/pull/43785) | Update dependencies |

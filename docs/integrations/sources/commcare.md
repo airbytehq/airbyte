@@ -40,6 +40,7 @@ The Commcare source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.21 | 2024-10-28 | [46795](https://github.com/airbytehq/airbyte/pull/46795) | Update dependencies |
 | 0.1.20 | 2024-10-05 | [46413](https://github.com/airbytehq/airbyte/pull/46413) | Update dependencies |
 | 0.1.19 | 2024-09-28 | [46163](https://github.com/airbytehq/airbyte/pull/46163) | Update dependencies |
 | 0.1.18 | 2024-09-21 | [45758](https://github.com/airbytehq/airbyte/pull/45758) | Update dependencies |

@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.17.0
+Add Per Partition with Global fallback Cursor 
+
 ## 5.16.0
 Better structured error log messages in connector_builder module, with message / internal_message / stacktrace split into separate fields
 

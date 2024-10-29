@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
@@ -14,6 +15,7 @@ import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.util.concurrent.ConcurrentHashMap
@@ -31,10 +33,12 @@ class MysqlJdbcPartitionFactory(
         MysqlJdbcPartition,
     > {
 
-    private val streamStates = ConcurrentHashMap<String, DefaultJdbcStreamState>()
+    private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
-    override fun streamState(stream: Stream): DefaultJdbcStreamState =
-        streamStates.getOrPut(stream.label) { DefaultJdbcStreamState(sharedState, stream) }
+    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
+        streamStates.getOrPut(streamFeedBootstrap.feed.id) {
+            DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
+        }
 
     private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
@@ -103,14 +107,11 @@ class MysqlJdbcPartitionFactory(
      *      ii. In cursor read phase, use cursor incremental.
      * ```
      */
-    override fun create(
-        stream: Stream,
-        opaqueStateValue: OpaqueStateValue?,
-    ): MysqlJdbcPartition? {
-        val streamState: DefaultJdbcStreamState = streamState(stream)
-        if (opaqueStateValue == null) {
-            return coldStart(streamState)
-        }
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
+        val stream: Stream = streamFeedBootstrap.feed
+        val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
+        val opaqueStateValue: OpaqueStateValue =
+            streamFeedBootstrap.currentState ?: return coldStart(streamState)
 
         val isCursorBasedIncremental: Boolean =
             stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&

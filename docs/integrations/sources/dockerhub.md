@@ -39,7 +39,8 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.2 | 2024-10-28 | [47664](https://github.com/airbytehq/airbyte/pull/47664) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44155](https://github.com/airbytehq/airbyte/pull/44155) | Refactor connector to manifest-only format |
 | 0.2.15 | 2024-08-10 | [43670](https://github.com/airbytehq/airbyte/pull/43670) | Update dependencies |
 | 0.2.14 | 2024-08-03 | [43145](https://github.com/airbytehq/airbyte/pull/43145) | Update dependencies |
