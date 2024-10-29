@@ -38,6 +38,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.2 | 2024-10-29 | [47791](https://github.com/airbytehq/airbyte/pull/47791) | Update dependencies |
 | 0.3.1 | 2024-10-08 | [46652](https://github.com/airbytehq/airbyte/pull/46652) | Fix longitude regex matching |
 | 0.3.0 | 2024-08-26 | [44772](https://github.com/airbytehq/airbyte/pull/44772) | Refactor connector to manifest-only format |
 | 0.2.17 | 2024-08-24 | [44725](https://github.com/airbytehq/airbyte/pull/44725) | Update dependencies |
