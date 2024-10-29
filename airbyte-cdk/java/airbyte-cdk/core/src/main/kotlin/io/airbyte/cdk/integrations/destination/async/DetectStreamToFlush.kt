@@ -65,12 +65,12 @@ internal constructor(
      */
     @VisibleForTesting
     fun computeQueueThreshold(): Long {
-        val isBuffer90Full =
-            EAGER_FLUSH_THRESHOLD <=
-                bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
+        // val isBuffer90Full =
+        //     EAGER_FLUSH_THRESHOLD <=
+        //         bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
         // when we are closing or queues are very full, flush regardless of how few items are in the
         // queue.
-        return if (isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
+        return 0// if (isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
     }
 
     // todo (cgardens) - improve prioritization by getting a better estimate of how much data
@@ -105,7 +105,7 @@ internal constructor(
                     "${isTimeTriggeredResult.second} , ${isSizeTriggeredResult.second}"
             logger.debug { "computed: $debugString" }
 
-            if (isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
+            if (true) {// isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
                 logger.info { "flushing: $debugString" }
                 latestFlushTimeMsPerStream[stream] = nowProvider.millis()
                 return Optional.of(stream)
