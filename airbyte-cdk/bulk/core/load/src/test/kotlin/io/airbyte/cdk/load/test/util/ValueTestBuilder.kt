@@ -10,26 +10,28 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import java.util.UUID
 
-data class ValueTestBuilder(
+@Suppress("UNCHECKED_CAST")
+data class ValueTestBuilder<T : SchemaRecordBuilderType>(
     private val inputValues: ObjectValue = ObjectValue(linkedMapOf()),
     private val expectedValues: ObjectValue = ObjectValue(linkedMapOf()),
-    private val schemaTestBuilder: SchemaTestBuilder = SchemaTestBuilder(),
-    private val parent: ValueTestBuilder? = null
+    private val schemaRecordBuilder: T = SchemaRecordBuilder<Root>() as T,
+    private val parent: ValueTestBuilder<*>? = null
 ) {
     fun with(
         inputValue: AirbyteValue,
         inputSchema: AirbyteType,
         expectedValue: AirbyteValue = inputValue,
         nameOverride: String? = null
-    ): ValueTestBuilder {
+    ): ValueTestBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         inputValues.values[name] = inputValue
         expectedValues.values[name] = expectedValue
-        schemaTestBuilder.with(inputSchema, nameOverride = name)
+        (schemaRecordBuilder as SchemaRecordBuilder<*>).with(inputSchema, nameOverride = name)
         return this
     }
 
-    fun withRecord(): ValueTestBuilder {
+    @Suppress("UNCHECKED_CAST")
+    fun withRecord(): ValueTestBuilder<T> {
         val name = UUID.randomUUID().toString()
         val inputRecord = ObjectValue(linkedMapOf())
         val outputRecord = ObjectValue(linkedMapOf())
@@ -38,22 +40,34 @@ data class ValueTestBuilder(
         return ValueTestBuilder(
             inputValues = inputRecord,
             expectedValues = outputRecord,
-            schemaTestBuilder = schemaTestBuilder.withRecord(nameOverride = name),
+            schemaRecordBuilder =
+                ((schemaRecordBuilder as SchemaRecordBuilder<*>).withRecord(nameOverride = name)
+                    as T),
             parent = this
         )
     }
 
-    fun endRecord(): ValueTestBuilder {
+    @Suppress("UNCHECKED_CAST")
+    fun endRecord(): ValueTestBuilder<T> {
         if (parent == null) {
             throw IllegalStateException("Cannot end record without parent")
         }
-        return parent.copy(schemaTestBuilder = schemaTestBuilder.endRecord())
+        return ValueTestBuilder(
+            parent.inputValues,
+            parent.expectedValues,
+            ((schemaRecordBuilder as SchemaRecordBuilder<*>).endRecord() as T),
+            parent.parent
+        )
     }
 
     fun build(): Triple<ObjectValue, ObjectType, ObjectValue> {
         if (parent != null) {
             throw IllegalStateException("Cannot build nested schema")
         }
-        return Triple(inputValues, schemaTestBuilder.build().first, expectedValues)
+        return Triple(
+            inputValues,
+            (schemaRecordBuilder as SchemaRecordBuilder<*>).build().first,
+            expectedValues
+        )
     }
 }
