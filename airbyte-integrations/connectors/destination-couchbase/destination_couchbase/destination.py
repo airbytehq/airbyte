@@ -305,52 +305,57 @@ class DestinationCouchbase(Destination):
         Handles nullable fields in schema validation.
         """
         try:
-            # Modify schema to allow null values for string fields if they're not marked as required
-            schema = stream_config['schema'].copy()
+            # Make a deep copy of the schema to avoid modifying the original
+            schema = json.loads(json.dumps(stream_config['schema']))
+
+            # Modify schema to allow null values for string fields
             if 'properties' in schema:
+                required_fields = set(schema.get('required', []))
                 for prop_name, prop_schema in schema['properties'].items():
-                    if (prop_schema.get('type') == 'string' and 
-                        'required' in schema and 
-                        prop_name not in schema['required']):
+                    if (isinstance(prop_schema, dict) and
+                        prop_schema.get('type') == 'string' and
+                        prop_name not in required_fields):
                         # Allow null for optional string fields
                         prop_schema['type'] = ['string', 'null']
 
+            # Clean null values in the data before validation
+            cleaned_data = record.data.copy()
+            for field_name, field_value in record.data.items():
+                if (field_name in schema.get('properties', {}) and 
+                    field_value is None and 
+                    field_name not in schema.get('required', [])):
+                    # Convert null to empty string for non-required string fields
+                    if schema['properties'][field_name].get('type') in ['string', ['string', 'null']]:
+                        cleaned_data[field_name] = ''
+
             # Validate record against modified schema
             try:
-                validate(instance=record.data, schema=schema)
+                validate(instance=cleaned_data, schema=schema)
             except ValidationError as e:
-                # Log validation error details for debugging
-                logger.debug(f"Validation error details for {record.stream}: {str(e)}")
+                logger.debug(f"Validation error details for {record.stream}:")
+                logger.debug(f"Error: {str(e)}")
                 logger.debug(f"Failed property: {e.path}")
                 logger.debug(f"Schema: {e.schema}")
                 logger.debug(f"Instance: {e.instance}")
                 
-                # For non-required fields, try to clean the data instead of failing
-                if e.validator == 'type' and isinstance(e.instance, type(None)):
-                    cleaned_data = record.data.copy()
-                    current = cleaned_data
-                    # Navigate to the parent of the failing field
-                    for path_part in e.path[:-1]:
-                        current = current[path_part]
-                    # If the field is not required, set it to an empty string instead of null
-                    if e.path[-1] not in schema.get('required', []):
-                        current[e.path[-1]] = ''
-                        logger.info(f"Converted null to empty string for non-required field '{e.path[-1]}' in stream {record.stream}")
-                        record = record.copy()
-                        record.data = cleaned_data
-                    else:
-                        # If it's a required field, we should fail
+                # If it's a required field, raise the error
+                if isinstance(e.path, list) and len(e.path) > 0:
+                    field_name = e.path[-1]
+                    if field_name in schema.get('required', []):
                         raise
                 else:
                     raise
+                
+                # For non-required fields, continue with the cleaned data
+                logger.info(f"Proceeding with cleaned data for stream {record.stream}")
             
             # Generate document ID based on sync mode
             if stream_config['sync_mode'] == DestinationSyncMode.append_dedup and stream_config['primary_key']:
-                doc_id = self._generate_primary_key_id(record.data, stream_config['primary_key'], record.stream)
+                doc_id = self._generate_primary_key_id(cleaned_data, stream_config['primary_key'], record.stream)
             elif stream_config['sync_mode'] == DestinationSyncMode.append:
                 doc_id = f"{record.stream}::{str(uuid4())}"
             else:  # DestinationSyncMode.overwrite
-                doc_id = (self._generate_primary_key_id(record.data, stream_config['primary_key'], record.stream) 
+                doc_id = (self._generate_primary_key_id(cleaned_data, stream_config['primary_key'], record.stream) 
                         if stream_config['primary_key'] 
                         else f"{record.stream}::{str(uuid4())}")
 
@@ -360,7 +365,7 @@ class DestinationCouchbase(Destination):
                 "type": "airbyte_record",
                 "stream": record.stream,
                 "emitted_at": record.emitted_at,
-                "data": record.data,
+                "data": cleaned_data,
                 "_ab_sync_mode": str(stream_config['sync_mode'])
             }
 
@@ -374,6 +379,28 @@ class DestinationCouchbase(Destination):
         except Exception as e:
             logger.error(f"Error preparing record for stream {record.stream}: {str(e)}")
             raise
+
+    def _clean_null_values(self, data: Mapping[str, Any], schema: Mapping[str, Any]) -> Dict[str, Any]:
+        """
+        Recursively clean null values in the data according to the schema.
+        """
+        cleaned = {}
+        for key, value in data.items():
+            if value is None:
+                if key in schema.get('required', []):
+                    cleaned[key] = value  # Keep null for required fields
+                else:
+                    prop_schema = schema.get('properties', {}).get(key, {})
+                    if prop_schema.get('type') == 'string':
+                        cleaned[key] = ''  # Convert null to empty string for optional string fields
+                    else:
+                        cleaned[key] = value  # Keep null for non-string fields
+            elif isinstance(value, dict) and key in schema.get('properties', {}):
+                # Recursively clean nested objects
+                cleaned[key] = self._clean_null_values(value, schema['properties'][key])
+            else:
+                cleaned[key] = value
+        return cleaned
 
     def _generate_primary_key_id(
         self,
