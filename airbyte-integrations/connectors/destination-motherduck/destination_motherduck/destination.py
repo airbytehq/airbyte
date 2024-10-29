@@ -14,14 +14,7 @@ from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteStateStats,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateStats, ConfiguredAirbyteCatalog, Status, Type
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
