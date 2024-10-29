@@ -173,6 +173,7 @@ class DestinationMotherDuck(Destination):
             elif message.type == Type.RECORD and message.record is not None:
                 data = message.record.data
                 stream_name = message.record.stream
+                sql_columns = processor._get_sql_column_definitions(stream_name)
                 if stream_name not in streams:
                     logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
