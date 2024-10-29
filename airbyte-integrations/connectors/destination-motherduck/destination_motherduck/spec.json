@@ -16,7 +16,7 @@
       "destination_path": {
         "title": "Destination DB",
         "type": "string",
-        "description": "Path to the .duckdb file, or the text 'md:' to connect to MotherDuck. The file will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/duckdb\">docs</a>",
+        "description": "Path to the .duckdb file, or the text 'md:' to connect to MotherDuck. The file will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/motherduck\">docs</a>",
         "examples": ["/local/destination.duckdb", "md:", "motherduck:"],
         "default": "md:"
       },
