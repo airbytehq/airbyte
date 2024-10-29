@@ -1,5 +1,10 @@
 # JustSift
-Airbyte connector for JustSift can help you sync data from the JustSift API
+Airbyte connector for [JustSift](https://www.justsift.com/) can help you sync data from the JustSift API.
+
+Sift empowers team members to discover and benefit from the massive knowledge base that is their entire workforce. If knowledge is power, Sift gives organizations superpowers.
+
+As team members, we're empowered, collaborative, and excited to learn new things. Most of all, we look forward to you joining us as we continue building for the organization of tomorrow, today.
+Wonderi
 
 ## Configuration
 
