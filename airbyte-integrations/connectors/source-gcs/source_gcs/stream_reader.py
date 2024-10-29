@@ -53,8 +53,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             raise ValueError("Source config is missing; cannot create the GCS client.")
         if self._gcs_client is None:
             credentials = self._get_credentials()
-            # using default project to avoid getting project from env
-            self._gcs_client = storage.Client(project="default", credentials=credentials)
+            # using default project to avoid getting project from env, applies only for OAuth creds
+            project = getattr(credentials, "project_id", "default")
+            self._gcs_client = storage.Client(project=project, credentials=credentials)
         return self._gcs_client
 
     def _get_credentials(self):
