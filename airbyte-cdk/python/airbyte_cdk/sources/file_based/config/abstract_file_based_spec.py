@@ -34,7 +34,9 @@ class AbstractFileBasedSpec(BaseModel):
         order=10,
     )
 
-    use_file_transfer: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
+    use_file_transfer: bool = Field(
+        title="File Sync (Experimental)", description="Enable file-based bulk load", default=False, airbyte_hidden=True
+    )
 
     @classmethod
     @abstractmethod
