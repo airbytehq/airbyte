@@ -13,18 +13,18 @@ Synchronizes Bunny data
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | accounts | id | DefaultPaginator | ✅ |  ❌  |
-| account_balances | id | DefaultPaginator | ✅ |  ❌  |
+| accountBalances | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | DefaultPaginator | ✅ |  ❌  |
 | entities | id | DefaultPaginator | ✅ |  ❌  |
 | invoices | id | DefaultPaginator | ✅ |  ❌  |
-| invoice_items | id | DefaultPaginator | ✅ |  ❌  |
+| invoiceItems | id | DefaultPaginator | ✅ |  ❌  |
 | payments | id | DefaultPaginator | ✅ |  ❌  |
 | products | id | DefaultPaginator | ✅ |  ❌  |
 | plans | id | DefaultPaginator | ✅ |  ❌  |
 | quotes | id | DefaultPaginator | ✅ |  ❌  |
 | quote_charges | id | DefaultPaginator | ✅ |  ❌  |
 | subscriptions | id | DefaultPaginator | ✅ |  ❌  |
-| subscription_charges | id | DefaultPaginator | ✅ |  ❌  |
+| subscriptionCharges | id | DefaultPaginator | ✅ |  ❌  |
 | transactions | id | DefaultPaginator | ✅ |  ❌  |
 | tenants | id | DefaultPaginator | ✅ |  ❌  |
 

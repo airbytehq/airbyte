@@ -8,18 +8,18 @@ check:
   type: CheckStream
   stream_names:
     - accounts
-    - account_balances
+    - accountBalances
     - contacts
     - entities
     - invoices
-    - invoice_items
+    - invoiceItems
     - payments
     - products
     - plans
     - quotes
     - quote_charges
     - subscriptions
-    - subscription_charges
+    - subscriptionCharges
     - transactions
     - tenants
 
@@ -50,8 +50,9 @@ definitions:
             query: >-
               query($after: String) { plans(first: 10, after: $after) { nodes {
               id               addon basePrice code contactUsLabel contactUsUrl
-              description internalNotes isVisible position pricingDescription
-              selfServiceBuy selfServiceCancel selfServiceRenew } pageInfo {
+              createdAt description id internalNotes isVisible name position
+              pricingDescription productId productPlanName selfServiceBuy
+              selfServiceCancel selfServiceRenew updatedAt } pageInfo {
               startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
@@ -92,12 +93,13 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { quotes(first: 10, after: $after) { nodes {
-              id               acceptedByName acceptedByTitle amountDue
-              applicationDate backdatedPeriods backdatedQuote billingDay
-              contactId credits dealId discount evergreen id message name
-              netPaymentDays notes number ownerId payableId periodAmount
-              poNumber smallUnitAmountDue splitInvoice taxCode } pageInfo {
-              startCursor endCursor hasNextPage hasPreviousPage } } } 
+              id               acceptedByName acceptedByTitle accountId amount
+              amountDue applicationDate backdatedPeriods backdatedQuote
+              billingDay contactId createdAt credits currencyId dealId discount
+              discountValue evergreen id message name netPaymentDays notes
+              number ownerId payableId periodAmount poNumber smallUnitAmountDue
+              splitInvoice subtotal taxAmount taxCode updatedAt uuid } pageInfo
+              { startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -137,10 +139,11 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { tenants(first: 10, after: $after) { nodes
-              { id               code lastLogin latestProvisioningChangeId
-              provisioningRequired provisioningState subdomain userCount
-              utilizationMetrics } pageInfo { startCursor endCursor hasNextPage
-              hasPreviousPage } } } 
+              { id               accountId code createdAt id lastLogin
+              latestProvisioningChangeId name platformId provisioningRequired
+              provisioningState subdomain updatedAt userCount utilizationMetrics
+              } pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -180,14 +183,15 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { accounts(first: 10, after: $after) { nodes
-              { id               annualRevenue billingCity billingContactId
-              billingCountry billingDay billingState billingStreet billingZip
-              code currencyId description duns employees entityId entityUseCode
-              fax groupId industryId invoiceTemplateId linkedinUrl name
-              netPaymentDays ownerUserId payingStatus phone shippingCity
-              shippingCountry shippingState shippingStreet shippingZip taxNumber
-              taxNumberValidated timezone website } pageInfo { startCursor
-              endCursor hasNextPage hasPreviousPage } } } 
+              { id               accountTypeId annualRevenue billingCity
+              billingContactId billingCountry billingDay billingState
+              billingStreet billingZip code createdAt currencyId description
+              duns employees entityId entityUseCode fax groupId id industryId
+              invoiceTemplateId linkedinUrl name netPaymentDays ownerUserId
+              payingStatus phone shippingCity shippingCountry shippingState
+              shippingStreet shippingZip taxNumber taxNumberValidated timezone
+              updatedAt website } pageInfo { startCursor endCursor hasNextPage
+              hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -227,11 +231,11 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { contacts(first: 10, after: $after) { nodes
-              { id               accountId code description email entityId
-              lastName linkedinUrl mailingCity mailingCountry mailingState
-              mailingStreet mailingZip mobile phone portalAccess salutation
-              title updatedAt } pageInfo { startCursor endCursor hasNextPage
-              hasPreviousPage } } } 
+              { id               accountId code createdAt description email
+              entityId firstName fullName id lastName linkedinUrl mailingCity
+              mailingCountry mailingState mailingStreet mailingZip mobile phone
+              portalAccess salutation title updatedAt } pageInfo { startCursor
+              endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -271,18 +275,19 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { entities(first: 10, after: $after) { nodes
-              { id               accentColor billingCity billingCountry
-              billingState billingStreet billingZip brandColor
-              customerServiceEmail defaultAccountsReceivableAccountId
-              defaultBankingFeesAccountId defaultConversionGainAccountId
-              defaultConversionLossAccountId defaultCpcaAccountId
-              defaultDeferredRevenueAccountId defaultPaymentAccountId
-              defaultRecognizedRevenueAccountId defaultTaxPayableAccountId
-              emailSenderName fax fiscalYearStartMonth id invoiceNumberPrefix
-              invoiceNumberSeq invoicesImageUrl isDefault name phone privacyUrl
-              quoteNumberPrefix quoteNumberSeq quotesImageUrl refundPolicyUrl
-              taxId taxType termsUrl timezone topNavImageUrl website } pageInfo
-              { startCursor endCursor hasNextPage hasPreviousPage } } } 
+              { id               abbreviation accentColor baseCurrencyId
+              billingCity billingCountry billingState billingStreet billingZip
+              brandColor createdAt customerServiceEmail
+              defaultAccountsReceivableAccountId defaultBankingFeesAccountId
+              defaultConversionGainAccountId defaultConversionLossAccountId
+              defaultCpcaAccountId defaultDeferredRevenueAccountId
+              defaultPaymentAccountId defaultRecognizedRevenueAccountId
+              defaultTaxPayableAccountId emailSenderName emailTemplate fax
+              fiscalYearStartMonth id invoiceNumberPrefix invoiceNumberSeq
+              invoicesImageUrl isDefault name phone privacyUrl quoteNumberPrefix
+              quoteNumberSeq quotesImageUrl refundPolicyUrl taxId taxType
+              termsUrl timezone topNavImageUrl updatedAt website } pageInfo {
+              startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -322,9 +327,11 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { invoices(first: 10, after: $after) { nodes
-              { id               amountDue amountPaid credits dueAt id number
-              paidAt payableId poNumber quoteId smallUnitAmountDue } pageInfo {
-              startCursor endCursor hasNextPage hasPreviousPage } } } 
+              { id               accountId amount amountDue amountPaid createdAt
+              credits currencyId description dueAt id netPaymentDays number
+              paidAt payableId poNumber portalUrl quoteId smallUnitAmountDue
+              subtotal taxAmount updatedAt url uuid } pageInfo { startCursor
+              endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -364,8 +371,9 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { payments(first: 10, after: $after) { nodes
-              { id               accountId amountUnapplied baseCurrencyCash
-              baseCurrencyId currencyId isLegacy } pageInfo { startCursor
+              { id               accountId amount amountUnapplied
+              baseCurrencyCash baseCurrencyId createdAt currencyId description
+              id isLegacy memo receivedAt updatedAt } pageInfo { startCursor
               endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
@@ -406,9 +414,10 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { products(first: 10, after: $after) { nodes
-              { id               code description everythingInPlus internalNotes
-              platformId productCategoryId showProductNameOnLineItem } pageInfo
-              { startCursor endCursor hasNextPage hasPreviousPage } } } 
+              { id               code description everythingInPlus id
+              internalNotes name platformId productCategoryId
+              showProductNameOnLineItem } pageInfo { startCursor endCursor
+              hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -424,6 +433,50 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
+    invoiceItems:
+      type: DeclarativeStream
+      name: invoiceItems
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.invoiceItems.pageInfo.endCursor +
+              '"}' if response.data.invoiceItems.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.invoiceItems.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { invoiceItems(first: 10, after: $after) {
+              nodes { id               amount chargeType couponId currencyId
+              discount id invoiceId lineText position price priceDecimals
+              priceListId pricingModel prorationRate quantity subtotal taxAmount
+              taxCode unitOfMeasure vatCode } pageInfo { startCursor endCursor
+              hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - invoiceItems
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoiceItems"
     transactions:
       type: DeclarativeStream
       name: transactions
@@ -448,9 +501,9 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { transactions(first: 10, after: $after) {
-              nodes { id               accountId currencyId transactionableId }
-              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
-              } 
+              nodes { id               accountId amount createdAt currencyId
+              description dueAt id state transactionableId } pageInfo {
+              startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -466,51 +519,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transactions"
-    invoice_items:
-      type: DeclarativeStream
-      name: invoice_items
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: variables
-            inject_into: body_json
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.invoice_items.pageInfo.endCursor
-              + '"}' if response.data.invoice_items.pageInfo.endCursor else ""
-              }}
-            stop_condition: "{{ response.data.invoice_items.pageInfo.hasNextPage is false }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /graphql
-          http_method: POST
-          request_body_json:
-            query: >-
-              query($after: String) { invoice_items(first: 10, after: $after) {
-              nodes { id               chargeType couponId discount id lineText
-              position priceListChargeId priceListChargeName priceListId
-              priceListName prorationRate quantity taxAmount taxCode
-              unitOfMeasure vatCode } pageInfo { startCursor endCursor
-              hasNextPage hasPreviousPage } } } 
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - invoice_items
-              - nodes
-              - "*"
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/invoice_items"
     quote_charges:
       type: DeclarativeStream
       name: quote_charges
@@ -537,11 +545,12 @@ definitions:
             query: >-
               query($after: String) { quote_charges(first: 10, after: $after) {
               nodes { id               amount billingPeriod chargeType couponId
-              currentQuantity discount id invoiceLineText kind name price
-              priceDecimals priceListChargeId pricingModel prorationRate
-              quantity quantityMax quantityMin subtotal taxAmount taxCode
-              tieredAveragePrice vatCode } pageInfo { startCursor endCursor
-              hasNextPage hasPreviousPage } } } 
+              createdAt currencyId currentQuantity discount id invoiceLineText
+              kind name price priceDecimals priceListChargeId pricingModel
+              prorationRate quantity quantityMax quantityMin quoteChangeId
+              subtotal taxAmount taxCode tieredAveragePrice updatedAt vatCode }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -582,9 +591,10 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { subscriptions(first: 10, after: $after) {
-              nodes { id               cancelationDate createdAt endDate name
-              rampIntervalMonths startDate trialEndDate trialStartDate updatedAt
-              } pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              nodes { id               accountId cancelationDate createdAt
+              currencyId endDate id name period priceListId rampIntervalMonths
+              startDate trialEndDate trialPeriod trialStartDate updatedAt }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
               } 
         record_selector:
           type: RecordSelector
@@ -601,9 +611,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/subscriptions"
-    account_balances:
+    accountBalances:
       type: DeclarativeStream
-      name: account_balances
+      name: accountBalances
       retriever:
         type: SimpleRetriever
         paginator:
@@ -616,64 +626,17 @@ definitions:
             type: CursorPagination
             cursor_value: >-
               {{ '{"after": "' +
-              response.data.account_balances.pageInfo.endCursor + '"}' if
-              response.data.account_balances.pageInfo.endCursor else "" }}
-            stop_condition: "{{ response.data.account_balances.pageInfo.hasNextPage is false }}"
+              response.data.accountBalances.pageInfo.endCursor + '"}' if
+              response.data.accountBalances.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.accountBalances.pageInfo.hasNextPage is false }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /graphql
           http_method: POST
           request_body_json:
             query: >-
-              query($after: String) { account_balances(first: 10, after: $after)
-              { nodes { id  } pageInfo { startCursor endCursor hasNextPage
-              hasPreviousPage } } } 
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - account_balances
-              - nodes
-              - "*"
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/account_balances"
-    subscription_charges:
-      type: DeclarativeStream
-      name: subscription_charges
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: variables
-            inject_into: body_json
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' +
-              response.data.subscription_charges.pageInfo.endCursor + '"}' if
-              response.data.subscription_charges.pageInfo.endCursor else "" }}
-            stop_condition: >-
-              {{ response.data.subscription_charges.pageInfo.hasNextPage is
-              false }}
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /graphql
-          http_method: POST
-          request_body_json:
-            query: >-
-              query($after: String) { subscription_charges(first: 10, after:
-              $after) { nodes { id               amount billingPeriod chargeType
-              discount discountedPrice kind name periodPrice price priceDecimals
-              priceListChargeId priceListId pricingModel prorationRate quantity
-              quantityMax quantityMin selfServiceQuantity tieredAveragePrice }
+              query($after: String) { accountBalances(first: 10, after: $after)
+              { nodes { id               accountId balance currencyId id }
               pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
               } 
         record_selector:
@@ -682,7 +645,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-              - subscription_charges
+              - accountBalances
               - nodes
               - "*"
       primary_key:
@@ -690,7 +653,56 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/subscription_charges"
+          $ref: "#/schemas/accountBalances"
+    subscriptionCharges:
+      type: DeclarativeStream
+      name: subscriptionCharges
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.subscriptionCharges.pageInfo.endCursor + '"}' if
+              response.data.subscriptionCharges.pageInfo.endCursor else "" }}
+            stop_condition: >-
+              {{ response.data.subscriptionCharges.pageInfo.hasNextPage is false
+              }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { subscriptionCharges(first: 10, after:
+              $after) { nodes { id               amount billingPeriod chargeType
+              createdAt discount discountedPrice id invoiceLineText kind name
+              periodPrice price priceDecimals priceListChargeId priceListId
+              pricingModel prorationRate quantity quantityMax quantityMin
+              selfServiceQuantity subscriptionId tieredAveragePrice updatedAt }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - subscriptionCharges
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptionCharges"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.bunny.com
@@ -700,18 +712,18 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/accounts"
-  - $ref: "#/definitions/streams/account_balances"
+  - $ref: "#/definitions/streams/accountBalances"
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/entities"
   - $ref: "#/definitions/streams/invoices"
-  - $ref: "#/definitions/streams/invoice_items"
+  - $ref: "#/definitions/streams/invoiceItems"
   - $ref: "#/definitions/streams/payments"
   - $ref: "#/definitions/streams/products"
   - $ref: "#/definitions/streams/plans"
   - $ref: "#/definitions/streams/quotes"
   - $ref: "#/definitions/streams/quote_charges"
   - $ref: "#/definitions/streams/subscriptions"
-  - $ref: "#/definitions/streams/subscription_charges"
+  - $ref: "#/definitions/streams/subscriptionCharges"
   - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/tenants"
 
@@ -749,39 +761,44 @@ metadata:
   testedStreams:
     accounts:
       hasRecords: true
-      streamHash: 86d0affe244efe8e5cd3822e0baed6d1125ec08a
+      streamHash: 879d5b5d7dce71369a5533ed96b390b77ad3564c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    account_balances:
-      streamHash: 1342b6f098bded66d60db0b74d56fe92538d55cc
+    accountBalances:
+      hasRecords: true
+      streamHash: 7966c01aabd07cbc905c0279ad44b14f477f299c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
-      streamHash: eaebdfe26c7ba72a4a55473fcc840085b71a419f
+      streamHash: 5c4db7b94dae251a1def94ae790d146b1cbda8dd
     entities:
-      streamHash: bc4f5cf1d0d368ef14879e48ba2dea6056b8064d
+      streamHash: 65ba5f31944b56368fe9d693a03ac6cab8cec1a8
     invoices:
-      streamHash: 57d8fa730e252d799b26f5975037763a48cd071e
-    invoice_items:
-      streamHash: d8f1c291f225d15472c776c966cf45f7d5c8afe7
+      streamHash: 9feae4d0141466f2d326a05d2188dbfa9164b183
+    invoiceItems:
+      streamHash: a57d20dc73fd2c3a236145e89f3c77d9c061628d
     payments:
-      streamHash: 5e6e6bb4e41b67ce30579fc8788781ba59cad4c8
+      streamHash: 9fe5abc62e8cecac5d14d5e058c3d246892c5f99
     products:
-      streamHash: 8c7ea3940eb676ad14cb248d02cd79c27667b8f4
+      streamHash: eb4c9da4f993e9b1171199b47692253adb532726
     plans:
-      streamHash: 2d2c58b9cb9375668535fb9f425006fde8ef0a67
+      streamHash: cea5bead8031602423eb8df3ba577195d17572c8
     quotes:
-      streamHash: 80395c07dd94f8bb4a1d9be5352db125f2d2f9af
+      streamHash: 36c6f963d53d145a8e9445f6278e156097883364
     quote_charges:
-      streamHash: a73b1630cd17805b0083d1be51d9fff6e052e8ba
+      streamHash: ee6bfaba5669eac8de245ecf39c78af156089584
     subscriptions:
-      streamHash: c14830f22723d1ad7f8571db9a4b17f2a1d0c3ef
-    subscription_charges:
-      streamHash: 91f4b79e9d239d6e6333817a32754e213f844287
+      streamHash: ad990d631848383d26d20f3789de9ebce593c10d
+    subscriptionCharges:
+      streamHash: 123de539ae97a449a628d09b51e62183f0a2e522
     transactions:
-      streamHash: 77c0027511e1cc33450a8355021299df323b1913
+      streamHash: cfa646f3076e35847315e08f20dcd1857b2609fe
     tenants:
-      streamHash: 19e426488b0064d25348d2ce15a1a83a6338509d
+      streamHash: e0b625be017779be93b76740a2a5d9b9c2cd6374
   autoImportSchema:
     plans: false
     quotes: false
@@ -792,12 +809,12 @@ metadata:
     invoices: false
     payments: false
     products: false
+    invoiceItems: false
     transactions: false
-    invoice_items: false
     quote_charges: false
     subscriptions: false
-    account_balances: false
-    subscription_charges: false
+    accountBalances: false
+    subscriptionCharges: false
 
 schemas:
   plans:
@@ -808,7 +825,15 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
       code:
+        type:
+          - string
+          - "null"
+      name:
         type:
           - string
           - "null"
@@ -824,9 +849,21 @@ schemas:
         type:
           - number
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       isVisible:
         type:
           - boolean
+          - "null"
+      productId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
           - "null"
       contactUsUrl:
         type:
@@ -843,6 +880,10 @@ schemas:
       selfServiceBuy:
         type:
           - boolean
+          - "null"
+      productPlanName:
+        type:
+          - string
           - "null"
       selfServiceRenew:
         type:
@@ -869,7 +910,15 @@ schemas:
         type:
           - string
           - "null"
+      uuid:
+        type:
+          - string
+          - "null"
       notes:
+        type:
+          - string
+          - "null"
+      amount:
         type:
           - string
           - "null"
@@ -905,11 +954,23 @@ schemas:
         type:
           - string
           - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
       amountDue:
         type:
           - number
           - "null"
       contactId:
+        type:
+          - string
+          - "null"
+      createdAt:
         type:
           - string
           - "null"
@@ -921,9 +982,21 @@ schemas:
         type:
           - string
           - "null"
+      taxAmount:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       billingDay:
         type:
           - int
+          - "null"
+      currencyId:
+        type:
+          - string
           - "null"
       periodAmount:
         type:
@@ -932,6 +1005,10 @@ schemas:
       splitInvoice:
         type:
           - boolean
+          - "null"
+      discountValue:
+        type:
+          - string
           - "null"
       acceptedByName:
         type:
@@ -966,7 +1043,23 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema
     properties:
+      id:
+        type:
+          - string
+          - "null"
       code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
         type:
           - string
           - "null"
@@ -978,9 +1071,17 @@ schemas:
         type:
           - string
           - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       userCount:
         type:
           - int
+          - "null"
+      platformId:
+        type:
+          - string
           - "null"
       provisioningState:
         type:
@@ -1039,6 +1140,14 @@ schemas:
         type:
           - string
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       billingDay:
         type:
           - number
@@ -1072,6 +1181,10 @@ schemas:
           - string
           - "null"
       payingStatus:
+        type:
+          - string
+          - "null"
+      accountTypeId:
         type:
           - string
           - "null"
@@ -1112,6 +1225,10 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
       code:
         type:
           - string
@@ -1136,11 +1253,23 @@ schemas:
         type:
           - string
           - "null"
+      fullName:
+        type:
+          - string
+          - "null"
       lastName:
         type:
           - string
           - "null"
       accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
         type:
           - string
           - "null"
@@ -1221,9 +1350,17 @@ schemas:
         type:
           - string
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       isDefault:
         type:
           - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
           - "null"
       billingZip:
         type:
@@ -1245,11 +1382,23 @@ schemas:
         type:
           - string
           - "null"
+      abbreviation:
+        type:
+          - string
+          - "null"
       billingState:
         type:
           - string
           - "null"
       billingStreet:
+        type:
+          - string
+          - "null"
+      emailTemplate:
+        type:
+          - string
+          - "null"
+      baseCurrencyId:
         type:
           - string
           - "null"
@@ -1342,13 +1491,29 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema
     properties:
+      description:
+        type:
+          - string
+          - "null"
       id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
         type:
           - string
           - "null"
       dueAt:
         type:
           - date
+          - "null"
+      amount:
+        type:
+          - string
           - "null"
       number:
         type:
@@ -1370,17 +1535,49 @@ schemas:
         type:
           - string
           - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
       amountDue:
         type:
           - number
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       payableId:
+        type:
+          - string
+          - "null"
+      portalUrl:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - string
+          - "null"
+      updatedAt:
         type:
           - string
           - "null"
       amountPaid:
         type:
           - number
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      netPaymentDays:
+        type:
+          - string
           - "null"
       smallUnitAmountDue:
         type:
@@ -1391,6 +1588,22 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema
     properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      memo:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
       isLegacy:
         type:
           - boolean
@@ -1399,7 +1612,19 @@ schemas:
         type:
           - string
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       currencyId:
+        type:
+          - string
+          - "null"
+      receivedAt:
         type:
           - string
           - "null"
@@ -1424,7 +1649,15 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
       code:
+        type:
+          - string
+          - "null"
+      name:
         type:
           - string
           - "null"
@@ -1449,28 +1682,19 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  transactions:
-    type: object
-    $schema: http://json-schema.org/schema
-    properties:
-      accountId:
-        type:
-          - string
-          - "null"
-      currencyId:
-        type:
-          - string
-          - "null"
-      transactionableId:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  invoice_items:
+  invoiceItems:
     type: object
     $schema: http://json-schema.org/schema
     properties:
       id:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      amount:
         type:
           - string
           - "null"
@@ -1502,6 +1726,14 @@ schemas:
         type:
           - int
           - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      invoiceId:
+        type:
+          - string
+          - "null"
       taxAmount:
         type:
           - number
@@ -1510,11 +1742,19 @@ schemas:
         type:
           - string
           - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
       priceListId:
         type:
           - string
           - "null"
-      priceListName:
+      pricingModel:
+        type:
+          - string
+          - "null"
+      priceDecimals:
         type:
           - string
           - "null"
@@ -1526,11 +1766,44 @@ schemas:
         type:
           - string
           - "null"
-      priceListChargeId:
+    additionalProperties: true
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
         type:
           - string
           - "null"
-      priceListChargeName:
+      id:
+        type:
+          - string
+          - "null"
+      dueAt:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      transactionableId:
         type:
           - string
           - "null"
@@ -1583,11 +1856,23 @@ schemas:
         type:
           - number
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       taxAmount:
         type:
           - number
           - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       chargeType:
+        type:
+          - string
+          - "null"
+      currencyId:
         type:
           - string
           - "null"
@@ -1615,6 +1900,10 @@ schemas:
         type:
           - number
           - "null"
+      quoteChangeId:
+        type:
+          - string
+          - "null"
       currentQuantity:
         type:
           - int
@@ -1636,13 +1925,25 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema
     properties:
+      id:
+        type:
+          - string
+          - "null"
       name:
+        type:
+          - string
+          - "null"
+      period:
         type:
           - string
           - "null"
       endDate:
         type:
           - date
+          - "null"
+      accountId:
+        type:
+          - string
           - "null"
       createdAt:
         type:
@@ -1655,6 +1956,18 @@ schemas:
       updatedAt:
         type:
           - timestamp_without_timezone
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      priceListId:
+        type:
+          - string
+          - "null"
+      trialPeriod:
+        type:
+          - string
           - "null"
       trialEndDate:
         type:
@@ -1673,15 +1986,35 @@ schemas:
           - int
           - "null"
     additionalProperties: true
-  account_balances:
-    type: object
-    $schema: http://json-schema.org/schema
-    properties: null
-    additionalProperties: true
-  subscription_charges:
+  accountBalances:
     type: object
     $schema: http://json-schema.org/schema
     properties:
+      id:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  subscriptionCharges:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
       kind:
         type:
           - string
@@ -1705,6 +2038,14 @@ schemas:
       quantity:
         type:
           - int
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
           - "null"
       chargeType:
         type:
@@ -1742,7 +2083,15 @@ schemas:
         type:
           - number
           - "null"
+      subscriptionId:
+        type:
+          - string
+          - "null"
       discountedPrice:
+        type:
+          - string
+          - "null"
+      invoiceLineText:
         type:
           - string
           - "null"
