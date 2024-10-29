@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.read.cdc
 
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.debezium.embedded.EmbeddedEngineChangeEvent
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
@@ -29,7 +29,7 @@ import org.apache.kafka.connect.source.SourceRecord
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val outputConsumer: OutputConsumer,
+    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val input: DebeziumInput,
@@ -44,7 +44,8 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numEvents = AtomicLong()
     internal val numTombstones = AtomicLong()
     internal val numHeartbeats = AtomicLong()
-    internal val numRecords = AtomicLong()
+    internal val numDiscardedRecords = AtomicLong()
+    internal val numEmittedRecords = AtomicLong()
     internal val numEventsWithoutSourceRecord = AtomicLong()
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
@@ -92,7 +93,8 @@ class CdcPartitionReader<T : Comparable<T>>(
         val summary: Map<String, Any?> =
             mapOf(
                     "debezium-version" to debeziumVersion,
-                    "records" to numRecords.get(),
+                    "records-emitted" to numEmittedRecords.get(),
+                    "records-discarded" to numDiscardedRecords.get(),
                     "heartbeats" to numHeartbeats.get(),
                     "tombstones" to numTombstones.get(),
                     "events" to numEvents.get(),
@@ -116,7 +118,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val output = DebeziumState(offset, schemaHistory)
-        return PartitionReadCheckpoint(readerOps.serialize(output), numRecords.get())
+        return PartitionReadCheckpoint(readerOps.serialize(output), numEmittedRecords.get())
     }
 
     inner class EventConsumer(
@@ -146,10 +148,16 @@ class CdcPartitionReader<T : Comparable<T>>(
             } else {
                 isRecord = true
                 val debeziumRecordKey = DebeziumRecordKey(Jsons.readTree(event.key()))
-                val airbyteRecord: AirbyteRecordMessage =
-                    readerOps.toAirbyteRecordMessage(debeziumRecordKey, debeziumRecordValue)
-                outputConsumer.accept(airbyteRecord)
-                numRecords.incrementAndGet()
+                val deserializedRecord: DeserializedRecord =
+                    readerOps.deserialize(debeziumRecordKey, debeziumRecordValue)
+                val streamRecordConsumer: StreamRecordConsumer? =
+                    streamRecordConsumers[deserializedRecord.streamID]
+                if (streamRecordConsumer == null) {
+                    numDiscardedRecords.incrementAndGet()
+                } else {
+                    streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
+                    numEmittedRecords.incrementAndGet()
+                }
             }
             // Look for reasons to close down the engine.
             val closeReason: CloseReason? = run {
