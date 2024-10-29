@@ -14,7 +14,14 @@ from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateStats,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
@@ -141,7 +148,7 @@ class DestinationMotherDuck(Destination):
         records_buffered = 0
         records_processed = 0
         for message in input_messages:
-            if message.type == Type.STATE:
+            if message.type == Type.STATE and message.state is not None:
                 # flush the buffer
                 self._flush_buffer(
                     buffer=buffer,
@@ -152,6 +159,8 @@ class DestinationMotherDuck(Destination):
                     stream_name=message.state.stream,
                 )
                 buffer = defaultdict(lambda: defaultdict(list))
+                # Annotate the state message with the number of records processed
+                message.state.destinationStats = AirbyteStateStats(recordCount=records_buffered)
                 records_buffered = 0
 
                 yield message
