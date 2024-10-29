@@ -118,7 +118,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         primary_keys: list[str] | None = None,
     ) -> None:
         if primary_keys:
-            pk_str = ", ".join(primary_keys)
+            pk_str = ", ".join(map(self._quote_identifier, primary_keys))
             column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
