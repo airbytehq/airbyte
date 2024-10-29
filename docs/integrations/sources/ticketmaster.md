@@ -1,5 +1,8 @@
 # Ticketmaster
-API Documentation: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-classifications-v2
+
+Buy and sell tickets online for concerts, sports, theater, family and other events near you from Ticketmaster.
+
+[TicketMaster API Documentation](https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-classifications-v2)
 
 ## Configuration
 
