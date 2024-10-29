@@ -23,9 +23,6 @@ class TestFullRefresh(StreamTestCase):
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         req = self.stream_request().with_limit(250).with_created_min(START_DATE).build()
-        print('!!!')
-        print(req)
-        print('!!!')
         http_mocker.get(
             req,
             get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id", _CURSOR_FIELD)).build(),

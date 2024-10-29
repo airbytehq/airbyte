@@ -157,7 +157,7 @@ definitions:
     $ref: "#/definitions/base_modern_api_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: created_min
+      cursor_field: created_at
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S"
