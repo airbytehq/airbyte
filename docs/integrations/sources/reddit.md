@@ -65,6 +65,7 @@ Hit send to receive `api_key` in the response under `access_token`
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
-| 0.0.1 | 2024-08-23 |[44579](https://github.com/airbytehq/airbyte/pull/44579)| Initial release by [btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| 0.0.2 | 2024-10-28 | [47542](https://github.com/airbytehq/airbyte/pull/47542) | Update dependencies |
+| 0.0.1 | 2024-08-23 | [44579](https://github.com/airbytehq/airbyte/pull/44579) | Initial release by [btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
