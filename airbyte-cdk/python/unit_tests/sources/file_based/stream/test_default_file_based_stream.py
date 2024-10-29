@@ -6,8 +6,8 @@ import traceback
 import unittest
 from datetime import datetime, timezone
 from typing import Any, Iterable, Iterator, Mapping
-from unittest.mock import Mock
 from unittest import mock
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
