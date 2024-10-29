@@ -85,6 +85,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
                     "pinecone_key": "mykey",
                     "index": "testdata",
                     "pinecone_environment": "us-west1-gcp",
+                    "namespace": "mynamespace",
                 },
             },
         )
