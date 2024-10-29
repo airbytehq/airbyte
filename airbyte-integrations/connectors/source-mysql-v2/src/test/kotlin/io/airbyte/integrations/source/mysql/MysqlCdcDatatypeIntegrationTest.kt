@@ -68,7 +68,7 @@ class MysqlCdcDatatypeIntegrationTest {
                     .map {
                         CatalogHelpers.toDefaultConfiguredStream(it)
                             .withCursorField(
-                                listOf(MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id),
+                                listOf(MysqlCdcMetaFields.CDC_CURSOR.id),
                             )
                     }
 
@@ -143,6 +143,9 @@ class MysqlCdcDatatypeIntegrationTest {
                 // Remove unwanted fields
                 jsonNode.remove("_ab_cdc_updated_at")
                 jsonNode.remove("_ab_cdc_deleted_at")
+                jsonNode.remove("_ab_cdc_cursor")
+                jsonNode.remove("_ab_cdc_log_file")
+                jsonNode.remove("_ab_cdc_log_pos")
             }
         }
         val actual: JsonNode = sortedRecordData(records)
