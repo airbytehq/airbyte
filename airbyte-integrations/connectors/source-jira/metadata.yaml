@@ -30,7 +30,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    enableProgressiveRollout: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
         message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
