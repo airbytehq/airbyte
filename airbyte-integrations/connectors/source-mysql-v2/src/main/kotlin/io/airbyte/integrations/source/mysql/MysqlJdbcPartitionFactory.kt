@@ -53,13 +53,11 @@ class MysqlJdbcPartitionFactory(
 
         jdbcConnectionFactory.get().use { connection ->
             val stmt = connection.prepareStatement(selectQueryGenerator.generate(maxPkQuery).sql)
-            println("Executing query: ${selectQueryGenerator.generate(maxPkQuery).sql}")
             val rs = stmt.executeQuery()
 
             if (rs.next()) {
                 val pkUpperBound: JsonNode =
                     stateValueToJsonNode(pkChosenFromCatalog.first(), rs.getString(1))
-                println("Max PK value: $pkUpperBound")
                 return pkUpperBound
             } else {
                 // Table might be empty thus there is no max PK value.
@@ -80,7 +78,6 @@ class MysqlJdbcPartitionFactory(
                 )
             }
 
-            println("coldstart.")
             val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)
 
             if (sharedState.configuration.global) {
@@ -162,9 +159,6 @@ class MysqlJdbcPartitionFactory(
         if (!isCursorBased) {
             val sv: MysqlCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
-
-            println("raw state: $opaqueStateValue")
-            println("state: $sv")
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)

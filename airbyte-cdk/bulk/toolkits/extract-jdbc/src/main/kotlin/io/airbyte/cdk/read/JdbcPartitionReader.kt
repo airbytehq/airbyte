@@ -119,8 +119,6 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
         val fetchSize: Int = streamState.fetchSizeOrDefault
         val limit: Long = streamState.limit
         incumbentLimit.set(limit)
-        println("debug: $partition")
-        println("query: " + partition.resumableQuery(limit))
         selectQuerier
             .executeQuery(
                 q = partition.resumableQuery(limit),

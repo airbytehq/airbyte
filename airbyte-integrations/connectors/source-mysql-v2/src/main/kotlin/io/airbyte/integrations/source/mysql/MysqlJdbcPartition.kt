@@ -176,7 +176,7 @@ sealed class MysqlJdbcResumablePartition(
     open val isLowerBoundIncluded: Boolean = false
 }
 
-/** Implementation of a [JdbcPartition] for a snapshot partition. */
+/** RFR for cursor based read. */
 class MysqlJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -202,7 +202,7 @@ class MysqlJdbcRfrSnapshotPartition(
         )
 }
 
-/** Implementation of a [JdbcPartition] for a snapshot partition. */
+/** RFR for CDC. */
 class MysqlJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -211,8 +211,6 @@ class MysqlJdbcCdcRfrSnapshotPartition(
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
 
-    // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
-    // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
             MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -228,7 +226,8 @@ class MysqlJdbcCdcRfrSnapshotPartition(
         )
 }
 
-/** Implementation of a [JdbcPartition] for a CDC snapshot partition. */
+/** Implementation of a [JdbcPartition] for a CDC snapshot partition.
+ *  Used for incremental CDC initial sync. */
 class MysqlJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,

@@ -52,7 +52,7 @@ class JdbcSelectQuerier(
         val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
 
         init {
-            log.info { "Querying ${q.sql} with bindings: ${q.bindings}" }
+            log.info { "Querying ${q.sql}" }
             try {
                 conn = jdbcConnectionFactory.get()
                 stmt = conn!!.prepareStatement(q.sql)
