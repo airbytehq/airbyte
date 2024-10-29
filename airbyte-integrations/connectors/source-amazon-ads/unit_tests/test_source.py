@@ -92,7 +92,7 @@ def test_source_streams(config):
     setup_responses()
     source = DeclarativeSourceAdapter(source=SourceAmazonAds())
     streams = source.streams(config)
-    assert len(streams) == 29
+    assert len(streams) == 27
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = {
         "profiles",
@@ -111,7 +111,7 @@ def test_source_streams(config):
         "sponsored_brands_campaigns",
         "sponsored_brands_ad_groups",
         "sponsored_brands_keywords",
-        "sponsored_brands_report_stream",
+        "sponsored_brands_v3_report_stream",
         "attribution_report_performance_adgroup",
         "attribution_report_performance_campaign",
         "attribution_report_performance_creative",

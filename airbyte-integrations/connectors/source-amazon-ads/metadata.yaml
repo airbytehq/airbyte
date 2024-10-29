@@ -34,13 +34,16 @@ data:
   releases:
     breakingChanges:
       6.0.0:
-        message: "The Report API v2 is getting deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
-         and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. It is recommended to use `SponsoredBrandsV3ReportStream` as an alternative."
+        message:
+          "The Report API v2 is getting deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
+          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. It is recommended to use `SponsoredBrandsV3ReportStream` as an alternative."
         upgradeDeadline: "2024-11-01"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
               - "sponsored_display_report_stream"
+              - "sponsored_brands_report_stream"
+              - "sponsored_brands_video_report_stream"
       5.0.0:
         message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
         upgradeDeadline: "2024-03-27"

@@ -9,16 +9,14 @@ import requests_mock
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher
-from source_amazon_ads.streams.report_streams import brands_report, brands_video_report, display_report, products_report
+from source_amazon_ads.streams.report_streams import brands_report, display_report, products_report
 
 from .ad_requests import (
     OAuthRequestBuilder,
     ProfilesRequestBuilder,
     ReportCheckStatusRequestBuilder,
     ReportDownloadRequestBuilder,
-    SponsoredBrandsReportRequestBuilder,
     SponsoredBrandsV3ReportRequestBuilder,
-    SponsoredBrandsVideoReportRequestBuilder,
     SponsoredDisplayReportRequestBuilder,
     SponsoredProductsReportRequestBuilder,
 )
@@ -162,109 +160,6 @@ class TestDisplayReportStreams(TestCase):
         output = read_stream("sponsored_products_report_stream", SyncMode.full_refresh, self._config)
         assert len(output.records) == 7
 
-    @HttpMocker()
-    def test_given_file_when_read_brands_video_report_then_return_records(self, http_mocker):
-        """
-        Check brands video report stream: normal stream read flow.
-        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
-        as well as workaround to handle gzipped file content
-        Request structure:
-            1. Request report for start processing
-            2. Check status and get a download link
-            3. Download report file using the link
-        """
-        self._given_oauth_and_profiles(http_mocker, self._config)
-
-        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
-        start_date = pendulum.today(tz=profile_timezone).date()
-
-        for report_type, metrics in brands_video_report.METRICS_MAP.items():
-            report_id = str(uuid.uuid4())
-            http_mocker.post(
-                SponsoredBrandsVideoReportRequestBuilder._init_report_endpoint(
-                    self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
-                ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(202).build()
-            )
-            download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
-            http_mocker.get(
-                ReportCheckStatusRequestBuilder.check_sponsored_brands_video_report_status_endpoint(
-                    self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
-                ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
-            )
-
-            # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
-            request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
-
-            http_mocker._mocker.get(
-                requests_mock.ANY,
-                additional_matcher=http_mocker._matches_wrapper(request_matcher),
-                response_list=[{"content": gzip_file_report_response.body, "status_code": gzip_file_report_response.status_code}],
-            )
-
-        output = read_stream("sponsored_brands_video_report_stream", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 3
-
-    @HttpMocker()
-    def test_given_file_when_read_brands_report_then_return_records(self, http_mocker):
-        """
-        Check brands report stream: normal stream read flow.
-        In this test we prepare http mocker to handle all report types based on metrics defined for the report stream
-        as well as workaround to handle gzipped file content.
-        Request structure:
-            1. Request report for start processing
-            2. Check status and get a download link
-            3. Download report file using the link
-        """
-        self._given_oauth_and_profiles(http_mocker, self._config)
-
-        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
-        start_date = pendulum.today(tz=profile_timezone).date()
-
-        for report_type, metrics in brands_report.METRICS_MAP.items():
-            report_id = str(uuid.uuid4())
-            http_mocker.post(
-                SponsoredBrandsReportRequestBuilder._init_report_endpoint(
-                    self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_type, metrics, start_date
-                ).build(),
-                ReportInitResponseBuilder.report_init_response().with_record(
-                    ReportInitResponseRecordBuilder.init_response_record().with_status("PENDING").with_id(report_id)
-                ).with_status_code(202).build()
-            )
-            download_request_builder = ReportDownloadRequestBuilder.download_endpoint(report_id)
-            http_mocker.get(
-                ReportCheckStatusRequestBuilder.check_sponsored_brands_report_status_endpoint(
-                    self._config["client_id"], self._config["access_token"], self._config["profiles"][0], report_id
-                ).build(),
-                ReportCheckStatusResponseBuilder.check_status_response().with_record(
-                    ReportCheckStatusRecordBuilder.status_record().with_status("COMPLETED").with_url(download_request_builder.url)
-                ).build()
-            )
-
-            # a workaround to pass compressed document to the mocked response
-            gzip_file_report_response = ReportDownloadResponseBuilder.download_report().with_record(
-                ReportFileRecordBuilder.report_file_record()
-            ).build()
-            request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
-
-            http_mocker._mocker.get(
-                requests_mock.ANY,
-                additional_matcher=http_mocker._matches_wrapper(request_matcher),
-                response_list=[{"content": gzip_file_report_response.body, "status_code": gzip_file_report_response.status_code}],
-            )
-
-        output = read_stream("sponsored_brands_report_stream", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 3
 
     @HttpMocker()
     def test_given_file_when_read_brands_v3_report_then_return_records(self, http_mocker):

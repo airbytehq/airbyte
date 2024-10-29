@@ -22,9 +22,7 @@ from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsCampaigns,
-    SponsoredBrandsReportStream,
     SponsoredBrandsV3ReportStream,
-    SponsoredBrandsVideoReportStream,
     SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
     SponsoredProductCampaigns,
@@ -278,22 +276,6 @@ def test_products_report_stream_without_pk(config):
 
 
 @responses.activate
-def test_brands_report_stream(config):
-    setup_responses(
-        init_response_brands=REPORT_INIT_RESPONSE,
-        status_response=REPORT_STATUS_RESPONSE,
-        metric_response=METRIC_RESPONSE,
-    )
-
-    profiles = make_profiles()
-
-    stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
-
-
-@responses.activate
 def test_brands_v3_report_stream(config):
     setup_responses(
         init_response_products=REPORT_INIT_RESPONSE,
@@ -305,22 +287,6 @@ def test_brands_v3_report_stream(config):
 
     stream = SponsoredBrandsV3ReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
-
-
-@responses.activate
-def test_brands_video_report_stream(config):
-    setup_responses(
-        init_response_brands=REPORT_INIT_RESPONSE,
-        status_response=REPORT_STATUS_RESPONSE,
-        metric_response=METRIC_RESPONSE,
-    )
-
-    profiles = make_profiles()
-
-    stream = SponsoredBrandsVideoReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
@@ -814,36 +780,6 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
 
     stream = SponsoredProductsReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
-    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
-    for record in records:
-        print(record)
-        if record["recordType"] not in expected_record_types:
-            if flag_match_error:
-                assert False
-
-
-@responses.activate
-@pytest.mark.parametrize(
-    "custom_record_types, expected_record_types, flag_match_error",
-    [
-        (["campaigns"], ["campaigns"], True),
-        (["asins"], ["asins"], True),
-        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
-        ([], [], False),
-        (["invalid_record_type"], [], True),
-    ],
-)
-def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
-    setup_responses(
-        init_response_brands=REPORT_INIT_RESPONSE,
-        status_response=REPORT_STATUS_RESPONSE,
-        metric_response=METRIC_RESPONSE,
-    )
-
-    profiles = make_profiles()
-
-    stream = SponsoredBrandsVideoReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)

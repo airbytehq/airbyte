@@ -30,18 +30,6 @@ class ReportCheckStatusRequestBuilder(AmazonAdsBaseRequestBuilder):
         cls, client_id: str, client_access_token: str, profile_id: str, report_id: str
     ) -> "ReportCheckStatusRequestBuilder":
         return cls.check_v3_report_status_endpoint(client_id, client_access_token, profile_id, report_id)
-    
-    @classmethod
-    def check_sponsored_brands_video_report_status_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_id: str
-    ) -> "ReportCheckStatusRequestBuilder":
-        return cls.check_v2_report_status_endpoint(client_id, client_access_token, profile_id, report_id)
-
-    @classmethod
-    def check_sponsored_brands_report_status_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_id: str
-    ) -> "ReportCheckStatusRequestBuilder":
-        return cls.check_v2_report_status_endpoint(client_id, client_access_token, profile_id, report_id)
 
     @classmethod
     def check_sponsored_products_report_status_endpoint(
