@@ -16,7 +16,7 @@ As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 10
 
 The workload launcher will create one Kubernetes pod. The connector and sidecar images then do all the actual work.
 
-Thus, scaling Airbyte is a matter of ensuring that the Kubernetes Pod wrapping the connector has sufficient resources to execute its work.
+Thus, scaling Airbyte is a matter of ensuring that the Kubernetes cluster Airbyte runs on has sufficient resources to schedule its various job pods.
 
 Jobs-wise, we are mainly concerned with Sync jobs when thinking about scale. Sync jobs sync data from sources to destinations and are the majority of jobs run. Sync jobs use two workers. One worker reads from the source; the other worker writes to the destination.
 
