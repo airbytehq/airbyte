@@ -47,7 +47,8 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.2 | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format |
 | 0.2.15 | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies |
 | 0.2.14 | 2024-08-10 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies |

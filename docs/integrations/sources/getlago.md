@@ -34,6 +34,8 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.2 | 2024-10-29 | [47730](https://github.com/airbytehq/airbyte/pull/47730) | Update dependencies |
+| 0.7.1 | 2024-10-28 | [47596](https://github.com/airbytehq/airbyte/pull/47596) | Update dependencies |
 | 0.7.0 | 2024-09-12 | [45452](https://github.com/airbytehq/airbyte/pull/45452) | Endpoint customer usage: import current from subscription and add new stream customer_usage_past |
 | 0.6.0 | 2024-09-06 | [45193](https://github.com/airbytehq/airbyte/pull/45193) | Endpoint customer usage ignore 405 response |
 | 0.5.0 | 2024-08-23 | [44613](https://github.com/airbytehq/airbyte/pull/44613) | Refactor connector to manifest-only format |
