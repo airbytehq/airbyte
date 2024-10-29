@@ -19,6 +19,9 @@ from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
 
+# google can raise warnings for end user credentials, wrapping it to Logger
+logging.captureWarnings(True)
+
 ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
@@ -50,7 +53,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             raise ValueError("Source config is missing; cannot create the GCS client.")
         if self._gcs_client is None:
             credentials = self._get_credentials()
-            self._gcs_client = storage.Client(credentials=credentials)
+            # using default project to avoid getting project from env, applies only for OAuth creds
+            project = getattr(credentials, "project_id", "default")
+            self._gcs_client = storage.Client(project=project, credentials=credentials)
         return self._gcs_client
 
     def _get_credentials(self):
