@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong
 @Singleton
 @Primary
 @Requires(env = ["MockTimeProvider"])
-class MockTimeProvider : TimeProvider {
+open class MockTimeProvider : TimeProvider {
     private var currentTime = AtomicLong(0)
 
     override fun currentTimeMillis(): Long {
