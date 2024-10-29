@@ -40,8 +40,9 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.0   | 2024-09-04 | [45117](https://github.com/airbytehq/airbyte/pull/45117) | Add new stream `extensive calls`   |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.1 | 2024-10-29 | [47824](https://github.com/airbytehq/airbyte/pull/47824) | Update dependencies |
+| 0.3.0 | 2024-09-04 | [45117](https://github.com/airbytehq/airbyte/pull/45117) | Add new stream `extensive calls` |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44144](https://github.com/airbytehq/airbyte/pull/44144) | Refactor connector to manifest-only format |
 | 0.1.17 | 2024-08-10 | [43481](https://github.com/airbytehq/airbyte/pull/43481) | Update dependencies |
 | 0.1.16 | 2024-08-03 | [43275](https://github.com/airbytehq/airbyte/pull/43275) | Update dependencies |
