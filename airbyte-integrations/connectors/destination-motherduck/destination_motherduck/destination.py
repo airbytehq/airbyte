@@ -186,7 +186,7 @@ class DestinationMotherDuck(Destination):
 
                 if records_buffered[stream_name] >= MAX_STREAM_BATCH_SIZE:
                     logger.info(
-                        f"Loading {records_buffered:,} records from '{stream_name}' stream buffer...",
+                        f"Loading {records_buffered[stream_name]:,} records from '{stream_name}' stream buffer...",
                     )
                     self._flush_buffer(
                         buffer=buffer,
