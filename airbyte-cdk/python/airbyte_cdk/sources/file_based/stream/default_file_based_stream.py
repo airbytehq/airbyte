@@ -41,6 +41,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
+    modified = "modified"
+    source_file_url = "source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
     file_transfer_flag = "use_file_transfer"
     use_file_transfer = False
@@ -96,10 +98,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         record[self.ab_file_name_col] = file.uri
         return record
 
-    def transform_record_for_sync_transfer(self, record: dict[str, Any], file: RemoteFile) -> dict[str, Any]:
+    def transform_record_for_file_transfer(self, record: dict[str, Any], file: RemoteFile) -> dict[str, Any]:
         # timstamp() returns a float representing the number of seconds since the unix epoch
-        record["modified"] = int(file.last_modified.timestamp()) * 1000
-        record["source_file_url"] = file.uri
+        record[self.modified] = int(file.last_modified.timestamp()) * 1000
+        record[self.source_file_url] = file.uri
         return record
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
@@ -130,7 +132,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1
                             continue
-                        record = self.transform_record_for_sync_transfer(record, file)
+                        record = self.transform_record_for_file_transfer(record, file)
                         yield stream_data_to_airbyte_message(self.name, record, is_file_transfer_message=True)
                 else:
                     for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):

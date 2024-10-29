@@ -452,45 +452,45 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                         "display_type": "radio",
                         "group": "advanced",
                         "oneOf": [
-                        {
-                          "title": "Deliver Records (RECOMMENDED DEFAULT)",
-                          "type": "object",
-                          "properties": {
-                            "delivery_type": {
-                              "title": "Delivery Type",
-                              "default": "use_records_transfer",
-                              "const": "use_records_transfer",
-                              "enum": [
-                                "use_records_transfer"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "description": "Send records to the destination, which will be processed as incoming data.",
-                          "required": [
-                            "delivery_type"
-                          ]
-                        },
-                        {
-                          "title": "Deliver Raw Files (Experimental: supported destination only)",
-                          "type": "object",
-                          "properties": {
-                            "delivery_type": {
-                              "title": "Delivery Type",
-                              "default": "use_file_transfer",
-                              "const": "use_file_transfer",
-                              "enum": [
-                                "use_file_transfer"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "description": "Send files to the destination, to be loaded to files storage destinations without parsing underlying data.",
-                          "required": [
-                            "delivery_type"
-                          ]
-                        }
-                        ]
+                            {
+                                "title": "Deliver Records (RECOMMENDED DEFAULT)",
+                                "type": "object",
+                                "properties": {
+                                    "delivery_type": {
+                                        "title": "Delivery Type",
+                                        "default": "use_records_transfer",
+                                        "const": "use_records_transfer",
+                                        "enum": [
+                                            "use_records_transfer"
+                                        ],
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Send records to the destination, which will be processed as incoming data.",
+                                "required": [
+                                    "delivery_type"
+                                ]
+                            },
+                            {
+                                "title": "Deliver Raw Files (Experimental: supported destination only)",
+                                "type": "object",
+                                "properties": {
+                                    "delivery_type": {
+                                        "title": "Delivery Type",
+                                        "default": "use_file_transfer",
+                                        "const": "use_file_transfer",
+                                        "enum": [
+                                            "use_file_transfer"
+                                        ],
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Send files to the destination, to be loaded to files storage destinations without parsing underlying data.",
+                                "required": [
+                                    "delivery_type"
+                                    ]
+                                }
+                            ]
                         },
                 },
                 "required": ["streams"],
