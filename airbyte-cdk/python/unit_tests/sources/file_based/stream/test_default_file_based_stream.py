@@ -254,8 +254,6 @@ class TestFileBasedErrorCollector:
         assert parse_error.value.internal_message == "Please check the logged errors for more information."
 
 
-
-
 class DefaultFileBasedStreamFileTransferTest(unittest.TestCase):
     _NOW = datetime(2022, 10, 22, tzinfo=timezone.utc)
     _A_RECORD = {'bytes': 10, 'file_relative_path': 'relative/path/file.csv', 'file_url': '/absolute/path/file.csv'}
