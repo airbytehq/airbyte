@@ -103,7 +103,7 @@ METRICS_MAP = {
 }
 
 METRICS_TYPE_TO_ID_MAP = {
-    "keywords": "keywordId",
+    "keywords": "keywordBid",
     "adGroups": "adGroupId",
     "campaigns": "campaignId",
 }
