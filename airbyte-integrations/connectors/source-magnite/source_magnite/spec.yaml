@@ -1,0 +1,71 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Magnite Spec
+  type: object
+  required:
+    - access_key
+    - secret_key
+  properties:
+    access_key:
+      type: string
+      description: "Access key for Magnite API"
+      order: 0
+    secret_key:
+      type: string
+      description: "Secret key for Magnite API"
+      airbyte_secret: true
+    source:
+      type: string
+      description: "Source"
+    fields:
+      type: array
+      description: "Fields"
+      items:
+        type: string
+    constraints:
+      type: array
+      items:
+        "$ref": "#/definitions/QueryConstraints"
+    orderings:
+      type: array
+      items:
+        "$ref": "#/definitions/QueryOrderings"
+    range:
+      "$ref": "#/definitions/QueryRange"
+definitions:
+  QueryConstraints:
+    description: Query Constraints
+    type: object
+    required:
+      - field
+      - operator
+      - value
+    properties:
+      field:
+        type: string
+      operator:
+        type: string
+      value:
+        type: float
+  QueryOrderings:
+    description: Query results ordering
+    type: object
+    required:
+      - direction
+      - field
+    properties:
+      direction:
+        type: string
+      field:
+        type: string
+  QueryRange:
+    type: object
+    required:
+      - range
+      - timezone
+    properties:
+      range:
+        type: string
+      timezone:
+        type: string
