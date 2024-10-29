@@ -6,6 +6,9 @@
 The `SponsoredDisplayReportStream` stream has updated schema due to a change with the Amazon Ads API,
 see [Amazon Migration Guide (metrics)](https://advertising.amazon.com/API/docs/en-us/reference/migration-guides/reporting-v2-v3#metrics) for more info.
 
+Streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable.
+It is recommended to use `SponsoredBrandsV3ReportStream` as an alternative.
+
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main navbar.
