@@ -269,6 +269,13 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         stream_name: str,
         sync_mode: DestinationSyncMode,
     ) -> None:
+        if stream_name not in buffer:
+            return
+
+        stream_buffer = buffer[stream_name]
+        if not stream_buffer:
+            return
+
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
