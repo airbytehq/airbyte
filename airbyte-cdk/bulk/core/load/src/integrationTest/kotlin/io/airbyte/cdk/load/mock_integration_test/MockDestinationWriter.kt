@@ -4,11 +4,13 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.mock_integration_test.MockStreamLoader.Companion.getFilename
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -31,6 +33,13 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val state = Batch.State.PERSISTED
     }
 
+    override suspend fun start() {
+        MockDestinationBackend.deleteOldRecords(
+            getFilename(stream.descriptor),
+            stream.minimumGenerationId
+        )
+    }
+
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
         totalSizeBytes: Long
@@ -42,17 +51,30 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         return when (batch) {
             is LocalBatch -> {
                 batch.records.forEach {
-                    MockDestinationBackend.insert(
-                        getFilename(it.stream),
+                    val filename = getFilename(it.stream)
+                    val record =
                         OutputRecord(
                             UUID.randomUUID(),
                             Instant.ofEpochMilli(it.emittedAtMs),
                             Instant.ofEpochMilli(System.currentTimeMillis()),
                             stream.generationId,
                             it.data as ObjectValue,
-                            OutputRecord.Meta(changes = it.meta?.changes, syncId = stream.syncId),
+                            OutputRecord.Meta(
+                                changes = it.meta?.changes ?: mutableListOf(),
+                                syncId = stream.syncId
+                            ),
                         )
-                    )
+                    val importType = stream.importType
+                    if (importType is Dedupe) {
+                        MockDestinationBackend.upsert(
+                            filename,
+                            importType.primaryKey,
+                            importType.cursor,
+                            record
+                        )
+                    } else {
+                        MockDestinationBackend.insert(filename, record)
+                    }
                 }
                 PersistedBatch(batch.records)
             }
