@@ -98,6 +98,11 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rand_string}"
 
 
+@pytest.fixture(scope="module")
+def other_test_table_name(test_table_name) -> str:
+    return test_table_name + "_other"
+
+
 @pytest.fixture
 def test_large_table_name() -> str:
     letters = string.ascii_lowercase
@@ -132,6 +137,7 @@ def other_table_schema() -> str:
 @pytest.fixture
 def configured_catalogue(
     test_table_name: str,
+    other_test_table_name: str,
     test_large_table_name: str,
     table_schema: str,
     other_table_schema: str,
@@ -148,7 +154,7 @@ def configured_catalogue(
     )
     other_append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name=test_table_name + "_other",
+            name=other_test_table_name,
             json_schema=other_table_schema,
             supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         ),
@@ -251,13 +257,13 @@ def airbyte_message3():
 
 
 @pytest.fixture
-def airbyte_message4(test_table_name: str):
+def airbyte_message4(other_test_table_name: str):
     fake = Faker()
     Faker.seed(0)
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name + "_other",
+            stream=other_test_table_name,
             data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -265,13 +271,13 @@ def airbyte_message4(test_table_name: str):
 
 
 @pytest.fixture
-def airbyte_message5(test_table_name: str):
+def airbyte_message5(other_test_table_name: str):
     fake = Faker()
     Faker.seed(1)
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name + "_other",
+            stream=other_test_table_name,
             data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
