@@ -20,8 +20,7 @@ class DeliverRecords(BaseModel):
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_records_transfer"] = Field("use_records_transfer", const=True)
-    use_records_transfer: bool = Field(title="Transfer records", description="Transfer Records", order=5, airbyte_hidden=True, default=True)
-    use_file_transfer: Literal[False] = Field(False, const=True, airbyte_hidden=True)
+
 
 class DeliverRawFiles(BaseModel):
     class Config(OneOfOptionConfig):
@@ -30,7 +29,7 @@ class DeliverRawFiles(BaseModel):
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)
-    use_file_transfer: Literal[True] = Field(True, const=True, airbyte_hidden=True)
+
 
 class AbstractFileBasedSpec(BaseModel):
     """
@@ -66,7 +65,7 @@ class AbstractFileBasedSpec(BaseModel):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
-        airbyte_hidden=True
+        airbyte_hidden=True,
     )
 
     @classmethod

@@ -231,7 +231,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor,  self._use_file_transfer(parsed_config))
+                    stream = self._make_default_stream(stream_config, cursor, self._use_file_transfer(parsed_config))
 
                 streams.append(stream)
             return streams
@@ -312,5 +312,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
     @staticmethod
     def _use_file_transfer(parsed_config: AbstractFileBasedSpec) -> bool:
-        use_file_transfer = hasattr(parsed_config.delivery_method, "use_file_transfer") and parsed_config.delivery_method.use_file_transfer
+        use_file_transfer = (
+            hasattr(parsed_config.delivery_method, "delivery_type") and parsed_config.delivery_method.delivery_type == "use_file_transfer"
+        )
         return use_file_transfer or parsed_config.use_file_transfer
