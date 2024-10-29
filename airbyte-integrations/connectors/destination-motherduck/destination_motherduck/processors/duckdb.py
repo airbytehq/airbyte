@@ -116,7 +116,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         primary_keys: list[str] | None = None,
     ) -> None:
         if primary_keys:
-            pk_str = ", ".join(primary_keys)
+            pk_str = ", ".join(map(self._quote_identifier, primary_keys))
             column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
@@ -164,12 +164,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str) -> None:
         column_names_list = list(buffer[stream_name].keys())
-        column_names = ", ".join(column_names_list)
+        column_names_str = ", ".join(map(self._quote_identifier, column_names_list))
         params = ", ".join(["?"] * len(column_names_list))
         sql = f"""
         -- Write with executemany
         INSERT INTO {self._fully_qualified(table_name)}
-            ({column_names})
+            ({column_names_str})
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]

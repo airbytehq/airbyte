@@ -4,7 +4,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ee9b5-eb98-4e99-a4e5-3f0d573bee66
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/destination-motherduck
   githubIssueLabel: destination-motherduck
   icon: duckdb.svg
@@ -18,6 +18,10 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges: []
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-destination-motherduck
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection

@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateStats, ConfiguredAirbyteCatalog, Status, Type
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
@@ -138,14 +138,36 @@ class DestinationMotherDuck(Destination):
             processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
-        records_buffered = 0
-        records_processed = 0
+        records_buffered: dict[str, int] = defaultdict(int)
+        records_processed: dict[str, int] = defaultdict(int)
+        records_since_last_checkpoint: dict[str, int] = defaultdict(int)
+        legacy_state_messages: list[AirbyteMessage] = []
         for message in input_messages:
-            if message.type == Type.STATE:
+            if message.type == Type.STATE and message.state is not None:
+                if message.state.stream is None:
+                    logger.warning("Cannot process legacy state message, skipping.")
+                    # Hold until the end of the stream, and then yield them all at once.
+                    legacy_state_messages.append(message)
+                    continue
+                stream_name = message.state.stream.stream_descriptor.name
+                _ = message.state.stream.stream_descriptor.namespace  # Unused currently
                 # flush the buffer
-                self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                self._flush_buffer(
+                    buffer=buffer,
+                    configured_catalog=configured_catalog,
+                    db_path=path,
+                    schema_name=schema_name,
+                    motherduck_api_key=motherduck_api_key,
+                    stream_name=stream_name,
+                )
                 buffer = defaultdict(lambda: defaultdict(list))
-                records_buffered = 0
+                records_buffered[stream_name] = 0
+
+                # Annotate the state message with the number of records processed
+                message.state.destinationStats = AirbyteStateStats(
+                    recordCount=records_since_last_checkpoint[stream_name],
+                )
+                records_since_last_checkpoint[stream_name] = 0
 
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
@@ -165,20 +187,36 @@ class DestinationMotherDuck(Destination):
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
                 buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
-                records_buffered += 1
-                if records_buffered >= MAX_STREAM_BATCH_SIZE:
-                    logger.info(f"Loading {records_buffered:,} from buffer...")
-                    self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                records_buffered[stream_name] += 1
+                records_since_last_checkpoint[stream_name] += 1
+
+                if records_buffered[stream_name] >= MAX_STREAM_BATCH_SIZE:
+                    logger.info(
+                        f"Loading {records_buffered[stream_name]:,} records from '{stream_name}' stream buffer...",
+                    )
+                    self._flush_buffer(
+                        buffer=buffer,
+                        configured_catalog=configured_catalog,
+                        db_path=path,
+                        schema_name=schema_name,
+                        motherduck_api_key=motherduck_api_key,
+                        stream_name=stream_name,
+                    )
                     buffer = defaultdict(lambda: defaultdict(list))
-                    records_processed += records_buffered
-                    records_buffered = 0
-                    logger.info(f"Records loaded successfully. Total records processed: {records_processed:,}")
+                    records_processed[stream_name] += records_buffered[stream_name]
+                    records_buffered[stream_name] = 0
+                    logger.info(
+                        f"Records loaded successfully. Total '{stream_name}' records processed: {records_processed[stream_name]:,}",
+                    )
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+        if legacy_state_messages:
+            # Save to emit these now, since we've finished processing the stream.
+            yield from legacy_state_messages
 
     def _flush_buffer(
         self,
@@ -187,12 +225,20 @@ class DestinationMotherDuck(Destination):
         db_path: str,
         schema_name: str,
         motherduck_api_key: str,
+        stream_name: str | None = None,
     ) -> None:
         """
-        Flush the buffer to the destination
+        Flush the buffer to the destination.
+
+        If no stream name is provided, then all streams will be flushed.
         """
         for configured_stream in configured_catalog.streams:
-            stream_name = configured_stream.stream.name
+            if stream_name is not None and stream_name != configured_stream.stream.name:
+                # Skip this stream.
+                continue
+
+            # Else, we're flushing this stream or all streams.
+
             if stream_name in buffer:
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
