@@ -42,6 +42,7 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.3 | 2024-10-29 | [47904](https://github.com/airbytehq/airbyte/pull/47904) | Update dependencies |
 | 0.4.2 | 2024-10-28 | [47641](https://github.com/airbytehq/airbyte/pull/47641) | Update dependencies |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-14 | [44042](https://github.com/airbytehq/airbyte/pull/44042) | Refactor connector to manifest-only format |
