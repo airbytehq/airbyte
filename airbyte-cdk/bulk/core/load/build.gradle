@@ -25,16 +25,24 @@ dependencies {
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
 }
 
-task integrationTest(type: Test) {
+def integrationTestTask = tasks.register('integrationTest', Test) {
     description = 'Runs the integration tests.'
     group = 'verification'
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     useJUnitPlatform()
+
+    jvmArgs = project.test.jvmArgs
+    systemProperties = project.test.systemProperties
+    maxParallelForks = project.test.maxParallelForks
+    maxHeapSize = project.test.maxHeapSize
 }
+// These tests are lightweight enough to run on every PR.
+tasks.named('check').configure {
+    dependsOn integrationTest
+}
+
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
-// These tests are lightweight enough to run on every PR.
-rootProject.check.dependsOn(integrationTest)
