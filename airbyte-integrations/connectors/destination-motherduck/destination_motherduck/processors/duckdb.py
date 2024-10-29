@@ -14,7 +14,6 @@ from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
-from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
