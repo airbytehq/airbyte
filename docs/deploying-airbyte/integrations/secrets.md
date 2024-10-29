@@ -113,7 +113,6 @@ global:
   secretsManager:
     type: googleSecretManager
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
-    secretManagerSecretName: airbyte-config-secrets
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
