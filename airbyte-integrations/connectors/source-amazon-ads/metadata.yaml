@@ -36,7 +36,7 @@ data:
       6.0.0:
         message:
           "The Report API v2 is getting deprecated in favor of v3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
-          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. It is recommended to use `SponsoredBrandsV3ReportStream` as an alternative."
+          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
         upgradeDeadline: "2024-11-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:
