@@ -4,7 +4,7 @@
 from typing import Literal, Optional, Union
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from pydantic.v1 import BaseModel, Field
 
 
@@ -50,6 +50,18 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     )
     use_file_transfer: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
 
+    delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=7,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+    )
+
     @classmethod
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/sftp-bulk"
+
+
