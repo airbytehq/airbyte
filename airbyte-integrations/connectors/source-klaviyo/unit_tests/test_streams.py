@@ -3,16 +3,20 @@
 #
 
 
+import urllib.parse
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional
 from unittest import mock
 from unittest.mock import patch
 
+import freezegun
 import pendulum
 import pytest
 import requests
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
@@ -23,6 +27,19 @@ API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
 CONFIG = {"api_key": API_KEY, "start_date": START_DATE}
 
+EVENTS_STREAM_DEFAULT_START_DATE = "2012-01-01T00:00:00+00:00"
+EVENTS_STREAM_CONFIG_START_DATE = "2021-11-08T00:00:00+00:00"
+EVENTS_STREAM_STATE_DATE = (datetime.fromisoformat(EVENTS_STREAM_CONFIG_START_DATE) + relativedelta(years=1)).isoformat()
+EVENTS_STREAM_TESTING_FREEZE_TIME = "2023-12-12 12:00:00"
+
+def get_months_diff(provided_date: str) -> int:
+    """
+    This function returns the difference in months between provided date and freeze time.
+    """
+    provided_date = datetime.fromisoformat(provided_date).replace(tzinfo=None)
+    freeze_date = datetime.strptime(EVENTS_STREAM_TESTING_FREEZE_TIME, "%Y-%m-%d %H:%M:%S")
+    difference = relativedelta(freeze_date, provided_date)
+    return difference.years * 12 + difference.months
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     source = SourceKlaviyo()
@@ -160,6 +177,36 @@ class TestKlaviyoStream:
 
 
 class TestIncrementalKlaviyoStream:
+
+    @staticmethod
+    def generate_api_urls(start_date_str: str) -> list[(str, str)]:
+        """
+        This function  generates API URLs.
+        Each URL will cover one month of data starting from the input date up to the current moment.
+        """
+        start_date = datetime.fromisoformat(start_date_str)
+        current_date = datetime.now(start_date.tzinfo)
+        urls = []
+        while start_date < current_date:
+            end_date = start_date + relativedelta(months=1) - timedelta(seconds=1)
+            if end_date > current_date:
+                end_date = current_date
+            start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S") + start_date.strftime("%z")
+            end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S") + end_date.strftime("%z")
+            base_url = 'https://a.klaviyo.com/api/events'
+            query_params = {
+                'fields[metric]': 'name,created,updated,integration',
+                'include': 'metric',
+                'filter': f'greater-or-equal(datetime,{start_date_str}),less-or-equal(datetime,{end_date_str})',
+                'sort': 'datetime'
+            }
+            encoded_query = urllib.parse.urlencode(query_params)
+            encoded_url = f"{base_url}?{encoded_query}"
+            dummy_record = {"attributes": {"datetime": start_date_str}, "datetime": start_date_str}
+            urls.append((encoded_url, dummy_record))
+            start_date = start_date + relativedelta(months=1)
+        return urls
+
     def test_cursor_field_is_required(self):
         with pytest.raises(
             expected_exception=TypeError,
@@ -237,6 +284,51 @@ class TestIncrementalKlaviyoStream:
             current_stream_state={stream.cursor_field: current_cursor} if current_cursor else {},
             latest_record={stream.cursor_field: latest_cursor},
         ) == {stream.cursor_field: expected_cursor}
+
+
+    @freezegun.freeze_time("2023-12-12 12:00:00")
+    @pytest.mark.parametrize(
+        # expected_amount_of_results: we put 1 record for every request
+        ("config_start_date", "stream_state", "expected_amount_of_results"),
+        (
+            (
+                # we pick the state
+                EVENTS_STREAM_CONFIG_START_DATE,
+                EVENTS_STREAM_STATE_DATE,
+                get_months_diff(EVENTS_STREAM_STATE_DATE) + 1 # adding last request
+            ),
+            (
+                    # we pick the config start date
+                    EVENTS_STREAM_CONFIG_START_DATE,
+                    None,
+                    get_months_diff(EVENTS_STREAM_CONFIG_START_DATE) + 1  # adding last request
+            ),
+            (
+                    "",
+                    "",
+                    get_months_diff(EVENTS_STREAM_DEFAULT_START_DATE) + 1 # adding last request
+            ),
+        ),
+    )
+    def test_read_records_events(self, config_start_date, stream_state, expected_amount_of_results, requests_mock):
+        if config_start_date:
+            test_config = CONFIG | {"start_date": config_start_date}
+        else:
+            test_config = {**CONFIG}
+            test_config.pop("start_date")
+        stream = get_stream_by_name("events", test_config)
+        dummy_records = []
+
+        initial_date_for_urls = stream_state or config_start_date or EVENTS_STREAM_DEFAULT_START_DATE
+        urls = self.generate_api_urls(initial_date_for_urls)
+        for url, dummy_record in urls:
+            requests_mock.register_uri("GET", url, status_code=200, json={"data": dummy_record})
+            dummy_records.append(dummy_record)
+
+        stream.state = {stream.cursor_field: stream_state if stream_state else config_start_date}
+        records = get_records(stream=stream, sync_mode=SyncMode.incremental)
+        assert records == dummy_records
+        assert len(records) == expected_amount_of_results
 
 
 class TestSemiIncrementalKlaviyoStream:

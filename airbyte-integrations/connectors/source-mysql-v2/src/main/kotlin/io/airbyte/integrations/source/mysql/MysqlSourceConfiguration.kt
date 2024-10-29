@@ -4,13 +4,16 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -27,15 +30,16 @@ data class MysqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
-    val cursorMethodConfiguration: CursorMethodConfiguration,
+    val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
+    override val maxSnapshotReadDuration: Duration?
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
-    override val global = cursorMethodConfiguration is CdcCursor
+    override val global = incrementalConfiguration is CdcIncrementalConfiguration
 
     /** Required to inject [MysqlSourceConfiguration] directly. */
     @Factory
@@ -50,9 +54,28 @@ data class MysqlSourceConfiguration(
     }
 }
 
+sealed interface IncrementalConfiguration
+
+data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val initialWaitDuration: Duration,
+    val initialLoadTimeout: Duration,
+    val serverTimezone: String?,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
+) : IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
+}
+
 @Singleton
-class MysqlSourceConfigurationFactory :
+class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
     SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
+
+    constructor() : this(emptySet())
+
     override fun makeWithoutExceptionHandling(
         pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration {
@@ -82,7 +105,18 @@ class MysqlSourceConfigurationFactory :
         val encryption: Encryption = pojo.getEncryptionValue()
         val jdbcEncryption =
             when (encryption) {
-                is EncryptionPreferred -> MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                is EncryptionPreferred -> {
+                    if (
+                        featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) &&
+                            sshTunnel is SshNoTunnelMethod
+                    ) {
+                        throw ConfigErrorException(
+                            "Connection from Airbyte Cloud requires " +
+                                "SSL encryption or an SSH tunnel."
+                        )
+                    }
+                    MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                }
                 is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
                 is SslVerifyCertificate ->
                     MysqlJdbcEncryption(
@@ -104,6 +138,12 @@ class MysqlSourceConfigurationFactory :
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
 
+        val cursorConfig = pojo.getCursorMethodConfigurationValue()
+        val maxSnapshotReadTime: Duration? =
+            when (cursorConfig is CdcCursor) {
+                true -> cursorConfig.initialLoadTimeoutHours?.let { Duration.ofHours(it.toLong()) }
+                else -> null
+            }
         // Build JDBC URL
         val address = "%s:%d"
         val jdbcUrlFmt = "jdbc:mysql://${address}"
@@ -119,6 +159,24 @@ class MysqlSourceConfigurationFactory :
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+        val incrementalConfiguration: IncrementalConfiguration =
+            when (val incPojo = pojo.getCursorMethodConfigurationValue()) {
+                UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
+                is CdcCursor ->
+                    CdcIncrementalConfiguration(
+                        initialWaitDuration =
+                            Duration.ofSeconds(incPojo.initialWaitTimeInSeconds!!.toLong()),
+                        initialLoadTimeout =
+                            Duration.ofHours(incPojo.initialLoadTimeoutHours!!.toLong()),
+                        serverTimezone = incPojo.serverTimezone,
+                        invalidCdcCursorPositionBehavior =
+                            if (incPojo.invalidCdcCursorPositionBehavior == "Fail sync") {
+                                InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                            } else {
+                                InvalidCdcCursorPositionBehavior.RESET_SYNC
+                            },
+                    )
+            }
         return MysqlSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -127,10 +185,11 @@ class MysqlSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            cursorMethodConfiguration = pojo.getCursorMethodConfigurationValue(),
+            incrementalConfiguration = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            maxSnapshotReadDuration = maxSnapshotReadTime
         )
     }
 }

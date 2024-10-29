@@ -1,18 +1,20 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
-import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import java.time.Duration
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = [Environment.TEST], rebuildContext = true)
+@MicronautTest(environments = [Environment.TEST, AIRBYTE_CLOUD_ENV], rebuildContext = true)
 class MysqlSourceConfigurationTest {
     @Inject
     lateinit var pojoSupplier:
@@ -23,7 +25,16 @@ class MysqlSourceConfigurationTest {
         SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>
 
     @Test
-    @Property(name = "airbyte.connector.config.json", value = CONFIG)
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.ssl_mode.mode", value = "required")
+    @Property(
+        name = "airbyte.connector.config.jdbc_url_params",
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+    )
     fun testParseJdbcParameters() {
         val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
 
@@ -32,7 +43,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.realHost, "localhost")
         Assertions.assertEquals(config.realPort, 12345)
         Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
-        Assertions.assertTrue(config.sshTunnel is SshPasswordAuthTunnelMethod)
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
 
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
@@ -43,6 +54,19 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    fun testAirbyteCloudDeployment() {
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(pojo)
+        }
     }
 
     @Test
@@ -59,13 +83,16 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
         Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
-        Assertions.assertTrue(config.cursorMethodConfiguration is CdcCursor)
+        Assertions.assertTrue(config.incrementalConfiguration is CdcIncrementalConfiguration)
 
-        val cdcCursor = config.cursorMethodConfiguration as CdcCursor
+        val cdcCursor = config.incrementalConfiguration as CdcIncrementalConfiguration
 
-        Assertions.assertEquals(cdcCursor.initialWaitTimeInSeconds, 300)
-        Assertions.assertEquals(cdcCursor.initialLoadTimeoutHours, 8)
-        Assertions.assertEquals(cdcCursor.invalidCdcCursorPositionBehavior, "Re-sync data")
+        Assertions.assertEquals(cdcCursor.initialWaitDuration, Duration.ofSeconds(301))
+        Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
+        Assertions.assertEquals(
+            cdcCursor.invalidCdcCursorPositionBehavior,
+            InvalidCdcCursorPositionBehavior.RESET_SYNC
+        )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
@@ -114,8 +141,8 @@ const val CONFIG_V1: String =
   },
   "replication_method": {
     "method": "CDC",
-    "initial_waiting_seconds": 300,
-    "initial_load_timeout_hours": 8,
+    "initial_waiting_seconds": 301,
+    "initial_load_timeout_hours": 9,
     "invalid_cdc_cursor_position_behavior": "Re-sync data"
   }
 }

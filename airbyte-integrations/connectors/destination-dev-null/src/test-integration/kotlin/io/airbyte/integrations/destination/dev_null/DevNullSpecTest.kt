@@ -4,6 +4,6 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.test.spec.SpecTest
+import io.airbyte.cdk.load.spec.SpecTest
 
 class DevNullSpecTest : SpecTest()

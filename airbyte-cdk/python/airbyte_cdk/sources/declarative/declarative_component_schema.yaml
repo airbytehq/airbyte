@@ -28,6 +28,8 @@ properties:
     type: object
   spec:
     "$ref": "#/definitions/Spec"
+  concurrency_level:
+    "$ref": "#/definitions/ConcurrencyLevel"
   metadata:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
@@ -312,6 +314,37 @@ definitions:
           anyOf:
             - "$ref": "#/definitions/CompositeErrorHandler"
             - "$ref": "#/definitions/DefaultErrorHandler"
+      $parameters:
+        type: object
+        additionalProperties: true
+  ConcurrencyLevel:
+    title: Concurrency Level
+    description: Defines the amount of parallelization for the streams that are being synced. The factor of parallelization is how many partitions or streams are synced at the same time. For example, with a concurrency_level of 10, ten streams or partitions of data will processed at the same time.
+    type: object
+    required:
+      - default_concurrency
+    properties:
+      type:
+        type: string
+        enum: [ConcurrencyLevel]
+      default_concurrency:
+        title: Default Concurrency
+        description: The amount of concurrency that will applied during a sync. This value can be hardcoded or user-defined in the config if different users have varying volume thresholds in the target API.
+        anyOf:
+          - type: integer
+          - type: string
+        interpolation_context:
+          - config
+        examples:
+          - 10
+          - "{{ config['num_workers'] or 10 }}"
+      max_concurrency:
+        title: Max Concurrency
+        description: The maximum level of concurrency that will be used during a sync. This becomes a required field when the default_concurrency derives from the config, because it serves as a safeguard against a user-defined threshold that is too high.
+        type: integer
+        examples:
+          - 20
+          - 100
       $parameters:
         type: object
         additionalProperties: true
@@ -1374,6 +1407,7 @@ definitions:
         description: Component used to decode the response.
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1706,6 +1740,16 @@ definitions:
       type:
         type: string
         enum: [IterableDecoder]
+  XmlDecoder:
+    title: XML Decoder
+    description: Use this if the response is XML.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [XmlDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2071,6 +2115,20 @@ definitions:
         description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
         type: boolean
         default: false
+      extra_fields:
+        title: Extra Fields
+        description: Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.
+        interpolation_context:
+          - config
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+          description: Defines a field path as an array of strings.
+          examples:
+            - ["field1"]
+            - ["nested", "field2"]
       $parameters:
         type: object
         additionalProperties: true
@@ -2349,6 +2407,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2381,7 +2440,7 @@ definitions:
         items:
           type: string
   AsyncRetriever:
-    description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+    description: "[Experimental - We expect the interface to change shortly and we reserve the right to not consider this a breaking change] Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router."
     type: object
     required:
       - type
@@ -2464,6 +2523,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true

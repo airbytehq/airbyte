@@ -95,6 +95,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
         self._read_state_from_cursor = read_state_from_cursor
         self._current_slice: Optional[StreamSlice] = None
         self._finished_sync = False
+        self._previous_state: Optional[Mapping[str, Any]] = None
 
     def next(self) -> Optional[Mapping[str, Any]]:
         try:
@@ -110,11 +111,11 @@ class CursorBasedCheckpointReader(CheckpointReader):
         pass
 
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
-        # This is used to avoid sending a duplicate state message at the end of a sync since the stream has already
-        # emitted state at the end of each slice. We only emit state if _current_slice is None which indicates we had no
-        # slices and emitted no record or are currently in the process of emitting records.
-        if self.current_slice is None or not self._finished_sync:
-            return self._cursor.get_stream_state()
+        # This is used to avoid sending a duplicate state messages
+        new_state = self._cursor.get_stream_state()
+        if new_state != self._previous_state:
+            self._previous_state = new_state
+            return new_state
         else:
             return None
 
@@ -152,7 +153,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         next_slice = self.read_and_convert_slice()
                         state_for_slice = self._cursor.select_state(next_slice)
                         has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
+                return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition, extra_fields=next_slice.extra_fields)
             else:
                 state_for_slice = self._cursor.select_state(self.current_slice)
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
@@ -165,9 +166,15 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         next_candidate_slice = self.read_and_convert_slice()
                         state_for_slice = self._cursor.select_state(next_candidate_slice)
                         has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                    return StreamSlice(
+                        cursor_slice=state_for_slice or {},
+                        partition=next_candidate_slice.partition,
+                        extra_fields=next_candidate_slice.extra_fields,
+                    )
                 # The reader continues to process the current partition if it's state is still in progress
-                return StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition)
+                return StreamSlice(
+                    cursor_slice=state_for_slice or {}, partition=self.current_slice.partition, extra_fields=self.current_slice.extra_fields
+                )
         else:
             # Unlike RFR cursors that iterate dynamically according to how stream state is updated, most cursors operate
             # on a fixed set of slices determined before reading records. They just iterate to the next slice

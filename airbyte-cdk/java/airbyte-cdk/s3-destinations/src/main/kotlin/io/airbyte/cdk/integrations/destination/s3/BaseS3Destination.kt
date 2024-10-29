@@ -19,6 +19,7 @@ import java.util.function.Consumer
 private val LOGGER = KotlinLogging.logger {}
 
 abstract class BaseS3Destination
+@JvmOverloads
 protected constructor(
     protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
     protected val environment: Map<String, String> = System.getenv(),
