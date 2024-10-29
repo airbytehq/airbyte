@@ -1,0 +1,891 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Onfleet is a logistics software.
+
+  Using this connector we can extract data from workers , teams , hubs and tasks
+  streams.
+
+  Docs : https://docs.onfleet.com/reference/introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - organization
+
+definitions:
+  streams:
+    organization:
+      type: DeclarativeStream
+      name: organization
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization"
+    admins:
+      type: DeclarativeStream
+      name: admins
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: admins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/admins"
+    workers:
+      type: DeclarativeStream
+      name: workers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workers"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    hubs:
+      type: DeclarativeStream
+      name: hubs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: hubs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/hubs"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tasks/all
+          http_method: GET
+          request_parameters:
+            from: "{{ config['from'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: The values of one or more parameters
+                    http_codes:
+                      - 400
+                    error_message: >-
+                      Please fill "from" : the starting time in Unix time of the
+                      search range
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://onfleet.com/api/v2/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"username\"] }}"
+      password: "{{ config[\"password\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/organization"
+  - $ref: "#/definitions/streams/admins"
+  - $ref: "#/definitions/streams/workers"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/hubs"
+  - $ref: "#/definitions/streams/tasks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        title: Username
+        order: 0
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 1
+      from:
+        type: string
+        title: from
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organization: true
+    admins: true
+    workers: true
+    teams: true
+    hubs: true
+    tasks: true
+  testedStreams:
+    organization:
+      streamHash: f04d66929325eded8136e65dd95edfe7b733be2d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    admins:
+      streamHash: e4f9673fdb9a79919886db5def9352e85ae14e11
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workers:
+      streamHash: bd291c87e4e1cfdcee47fc7488a1f96c601fa5f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: cd1233ba304ce2b437579d6eea25693aa81e156f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    hubs:
+      streamHash: 44fd8a9b439e6e83789c2a72e857db5de8e656d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: f2315ca82a43426072691ae0c9f1661828f191da
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  organization:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      delegatees:
+        type:
+          - array
+          - "null"
+      driverSupportEmail:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  admins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAccountOwner:
+        type:
+          - boolean
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isReadOnly:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  workers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - array
+          - "null"
+      accountStatus:
+        type:
+          - string
+          - "null"
+      additionalCapacities:
+        type:
+          - object
+          - "null"
+        properties:
+          capacityA:
+            type:
+              - number
+              - "null"
+          capacityB:
+            type:
+              - number
+              - "null"
+          capacityC:
+            type:
+              - number
+              - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      onDuty:
+        type:
+          - boolean
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      userData:
+        type:
+          - object
+          - "null"
+      vehicle:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          licensePlate:
+            type:
+              - string
+              - "null"
+          timeCreated:
+            type:
+              - number
+              - "null"
+          timeLastModified:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      enableSelfAssignment:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      managers:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      workers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  hubs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          apartment:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          county:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      location:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      metadata:
+        type:
+          - array
+          - "null"
+      additionalQuantities:
+        type:
+          - object
+          - "null"
+        properties:
+          quantityA:
+            type:
+              - number
+              - "null"
+          quantityB:
+            type:
+              - number
+              - "null"
+          quantityC:
+            type:
+              - number
+              - "null"
+      appearance:
+        type:
+          - object
+          - "null"
+        properties: {}
+      completeAfter:
+        type:
+          - number
+          - "null"
+      completeBefore:
+        type:
+          - number
+          - "null"
+      completionDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          actions:
+            type:
+              - array
+              - "null"
+          events:
+            type:
+              - array
+              - "null"
+          failureNotes:
+            type:
+              - string
+              - "null"
+          failureReason:
+            type:
+              - string
+              - "null"
+          firstLocation:
+            type:
+              - array
+              - "null"
+          lastLocation:
+            type:
+              - array
+              - "null"
+          successNotes:
+            type:
+              - string
+              - "null"
+          unavailableAttachments:
+            type:
+              - array
+              - "null"
+      container:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+      creator:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - array
+          - "null"
+      dependencies:
+        type:
+          - array
+          - "null"
+      destination:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - array
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              apartment:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              number:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              street:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          timeCreated:
+            type:
+              - number
+              - "null"
+          timeLastModified:
+            type:
+              - number
+              - "null"
+          useGPS:
+            type:
+              - boolean
+              - "null"
+          warnings:
+            type:
+              - array
+              - "null"
+      executor:
+        type:
+          - string
+          - "null"
+      feedback:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      identity:
+        type:
+          - object
+          - "null"
+        properties:
+          failedScanCount:
+            type:
+              - number
+              - "null"
+      merchant:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      overrides:
+        type:
+          - object
+          - "null"
+      pickupTask:
+        type:
+          - boolean
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      recipients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            notes:
+              type:
+                - string
+                - "null"
+            organization:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            skipSMSNotifications:
+              type:
+                - boolean
+                - "null"
+            timeCreated:
+              type:
+                - number
+                - "null"
+            timeLastModified:
+              type:
+                - number
+                - "null"
+      requirements:
+        type:
+          - object
+          - "null"
+        properties:
+          minimumAge:
+            type:
+              - number
+              - "null"
+          notes:
+            type:
+              - boolean
+              - "null"
+          photo:
+            type:
+              - boolean
+              - "null"
+          signature:
+            type:
+              - boolean
+              - "null"
+      scanOnlyRequiredBarcodes:
+        type:
+          - boolean
+          - "null"
+      serviceTime:
+        type:
+          - number
+          - "null"
+      shortId:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      trackingURL:
+        type:
+          - string
+          - "null"
+      trackingViewed:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
