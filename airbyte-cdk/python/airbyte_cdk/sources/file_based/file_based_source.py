@@ -130,7 +130,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 parsed_config = self._get_parsed_config(config)
                 availability_method = (
                     stream.availability_strategy.check_availability
-                    if parsed_config.use_file_transfer
+                    if self._use_file_transfer(parsed_config)
                     else stream.availability_strategy.check_availability_and_parsability
                 )
                 (
@@ -223,7 +223,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         CursorField(DefaultFileBasedStream.ab_last_mod_col),
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor, parsed_config.use_file_transfer),
+                        self._make_default_stream(stream_config, cursor, self._use_file_transfer(parsed_config)),
                         self,
                         self.logger,
                         stream_state,
@@ -231,7 +231,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor, parsed_config.use_file_transfer)
+                    stream = self._make_default_stream(stream_config, cursor,  self._use_file_transfer(parsed_config))
 
                 streams.append(stream)
             return streams
@@ -309,3 +309,8 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
     def _validate_input_schema(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.schemaless and stream_config.input_schema:
             raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
+
+    @staticmethod
+    def _use_file_transfer(parsed_config: AbstractFileBasedSpec) -> bool:
+        use_file_transfer = hasattr(parsed_config.delivery_method, "use_file_transfer") and parsed_config.delivery_method.use_file_transfer
+        return use_file_transfer or parsed_config.use_file_transfer
