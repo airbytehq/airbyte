@@ -23,6 +23,7 @@ from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
 
+
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
@@ -141,9 +142,16 @@ class DestinationMotherDuck(Destination):
         records_buffered: dict[str, int] = defaultdict(int)
         records_processed: dict[str, int] = defaultdict(int)
         records_since_last_checkpoint: dict[str, int] = defaultdict(int)
+        legacy_state_messages: list[AirbyteMessage] = []
         for message in input_messages:
             if message.type == Type.STATE and message.state is not None:
-                stream_name = message.state.stream
+                if message.state.stream is None:
+                    logger.warning("Cannot process legacy state message, skipping.")
+                    # Hold until the end of the stream, and then yield them all at once.
+                    legacy_state_messages.append(message)
+                    continue
+                stream_name = message.state.stream.stream_descriptor.name
+                _ = message.state.stream.stream_descriptor.namespace  # Unused currently
                 # flush the buffer
                 self._flush_buffer(
                     buffer=buffer,
@@ -207,6 +215,9 @@ class DestinationMotherDuck(Destination):
 
         # flush any remaining messages
         self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+        if legacy_state_messages:
+            # Save to emit these now, since we've finished processing the stream.
+            yield from legacy_state_messages
 
     def _flush_buffer(
         self,
