@@ -14,7 +14,7 @@ from source_jira.source import SourceJira
 def test_streams(config):
     source = SourceJira()
     streams = source.streams(config)
-    expected_streams_number = 55
+    expected_streams_number = 56
     assert len(streams) == expected_streams_number
 
 
