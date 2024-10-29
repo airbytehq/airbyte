@@ -19,6 +19,7 @@ class MockBasicFunctionalityIntegrationTest :
         NoopExpectedRecordMapper,
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
+        supportsDedup = true,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -36,8 +37,8 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    override fun testFunkyStreamAndColumnNames() {
-        super.testFunkyStreamAndColumnNames()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 
     @Test
@@ -53,5 +54,10 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    override fun testDedup() {
+        super.testDedup()
     }
 }

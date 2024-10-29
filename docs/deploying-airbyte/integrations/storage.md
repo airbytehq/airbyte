@@ -85,7 +85,7 @@ Ensure you've already created a Kubernetes secret containing both your S3 access
 global:
   storage:
     type: "S3"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
@@ -106,7 +106,7 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   storage:
     type: "GCS"
-    storageSecretName: airbyte-config-secrets
+    secretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
@@ -124,7 +124,7 @@ global:
 global:
   storage:
     type: "Azure"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket

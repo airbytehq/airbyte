@@ -5,9 +5,17 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimestampValue
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -62,12 +70,7 @@ class RecordDiffer(
             )
         }
 
-        // Compare each PK field in order, until we find a field that the two records differ in.
-        // If all the fields are equal, then these two records have the same PK.
-        pk1.zip(pk2)
-            .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
-            .firstOrNull { it != 0 }
-            ?: 0
+        comparePks(pk1, pk2)
     }
 
     /**
@@ -235,7 +238,7 @@ class RecordDiffer(
                     // with it explicitly in the condition)
                     val expectedValue = expectedRecord.data.values[key]
                     val actualValue = actualRecord.data.values[key]
-                    if (expectedValue != actualValue) {
+                    if (valueComparator.compare(expectedValue, actualValue) != 0) {
                         diff.append("$key: Expected $expectedValue, but was $actualValue\n")
                     }
                 }
@@ -248,6 +251,16 @@ class RecordDiffer(
         val valueComparator: Comparator<AirbyteValue> =
             Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!) }
 
+        /**
+         * Compare each PK field in order, until we find a field that the two records differ in. If
+         * all the fields are equal, then these two records have the same PK.
+         */
+        fun comparePks(pk1: List<AirbyteValue?>, pk2: List<AirbyteValue?>) =
+            (pk1.zip(pk2)
+                .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
+                .firstOrNull { it != 0 }
+                ?: 0)
+
         private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
@@ -255,9 +268,38 @@ class RecordDiffer(
             return if (v1::class != v2::class) {
                 v1::class.jvmName.compareTo(v2::class.jvmName)
             } else {
-                // otherwise, just be a terrible person.
-                // we know these are the same type, so this is safe to do.
-                @Suppress("UNCHECKED_CAST") (v1 as Comparable<AirbyteValue>).compareTo(v2)
+                // Handle temporal types specifically, because they require explicit parsing
+                return when (v1) {
+                    is DateValue ->
+                        LocalDate.parse(v1.value)
+                            .compareTo(LocalDate.parse((v2 as DateValue).value))
+                    is TimeValue -> {
+                        try {
+                            val time1 = LocalTime.parse(v1.value)
+                            val time2 = LocalTime.parse((v2 as TimeValue).value)
+                            time1.compareTo(time2)
+                        } catch (e: Exception) {
+                            val time1 = OffsetTime.parse(v1.value)
+                            val time2 = OffsetTime.parse((v2 as TimeValue).value)
+                            time1.compareTo(time2)
+                        }
+                    }
+                    is TimestampValue -> {
+                        try {
+                            val ts1 = LocalDateTime.parse(v1.value)
+                            val ts2 = LocalDateTime.parse((v2 as TimestampValue).value)
+                            ts1.compareTo(ts2)
+                        } catch (e: Exception) {
+                            val ts1 = OffsetDateTime.parse(v1.value)
+                            val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
+                            ts1.compareTo(ts2)
+                        }
+                    }
+                    // otherwise, just be a terrible person.
+                    // we know these are the same type, so this is safe to do.
+                    else ->
+                        @Suppress("UNCHECKED_CAST") (v1 as Comparable<AirbyteValue>).compareTo(v2)
+                }
             }
         }
     }
