@@ -1,0 +1,597 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Infobip source that ingests data from the infobip API.
+
+
+  Infobip drives deeper customer engagement with secure, personalized
+  communications across SMS, RCS, Email, Voice, WhatsApp, and more
+  https://www.infobip.com/
+
+
+  In order to use this source, you must first create an Infobip account. Once
+  logged in, you can head over to Developer Tools in the sidebar and click on
+  API Keys. Here you can generate a new API key for authenticating.
+
+
+  You can learn more about the API here https://www.infobip.com/docs/api
+
+check:
+  type: CheckStream
+  stream_names:
+    - people
+
+definitions:
+  streams:
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people/2/persons
+          http_method: GET
+          request_headers:
+            Authorization: App {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - persons
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people/2/companies
+          http_method: GET
+          request_headers:
+            Authorization: App {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - companies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    custom_attributes:
+      type: DeclarativeStream
+      name: custom_attributes
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people/2/customAttributes
+          http_method: GET
+          request_headers:
+            Authorization: App {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customAttributes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_attributes"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms/1/forms
+          http_method: GET
+          request_headers:
+            Authorization: App {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ccaas/1/conversations
+          http_method: GET
+          request_headers:
+            Authorization: App {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 999
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://pedlpe.api.infobip.com
+
+streams:
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/custom_attributes"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/conversations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: The API key associated with your account.
+        order: 0
+        title: API Key
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    people: true
+    companies: true
+    custom_attributes: true
+    forms: true
+    conversations: false
+  testedStreams:
+    people:
+      hasRecords: true
+      streamHash: ac7774cc93d0f981f23038d8fcea9ea9ae2f0d38
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      hasRecords: true
+      streamHash: 0f57c943b0e7266429b20ac1271dc8bc12323c08
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_attributes:
+      hasRecords: true
+      streamHash: f440a659d1660fae9f35cdabc14069ed84e40122
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    forms:
+      hasRecords: true
+      streamHash: 5d4a26efe64f8e012780fc1bff303f8c3945b1bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations:
+      streamHash: 1f9f9f1307ccd4672c289da8db9a8da1bcf4e0b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.infobip.com/docs/api
+
+schemas:
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      contactInformation:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                address:
+                  type:
+                    - string
+                    - "null"
+          phone:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                number:
+                  type:
+                    - string
+                    - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      lastName:
+        type:
+          - string
+          - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountManager:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      customAttributes:
+        type:
+          - object
+          - "null"
+        properties:
+          Contract Expiry:
+            type:
+              - string
+              - "null"
+      customerStage:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: number
+      industry:
+        type:
+          - string
+          - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      modifiedFrom:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      vatNumber:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  custom_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      dataType:
+        type:
+          - string
+          - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      name:
+        type: string
+      path:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - name
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      elements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            additionalConfiguration:
+              type:
+                - object
+                - "null"
+            component:
+              type:
+                - string
+                - "null"
+            fieldId:
+              type:
+                - string
+                - "null"
+            isHidden:
+              type:
+                - boolean
+                - "null"
+            isRequired:
+              type:
+                - boolean
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  additionalConfiguration:
+                    type:
+                      - object
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            placeholder:
+              type:
+                - string
+                - "null"
+            validationRules:
+              type:
+                - object
+                - "null"
+              properties:
+                maxLength:
+                  type:
+                    - number
+                    - "null"
+                pattern:
+                  type:
+                    - string
+                    - "null"
+                sample:
+                  type:
+                    - string
+                    - "null"
+      formStatus:
+        type:
+          - string
+          - "null"
+      formType:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      resubmitEnabled:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      authorAgentId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      pendingSince:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      topic:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
