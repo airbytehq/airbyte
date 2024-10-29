@@ -343,7 +343,6 @@ definitions:
         required:
         - id
         - created_at
-        - status
     transformations:
     - type: AddFields
       fields:
@@ -691,12 +690,6 @@ definitions:
         required:
         - id
         - created_at
-        - invoice_date
-        - due_date
-        - subtotal
-        - total
-        - amount_due
-        - status
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: invoice_date
@@ -1025,13 +1018,8 @@ definitions:
             - string
         required:
         - id
-        - starting_balance
-        - ending_balance
-        - amount
         - created_at
         - customer_id
-        - entry_type
-        - credit_block_per_unit_cost_basis
         - credit_block_id
     transformations:
     - type: AddFields
@@ -1334,7 +1322,6 @@ definitions:
               required:
               - id
               - created_at
-              - status
           transformations:
           - type: AddFields
             fields:
@@ -1424,10 +1411,8 @@ definitions:
             - "null"
             - string
         required:
-        - quantity
         - timeframe_start
         - timeframe_end
-        - billable_metric_name
         - billable_metric_id
         - subscription_id
     transformations:
@@ -1555,7 +1540,6 @@ streams:
       required:
       - id
       - created_at
-      - status
   transformations:
   - type: AddFields
     fields:
@@ -2031,7 +2015,6 @@ streams:
             required:
             - id
             - created_at
-            - status
         transformations:
         - type: AddFields
           fields:
@@ -2123,10 +2106,8 @@ streams:
           - "null"
           - string
       required:
-      - quantity
       - timeframe_start
       - timeframe_end
-      - billable_metric_name
       - billable_metric_id
       - subscription_id
   transformations:
@@ -2459,12 +2440,6 @@ streams:
       required:
       - id
       - created_at
-      - invoice_date
-      - due_date
-      - subtotal
-      - total
-      - amount_due
-      - status
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: invoice_date
@@ -2790,13 +2765,8 @@ streams:
           - string
       required:
       - id
-      - starting_balance
-      - ending_balance
-      - amount
       - created_at
       - customer_id
-      - entry_type
-      - credit_block_per_unit_cost_basis
       - credit_block_id
   transformations:
   - type: AddFields
@@ -2913,7 +2883,6 @@ schemas:
     required:
     - id
     - created_at
-    - status
   customers:
     $schema: "http://json-schema.org/draft-07/schema#"
     type:
@@ -3071,10 +3040,6 @@ schemas:
         - "null"
         - string
     required:
-    - quantity
-    - timeframe_start
-    - timeframe_end
-    - billable_metric_name
     - billable_metric_id
     - subscription_id
   plans:
@@ -3263,12 +3228,6 @@ schemas:
     required:
     - id
     - created_at
-    - invoice_date
-    - due_date
-    - subtotal
-    - total
-    - amount_due
-    - status
   credits_ledger_entries:
     $schema: "http://json-schema.org/draft-07/schema#"
     type:
@@ -3331,13 +3290,8 @@ schemas:
         - string
     required:
     - id
-    - starting_balance
-    - ending_balance
-    - amount
     - created_at
     - customer_id
-    - entry_type
-    - credit_block_per_unit_cost_basis
     - credit_block_id
 spec:
   type: Spec
