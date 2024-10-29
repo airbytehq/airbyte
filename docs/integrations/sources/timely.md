@@ -37,6 +37,7 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date      | Pull Request                                             | Subject                                                                         |
 | :------ | :-------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.3 | 2024-10-29 | [47887](https://github.com/airbytehq/airbyte/pull/47887) | Update dependencies |
 | 0.4.2 | 2024-10-28 | [47503](https://github.com/airbytehq/airbyte/pull/47503) | Update dependencies |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-07 | [43368](https://github.com/airbytehq/airbyte/pull/43368) | Refactor connector to manifest-only format |
