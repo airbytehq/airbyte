@@ -436,6 +436,13 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                             "required": ["name", "format"],
                         },
                     },
+                    "use_file_transfer": {
+                        "default": False,
+                        "description": "Enable file-based bulk load",
+                        "title": "File Sync (Experimental)",
+                        "type": 'boolean'
+                    }
+
                 },
                 "required": ["streams"],
             },
