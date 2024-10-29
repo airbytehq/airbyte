@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
@@ -14,6 +15,7 @@ import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.util.concurrent.ConcurrentHashMap
@@ -31,18 +33,18 @@ class MysqlJdbcPartitionFactory(
         MysqlJdbcPartition,
     > {
 
-    private val streamStates = ConcurrentHashMap<String, DefaultJdbcStreamState>()
+    private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
-    override fun streamState(stream: Stream): DefaultJdbcStreamState =
-        streamStates.getOrPut(stream.label) { DefaultJdbcStreamState(sharedState, stream) }
+    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
+        streamStates.getOrPut(streamFeedBootstrap.feed.id) {
+            DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
+        }
 
     private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-        if (
-            stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH ||
-                sharedState.configuration.global
-        ) {
+
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return MysqlJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
@@ -55,6 +57,15 @@ class MysqlJdbcPartitionFactory(
                 pkChosenFromCatalog,
                 lowerBound = null,
                 upperBound = null,
+            )
+        }
+
+        if (sharedState.configuration.global) {
+            return MysqlJdbcCdcSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                pkChosenFromCatalog,
+                lowerBound = null,
             )
         }
 
@@ -96,27 +107,42 @@ class MysqlJdbcPartitionFactory(
      *      ii. In cursor read phase, use cursor incremental.
      * ```
      */
-    override fun create(
-        stream: Stream,
-        opaqueStateValue: OpaqueStateValue?,
-    ): MysqlJdbcPartition? {
-        val streamState: DefaultJdbcStreamState = streamState(stream)
-        if (opaqueStateValue == null) {
-            return coldStart(streamState)
-        }
-        val sv: MysqlJdbcStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
+        val stream: Stream = streamFeedBootstrap.feed
+        val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
+        val opaqueStateValue: OpaqueStateValue =
+            streamFeedBootstrap.currentState ?: return coldStart(streamState)
 
         val isCursorBasedIncremental: Boolean =
             stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&
                 !sharedState.configuration.global
 
         if (!isCursorBasedIncremental) {
-            // TODO: This should consider v1 state format for CDC initial read and return
-            // a MysqlJdbcSnapshotPartition, or a different partition if we can't reuse
-            // MysqlJdbcStreamStateValue.
-            return null
+            val sv: MysqlCdcInitialSnapshotStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
+
+            if (sv.pkName == null) {
+                // This indicates initial snapshot has been completed. CDC snapshot will be handled
+                // by CDCPartitionFactory.
+                // Nothing to do here.
+                return null
+            } else {
+                // This branch indicates snapshot is incomplete. We need to resume based on previous
+                // snapshot state.
+                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
+                val pkField = pkChosenFromCatalog.first()
+                val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
+                return MysqlJdbcCdcSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = listOf(pkLowerBound),
+                )
+            }
         } else {
+            val sv: MysqlJdbcStreamStateValue =
+                Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
@@ -137,23 +163,8 @@ class MysqlJdbcPartitionFactory(
             }
             // resume back to cursor based increment.
             val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
-            val cursorCheckpoint: JsonNode =
-                when (cursor.type.airbyteSchemaType) {
-                    is LeafAirbyteSchemaType ->
-                        when (cursor.type.airbyteSchemaType as LeafAirbyteSchemaType) {
-                            LeafAirbyteSchemaType.INTEGER -> {
-                                Jsons.valueToTree(sv.cursors.toInt())
-                            }
-                            LeafAirbyteSchemaType.NUMBER -> {
-                                Jsons.valueToTree(sv.cursors.toDouble())
-                            }
-                            else -> Jsons.valueToTree(sv.cursors)
-                        }
-                    else ->
-                        throw IllegalStateException(
-                            "Cursor field must be leaf type but is ${cursor.type.airbyteSchemaType}."
-                        )
-                }
+            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
+
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
             if (cursorCheckpoint == streamState.cursorUpperBound) {
@@ -168,6 +179,25 @@ class MysqlJdbcPartitionFactory(
                 isLowerBoundIncluded = false,
                 cursorUpperBound = streamState.cursorUpperBound,
             )
+        }
+    }
+
+    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+        when (field.type.airbyteSchemaType) {
+            is LeafAirbyteSchemaType ->
+                return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                    LeafAirbyteSchemaType.INTEGER -> {
+                        Jsons.valueToTree(stateValue?.toInt())
+                    }
+                    LeafAirbyteSchemaType.NUMBER -> {
+                        Jsons.valueToTree(stateValue?.toDouble())
+                    }
+                    else -> Jsons.valueToTree(stateValue)
+                }
+            else ->
+                throw IllegalStateException(
+                    "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+                )
         }
     }
 
