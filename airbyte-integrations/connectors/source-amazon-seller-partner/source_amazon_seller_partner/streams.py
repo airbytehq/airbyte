@@ -573,7 +573,6 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
 
     report_name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
-    primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
 
 
