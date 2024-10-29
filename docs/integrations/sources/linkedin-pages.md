@@ -113,6 +113,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.3 | 2024-10-29 | [47749](https://github.com/airbytehq/airbyte/pull/47749) | Update dependencies |
 | 1.1.2 | 2024-10-28 | [47455](https://github.com/airbytehq/airbyte/pull/47455) | Update dependencies |
 | 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-15 | [44132](https://github.com/airbytehq/airbyte/pull/44132) | Refactor connector to manifest-only format |
