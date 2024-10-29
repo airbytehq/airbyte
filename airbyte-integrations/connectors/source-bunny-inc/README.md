@@ -1,7 +1,7 @@
 # Bunny, Inc.
 This directory contains the manifest-only connector for `source-bunny-inc`.
 
-Synchronizes Bunny accounts
+Synchronizes Bunny data
 
 ## Usage
 There are multiple ways to use this connector:
