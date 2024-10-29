@@ -182,7 +182,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         columns = list(self._get_sql_column_definitions(stream_name).keys())
         if len(columns) != len(pa_table.column_names):
             warnings.warn(f"Schema has colums: {columns}, buffer has columns: {pa_table.column_names}")
-        column_names = ", ".join(pa_table.column_names)
+        column_names = ", ".join(map(self._quote_identifier, pa_table.column_names))
         sql = f"""
         -- Write from PyArrow table
         INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM pa_table

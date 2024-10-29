@@ -128,7 +128,7 @@ def other_table_schema() -> str:
         "type": "object",
         "properties": {
             "key3": {"type": ["null", "string"]},
-            "key4": {"type": ["null", "string"]},
+            "default": {"type": ["null", "string"]},
         },
     }
     return schema
@@ -264,7 +264,7 @@ def airbyte_message4(other_test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=other_test_table_name,
-            data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
+            data={"key3": fake.unique.first_name(), "default": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -278,7 +278,7 @@ def airbyte_message5(other_test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=other_test_table_name,
-            data={"key3": fake.unique.first_name(), "key4": str(fake.ssn())},
+            data={"key3": fake.unique.first_name(), "default": str(fake.ssn())},
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
