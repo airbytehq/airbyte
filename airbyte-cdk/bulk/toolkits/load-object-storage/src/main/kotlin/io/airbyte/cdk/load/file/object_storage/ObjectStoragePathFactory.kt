@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
+import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -25,9 +26,9 @@ class ObjectStoragePathFactory(
     pathConfigProvider: ObjectStoragePathConfigurationProvider,
     formatConfigProvider: ObjectStorageFormatConfigurationProvider? = null,
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
-    timeProvider: TimeProvider? = null,
+    timeProvider: TimeProvider,
 ) {
-    private val loadedAt = timeProvider?.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
+    private val loadedAt = timeProvider.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
     private val fileFormatExtension =
         formatConfigProvider?.objectStorageFormatConfiguration?.extension
@@ -42,7 +43,7 @@ class ObjectStoragePathFactory(
 
     inner class VariableContext(
         val stream: DestinationStream,
-        val time: Instant? = loadedAt,
+        val time: Instant = loadedAt,
         val extension: String? = null,
         val partNumber: Long? = null
     )
@@ -75,73 +76,56 @@ class ObjectStoragePathFactory(
 
     companion object {
         private val DATE_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
-        private val TIMESTAMP_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneId.of("UTC"))
+            DateTimeFormatter.ofPattern("yyyy_MM_dd").withZone(ZoneId.systemDefault())
 
         const val DEFAULT_STAGING_PREFIX_SUFFIX = "__airbyte_tmp"
         const val DEFAULT_PATH_FORMAT =
             "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_"
         const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
         val PATH_VARIABLES =
-        // TODO: Vet that these match the past format exactly (eg day = 5 versus 05, etc)
-        listOf(
+            listOf(
                 PathVariable("NAMESPACE") { it.stream.descriptor.namespace ?: "" },
                 PathVariable("STREAM_NAME") { it.stream.descriptor.name },
                 PathVariable("YEAR") {
-                    it.time?.let { t ->
-                        ZonedDateTime.ofInstant(t, ZoneId.of("UTC")).year.toString()
-                    }
-                        ?: throw IllegalArgumentException("time is required when {YEAR} is present")
+                    ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).year.toString()
                 },
                 PathVariable("MONTH") {
-                    it.time?.let { t ->
-                        ZonedDateTime.ofInstant(t, ZoneId.of("UTC")).monthValue.toString()
-                    }
-                        ?: throw IllegalArgumentException(
-                            "time is required when {MONTH} is present"
-                        )
+                    String.format(
+                        "%02d",
+                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).monthValue
+                    )
                 },
                 PathVariable("DAY") {
-                    it.time?.let { t ->
-                        ZonedDateTime.ofInstant(t, ZoneId.of("UTC")).dayOfMonth.toString()
-                    }
-                        ?: throw IllegalArgumentException("time is required when {DAY} is present")
+                    String.format(
+                        "%02d",
+                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).dayOfMonth
+                    )
                 },
                 PathVariable("HOUR") {
-                    it.time?.toEpochMilli()?.let { t -> t / 1000 / 60 / 60 }?.toString()
-                        ?: throw IllegalArgumentException("time is required when {HOUR} is present")
+                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).hour)
                 },
                 PathVariable("MINUTE") {
-                    (it.time?.toEpochMilli()?.let { t -> t / 1000 / 60 }?.toString()
-                        ?: throw IllegalArgumentException(
-                            "time is required when {MINUTE} is present"
-                        ))
+                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).minute)
                 },
                 PathVariable("SECOND") {
-                    (it.time?.toEpochMilli()?.div(1000)?.toString()
-                        ?: throw IllegalArgumentException(
-                            "time is required when {SECOND} is present"
-                        ))
+                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).second)
                 },
                 PathVariable("MILLISECOND") {
-                    it.time?.toEpochMilli()?.toString()
-                        ?: throw IllegalArgumentException(
-                            "time is required when {MILLISECOND} is present"
-                        )
+                    // Unclear why this is %04d, but that's what it was in the old code
+                    String.format(
+                        "%04d",
+                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC"))
+                            .toLocalTime()
+                            .toNanoOfDay() / 1_000_000 % 1_000
+                    )
                 },
-                PathVariable("EPOCH") {
-                    it.time?.toEpochMilli()?.toString()
-                        ?: throw IllegalArgumentException(
-                            "time is required when {EPOCH} is present"
-                        )
-                },
+                PathVariable("EPOCH") { it.time.toEpochMilli().toString() },
                 PathVariable("UUID") { UUID.randomUUID().toString() }
             )
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date") { DATE_FORMATTER.format(it.time) },
-                FileVariable("timestamp") { TIMESTAMP_FORMATTER.format(it.time) },
+                FileVariable("timestamp") { it.time.toEpochMilli().toString() },
                 FileVariable("part_number") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
@@ -152,7 +136,10 @@ class ObjectStoragePathFactory(
                 FileVariable("format_extension") { it.extension?.let { ext -> ".$ext" } ?: "" }
             )
 
-        fun <T> from(config: T, timeProvider: TimeProvider? = null): ObjectStoragePathFactory where
+        fun <T> from(
+            config: T,
+            timeProvider: TimeProvider = DefaultTimeProvider()
+        ): ObjectStoragePathFactory where
         T : ObjectStoragePathConfigurationProvider,
         T : ObjectStorageFormatConfigurationProvider,
         T : ObjectStorageCompressionConfigurationProvider<*> {

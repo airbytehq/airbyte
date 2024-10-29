@@ -34,6 +34,8 @@ Visit `https://docs.lob.com/` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.3 | 2024-10-29 | [47867](https://github.com/airbytehq/airbyte/pull/47867) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47627](https://github.com/airbytehq/airbyte/pull/47627) | Update dependencies |
 | 0.0.1 | 2024-09-22 | [45843](https://github.com/airbytehq/airbyte/pull/45843) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
