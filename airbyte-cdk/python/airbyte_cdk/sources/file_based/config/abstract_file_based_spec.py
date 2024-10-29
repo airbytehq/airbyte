@@ -4,13 +4,33 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import dpath
+from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic.v1 import AnyUrl, BaseModel, Field
 
+
+class DeliverRecords(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Deliver Records (RECOMMENDED DEFAULT)"
+        description = "Send records to the destination, which will be processed as incoming data."
+        discriminator = "delivery_type"
+
+    delivery_type: Literal["use_records_transfer"] = Field("use_records_transfer", const=True)
+    use_records_transfer: bool = Field(title="Transfer records", description="Transfer Records", order=5, airbyte_hidden=True, default=True)
+    use_file_transfer: Literal[False] = Field(False, const=True, airbyte_hidden=True)
+
+class DeliverRawFiles(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Deliver Raw Files (Experimental: supported destination only)"
+        description = "Send files to the destination, to be loaded to files storage destinations without parsing underlying data."
+        discriminator = "delivery_type"
+
+    delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)
+    use_file_transfer: Literal[True] = Field(True, const=True, airbyte_hidden=True)
 
 class AbstractFileBasedSpec(BaseModel):
     """
@@ -36,6 +56,17 @@ class AbstractFileBasedSpec(BaseModel):
 
     use_file_transfer: bool = Field(
         title="File Sync (Experimental)", description="Enable file-based bulk load", default=False, airbyte_hidden=True
+    )
+
+    delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=7,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+        airbyte_hidden=True
     )
 
     @classmethod
