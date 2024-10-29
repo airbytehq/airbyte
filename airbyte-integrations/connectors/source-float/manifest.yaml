@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -44,12 +44,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -79,12 +79,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -114,12 +114,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -149,12 +149,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -184,12 +184,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -219,12 +219,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -254,12 +254,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -289,12 +289,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -324,12 +324,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -359,12 +359,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -394,12 +394,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -429,12 +429,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -464,12 +464,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -499,12 +499,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -534,12 +534,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -569,13 +569,27 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
+            field_name: per-page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
             start_from_page: 1
+            page_size: 200
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -612,14 +626,21 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - access_token
+      - start_date
     properties:
       access_token:
         type: string
         description: API token obtained from your Float Account Settings page
         name: float_access_token
         order: 0
-        title: Float Access Token
+        title: Access Token
         airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -642,112 +663,112 @@ metadata:
     logged-time: true
   testedStreams:
     accounts:
-      streamHash: fa2a6932efdeae2cfc1b77f28fcc65f6ee93d068
+      streamHash: 6118f9c7287c7f77b2242900f1817f17e74335be
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     departments:
-      streamHash: c5fc3c01890a3dacdbbb934f51f734d4ac60a6b3
+      streamHash: 831a7bca5b55ff3948f9c1b7486dfd43b9bc1836
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     people:
-      streamHash: 288f1715e6acad0bcc01a33c88e6df0cc18a34a4
+      streamHash: 8ba8094b2d52784df6017e498095d8a42254965c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     roles:
-      streamHash: cf3ec88726a7a5926dc34880a299f3892651dc25
+      streamHash: d919fcbb6dc049ffe3b041e687d249fa92e9a17f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     public_holidays:
-      streamHash: 0008ca595a34ff616d7052c513e3e54480c0719b
+      streamHash: 0c8ea3bc39c3bfbc2ad7a62be9fcea9b235b9144
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     holidays:
-      streamHash: ca153e35c47cdc50ea8752f15361288f358f2c63
+      streamHash: b3ad9c97fc692fe5fe6d125ac53d27a1458e4a38
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     projects:
-      streamHash: b03383c02e4cf12a36ade66aa1763e0b62fdf963
+      streamHash: 56fdb456c22607624cb5797497fb6550dafd0e60
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     status:
-      streamHash: 676e93657ec96fdf0bb52ee7c0b1cf5307799ba4
+      streamHash: 72940384697fc99e77d561d9e44edf0020c03fa1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     time_off:
-      streamHash: 7a0336165ac1d08dc87a08e89ed139cd6bb1f269
+      streamHash: 5661da0571d6bb9118fce08782dfeba0de439cb5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     timeoff-types:
-      streamHash: 8b628952d32ac5b7a818294db6153c98f6dcc908
+      streamHash: 8047744d178cfdbb743801c0f58ec0a5b6b78947
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     clients:
-      streamHash: 3314e778de58a14fe4f99e657267504fffb7b5af
+      streamHash: 2df83fc8b666c8ea803ec043e02f8ad1c213bd9e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     phases:
-      streamHash: cfca0693e774e16fb8c746597be94c05a9b4ad45
+      streamHash: cba79a345cb7ebdd0e394f3af1761080a7776292
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     project-tasks:
-      streamHash: d109daa1387110d3b3b357c147c7cdfc8efdab6a
+      streamHash: d5f09c338d1340df509a237adafe6cdd0f29b27d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     milestones:
-      streamHash: c5e1106e4359f31b0f47da824b620c33d717e7d1
+      streamHash: 03ff3a6ab59adc79d50186cddc0259d5eaa05f3e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tasks:
-      streamHash: 4a7e85d80f5505b18f5f985f7f84c5df8bf4764f
+      streamHash: 88008b2bd0e24638a4a7bff6bb14d6ec30ca7b2c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     logged-time:
-      streamHash: 80580f269fab9b5f48f4dff77bd56e3a46532c80
+      streamHash: c22e227fa5d2f2ba3e212d14a954dfd53ec232f1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1225,6 +1246,7 @@ schemas:
   phases:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       active:
         type:
@@ -1266,10 +1288,10 @@ schemas:
           - "null"
     required:
       - phase_id
-    additionalProperties: true
   project-tasks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       billable:
         type:
@@ -1307,7 +1329,6 @@ schemas:
           - "null"
     required:
       - task_meta_id
-    additionalProperties: true
   milestones:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1417,6 +1438,7 @@ schemas:
   logged-time:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       billable:
         type:
@@ -1445,9 +1467,7 @@ schemas:
       logged_time_id:
         type: string
       modified:
-        type:
-          - string
-          - "null"
+        type: string
       modified_by:
         type:
           - number
@@ -1486,4 +1506,4 @@ schemas:
           - "null"
     required:
       - logged_time_id
-    additionalProperties: true
+      - modified
