@@ -18,6 +18,10 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges: []
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-destination-motherduck
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
