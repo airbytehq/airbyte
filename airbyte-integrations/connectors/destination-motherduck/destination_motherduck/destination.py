@@ -143,7 +143,14 @@ class DestinationMotherDuck(Destination):
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
-                self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                self._flush_buffer(
+                    buffer=buffer,
+                    configured_catalog=configured_catalog,
+                    db_path=path,
+                    schema_name=schema_name,
+                    motherduck_api_key=motherduck_api_key,
+                    stream_name=message.state.stream,
+                )
                 buffer = defaultdict(lambda: defaultdict(list))
                 records_buffered = 0
 
@@ -187,12 +194,20 @@ class DestinationMotherDuck(Destination):
         db_path: str,
         schema_name: str,
         motherduck_api_key: str,
+        stream_name: str | None = None,
     ) -> None:
         """
-        Flush the buffer to the destination
+        Flush the buffer to the destination.
+
+        If no stream name is provided, then all streams will be flushed.
         """
         for configured_stream in configured_catalog.streams:
-            stream_name = configured_stream.stream.name
+            if stream_name is not None and stream_name != configured_stream.stream.name:
+                # Skip this stream.
+                continue
+
+            # Else, we're flushing this stream or all streams.
+
             if stream_name in buffer:
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
