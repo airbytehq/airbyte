@@ -104,7 +104,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.6.17  | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387)      | Update CDK dependencies to yield parent records more frequently                                                                                |
+| 0.7.0   | 2024-10-30 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Upgrade the CDK and startup files to sync incremental streams concurrently |
+| 0.6.17  | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387) | Update CDK dependencies to yield parent records more frequently                                                                                |
 | 0.6.16  | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies                                                                                                                            |
 | 0.6.15  | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies                                                                                                                            |
 | 0.6.14  | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams                                                                |
