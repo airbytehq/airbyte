@@ -23,7 +23,7 @@ airbyte-cdk = "^5"
 source-amazon-ads = "source_amazon_ads.run:run"
 
 [tool.poetry.group.dev.dependencies]
-responses = "^0.23.1"
+responses = "^0.25"
 freezegun = "*"
 requests-mock = "*"
 pytest-mock = "*"
