@@ -7,13 +7,16 @@ from io import IOBase
 from typing import Any, Dict
 
 import psutil
+from airbyte_cdk.sources.declarative.models import FailureType
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 
 AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
 DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 class LocalFileTransferClient:
-    CHUNK_SIZE = 100 * 1024 * 1024
+    FILE_SIZE_LIMIT = 1 * 1024 * 1024 * 1024
+
     def __init__(self) -> None:
         """
         Initialize the LocalFileTransferClient. It uses a default local directory for file saving.
@@ -24,6 +27,10 @@ class LocalFileTransferClient:
         """
         Write the file to a local directory.
         """
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
         # Remove left slashes from source path format to make relative path for writing locally
         file_relative_path = file_uri.lstrip("/")
         local_file_path = os.path.join(self._local_directory, file_relative_path)
@@ -63,9 +70,9 @@ class LocalFileTransferClient:
             logger.info("Starting to write the file locally")
             start_write_time = time.time()
             f.write(file_content)
+            write_duration = time.time() - start_write_time
+            logger.info(f"Time taken to write the file: {write_duration:,.2f} seconds.")
 
-        write_duration = time.time() - start_write_time
-        logger.info(f"Time taken to write the file: {write_duration:,.2f} seconds.")
         logger.info(f"File {file_relative_path} successfully written to {self._local_directory}.")
 
         return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
