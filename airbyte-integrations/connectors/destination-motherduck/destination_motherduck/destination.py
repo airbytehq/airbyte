@@ -15,9 +15,6 @@ from typing import Any, Dict, Iterable, List, Mapping, cast
 from urllib.parse import urlparse
 
 import orjson
-from serpyco_rs import Serializer
-from typing_extensions import override
-
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -38,12 +35,15 @@ from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
+from serpyco_rs import Serializer
+from typing_extensions import override
 
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 MAX_STREAM_BATCH_SIZE = 50_000
+
 
 @dataclass
 class PatchedAirbyteStateMessage(AirbyteStateMessage):
@@ -340,9 +340,13 @@ class DestinationMotherDuck(Destination):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(orjson.dumps(PatchedAirbyteMessageSerializer.dump(
-                cast(PatchedAirbyteMessage, message),
-            )).decode())
+            print(
+                orjson.dumps(
+                    PatchedAirbyteMessageSerializer.dump(
+                        cast(PatchedAirbyteMessage, message),
+                    )
+                ).decode()
+            )
 
     @override
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
