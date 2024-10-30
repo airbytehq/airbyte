@@ -55,18 +55,16 @@ class LocalFileTransferClient:
             # Measure the time for reading
             logger.info("Starting to read the file")
             start_read_time = time.time()
-            total_chunks = (file_size + self.CHUNK_SIZE - 1) // self.CHUNK_SIZE  # Calculate total number of chunks
-            chunk_count = 1
-            while True:
-                file_chunk = fp.read(self.CHUNK_SIZE)  # Read the next chunk
-                if not file_chunk:  # Break if no more content
-                    break
-                read_chunk_duration = time.time() - start_read_time
-                logger.info(f"Writing chunk {chunk_count} of {total_chunks} with {self.CHUNK_SIZE / (1024 * 1024):,.2f} MB size after {read_chunk_duration:.2f} seconds.")
-                chunk_count += 1
-                f.write(file_chunk)
+            file_content = fp.read()  # Read the file content
+            read_duration = time.time() - start_read_time
+            logger.info(f"Time taken to read the file: {read_duration:,.2f} seconds.")
 
-        write_duration = time.time() - start_read_time
+            # Measure the time for writing
+            logger.info("Starting to write the file locally")
+            start_write_time = time.time()
+            f.write(file_content)
+
+        write_duration = time.time() - start_write_time
         logger.info(f"Time taken to write the file: {write_duration:,.2f} seconds.")
         logger.info(f"File {file_relative_path} successfully written to {self._local_directory}.")
 
