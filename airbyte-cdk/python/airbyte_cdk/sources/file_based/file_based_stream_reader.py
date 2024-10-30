@@ -92,12 +92,15 @@ class AbstractFileBasedStreamReader(ABC):
                     seen.add(file.uri)
                     yield file
 
+    @abstractmethod
     def file_size(self, file: RemoteFile) -> int:
+        """Utility method to get size of the remote file.
+
+        This is required for connectors that will support writing to
+        files. If the connector does not support writing files, then the
+        subclass can simply `return 0`.
         """
-        Utility method to get size of the read file, is required for stream writer implementation
-        return size in bytes unit
-        """
-        return 0
+        ...
 
     @staticmethod
     def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:
