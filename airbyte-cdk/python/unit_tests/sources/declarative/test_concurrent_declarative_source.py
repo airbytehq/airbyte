@@ -981,6 +981,32 @@ def test_default_to_single_threaded_when_no_concurrency_level():
     assert source._concurrent_source._initial_number_partitions_to_generate == 1
 
 
+def test_concurrency_level_initial_number_partitions_to_generate_is_always_one_or_more():
+    config = {
+        "start_date": "2024-07-01T00:00:00.000Z",
+        "num_workers": 1
+    }
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+        ]
+    )
+
+    manifest = copy.deepcopy(_MANIFEST)
+    manifest["concurrency_level"] = {
+        "type": "ConcurrencyLevel",
+        "default_concurrency": "{{ config.get('num_workers', 1) }}",
+        "max_concurrency": 25,
+      }
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=config, catalog=catalog, state=[])
+    assert source._concurrent_source._initial_number_partitions_to_generate == 1
+
+
 def test_streams_with_stream_state_interpolation_should_be_synchronous():
     manifest_with_stream_state_interpolation = copy.deepcopy(_MANIFEST)
 

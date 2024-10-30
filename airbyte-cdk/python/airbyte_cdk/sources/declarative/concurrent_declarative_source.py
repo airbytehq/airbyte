@@ -76,7 +76,9 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                 raise ValueError(f"Expected to generate a ConcurrencyLevel component, but received {concurrency_level_component.__class__}")
 
             concurrency_level = concurrency_level_component.get_concurrency_level()
-            initial_number_of_partitions_to_generate = concurrency_level // 2
+            initial_number_of_partitions_to_generate = max(
+                concurrency_level // 2, 1
+            )  # Partition_generation iterates using range based on this value. If this is floored to zero we end up in a dead lock during start up
         else:
             concurrency_level = self.SINGLE_THREADED_CONCURRENCY_LEVEL
             initial_number_of_partitions_to_generate = self.SINGLE_THREADED_CONCURRENCY_LEVEL
