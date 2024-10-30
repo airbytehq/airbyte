@@ -275,7 +275,7 @@ class S3ConsumerFactory {
                 maxMemory = (Runtime.getRuntime().maxMemory() * adjustedMemoryRatio).toLong()
             ),
             workerPool = Executors.newFixedThreadPool(nThreads),
-            isFileTransfer = featureFlags.useFileTransfer()
+            flushOnEveryMessage = featureFlags.useFileTransfer()
         )
     }
 

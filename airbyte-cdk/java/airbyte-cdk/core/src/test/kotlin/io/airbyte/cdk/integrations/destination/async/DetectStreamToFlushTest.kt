@@ -54,7 +54,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                false
+                flushOnEveryMessage = false
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
@@ -77,7 +77,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                false
+                flushOnEveryMessage = false
             )
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -111,7 +111,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                false
+                flushOnEveryMessage = false
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
@@ -135,7 +135,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                true
+                flushOnEveryMessage = true
             )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -170,7 +170,7 @@ class DetectStreamToFlushTest {
                 AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
-                false
+                flushOnEveryMessage = false
             )
 
         // initialize flush time

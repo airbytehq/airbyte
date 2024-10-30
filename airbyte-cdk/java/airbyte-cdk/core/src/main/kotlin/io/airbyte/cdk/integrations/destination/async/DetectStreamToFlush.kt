@@ -28,7 +28,7 @@ internal constructor(
     private val isClosing: AtomicBoolean,
     private val flusher: DestinationFlushFunction,
     private val nowProvider: Clock,
-    private val isFileTransfer: Boolean = false,
+    private val flushOnEveryMessage: Boolean = false,
 ) {
     private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
         ConcurrentHashMap()
@@ -38,14 +38,14 @@ internal constructor(
         runningFlushWorkers: RunningFlushWorkers,
         isClosing: AtomicBoolean,
         flusher: DestinationFlushFunction,
-        isFileTransfer: Boolean = false,
+        flushOnEveryMessage: Boolean = false,
     ) : this(
         bufferDequeue,
         runningFlushWorkers,
         isClosing,
         flusher,
         Clock.systemUTC(),
-        isFileTransfer
+        flushOnEveryMessage
     )
 
     val nextStreamToFlush: Optional<StreamDescriptor>
@@ -79,7 +79,7 @@ internal constructor(
                 bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
         // when we are closing or queues are very full, flush regardless of how few items are in the
         // queue.
-        return if (isFileTransfer || isClosing.get() || isBuffer90Full) 0
+        return if (flushOnEveryMessage || isClosing.get() || isBuffer90Full) 0
         else flusher.queueFlushThresholdBytes
     }
 
@@ -115,7 +115,7 @@ internal constructor(
                     "${isTimeTriggeredResult.second} , ${isSizeTriggeredResult.second}"
             logger.debug { "computed: $debugString" }
 
-            if (isFileTransfer || isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
+            if (flushOnEveryMessage || isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
                 logger.info { "flushing: $debugString" }
                 latestFlushTimeMsPerStream[stream] = nowProvider.millis()
                 return Optional.of(stream)
