@@ -8,7 +8,6 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
-from duckdb import DuckDBPyConnection
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
 from airbyte_cdk.sql import exceptions as exc
