@@ -223,15 +223,19 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         CursorField(DefaultFileBasedStream.ab_last_mod_col),
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor, self._use_file_transfer(parsed_config)),
-                        self,
-                        self.logger,
-                        stream_state,
-                        cursor,
+                        stream=self._make_default_stream(
+                            stream_config=stream_config, cursor=cursor, use_file_transfer=self._use_file_transfer(parsed_config)
+                        ),
+                        source=self,
+                        logger=self.logger,
+                        state=stream_state,
+                        cursor=cursor,
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor, self._use_file_transfer(parsed_config))
+                    stream = self._make_default_stream(
+                        stream_config=stream_config, cursor=cursor, use_file_transfer=self._use_file_transfer(parsed_config)
+                    )
 
                 streams.append(stream)
             return streams
