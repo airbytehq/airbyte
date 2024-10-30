@@ -8,33 +8,36 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, final
+from typing import TYPE_CHECKING, Any, cast, final
 
 import pandas as pd
 import sqlalchemy
 import ulid
+from airbyte_protocol_dataclasses.models import AirbyteStateMessage
+from pandas import Index
+from pydantic import BaseModel, Field
+from regex import R
+from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
 from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.hashing import one_way_hash
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.types import SQLTypeConverter
-from airbyte_protocol_dataclasses.models import AirbyteStateMessage
-from pandas import Index
-from pydantic import BaseModel, Field
-from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
     from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
     from sqlalchemy.sql.base import Executable
     from sqlalchemy.sql.elements import TextClause
     from sqlalchemy.sql.type_api import TypeEngine
+
+    from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 
 
 class SQLRuntimeError(Exception):
@@ -307,7 +310,7 @@ class SqlProcessorBase(abc.ABC):
         sql = f"CREATE SCHEMA IF NOT EXISTS {schema_name}"
 
         try:
-            self._execute_sql(sql)
+            self.execute_sql_command(sql)
         except Exception as ex:
             # Ignore schema exists errors.
             if "already exists" not in str(ex):
@@ -447,7 +450,7 @@ class SqlProcessorBase(abc.ABC):
             {column_definition_str}
         )
         """
-        _ = self._execute_sql(cmd)
+        _ = self.execute_sql_command(cmd)
 
     @final
     def _get_sql_column_definitions(
@@ -469,14 +472,58 @@ class SqlProcessorBase(abc.ABC):
 
         return columns
 
-    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult[Any]:
-        """Execute the given SQL statement."""
+    def execute_sql_command(self, sql: str | TextClause | Executable) -> None:
+        """Execute the given SQL statement without returning any results.
+
+        This does not keep the connection open after the query is executed, and for
+        this reason it cannot be used to return query results.
+
+        For queries that return results, use `run_sql_query` or `run_sql_query_fetch`
+        instead.
+
+        Usage example:
+        ```
+        self.execute_sql_command("CREATE TABLE my_table (id INT PRIMARY KEY)")
+        ```
+        """
+        # We reuse the `run_sql_query` method (for now) but we this may change in the future.
+        with self.run_sql_query(sql) as result:
+            # For now, we don't do anything with `result`. This may change in the future.
+            _ = result
+
+        return
+
+    @contextmanager
+    def run_sql_query(
+        self,
+        sql: str | TextClause | Executable,
+    ) -> Generator[CursorResult[Any], None, None]:
+        """Run the given SQL query and return result as a context manager.
+
+        This method is intended for queries that return results. The connection will remain open
+        for the duration of the context.
+
+        Usage example 1:
+        ```
+        with self.run_sql_query("SELECT * FROM my_table") as result:
+            for row in result:
+                print(row)
+        ```
+
+        Usage example 2:
+        ```
+        with self.run_sql_query("SELECT * FROM my_table") as result:
+            results = result.fetchall()
+        for row in results:
+            print(row)
+        """
         if isinstance(sql, str):
             sql = text(sql)
 
         with self.get_sql_connection() as conn:
             try:
                 result = conn.execute(sql)
+                yield result
             except (
                 ProgrammingError,
                 SQLAlchemyError,
@@ -484,7 +531,36 @@ class SqlProcessorBase(abc.ABC):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-        return result
+        # After the context exits, the connection is automatically closed.
+        return
+
+    def run_sql_query_fetch(
+        self,
+        sql: str | TextClause | Executable,
+    ) -> list[dict[str, Any]]:
+        """Run the given SQL query and return the results as a list of dictionaries.
+
+        This is a convenience method that fetches all results from the query and returns them
+        as a list of dictionaries. The connection is automatically closed after the query is
+        executed.
+
+        Warning: This method is not suitable for large result sets, as all results are loaded
+        into memory at once.
+
+        Usage example:
+        ```
+        results: dict[str, Any] = self.run_sql_query_fetch("SELECT * FROM my_table")
+        for row in results:
+            print(row)
+        ```
+        """
+        with self.run_sql_query(sql) as result:
+            # Access to private member required because SQLAlchemy doesn't expose a public API.
+            # https://pydoc.dev/sqlalchemy/latest/sqlalchemy.engine.row.RowMapping.html
+            return [
+                cast(dict[str, Any], row._mapping)  # noqa: SLF001
+                for row in result
+            ]
 
     def _drop_temp_table(
         self,
@@ -494,7 +570,7 @@ class SqlProcessorBase(abc.ABC):
     ) -> None:
         """Drop the given table."""
         exists_str = "IF EXISTS" if if_exists else ""
-        self._execute_sql(f"DROP TABLE {exists_str} {self._fully_qualified(table_name)}")
+        self.execute_sql_command(f"DROP TABLE {exists_str} {self._fully_qualified(table_name)}")
 
     def _write_files_to_new_table(
         self,
@@ -548,7 +624,7 @@ class SqlProcessorBase(abc.ABC):
         column_type: sqlalchemy.types.TypeEngine[Any],
     ) -> None:
         """Add a column to the given table."""
-        self._execute_sql(
+        self.execute_sql_command(
             text(f"ALTER TABLE {self._fully_qualified(table.name)} " f"ADD COLUMN {column_name} {column_type}"),
         )
 
@@ -595,7 +671,7 @@ class SqlProcessorBase(abc.ABC):
     ) -> None:
         nl = "\n"
         columns = [self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
-        self._execute_sql(
+        self.execute_sql_command(
             f"""
             INSERT INTO {self._fully_qualified(final_table_name)} (
             {f',{nl}  '.join(columns)}
@@ -631,7 +707,7 @@ class SqlProcessorBase(abc.ABC):
                 f"DROP TABLE {self._fully_qualified(deletion_name)};",
             ]
         )
-        self._execute_sql(commands)
+        self.execute_sql_command(commands)
 
     def _merge_temp_table_to_final_table(
         self,
@@ -650,7 +726,7 @@ class SqlProcessorBase(abc.ABC):
         non_pk_columns = columns - pk_columns
         join_clause = f"{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
         set_clause = f"{nl}  , ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
-        self._execute_sql(
+        self.execute_sql_command(
             f"""
             MERGE INTO {self._fully_qualified(final_table_name)} final
             USING (
