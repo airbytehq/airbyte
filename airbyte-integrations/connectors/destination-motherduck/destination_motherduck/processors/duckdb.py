@@ -115,7 +115,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
         with self.get_sql_connection() as conn:
             try:
-                # This table will now be queryable from DuckDB under the name "buffer_table"
+                # This table will now be queryable from DuckDB under the name BUFFER_TABLE_NAME
                 conn.execute(text("register(:name, :df)"), {"name": BUFFER_TABLE_NAME, "df": buffer_data})
                 result = conn.execute(sql)
             except (
