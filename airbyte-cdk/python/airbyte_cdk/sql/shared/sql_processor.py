@@ -483,7 +483,7 @@ class SqlProcessorBase(abc.ABC):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-        return result.fetchall
+        return result.fetchall()
 
     def _drop_temp_table(
         self,
