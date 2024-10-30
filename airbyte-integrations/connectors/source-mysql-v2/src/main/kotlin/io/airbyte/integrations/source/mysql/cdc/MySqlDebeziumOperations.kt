@@ -385,8 +385,6 @@ class MySqlDebeziumOperations(
         if (!serverTimezone.isNullOrBlank()) {
             dbzPropertiesBuilder.with("database.connectionTimezone", serverTimezone)
         }
-
-        // TODO: add missing properties, like MySQL converters, etc. Do a full audit.
         dbzPropertiesBuilder.buildMap()
     }
 
