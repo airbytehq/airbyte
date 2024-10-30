@@ -13,9 +13,6 @@ documentation = "https://docs.airbyte.com/integrations/destinations/pgvector"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
 
-[[tool.poetry.packages]]
-include = "destination_pgvector"
-
 [tool.poetry.dependencies.airbyte-cdk]
 # Version cnstrained by PyAirbyte (`airbyte`) version
 version = ">=1.0"

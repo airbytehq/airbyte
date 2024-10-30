@@ -20,7 +20,7 @@ data:
     breakingChanges: []
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-destination-motherduck
   resourceRequirements:
     jobSpecific:

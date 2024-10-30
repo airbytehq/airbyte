@@ -6,6 +6,9 @@ authors = ["Guen Prawiroatmodjo, Simon Späti, Airbyte"]
 license = "MIT"
 readme = "README.md"
 
+[[tool.poetry.packages]]
+include = "destination_pgvector"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 
