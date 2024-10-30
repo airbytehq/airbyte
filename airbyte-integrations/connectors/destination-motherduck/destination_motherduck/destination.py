@@ -15,9 +15,6 @@ from typing import Any, Dict, Iterable, List, Mapping, cast
 from urllib.parse import urlparse
 
 import orjson
-from serpyco_rs import Serializer
-from typing_extensions import override
-
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -38,6 +35,8 @@ from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
+from serpyco_rs import Serializer
+from typing_extensions import override
 
 logger = getLogger("airbyte")
 
@@ -162,7 +161,7 @@ class DestinationMotherDuck(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = str(config.get("destination_path"))
+        path = str(config.get("destination_path", "md:"))
         path = self._get_destination_path(path)
         schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
@@ -340,9 +339,13 @@ class DestinationMotherDuck(Destination):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(orjson.dumps(PatchedAirbyteMessageSerializer.dump(
-                cast(PatchedAirbyteMessage, message),
-            )).decode())
+            print(
+                orjson.dumps(
+                    PatchedAirbyteMessageSerializer.dump(
+                        cast(PatchedAirbyteMessage, message),
+                    )
+                ).decode()
+            )
 
     @override
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
