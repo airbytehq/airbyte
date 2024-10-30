@@ -315,4 +315,4 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         use_file_transfer = (
             hasattr(parsed_config.delivery_method, "delivery_type") and parsed_config.delivery_method.delivery_type == "use_file_transfer"
         )
-        return use_file_transfer or parsed_config.use_file_transfer
+        return use_file_transfer

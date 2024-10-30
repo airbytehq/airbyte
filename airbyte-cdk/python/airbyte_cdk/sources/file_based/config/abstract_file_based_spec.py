@@ -53,10 +53,6 @@ class AbstractFileBasedSpec(BaseModel):
         order=10,
     )
 
-    use_file_transfer: bool = Field(
-        title="File Sync (Experimental)", description="Enable file-based bulk load", default=False, airbyte_hidden=True
-    )
-
     delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
         title="Delivery Method",
         discriminator="delivery_type",
