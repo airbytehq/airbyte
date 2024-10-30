@@ -39,7 +39,14 @@ internal constructor(
         isClosing: AtomicBoolean,
         flusher: DestinationFlushFunction,
         isFileTransfer: Boolean,
-    ) : this(bufferDequeue, runningFlushWorkers, isClosing, flusher, Clock.systemUTC(), isFileTransfer)
+    ) : this(
+        bufferDequeue,
+        runningFlushWorkers,
+        isClosing,
+        flusher,
+        Clock.systemUTC(),
+        isFileTransfer
+    )
 
     val nextStreamToFlush: Optional<StreamDescriptor>
         /**
@@ -72,7 +79,8 @@ internal constructor(
                 bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
         // when we are closing or queues are very full, flush regardless of how few items are in the
         // queue.
-        return if (isFileTransfer || isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
+        return if (isFileTransfer || isClosing.get() || isBuffer90Full) 0
+        else flusher.queueFlushThresholdBytes
     }
 
     // todo (cgardens) - improve prioritization by getting a better estimate of how much data

@@ -49,7 +49,13 @@ class DetectStreamToFlushTest {
             )
 
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher, false)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                false
+            )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
@@ -66,7 +72,13 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher, false)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                false
+            )
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
         // if below threshold, no trigger
@@ -94,7 +106,13 @@ class DetectStreamToFlushTest {
                 ),
             )
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher, false)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                false
+            )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
@@ -112,7 +130,13 @@ class DetectStreamToFlushTest {
             )
 
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher, true)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                true
+            )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
     }
