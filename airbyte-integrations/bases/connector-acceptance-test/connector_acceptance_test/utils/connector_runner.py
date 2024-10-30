@@ -3,6 +3,7 @@
 #
 
 
+import io
 import json
 import logging
 import os
@@ -18,6 +19,12 @@ from airbyte_protocol.models import Type as AirbyteMessageType
 from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
 from pydantic import ValidationError
+
+
+def splitlines_generator(input_string: str):
+    with io.StringIO(input_string) as stream:
+        for line in stream:
+            yield line.rstrip("\n")
 
 
 async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
@@ -250,7 +257,7 @@ class ConnectorRunner:
         if catalog:
             container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json())
         try:
-            output = await self._read_output_from_stdout(airbyte_command, container)
+            output = await self._read_output_from_file(airbyte_command, container)
         except dagger.QueryError as e:
             output_too_big = bool([error for error in e.errors if error.message.startswith("file size")])
             if output_too_big:
@@ -281,7 +288,7 @@ class ConnectorRunner:
 
     def parse_airbyte_messages_from_command_output(self, command_output: str) -> List[AirbyteMessage]:
         airbyte_messages = []
-        for line in command_output.splitlines():
+        for line in splitlines_generator(command_output):
             try:
                 airbyte_message = AirbyteMessage.parse_raw(line)
                 if airbyte_message.type is AirbyteMessageType.CONTROL and airbyte_message.control.type is OrchestratorType.CONNECTOR_CONFIG:

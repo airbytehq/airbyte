@@ -6,20 +6,12 @@ package io.airbyte.integrations.destination.s3_v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
-import io.airbyte.cdk.load.data.DestinationRecordToAirbyteValueWithMeta
-import io.airbyte.cdk.load.data.toCsvPrinterWithHeader
-import io.airbyte.cdk.load.data.toCsvRecord
-import io.airbyte.cdk.load.data.toJson
+import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
@@ -29,8 +21,7 @@ import java.util.concurrent.atomic.AtomicLong
 class S3V2Writer(
     private val s3Client: S3Client,
     private val pathFactory: ObjectStoragePathFactory,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta,
-    private val formatConfig: ObjectStorageFormatConfigurationProvider
+    private val writerFactory: ObjectStorageFormattingWriterFactory,
 ) : DestinationWriter {
     sealed interface S3V2Batch : Batch
     data class StagedObject(
@@ -59,27 +50,8 @@ class S3V2Writer(
             val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
             val s3Object =
                 s3Client.streamingUpload(key) { outputStream ->
-                    when (formatConfig.objectStorageFormatConfiguration) {
-                        is JsonFormatConfiguration -> {
-                            records.forEach {
-                                val serialized =
-                                    recordDecorator.decorate(it).toJson().serializeToString()
-                                outputStream.write(serialized)
-                                outputStream.write("\n")
-                            }
-                        }
-                        is CSVFormatConfiguration -> {
-                            stream.schemaWithMeta
-                                .toCsvPrinterWithHeader(outputStream.writer())
-                                .use { printer ->
-                                    records.forEach {
-                                        printer.printRecord(
-                                            *recordDecorator.decorate(it).toCsvRecord()
-                                        )
-                                    }
-                                }
-                        }
-                        else -> throw IllegalStateException("Unsupported format")
+                    writerFactory.create(stream, outputStream).use { writer ->
+                        records.forEach { writer.accept(it) }
                     }
                 }
             return StagedObject(s3Object = s3Object, partNumber = partNumber)

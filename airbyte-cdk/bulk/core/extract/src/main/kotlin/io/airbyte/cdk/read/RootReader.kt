@@ -2,6 +2,7 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,6 +33,7 @@ class RootReader(
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
+    val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) {
     private val log = KotlinLogging.logger {}

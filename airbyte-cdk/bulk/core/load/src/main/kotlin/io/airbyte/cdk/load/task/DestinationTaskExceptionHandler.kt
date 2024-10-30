@@ -92,6 +92,7 @@ T : ScopedTask {
                 log.warn { "Sync task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
+                log.error { "Caught exception in sync task $innerTask: $e" }
                 handleSyncFailure(e)
             }
         }
@@ -127,6 +128,7 @@ T : ScopedTask {
                 log.warn { "Stream task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
+                log.error { "Caught exception in sync task $innerTask: $e" }
                 handleStreamFailure(stream, e)
             }
         }
