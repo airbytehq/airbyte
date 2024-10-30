@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - "*"  # Couchbase can be hosted anywhere
+      - "*" # Couchbase can be hosted anywhere
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # Please use the full address with sha256 hash to guarantee build reproducibility.
