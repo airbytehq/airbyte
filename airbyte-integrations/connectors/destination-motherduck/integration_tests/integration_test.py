@@ -336,12 +336,11 @@ def test_write(
         duckdb_config["motherduck_token"] = config[CONFIG_MOTHERDUCK_API_KEY]
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
-    con = duckdb.connect(
+    with duckdb.connect(
         database=config.get("destination_path", "md:"),
         read_only=False,
         config=duckdb_config,
-    )
-    with con:
+    ) as con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
@@ -380,12 +379,11 @@ def test_write_dupe(
     if motherduck_api_key:
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
-    con = duckdb.connect(
+    with duckdb.connect(
         database=config.get("destination_path", "md:"),
         read_only=False,
         config=duckdb_config,
-    )
-    with con:
+    ) as con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
@@ -521,12 +519,11 @@ def test_large_number_of_writes(
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
-    con = duckdb.connect(
+    with duckdb.connect(
         database=config.get("destination_path", "md:"),
         read_only=False,
         config=duckdb_config,
-    )
-    with con:
+    ) as con:
         cursor = con.execute(
             "SELECT count(1) "
             f"FROM {test_schema_name}.{test_large_table_name}"
