@@ -74,10 +74,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val state = destinationStateManager.getState(stream)
         val maxPartNumber =
             state.generations
-                .map {
-                    println(it)
-                    it
-                }
                 .filter { it.generationId >= stream.minimumGenerationId }
                 .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
                 .maxOrNull()
@@ -90,20 +86,28 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         totalSizeBytes: Long
     ): Batch {
         val partNumber = partNumber.getAndIncrement()
-        val key = pathFactory.getPathToFile(stream, partNumber, isStaging = true).toString()
+        val key =
+            pathFactory
+                .getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
+                .toString()
 
         log.info { "Writing records to $key" }
         val state = destinationStateManager.getState(stream)
         state.addObject(stream.generationId, key, partNumber)
 
+        val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
-            client.streamingUpload(key, streamProcessor = compressor) { outputStream ->
+            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 writerFactory.create(stream, outputStream).use { writer ->
                     records.forEach { writer.accept(it) }
                 }
             }
         log.info { "Finished writing records to $key" }
-        return StagedObject(remoteObject = obj, partNumber = partNumber)
+        return if (pathFactory.supportsStaging) {
+            StagedObject(remoteObject = obj, partNumber = partNumber)
+        } else {
+            FinalizedObject(remoteObject = obj)
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
