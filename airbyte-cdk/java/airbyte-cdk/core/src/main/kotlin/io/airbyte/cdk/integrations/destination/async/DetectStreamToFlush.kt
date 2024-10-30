@@ -28,6 +28,7 @@ internal constructor(
     private val isClosing: AtomicBoolean,
     private val flusher: DestinationFlushFunction,
     private val nowProvider: Clock,
+    private val isFileTransfer: Boolean,
 ) {
     private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
         ConcurrentHashMap()
@@ -37,7 +38,8 @@ internal constructor(
         runningFlushWorkers: RunningFlushWorkers,
         isClosing: AtomicBoolean,
         flusher: DestinationFlushFunction,
-    ) : this(bufferDequeue, runningFlushWorkers, isClosing, flusher, Clock.systemUTC())
+        isFileTransfer: Boolean,
+    ) : this(bufferDequeue, runningFlushWorkers, isClosing, flusher, Clock.systemUTC(), isFileTransfer)
 
     val nextStreamToFlush: Optional<StreamDescriptor>
         /**
@@ -65,12 +67,12 @@ internal constructor(
      */
     @VisibleForTesting
     fun computeQueueThreshold(): Long {
-        // val isBuffer90Full =
-        //     EAGER_FLUSH_THRESHOLD <=
-        //         bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
+        val isBuffer90Full =
+            EAGER_FLUSH_THRESHOLD <=
+                bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
         // when we are closing or queues are very full, flush regardless of how few items are in the
         // queue.
-        return 0// if (isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
+        return if (isFileTransfer || isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
     }
 
     // todo (cgardens) - improve prioritization by getting a better estimate of how much data
@@ -105,7 +107,7 @@ internal constructor(
                     "${isTimeTriggeredResult.second} , ${isSizeTriggeredResult.second}"
             logger.debug { "computed: $debugString" }
 
-            if (true) {// isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
+            if (isFileTransfer || isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
                 logger.info { "flushing: $debugString" }
                 latestFlushTimeMsPerStream[stream] = nowProvider.millis()
                 return Optional.of(stream)
