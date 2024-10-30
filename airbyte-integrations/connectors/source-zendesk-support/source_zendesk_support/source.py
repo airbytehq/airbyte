@@ -13,7 +13,12 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, UserSettingsStream, ZendeskConfigException
+from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
+
+from .streams import (
+    TicketMetrics,
+    UserSettingsStream,
+)
 
 logger = logging.getLogger("airbyte")
 
@@ -112,6 +117,17 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             "ignore_pagination": config.get("ignore_pagination", False),
         }
 
+    def get_nested_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """Returns relevant a list of available streams
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
+        args = self.convert_config2stream_args(config)
+
+        streams = [
+            TicketMetrics(**args),
+        ]
+        return streams
+
     def check_enterprise_streams(self, declarative_streams: List[Stream]) -> List[Stream]:
         """Returns relevant a list of available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -138,6 +154,9 @@ class SourceZendeskSupport(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self.convert_config_to_declarative_stream_args(config)
         declarative_streams = super().streams(args)
+
+        nested_streams = self.get_nested_streams(config)
+        declarative_streams.extend(nested_streams)
 
         declarative_streams = self.check_enterprise_streams(declarative_streams)
         return declarative_streams
