@@ -26,8 +26,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 800Mi
+          memory_request: 800Mi
       - jobType: sync
         resourceRequirements:
           memory_limit: 2Gi
