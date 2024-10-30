@@ -24,7 +24,12 @@ class MagniteStream(HttpStream, ABC):
         super().__init__(**kwargs)
 
     url_base = "https://api.tremorhub.com/"
+    _PAGES = 0
 
+    @property
+    def config(self):
+        return self._config
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -35,23 +40,22 @@ class MagniteStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        print("response_json", response_json)
-        print("response", list(response_json))
-        print(self._data_field)
+
         if self._data_field:
-            result_ready = False
             result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}/results"
-            while not result_ready:
+            while True:
                 result_response = requests.get(result_url, headers=self.authenticator.get_auth_header())
                 if result_response.status_code == 200:
                     yield from result_response.json()
-                    result_ready = True
-
+                    break
                 elif result_response.status_code == 202:
-                    # print("Results not ready yet. Checking again in 5 seconds.")
+                    self.logger.info("Query results are not ready yet. Checking again in 5 seconds...")
                     time.sleep(5)
+                elif result_response.status_code == 412:
+                    self.logger.warning("Precondition faild! A query is already running")
+                    break
                 else:
-                    print(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
+                    self.logger.error(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
                     break
         else:
             yield from response_json
@@ -80,29 +84,13 @@ class MagniteStream(HttpStream, ABC):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
         request_payload = {
-            "source": "adstats-publisher",
-            "fields": [
-                "day", "adUnit","publisher","channel","brand", "requests", "impressions", "useRate", "netRevenue", "grossRevenue"
-                ],
-                "constraints": [
-                    {
-                        "field": "requests",
-                        "operator": ">",
-                        "value": 0
-                    }
-                ],
-                "orderings": [
-                    {
-                        "direction": "asc",
-                        "field": "day"
-                    }
-                ],
-                "range": {
-                    "range": "lastMonth",  # Define the time range
-                    "timeZone": "UTC"
-                }
-            }
-        print(request_payload)
+            "source": self.config["source"],
+            "fields": self.config["fields"],
+            "constraints": self.config["constraints"],
+            "orderings": self.config["orderings"],
+            # "range": date_range,
+            "range": self.config["range"]
+        }
         return request_payload
     
 
@@ -123,27 +111,11 @@ class SourceMagnite(AbstractSource):
             auth_headers = CookieAuthenticator(config).get_auth_header()
             url = "https://api.tremorhub.com/v1/resources/queries"
             test_payload = {
-                "source": "adstats-publisher",
-                "fields": [
-                    "day", "adUnit","publisher","channel","brand", "requests", "impressions", "useRate", "netRevenue", "grossRevenue"
-                ],
-                "constraints": [
-                    {
-                        "field": "requests",
-                        "operator": ">",
-                        "value": 0
-                    }
-                ],
-                "orderings": [
-                    {
-                        "direction": "asc",
-                        "field": "day"
-                    }
-                ],
-                "range": {
-                    "range": "lastMonth",  # Define the time range
-                    "timeZone": "UTC"
-                }
+                "source": config["source"],
+                "fields": config["fields"],
+                "constraints": config["constraints"],
+                "orderings": config["orderings"],
+                "range": config["range"]
             }
             response = requests.request("POST", url=url, headers=auth_headers, data=json.dumps(test_payload))
             response.raise_for_status()
@@ -154,4 +126,4 @@ class SourceMagnite(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = CookieAuthenticator(config)
-        return [MagniteStream(name="queries", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)]
+        return [MagniteStream(config, name="queries", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)]
