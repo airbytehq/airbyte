@@ -8,6 +8,7 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
+from duckdb import DuckDBPyConnection
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
 from airbyte_cdk.sql import exceptions as exc
@@ -17,11 +18,13 @@ from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQ
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import Executable, TextClause, text
+from sqlalchemy import CursorResult, Executable, TextClause, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
+
+BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +103,29 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     supports_merge_insert = False
     sql_config: DuckDBConfig
+
+    def _execute_sql_with_buffer(self, sql: str | TextClause | Executable, buffer_data: pa.Table | None) -> CursorResult[Any]:
+        """
+        Execute the given SQL statement.
+
+        Explicitly register a buffer table to read from.
+        """
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                # This table will now be queryable from DuckDB under the name "buffer_table"
+                conn.execute(text("register(:name, :df)"), {"name": BUFFER_TABLE_NAME, "df": buffer_data})
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+        return result
 
     @overrides
     def _setup(self) -> None:
@@ -185,9 +211,9 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         column_names = ", ".join(map(self._quote_identifier, pa_table.column_names))
         sql = f"""
         -- Write from PyArrow table
-        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM pa_table
+        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM {BUFFER_TABLE_NAME}
         """
-        self._execute_sql(sql)
+        self._execute_sql_with_buffer(sql, buffer_data=pa_table)
 
     def _write_temp_table_to_target_table(
         self,
