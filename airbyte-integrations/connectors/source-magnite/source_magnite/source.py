@@ -32,7 +32,6 @@ class MagniteStream(HttpStream, ABC):
         super().__init__(**kwargs)
 
     url_base = "https://api.tremorhub.com/"
-    _PAGES = 0
 
     @property
     def config(self):
