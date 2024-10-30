@@ -27,6 +27,7 @@ black = "^23.7.0"
 mypy = "^1.5.1"
 faker = "24.4.0"
 coverage = "^7.5.3"
+freezegun = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core"]
