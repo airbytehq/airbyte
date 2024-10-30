@@ -7,7 +7,6 @@ import os
 import random
 import string
 import tempfile
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Iterable
@@ -332,26 +331,28 @@ def test_write(
 
     result = list(generator)
     assert len(result) == 1
-    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
     duckdb_config = {}
-    if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
+    if CONFIG_MOTHERDUCK_API_KEY in config:
+        duckdb_config["motherduck_token"] = config[CONFIG_MOTHERDUCK_API_KEY]
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
+
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "868-98-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "868-98-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def test_write_dupe(
@@ -380,20 +381,22 @@ def test_write_dupe(
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "138-73-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "138-73-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def _airbyte_messages(
@@ -519,12 +522,14 @@ def test_large_number_of_writes(
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT count(1) "
             f"FROM {test_schema_name}.{test_large_table_name}"
         )
-        result = cursor.fetchall()
-    assert result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
+        sql_result = cursor.fetchall()
+        assert sql_result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
