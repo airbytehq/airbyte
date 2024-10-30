@@ -2,11 +2,22 @@
 from __future__ import annotations
 
 from unittest.mock import Mock, patch
-import pytest
-from destination_couchbase.destination import DestinationCouchbase
-from couchbase.exceptions import CollectionAlreadyExistsException
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, Type, AirbyteStream, SyncMode, AirbyteStateMessage
+import pytest
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
+from destination_couchbase.destination import DestinationCouchbase
+
 
 @pytest.fixture
 def config():
