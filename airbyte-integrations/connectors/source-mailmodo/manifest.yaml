@@ -1,0 +1,192 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Mailmodo is a complete email marketing solution.
+
+  This connector has two streams using which you can extract data from campaigns
+  and contacts.
+
+  Docs :
+  https://www.mailmodo.com/developers/8e957152b6128-getting-started-with-mailmodo-api/
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getAllContactLists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - listDetails
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mailmodo.com/api/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: mmApiKey
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/contacts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: true
+    contacts: true
+  testedStreams:
+    campaigns:
+      streamHash: 164680b710981e9601c1d6bbe10fef23d20761aa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 838d966e804704c0c3888e4064e3d4de2d7a444a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignName:
+        type:
+          - string
+          - "null"
+      campaignType:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      emailType:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      scheduledAt:
+        type:
+          - number
+          - "null"
+      senderEmail:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subjects:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      templateId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      contacts_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_updated_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
