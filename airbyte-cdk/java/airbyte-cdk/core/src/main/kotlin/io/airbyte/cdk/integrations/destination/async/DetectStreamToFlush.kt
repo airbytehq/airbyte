@@ -28,7 +28,7 @@ internal constructor(
     private val isClosing: AtomicBoolean,
     private val flusher: DestinationFlushFunction,
     private val nowProvider: Clock,
-    private val isFileTransfer: Boolean,
+    private val isFileTransfer: Boolean = false,
 ) {
     private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
         ConcurrentHashMap()
@@ -38,7 +38,7 @@ internal constructor(
         runningFlushWorkers: RunningFlushWorkers,
         isClosing: AtomicBoolean,
         flusher: DestinationFlushFunction,
-        isFileTransfer: Boolean,
+        isFileTransfer: Boolean = false,
     ) : this(
         bufferDequeue,
         runningFlushWorkers,
