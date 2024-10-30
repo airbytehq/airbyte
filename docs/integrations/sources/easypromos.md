@@ -1,5 +1,5 @@
 # Easypromos
-Airbyte connector for Easypromos enables seamless data extraction from Easypromos, an online platform for running contests, giveaways, and promotions. It facilitates automatic syncing of participant information, promotion performance, and engagement metrics into data warehouses, streamlining analytics and reporting. This integration helps businesses easily analyze campaign data and optimize marketing strategies
+Airbyte connector for [Easypromos](https://www.easypromosapp.com/) enables seamless data extraction from Easypromos, an online platform for running contests, giveaways, and promotions. It facilitates automatic syncing of participant information, promotion performance, and engagement metrics into data warehouses, streamlining analytics and reporting. This integration helps businesses easily analyze campaign data and optimize marketing strategies
 
 ## Configuration
 
