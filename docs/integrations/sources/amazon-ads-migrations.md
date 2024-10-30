@@ -3,7 +3,9 @@
 
 ## Upgrading to 6.0.0
 
-The `SponsoredDisplayReportStream` stream has updated schema due to a change with the Amazon Ads API,
+The `SponsoredDisplayReportStream` stream now has an updated schema, thanks to a recent change in the Amazon Ads API. You can find more details in the [Amazon Migration Guide (metrics)](https://advertising.amazon.com/API/docs/en-us/reference/migration-guides/reporting-v2-v3#metrics).
+
+Please note that SponsoredBrandsReportStream and SponsoredBrandsVideoReportStream will become unavailable as a result of the deprecation of API V2. We recommend switching to SponsoredBrandsV3ReportStream as a great alternative.
 see [Amazon Migration Guide (metrics)](https://advertising.amazon.com/API/docs/en-us/reference/migration-guides/reporting-v2-v3#metrics) for more info.
 
 Streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable.
