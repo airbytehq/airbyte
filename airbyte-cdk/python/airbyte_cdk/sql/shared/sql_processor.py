@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
     from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
     from sqlalchemy.engine import Connection, Engine
+    from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
     from sqlalchemy.sql.base import Executable
     from sqlalchemy.sql.elements import TextClause
@@ -468,7 +469,7 @@ class SqlProcessorBase(abc.ABC):
 
         return columns
 
-    def _execute_sql(self, sql: str | TextClause | Executable) -> Any:
+    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult[Any]:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
             sql = text(sql)
@@ -483,7 +484,7 @@ class SqlProcessorBase(abc.ABC):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-            return result.fetchall()
+        return result
 
     def _drop_temp_table(
         self,
