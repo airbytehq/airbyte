@@ -44,6 +44,7 @@ CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 MAX_STREAM_BATCH_SIZE = 50_000
 
+
 @dataclass
 class PatchedAirbyteStateMessage(AirbyteStateMessage):
     """Declare the `id` attribute that platform sends."""
