@@ -11,12 +11,10 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import java.util.concurrent.Executors
-import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -93,11 +91,6 @@ class NonDockerizedDestination(
     }
 }
 
-// Notably, not actually a Micronaut factory. We want to inject the actual
-// factory into our tests, not a pre-instantiated destination, because we want
-// to run multiple destination processes per test.
-@Singleton
-@Requires(notEnv = [DOCKERIZED_TEST_ENV])
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,

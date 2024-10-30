@@ -23,7 +23,7 @@ data:
   name: Bigcommerce
   releaseDate: 2021-08-19
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:manifest-only
     - cdk:low-code
