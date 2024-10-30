@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
 
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
@@ -17,7 +17,7 @@ from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQ
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import CursorResult, Executable, TextClause, text
+from sqlalchemy import Executable, TextClause, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
@@ -103,7 +103,24 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     supports_merge_insert = False
     sql_config: DuckDBConfig
 
-    def _execute_sql_with_buffer(self, sql: str | TextClause | Executable, buffer_data: pa.Table | None) -> CursorResult[Any]:
+    def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:
+        """Execute the given SQL statement."""
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+            return result.fetchall()
+
+    def _execute_sql_with_buffer(self, sql: str | TextClause | Executable, buffer_data: pa.Table | None) -> Sequence[Any]:
         """
         Execute the given SQL statement.
 
@@ -124,7 +141,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
                 msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
                 raise SQLRuntimeError(msg) from None  # from ex
 
-        return result
+            return result.fetchall()
 
     @overrides
     def _setup(self) -> None:
