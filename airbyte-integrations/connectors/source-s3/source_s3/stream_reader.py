@@ -287,10 +287,16 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return f"s3://{self.config.bucket}/{file_uri.split('#')[0]}"
 
-    def file_size(self, file: RemoteFile) -> int:
-        """Returns the size of the file in bytes."""
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value, bufsize=262144)
+        # prefetch() works by requesting multiple blocks of data in advance,
+        # rather than waiting for one block to be retrieved before requesting the next.
+        remote_file.prefetch(remote_file.stat().st_size)
+        return remote_file
+
+    def file_size(self, file: RemoteFile):
         file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
-        return int(file_size)
+        return file_size
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
