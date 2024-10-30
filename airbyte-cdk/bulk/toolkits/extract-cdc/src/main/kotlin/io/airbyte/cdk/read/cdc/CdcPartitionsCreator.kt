@@ -75,6 +75,10 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         if (input.isSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
+
+            // Fill in initialWaitTime here!
+            partitionReader.setTimeout();
+
             log.info { "Current offset is synthetic." }
             return listOf(partitionReader)
         }
