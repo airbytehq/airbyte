@@ -436,13 +436,6 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                             "required": ["name", "format"],
                         },
                     },
-                    "use_file_transfer": {
-                        "airbyte_hidden": True,
-                        "default": False,
-                        "description": "Enable file-based bulk load",
-                        "title": "File Sync (Experimental)",
-                        "type": 'boolean'
-                    },
                     "delivery_method": {
                         "airbyte_hidden": True,
                         "title": "Delivery Method",
