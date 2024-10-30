@@ -38,18 +38,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
+    FILE_TRANSFER_KEY = "use_file_transfer"
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     modified = "modified"
     source_file_url = "source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
-    file_transfer_flag = "use_file_transfer"
     use_file_transfer = False
 
     def __init__(self, **kwargs: Any):
-        if self.file_transfer_flag in kwargs:
-            self.use_file_transfer = kwargs.pop(self.file_transfer_flag, False)
+        if self.FILE_TRANSFER_KEY in kwargs:
+            self.use_file_transfer = kwargs.pop(self.FILE_TRANSFER_KEY, False)
         super().__init__(**kwargs)
 
     @property
