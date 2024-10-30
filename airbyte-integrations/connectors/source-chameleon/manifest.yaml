@@ -252,6 +252,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - changes
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -605,75 +619,75 @@ metadata:
     survey_responses: true
   testedStreams:
     helpbars:
+      hasRecords: true
       streamHash: 0a7ba26cd962134338003ca12b90666fcd13e713
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     segments:
+      hasRecords: true
       streamHash: 75dd1415744ffd11e6bb57284f1c3e7875d166dd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     urls:
+      hasRecords: true
       streamHash: b25c587581096cafecc49d148bab28052783ddd4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     url_groups:
+      hasRecords: true
       streamHash: ee7e5cc175e211db97347bee383dc98e7f779dee
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     changes:
-      hasRecords: true
-      streamHash: 77c1c0a055652a17fad8d4c9fadeddd2b353fc64
+      streamHash: 87018359ecaa1aa155a2d88859859141f4d613fe
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     launchers:
+      hasRecords: true
       streamHash: f80cae968df5fcd35ccd8a354fee13489134ddbf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tooltips:
+      hasRecords: true
       streamHash: 6d719a0f3e67e8990aa8777481cc912a5a41d0ee
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tours:
+      hasRecords: true
       streamHash: ad41bd55706c5c0df68a1f90ee8133a18ca66a43
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     surveys:
-      streamHash: 19fe636d735af502037ae6f017c3fb41ee3bf49e
+      streamHash: 4d13e65a770dcfd93a5e61c0d80c8d293e4b2362
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     survey_responses:
-      hasRecords: false
-      streamHash: 7484f1ba08160ff8c3ca2c4f2f0c41ccf935f8f1
+      streamHash: 2a4e364e12be7a62bd26b4bd5a07bba2a4b9743a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://developers.chameleon.io/#/
 
@@ -947,9 +961,7 @@ schemas:
     additionalProperties: true
     properties:
       created_at:
-        type:
-          - string
-          - "null"
+        type: string
       experience_id:
         type:
           - string
@@ -973,229 +985,30 @@ schemas:
           - object
           - "null"
         properties:
-          account_id:
-            type:
-              - string
-              - "null"
-          autoscroll:
-            type:
-              - boolean
-              - "null"
-          background_type:
-            type:
-              - string
-              - "null"
           body:
-            type:
-              - string
-              - "null"
-          body_alignment:
-            type:
-              - string
-              - "null"
-          buttons:
-            type:
-              - object
-              - "null"
-            properties:
-              66e8a3799660ed0020b9f4b7:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  action_element:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      button_id:
-                        type:
-                          - string
-                          - "null"
-                      id:
-                        type:
-                          - string
-                          - "null"
-                      kind:
-                        type:
-                          - string
-                          - "null"
-                      step_id:
-                        type:
-                          - string
-                          - "null"
-                      use:
-                        type:
-                          - array
-                          - "null"
-                  additional_actions:
-                    type:
-                      - array
-                      - "null"
-                  copied_button_id:
-                    type:
-                      - string
-                      - "null"
-                  enabled:
-                    type:
-                      - boolean
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  order:
-                    type:
-                      - number
-                      - "null"
-                  position:
-                    type:
-                      - string
-                      - "null"
-                  step_id:
-                    type:
-                      - string
-                      - "null"
-                  style_button_roundness:
-                    type:
-                      - string
-                      - "null"
-                  style_color_border:
-                    type:
-                      - string
-                      - "null"
-                  style_color_fill:
-                    type:
-                      - string
-                      - "null"
-                  style_color_text:
-                    type:
-                      - string
-                      - "null"
-                  text:
-                    type:
-                      - string
-                      - "null"
-              66e8a3799660ed0020b9f4bb:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  action_element:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      button_id:
-                        type:
-                          - string
-                          - "null"
-                      id:
-                        type:
-                          - string
-                          - "null"
-                      kind:
-                        type:
-                          - string
-                          - "null"
-                      step_id:
-                        type:
-                          - string
-                          - "null"
-                      use:
-                        type:
-                          - array
-                          - "null"
-                  additional_actions:
-                    type:
-                      - array
-                      - "null"
-                  copied_button_id:
-                    type:
-                      - string
-                      - "null"
-                  enabled:
-                    type:
-                      - boolean
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  order:
-                    type:
-                      - number
-                      - "null"
-                  position:
-                    type:
-                      - string
-                      - "null"
-                  step_id:
-                    type:
-                      - string
-                      - "null"
-                  style_button_roundness:
-                    type:
-                      - string
-                      - "null"
-                  style_color_border:
-                    type:
-                      - string
-                      - "null"
-                  style_color_fill:
-                    type:
-                      - string
-                      - "null"
-                  style_color_text:
-                    type:
-                      - string
-                      - "null"
-                  text:
-                    type:
-                      - string
-                      - "null"
-          campaign_positions:
-            type:
-              - object
-              - "null"
-          capture_id:
-            type:
-              - string
-              - "null"
-          checklist_progressbar:
-            type:
-              - boolean
-              - "null"
-          completed_count:
-            type:
-              - number
-              - "null"
-          completed_unpublish_count:
-            type:
-              - number
-              - "null"
-          components:
             type:
               - array
               - "null"
             items:
-              anyOf:
-                - type: string
-                - type: array
-                  items:
-                    type: string
-          copied_list_id:
+              type:
+                - string
+                - "null"
+          completed_unpublish_count:
             type:
-              - string
+              - array
               - "null"
-          copied_step_id:
+            items:
+              type:
+                - number
+                - "null"
+          completed_unpublish_user_id:
             type:
-              - string
+              - array
               - "null"
-          copied_template_id:
-            type:
-              - string
-              - "null"
+            items:
+              type:
+                - string
+                - "null"
           count_at:
             type:
               - array
@@ -1204,182 +1017,14 @@ schemas:
               type:
                 - string
                 - "null"
-          cover_full_width:
-            type:
-              - boolean
-              - "null"
-          cover_height:
-            type:
-              - string
-              - "null"
-          cover_position:
-            type:
-              - string
-              - "null"
-          cover_type:
-            type:
-              - string
-              - "null"
-          created_user_id:
-            type:
-              - string
-              - "null"
-          css_syntax_errors:
-            type:
-              - array
-              - "null"
-          cta:
-            type:
-              - string
-              - "null"
-          cta_op:
-            type:
-              - string
-              - "null"
-          cta_position:
-            type:
-              - string
-              - "null"
-          cta_previous:
-            type:
-              - string
-              - "null"
-          cta_previous_position:
-            type:
-              - string
-              - "null"
-          dismiss_behavior:
-            type:
-              - string
-              - "null"
-          dismiss_later_amount:
-            type:
-              - number
-              - "null"
-          dismiss_later_behavior:
-            type:
-              - string
-              - "null"
-          dismiss_later_limit:
-            type:
-              - number
-              - "null"
-          dismiss_text:
-            type:
-              - string
-              - "null"
-          dismiss_type:
-            type:
-              - string
-              - "null"
           display_animation:
-            type:
-              - string
-              - "null"
-          displayed_count:
-            type:
-              - number
-              - "null"
-          dropdown_items:
-            type:
-              - array
-              - "null"
-          dropdown_items2:
-            type:
-              - array
-              - "null"
-          element_match_operator:
-            type:
-              - string
-              - "null"
-          element_match_time:
-            type:
-              - number
-              - "null"
-          element_match_time_additional:
-            type:
-              - number
-              - "null"
-          embed_height:
-            type:
-              - number
-              - "null"
-          embed_width:
-            type:
-              - number
-              - "null"
-          empty_capture_id:
-            type:
-              - string
-              - "null"
-          empty_cover_full_width:
-            type:
-              - boolean
-              - "null"
-          empty_css_syntax_errors:
-            type:
-              - array
-              - "null"
-          empty_embed_height:
-            type:
-              - number
-              - "null"
-          empty_embed_width:
-            type:
-              - number
-              - "null"
-          empty_media_position:
-            type:
-              - string
-              - "null"
-          empty_state:
-            type:
-              - boolean
-              - "null"
-          engagement_options:
-            type:
-              - object
-              - "null"
-          excluded_segment_ids:
             type:
               - array
               - "null"
             items:
               type:
-                - array
+                - string
                 - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-          exit_any_click:
-            type:
-              - boolean
-              - "null"
-          exit_any_click_behavior:
-            type:
-              - string
-              - "null"
-          exit_element:
-            type:
-              - object
-              - "null"
-          exited_count:
-            type:
-              - number
-              - "null"
-          experiment_range:
-            type:
-              - string
-              - "null"
-          faded_description:
-            type:
-              - boolean
-              - "null"
-          feedback_zero:
-            type:
-              - object
-              - "null"
           first_published_at:
             type:
               - array
@@ -1388,148 +1033,7 @@ schemas:
               type:
                 - string
                 - "null"
-          floating_dismiss:
-            type:
-              - boolean
-              - "null"
-          follow_up_delay:
-            type:
-              - number
-              - "null"
-          has_title:
-            type:
-              - boolean
-              - "null"
-          hero_cta:
-            type:
-              - string
-              - "null"
-          highlight_click_through:
-            type:
-              - boolean
-              - "null"
-          highlight_type:
-            type:
-              - string
-              - "null"
-          icon_size:
-            type:
-              - string
-              - "null"
           id:
-            type:
-              - string
-              - "null"
-          iframe_embed_height:
-            type:
-              - number
-              - "null"
-          inline_position:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          input_type:
-            type:
-              - string
-              - "null"
-          input_type2:
-            type:
-              - string
-              - "null"
-          item_segment_ids:
-            type:
-              - array
-              - "null"
-          items:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                description:
-                  type:
-                    - string
-                    - "null"
-                copied_list_item_id:
-                  type:
-                    - string
-                    - "null"
-                created_user_id:
-                  type:
-                    - string
-                    - "null"
-                has_description:
-                  type:
-                    - boolean
-                    - "null"
-                hide:
-                  type:
-                    - boolean
-                    - "null"
-                id:
-                  type:
-                    - string
-                    - "null"
-                kind:
-                  type:
-                    - string
-                    - "null"
-                list_id:
-                  type:
-                    - string
-                    - "null"
-                new_tab:
-                  type:
-                    - boolean
-                    - "null"
-                position:
-                  type:
-                    - number
-                    - "null"
-                redirect:
-                  type:
-                    - boolean
-                    - "null"
-                redirect_url:
-                  type:
-                    - string
-                    - "null"
-                style_color_divider:
-                  type:
-                    - string
-                    - "null"
-                style_divider_size:
-                  type:
-                    - string
-                    - "null"
-                style_font_size:
-                  type:
-                    - string
-                    - "null"
-                title:
-                  type:
-                    - string
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                user_id:
-                  type:
-                    - string
-                    - "null"
-          key_meta:
-            type:
-              - boolean
-              - "null"
-          key_uid:
             type:
               - string
               - "null"
@@ -1537,140 +1041,7 @@ schemas:
             type:
               - string
               - "null"
-          label_themes:
-            type:
-              - array
-              - "null"
-          last_count:
-            type:
-              - number
-              - "null"
-          last_count_elapsed:
-            type:
-              - number
-              - "null"
-          last_dropdown_items:
-            type:
-              - array
-              - "null"
-          last_edited_css_at:
-            type:
-              - string
-              - "null"
-          last_edited_css_user_id:
-            type:
-              - string
-              - "null"
-          last_reviewer_ids:
-            type:
-              - array
-              - "null"
-          list_placement:
-            type:
-              - string
-              - "null"
-          list_type:
-            type:
-              - string
-              - "null"
-          margin_bottom:
-            type:
-              - number
-              - "null"
-          margin_left:
-            type:
-              - number
-              - "null"
-          margin_right:
-            type:
-              - number
-              - "null"
-          margin_top:
-            type:
-              - number
-              - "null"
-          media_position:
-            type:
-              - string
-              - "null"
-          modal_width:
-            type:
-              - string
-              - "null"
-          modal_width_exact:
-            type:
-              - number
-              - "null"
           name:
-            type:
-              - string
-              - "null"
-          opts:
-            type:
-              - object
-              - "null"
-          persist_hotspot_trigger:
-            type:
-              - boolean
-              - "null"
-          placeholder:
-            type:
-              - string
-              - "null"
-          pointer_anchor:
-            type:
-              - string
-              - "null"
-          pointer_highlight:
-            type:
-              - boolean
-              - "null"
-          position:
-            type:
-              - number
-              - "null"
-          position_element:
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - string
-                  - "null"
-              kind:
-                type:
-                  - string
-                  - "null"
-              list_id:
-                type:
-                  - string
-                  - "null"
-              use:
-                type:
-                  - array
-                  - "null"
-          position_type:
-            type:
-              - string
-              - "null"
-          previous_redirect_disabled:
-            type:
-              - boolean
-              - "null"
-          progress_bar_position:
-            type:
-              - string
-              - "null"
-          progress_position:
-            type:
-              - string
-              - "null"
-          progress_type:
-            type:
-              - string
-              - "null"
-          publish_note:
             type:
               - array
               - "null"
@@ -1678,6 +1049,14 @@ schemas:
               type:
                 - string
                 - "null"
+          path:
+            type:
+              - string
+              - "null"
+          path_index:
+            type:
+              - string
+              - "null"
           published_at:
             type:
               - array
@@ -1687,15 +1066,21 @@ schemas:
                 - string
                 - "null"
           published_at_count:
-            anyOf:
-              - type: number
-              - type: array
-                items:
-                  type: number
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
           published_completed_unpublish_count:
             type:
-              - number
+              - array
               - "null"
+            items:
+              type:
+                - number
+                - "null"
           published_run_at:
             type:
               - array
@@ -1705,11 +1090,13 @@ schemas:
                 - string
                 - "null"
           published_run_at_count:
-            anyOf:
-              - type: number
-              - type: array
-                items:
-                  type: number
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
           published_segment_ids:
             type:
               - array
@@ -1730,10 +1117,6 @@ schemas:
               type:
                 - string
                 - "null"
-          published_url_group_ids:
-            type:
-              - array
-              - "null"
           published_user_id:
             type:
               - array
@@ -1742,59 +1125,38 @@ schemas:
               type:
                 - string
                 - "null"
-          quantifier_op:
-            type:
-              - string
-              - "null"
-          quantifier_urls:
+          recurrence_frequency:
             type:
               - array
               - "null"
             items:
               type:
-                - object
+                - number
                 - "null"
-              properties:
-                id:
-                  type:
-                    - string
-                    - "null"
-                match_type:
-                  type:
-                    - string
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-          recurrence_frequency:
-            type:
-              - number
-              - "null"
           recurrence_kind:
             type:
-              - string
+              - array
               - "null"
-          recurrence_unit:
-            type:
-              - string
-              - "null"
-          screen_position:
-            type:
-              - string
-              - "null"
-          search:
-            type:
-              - boolean
-              - "null"
+            items:
+              type:
+                - string
+                - "null"
           secondary_trigger:
             type:
-              - string
+              - array
               - "null"
+            items:
+              type:
+                - string
+                - "null"
           secondary_trigger_position:
             type:
-              - string
+              - array
               - "null"
+            items:
+              type:
+                - string
+                - "null"
           segment_at:
             type:
               - array
@@ -1815,186 +1177,44 @@ schemas:
                 type:
                   - string
                   - "null"
-          segments_op:
+          selection_id:
             type:
               - string
               - "null"
-          show_timed_dismiss:
-            type:
-              - boolean
-              - "null"
-          skip_trigger:
-            type:
-              - boolean
-              - "null"
-          snap_position:
-            type:
-              - string
-              - "null"
-          started_count:
-            type:
-              - number
-              - "null"
-          step_additional_trigger:
+          selector:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          step_id:
             type:
               - string
               - "null"
           step_trigger:
             type:
-              - string
+              - array
               - "null"
-          steps_counts:
+            items:
+              type:
+                - string
+                - "null"
+          style_relative_offset_x:
             type:
               - array
               - "null"
             items:
               type:
-                - number
+                - string
                 - "null"
-          style_button_corner_radius:
-            type:
-              - string
-              - "null"
-          style_canvas_width_setting:
-            type:
-              - string
-              - "null"
-          style_checklist_progressbar_position:
-            type:
-              - string
-              - "null"
-          style_color_background:
-            type:
-              - string
-              - "null"
-          style_color_button_border:
-            type:
-              - string
-              - "null"
-          style_color_button_highlight:
-            type:
-              - string
-              - "null"
-          style_color_button_text:
-            type:
-              - string
-              - "null"
-          style_color_checkmark:
-            type:
-              - string
-              - "null"
-          style_color_dismiss:
-            type:
-              - string
-              - "null"
-          style_color_gradient:
-            type:
-              - string
-              - "null"
-          style_color_gradient2:
-            type:
-              - string
-              - "null"
-          style_color_icon:
-            type:
-              - string
-              - "null"
-          style_color_icon_background:
-            type:
-              - string
-              - "null"
-          style_color_link:
-            type:
-              - string
-              - "null"
-          style_color_name:
-            type:
-              - string
-              - "null"
-          style_color_secondary_button_border:
-            type:
-              - string
-              - "null"
-          style_color_secondary_button_highlight:
-            type:
-              - string
-              - "null"
-          style_color_secondary_button_text:
-            type:
-              - string
-              - "null"
-          style_color_text:
-            type:
-              - string
-              - "null"
-          style_corner_radius:
-            type:
-              - string
-              - "null"
-          style_cover_corner_radius:
-            type:
-              - string
-              - "null"
-          style_custom_css:
-            type:
-              - string
-              - "null"
-          style_empty_cover_corner_radius:
-            type:
-              - string
-              - "null"
-          style_font:
-            type:
-              - string
-              - "null"
-          style_font_size:
-            type:
-              - string
-              - "null"
-          style_item_color_highlight:
-            type:
-              - string
-              - "null"
-          style_position_dismiss:
-            type:
-              - string
-              - "null"
-          style_spacing_canvas:
-            type:
-              - string
-              - "null"
-          style_title_background_color:
-            type:
-              - string
-              - "null"
-          style_title_font_size:
-            type:
-              - string
-              - "null"
-          style_title_height:
-            type:
-              - string
-              - "null"
-          style_trigger_color_highlight:
-            type:
-              - string
-              - "null"
-          style_trigger_color_highlight2:
-            type:
-              - string
-              - "null"
-          style_trigger_color_highlight3:
-            type:
-              - string
-              - "null"
           style_trigger_offset_x:
-            anyOf:
-              - type: string
-              - type: array
-                items:
-                  type:
-                    - "null"
-                    - string
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           style_trigger_offset_y:
             type:
               - array
@@ -2003,19 +1223,7 @@ schemas:
               type:
                 - string
                 - "null"
-          style_welcome_cover_corner_radius:
-            type:
-              - string
-              - "null"
-          style_welcome_cta_border_color:
-            type:
-              - string
-              - "null"
-          style_welcome_cta_fill_color:
-            type:
-              - string
-              - "null"
-          style_widget_background_color:
+          style_trigger_scale_width:
             type:
               - array
               - "null"
@@ -2023,7 +1231,15 @@ schemas:
               type:
                 - string
                 - "null"
-          style_widget_border_color:
+          tag:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+          trigger_element_attachment_id:
             type:
               - array
               - "null"
@@ -2031,296 +1247,53 @@ schemas:
               type:
                 - string
                 - "null"
-          style_widget_border_radius:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          style_widget_icon_color:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          style_widget_offset_x:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          style_widget_offset_y:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          style_widget_text_color:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          survey_alignment:
-            type:
-              - string
-              - "null"
-          tag_ids:
-            type:
-              - array
-              - "null"
-          template_id:
-            type:
-              - string
-              - "null"
-          time_on_page_amount:
-            type:
-              - number
-              - "null"
-          time_on_page_behavior:
-            type:
-              - string
-              - "null"
-          timed_dismiss:
-            type:
-              - boolean
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
-          title_recent:
-            type:
-              - string
-              - "null"
-          to:
-            type:
-              - string
-              - "null"
-          tooltip_id:
-            type:
-              - string
-              - "null"
-          tour_link_first_step:
-            type:
-              - boolean
-              - "null"
-          translations:
-            type:
-              - object
-              - "null"
-          trigger:
-            type:
-              - string
-              - "null"
-          trigger_additional_element:
-            type:
-              - object
-              - "null"
-          trigger_element:
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - string
-                  - "null"
-              kind:
-                type:
-                  - string
-                  - "null"
-              list_id:
-                type:
-                  - string
-                  - "null"
-              use:
-                type:
-                  - array
-                  - "null"
-          trigger_placement:
-            type:
-              - string
-              - "null"
-          trigger_position:
-            type:
-              - string
-              - "null"
-          trigger_secondary_element:
-            type:
-              - object
-              - "null"
-            properties:
-              attr_class:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              kind:
-                type:
-                  - string
-                  - "null"
-              path:
-                type:
-                  - string
-                  - "null"
-              selector:
-                type:
-                  - string
-                  - "null"
-              step_id:
-                type:
-                  - string
-                  - "null"
-              tag:
-                type:
-                  - string
-                  - "null"
-              text:
-                type:
-                  - string
-                  - "null"
-              use:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
           trigger_secondary_type:
             type:
-              - string
-              - "null"
-          trigger_text:
-            type:
-              - string
-              - "null"
-          trigger_type:
-            type:
-              - string
-              - "null"
-          updated_any_at:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          url_group_ids:
-            type:
-              - array
-              - "null"
-          url_match_all:
-            type:
-              - boolean
-              - "null"
-          url_match_type:
-            type:
-              - string
-              - "null"
-          user_id:
-            type:
-              - string
-              - "null"
-          welcome_capture_id:
-            type:
-              - string
-              - "null"
-          welcome_cover_full_width:
-            type:
-              - boolean
-              - "null"
-          welcome_css_syntax_errors:
-            type:
-              - array
-              - "null"
-          welcome_cta_position:
-            type:
-              - string
-              - "null"
-          welcome_embed_height:
-            type:
-              - number
-              - "null"
-          welcome_embed_width:
-            type:
-              - number
-              - "null"
-          welcome_media_position:
-            type:
-              - string
-              - "null"
-          welcome_state:
-            type:
-              - boolean
-              - "null"
-          widget_attachment_size:
-            type:
               - array
               - "null"
             items:
               type:
                 - string
                 - "null"
-          widget_css_syntax_errors:
-            type:
-              - array
-              - "null"
-          widget_icon_uid:
+          use:
             type:
               - array
               - "null"
             items:
-              type:
-                - string
-                - "null"
-          widget_position:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          widget_screen_position:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          widget_text:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
           width_with_units:
             type:
-              - string
+              - array
               - "null"
+            items:
+              type:
+                - string
+                - "null"
       options:
         type:
           - object
           - "null"
+        properties:
+          capture_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          trigger_element_attachment_url:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
       path:
         type:
           - string
@@ -2342,12 +1315,17 @@ schemas:
             type:
               - string
               - "null"
+          name:
+            type:
+              - string
+              - "null"
           updated_at:
             type:
               - string
               - "null"
     required:
       - id
+      - created_at
   launchers:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2593,12 +1571,20 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       id:
         type: string
       last_dropdown_items:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       name:
         type:
           - string
@@ -2608,6 +1594,10 @@ schemas:
           - number
           - "null"
       published_at:
+        type:
+          - string
+          - "null"
+      rate_unlimit_at:
         type:
           - string
           - "null"
@@ -2640,6 +1630,18 @@ schemas:
             type:
               - number
               - "null"
+          last_completed_at:
+            type:
+              - string
+              - "null"
+          last_exited_at:
+            type:
+              - string
+              - "null"
+          last_started_at:
+            type:
+              - string
+              - "null"
           started_count:
             type:
               - number
@@ -2655,33 +1657,712 @@ schemas:
       - updated_at
   survey_responses:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - id
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
+      button_id:
+        type:
+          - string
+          - "null"
+      button_order:
+        type:
+          - number
+          - "null"
+      button_text:
+        type:
+          - string
+          - "null"
+      comment_step_buttons_selected:
+        type:
+          - array
+          - "null"
+      comment_step_buttons_selected2:
+        type:
+          - array
+          - "null"
+      comment_step_dropdown_items:
+        type:
+          - array
+          - "null"
+      comment_step_dropdown_items2:
+        type:
+          - array
+          - "null"
+      comment_step_input_text:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      dropdown_items:
+        type:
+          - array
+          - "null"
+      finished_at:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
       id:
         type: string
-      href:
-        type: string
-      button_text:
-        type: string
-      button_order:
-        type: integer
       input_text:
-        type: string
-      finished_at:
-        type: string
+        type:
+          - string
+          - "null"
       profile:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
+          created_at:
+            type:
+              - string
+              - "null"
           id:
-            type: string
-          uid:
-            type: string
-          company:
-            type: object
+            type:
+              - string
+              - "null"
+          options:
+            type:
+              - object
+              - "null"
             properties:
-              id:
-                type: string
-              uid:
-                type: string
+              account_type:
+                type:
+                  - string
+                  - "null"
+              active_connections:
+                type:
+                  - number
+                  - "null"
+              chameleon_launchers_started:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_category_industry:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_category_industry_group:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_category_naics_code:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_category_sector:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_category_sic_code:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_category_sub_industry:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_crunchbase_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_description:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_domain:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_domain_aliases:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_email_provider:
+                type:
+                  - boolean
+                  - "null"
+              clearbit_company_facebook_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_founded_year:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_geo_city:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_country:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_country_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_lat:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_geo_lng:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_geo_postal_code:
+                type:
+                  - number
+                  - string
+                  - "null"
+              clearbit_company_geo_state:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_state_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_street_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_geo_street_number:
+                type:
+                  - number
+                  - string
+                  - "null"
+              clearbit_company_indexed_at:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_legal_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_linkedin_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_location:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_logo:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_metrics_alexa_global_rank:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_metrics_alexa_us_rank:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_metrics_employees:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_metrics_employees_range:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_metrics_estimated_annual_revenue:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_metrics_raised:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_phone:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_site_email_addresses:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_site_phone_numbers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_tags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_tech:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_company_time_zone:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_twitter_followers:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_twitter_following:
+                type:
+                  - number
+                  - "null"
+              clearbit_company_twitter_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_type:
+                type:
+                  - string
+                  - "null"
+              clearbit_company_utc_offset:
+                type:
+                  - number
+                  - "null"
+              clearbit_person_employment_domain:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_employment_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_employment_role:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_employment_seniority:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_employment_title:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_fuzzy:
+                type:
+                  - boolean
+                  - "null"
+              clearbit_person_geo_city:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_geo_country:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_geo_country_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_geo_lat:
+                type:
+                  - number
+                  - "null"
+              clearbit_person_geo_lng:
+                type:
+                  - number
+                  - "null"
+              clearbit_person_geo_state:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_geo_state_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_indexed_at:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_linkedin_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_location:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_name_family_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_name_full_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_name_given_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_time_zone:
+                type:
+                  - string
+                  - "null"
+              clearbit_person_utc_offset:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_category_industry:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_category_industry_group:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_category_naics_code:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_category_sector:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_category_sic_code:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_category_sub_industry:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_crunchbase_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_description:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_domain:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_domain_aliases:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_reveal_company_email_provider:
+                type:
+                  - boolean
+                  - "null"
+              clearbit_reveal_company_facebook_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_founded_year:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_geo_city:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_country:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_country_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_lat:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_geo_lng:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_geo_postal_code:
+                type:
+                  - number
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_state:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_state_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_street_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_street_number:
+                type:
+                  - number
+                  - string
+                  - "null"
+              clearbit_reveal_company_geo_sub_premise:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_indexed_at:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_legal_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_linkedin_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_location:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_logo:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_metrics_alexa_global_rank:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_metrics_alexa_us_rank:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_metrics_annual_revenue:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_metrics_employees:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_metrics_employees_range:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_metrics_estimated_annual_revenue:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_metrics_raised:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_name:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_phone:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_site_email_addresses:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_reveal_company_site_phone_numbers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_reveal_company_tags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_reveal_company_tech:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              clearbit_reveal_company_time_zone:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_twitter_followers:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_twitter_following:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_company_twitter_handle:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_type:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_company_utc_offset:
+                type:
+                  - number
+                  - "null"
+              clearbit_reveal_confidence_score:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_fuzzy:
+                type:
+                  - boolean
+                  - "null"
+              clearbit_reveal_geo_ip_city:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_geo_ip_country:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_geo_ip_country_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_geo_ip_state:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_geo_ip_state_code:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_role:
+                type:
+                  - string
+                  - "null"
+              clearbit_reveal_seniority:
+                type:
+                  - string
+                  - "null"
+              current_workspace_id:
+                type:
+                  - string
+                  - "null"
+              days_since_customer:
+                type:
+                  - number
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_close_date:
+                type:
+                  - string
+                  - "null"
+              first_sync_success:
+                type:
+                  - string
+                  - "null"
+              icp_score_category:
+                type:
+                  - string
+                  - "null"
+              is_corporate:
+                type:
+                  - boolean
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+              providers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              salesforce_contact:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  email:
+                    type:
+                      - string
+                      - "null"
+              trial_end_date:
+                type:
+                  - string
+                  - "null"
+              workspace_id:
+                type:
+                  - string
+                  - "null"
+          uid:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      profile_id:
+        type:
+          - string
+          - "null"
+      survey_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at

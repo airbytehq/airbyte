@@ -1,0 +1,1136 @@
+version: 5.13.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - bounces
+
+definitions:
+  streams:
+    bounces:
+      type: DeclarativeStream
+      name: bounces
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/suppression/bounces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bounces"
+    spam_reports:
+      type: DeclarativeStream
+      name: spam_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/suppression/spam_reports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/spam_reports"
+    global_suppressions:
+      type: DeclarativeStream
+      name: global_suppressions
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/suppression/unsubscribes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/global_suppressions"
+    blocks:
+      type: DeclarativeStream
+      name: blocks
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/suppression/blocks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blocks"
+    invalid_emails:
+      type: DeclarativeStream
+      name: invalid_emails
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/suppression/invalid_emails
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invalid_emails"
+    suppression_groups:
+      type: DeclarativeStream
+      name: suppression_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/asm/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppression_groups"
+    suppression_group_members:
+      type: DeclarativeStream
+      name: suppression_group_members
+      primary_key:
+        - group_id
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/asm/suppressions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppression_group_members"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/segments/2.0
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    singlesend_stats:
+      type: DeclarativeStream
+      name: singlesend_stats
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/stats/singlesends
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/singlesend_stats"
+    stats_automations:
+      type: DeclarativeStream
+      name: stats_automations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/stats/automations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats_automations"
+    singlesends:
+      type: DeclarativeStream
+      name: singlesends
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/singlesends
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/singlesends"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/templates
+          http_method: GET
+          request_parameters:
+            generations: legacy,dynamic
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/marketing/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"_metadata\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - contact_id
+      retriever:
+        type: AsyncRetriever
+        status_mapping:
+          failed:
+            - failed
+          running:
+            - pending
+          timeout:
+            - timeout
+          completed:
+            - ready
+        urls_extractor:
+          type: DpathExtractor
+          field_path:
+            - urls
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        polling_requester:
+          type: HttpRequester
+          path: >-
+            /v3/marketing/contacts/exports/{{stream_slice['create_job_response'].json()['id']
+            }}
+          url_base: https://api.sendgrid.com
+          http_method: GET
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+        creation_requester:
+          type: HttpRequester
+          path: /v3/marketing/contacts/exports
+          url_base: https://api.sendgrid.com
+          http_method: POST
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+        download_requester:
+          type: HttpRequester
+          path: "{{stream_slice['url']}}"
+          url_base: ""
+          http_method: GET
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      transformations:
+        - type: KeysToLower
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.sendgrid.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/bounces"
+  - $ref: "#/definitions/streams/spam_reports"
+  - $ref: "#/definitions/streams/global_suppressions"
+  - $ref: "#/definitions/streams/blocks"
+  - $ref: "#/definitions/streams/invalid_emails"
+  - $ref: "#/definitions/streams/suppression_groups"
+  - $ref: "#/definitions/streams/suppression_group_members"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/singlesend_stats"
+  - $ref: "#/definitions/streams/stats_automations"
+  - $ref: "#/definitions/streams/singlesends"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/contacts"
+
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      api_key:
+        type: string
+        description: >-
+          Sendgrid API Key, use <a
+          href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to
+          generate this key.
+        order: 1
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bounces: false
+    spam_reports: false
+    global_suppressions: false
+    blocks: false
+    invalid_emails: false
+    suppression_groups: false
+    suppression_group_members: false
+    lists: false
+    segments: false
+    singlesend_stats: false
+    stats_automations: false
+    singlesends: false
+    templates: false
+    campaigns: false
+  testedStreams:
+    bounces:
+      streamHash: 145e6dd62816198a6f8f983c546ffba4f02040d9
+    spam_reports:
+      streamHash: f750431ed960f0bbc886e8be5a0a7e1791afab89
+    global_suppressions:
+      streamHash: 4f92f29338a1a6c6e7578699345a1a7bff40db0e
+    blocks:
+      streamHash: a9d7464da85cf051a0ac61f2ca6b194f02a1ade6
+    invalid_emails:
+      streamHash: e69fc3016c3fe2a1db1e9bc1e1465964c79d82b6
+    suppression_groups:
+      streamHash: 779660090e01df7dec64c08b6edd4a0e378e0e09
+    suppression_group_members:
+      streamHash: 99b8b2b9288bfa516b574a92958c360dbca6f3a6
+    lists:
+      streamHash: 283c5b47e7df4b5ef43ec7995fd3489b930d1542
+    segments:
+      streamHash: 528e82ca4b2fdae8a21d2b5c38f2a3ca792c7acd
+    singlesend_stats:
+      streamHash: 4868115ddd783b7289c8ccc7e32c419eb19aaa13
+    stats_automations:
+      streamHash: 35d0503b6e06ec1fbc9a0f12aa4e91162288fb2b
+    singlesends:
+      streamHash: 2bb97c00af79c4bc36b926991ae78521b8c981e9
+    templates:
+      streamHash: 2ccf8e48c47f194b19266e749f6bfb484eeebd7b
+    campaigns:
+      streamHash: d1c690aa2e38a4d9023053d3d9824dd08996e669
+  assist: {}
+
+schemas:
+  bounces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      created:
+        type: integer
+      email:
+        type: string
+      reason:
+        type: string
+      status:
+        type: string
+    additionalProperties: true
+  spam_reports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      created:
+        type: integer
+      email:
+        type: string
+      ip:
+        type: string
+    additionalProperties: true
+  global_suppressions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      created:
+        type: integer
+      email:
+        type: string
+    additionalProperties: true
+  blocks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      created:
+        type: integer
+      email:
+        type: string
+      reason:
+        type: string
+      status:
+        type: string
+    additionalProperties: true
+  invalid_emails:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      created:
+        type: integer
+      email:
+        type: string
+      reason:
+        type: string
+    additionalProperties: true
+  suppression_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      is_default:
+        type: boolean
+      name:
+        type: string
+      unsubscribes:
+        type: integer
+    additionalProperties: true
+  suppression_group_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      created_at:
+        type: integer
+      email:
+        type: string
+      group_id:
+        type: integer
+      group_name:
+        type: string
+    additionalProperties: true
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      _metadata:
+        type: object
+        properties:
+          self:
+            type: string
+      contact_count:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+    additionalProperties: true
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      contacts_count:
+        type: integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: string
+      name:
+        type: string
+      next_sample_update:
+        type:
+          - "null"
+          - string
+        format: date-time
+      parent_list_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - "null"
+            - string
+      query_version:
+        type: string
+      sample_updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type: object
+        properties:
+          query_validation:
+            type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    additionalProperties: true
+  singlesend_stats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      ab_phase:
+        type: string
+      ab_variation:
+        type: string
+      aggregation:
+        type: string
+      id:
+        type: string
+        format: uuid
+      stats:
+        type: object
+        properties:
+          bounce_drops:
+            type: integer
+          bounces:
+            type: integer
+          clicks:
+            type: integer
+          delivered:
+            type: integer
+          invalid_emails:
+            type: integer
+          opens:
+            type: integer
+          requests:
+            type: integer
+          spam_report_drops:
+            type: integer
+          spam_reports:
+            type: integer
+          unique_clicks:
+            type: integer
+          unique_opens:
+            type: integer
+          unsubscribes:
+            type: integer
+    additionalProperties: true
+  stats_automations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      aggregation:
+        type: string
+      id:
+        type: string
+      stats:
+        type: object
+        properties:
+          bounce_drops:
+            type: integer
+          bounces:
+            type: integer
+          clicks:
+            type: integer
+          delivered:
+            type: integer
+          invalid_emails:
+            type: integer
+          opens:
+            type: integer
+          requests:
+            type: integer
+          spam_report_drops:
+            type: integer
+          spam_reports:
+            type: integer
+          unique_clicks:
+            type: integer
+          unique_opens:
+            type: integer
+          unsubscribes:
+            type: integer
+      step_id:
+        type: string
+    additionalProperties: true
+  singlesends:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      categories:
+        type: array
+        items:
+          type: string
+      created_at:
+        type: string
+        format: date-time
+      id:
+        type: string
+        format: uuid
+      is_abtest:
+        type: boolean
+      name:
+        type: string
+      send_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type: string
+      updated_at:
+        type: string
+        format: date-time
+    additionalProperties: true
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      generation:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      versions:
+        type: array
+    additionalProperties: true
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      channels:
+        type: array
+        items:
+          type: string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: string
+      is_abtest:
+        type: boolean
+      name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      address_line_1:
+        type:
+          - string
+          - 'null'
+      address_line_2:
+        type:
+          - string
+          - 'null'
+      alternate_emails:
+        type:
+          - 'null'
+          - array
+      city:
+        type:
+          - string
+          - 'null'
+      country:
+        type:
+          - string
+          - 'null'
+      email:
+        type:
+          - string
+          - 'null'
+      first_name:
+        type:
+          - string
+          - 'null'
+      contact_id:
+        type:
+          - string
+          - 'null'
+      last_name:
+        type:
+          - string
+          - 'null'
+      postal_code:
+        type:
+          - string
+          - 'null'
+      state_province_region:
+        type:
+          - string
+          - 'null'
+      list_ids:
+        type:
+          - 'null'
+          - array
+      created_at:
+        type:
+          - string
+          - 'null'
+        format: date-time
+      updated_at:
+        type:
+          - string
+          - 'null'
+        format: date-time
+      custom_fields:
+        type:
+          - object
+          - 'null'
+      phone_number:
+        type:
+          - string
+          - 'null'
+      whatsapp:
+        type:
+          - string
+          - 'null'
+      line:
+        type:
+          - string
+          - 'null'
+      facebook:
+        type:
+          - string
+          - 'null'
+      unique_name:
+        type:
+          - string
+          - 'null'

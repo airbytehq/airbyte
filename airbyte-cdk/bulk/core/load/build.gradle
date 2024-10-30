@@ -1,3 +1,16 @@
+// simply declaring the source sets is sufficient to populate them with
+// src/integrationTest/java+resources + src/integrationTest/kotlin.
+sourceSets {
+    integrationTest {
+    }
+}
+kotlin {
+    sourceSets {
+        testIntegration {
+        }
+    }
+}
+
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
@@ -9,4 +22,27 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
+    testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
+}
+
+def integrationTestTask = tasks.register('integrationTest', Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    useJUnitPlatform()
+
+    jvmArgs = project.test.jvmArgs
+    systemProperties = project.test.systemProperties
+    maxParallelForks = project.test.maxParallelForks
+    maxHeapSize = project.test.maxHeapSize
+}
+// These tests are lightweight enough to run on every PR.
+tasks.named('check').configure {
+    dependsOn integrationTest
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }

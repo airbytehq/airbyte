@@ -7,11 +7,11 @@
     "required": [
       "host",
       "port",
-      "username",
       "database",
-      "encryption",
+      "username",
       "tunnel_method",
-      "cursor"
+      "ssl_mode",
+      "replication_method"
     ],
     "properties": {
       "host": {
@@ -29,105 +29,6 @@
         "minimum": 0,
         "description": "Port of the database."
       },
-      "cursor": {
-        "type": "object",
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "Scan Changes with User Defined Cursor",
-            "required": ["cursor_method"],
-            "properties": {
-              "cursor_method": {
-                "enum": ["user_defined"],
-                "type": "string",
-                "default": "user_defined"
-              }
-            },
-            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
-            "additionalProperties": true
-          },
-          {
-            "type": "object",
-            "title": "Read Changes using Change Data Capture (CDC)",
-            "required": ["cursor_method"],
-            "properties": {
-              "cursor_method": {
-                "enum": ["cdc"],
-                "type": "string",
-                "default": "cdc"
-              },
-              "server_timezone": {
-                "type": "string",
-                "order": 2,
-                "title": "Configured server timezone for the MySQL source (Advanced)",
-                "always_show": true,
-                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
-              },
-              "invalid_cdc_behavior": {
-                "type": "object",
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "title": "Fail sync",
-                    "required": ["invalid_cdc_cursor_position_behavior"],
-                    "properties": {
-                      "invalid_cdc_cursor_position_behavior": {
-                        "enum": ["fail_sync"],
-                        "type": "string",
-                        "default": "fail_sync"
-                      }
-                    },
-                    "additionalProperties": true
-                  },
-                  {
-                    "type": "object",
-                    "title": "Re-sync data",
-                    "required": ["invalid_cdc_cursor_position_behavior"],
-                    "properties": {
-                      "invalid_cdc_cursor_position_behavior": {
-                        "enum": ["resync"],
-                        "type": "string",
-                        "default": "resync"
-                      }
-                    },
-                    "additionalProperties": true
-                  }
-                ],
-                "order": 3,
-                "title": "Invalid CDC position behavior (Advanced)",
-                "always_show": true,
-                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss."
-              },
-              "initial_waiting_seconds": {
-                "max": 1200,
-                "min": 120,
-                "type": "integer",
-                "order": 1,
-                "title": "Initial Waiting Time in Seconds (Advanced)",
-                "default": 300,
-                "always_show": true,
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
-              },
-              "initial_load_timeout_hours": {
-                "max": 24,
-                "min": 4,
-                "type": "integer",
-                "order": 4,
-                "title": "Initial Load Timeout in Hours (Advanced)",
-                "default": 8,
-                "always_show": true,
-                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
-              }
-            },
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
-            "additionalProperties": true
-          }
-        ],
-        "order": 10,
-        "title": "Update Method",
-        "description": "Configures how data is extracted from the database.",
-        "display_type": "radio"
-      },
       "database": {
         "type": "string",
         "order": 6,
@@ -143,21 +44,15 @@
         "description": "The password associated with the username.",
         "airbyte_secret": true
       },
-      "username": {
-        "type": "string",
-        "order": 4,
-        "title": "User",
-        "description": "The username which is used to access the database."
-      },
-      "encryption": {
+      "ssl_mode": {
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "preferred",
-            "required": ["encryption_method"],
+            "required": ["mode"],
             "properties": {
-              "encryption_method": {
+              "mode": {
                 "enum": ["preferred"],
                 "type": "string",
                 "default": "preferred"
@@ -169,9 +64,9 @@
           {
             "type": "object",
             "title": "required",
-            "required": ["encryption_method"],
+            "required": ["mode"],
             "properties": {
-              "encryption_method": {
+              "mode": {
                 "enum": ["required"],
                 "type": "string",
                 "default": "required"
@@ -183,35 +78,35 @@
           {
             "type": "object",
             "title": "verify_ca",
-            "required": ["encryption_method", "ssl_certificate"],
+            "required": ["mode", "ca_certificate"],
             "properties": {
-              "ssl_client_key": {
+              "mode": {
+                "enum": ["verify_ca"],
+                "type": "string",
+                "default": "verify_ca"
+              },
+              "client_key": {
                 "type": "string",
                 "title": "Client Key",
                 "multiline": true,
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
                 "airbyte_secret": true
               },
-              "ssl_certificate": {
+              "ca_certificate": {
                 "type": "string",
                 "title": "CA certificate",
                 "multiline": true,
                 "description": "CA certificate",
                 "airbyte_secret": true
               },
-              "encryption_method": {
-                "enum": ["verify_ca"],
-                "type": "string",
-                "default": "verify_ca"
-              },
-              "ssl_client_certificate": {
+              "client_certificate": {
                 "type": "string",
                 "title": "Client certificate File",
                 "multiline": true,
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
                 "airbyte_secret": true
               },
-              "ssl_client_key_password": {
+              "client_key_password": {
                 "type": "string",
                 "title": "Client key password",
                 "multiline": true,
@@ -225,35 +120,35 @@
           {
             "type": "object",
             "title": "verify_identity",
-            "required": ["encryption_method", "ssl_certificate"],
+            "required": ["mode", "ca_certificate"],
             "properties": {
-              "ssl_client_key": {
+              "mode": {
+                "enum": ["verify_identity"],
+                "type": "string",
+                "default": "verify_identity"
+              },
+              "client_key": {
                 "type": "string",
                 "title": "Client Key",
                 "multiline": true,
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
                 "airbyte_secret": true
               },
-              "ssl_certificate": {
+              "ca_certificate": {
                 "type": "string",
                 "title": "CA certificate",
                 "multiline": true,
                 "description": "CA certificate",
                 "airbyte_secret": true
               },
-              "encryption_method": {
-                "enum": ["verify_identity"],
-                "type": "string",
-                "default": "verify_identity"
-              },
-              "ssl_client_certificate": {
+              "client_certificate": {
                 "type": "string",
                 "title": "Client certificate File",
                 "multiline": true,
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
                 "airbyte_secret": true
               },
-              "ssl_client_key_password": {
+              "client_key_password": {
                 "type": "string",
                 "title": "Client key password",
                 "multiline": true,
@@ -268,6 +163,12 @@
         "order": 8,
         "title": "Encryption",
         "description": "The encryption method with is used when communicating with the database."
+      },
+      "username": {
+        "type": "string",
+        "order": 4,
+        "title": "User",
+        "description": "The username which is used to access the database."
       },
       "concurrency": {
         "type": "integer",
@@ -409,6 +310,79 @@
         "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
         "display_type": "check"
       },
+      "replication_method": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Scan Changes with User Defined Cursor",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "enum": ["STANDARD"],
+                "type": "string",
+                "default": "STANDARD"
+              }
+            },
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "enum": ["CDC"],
+                "type": "string",
+                "default": "CDC"
+              },
+              "server_timezone": {
+                "type": "string",
+                "order": 2,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              },
+              "initial_waiting_seconds": {
+                "max": 1200,
+                "min": 120,
+                "type": "integer",
+                "order": 1,
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "default": 300,
+                "always_show": true,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
+              },
+              "initial_load_timeout_hours": {
+                "max": 24,
+                "min": 4,
+                "type": "integer",
+                "order": 4,
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "default": 8,
+                "always_show": true,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
+              },
+              "invalid_cdc_cursor_position_behavior": {
+                "enum": ["Fail sync", "Re-sync data"],
+                "default": "Fail sync",
+                "type": "string",
+                "order": 3,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              }
+            },
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "additionalProperties": true
+          }
+        ],
+        "order": 10,
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
+        "display_type": "radio"
+      },
       "checkpoint_target_interval_seconds": {
         "type": "integer",
         "order": 11,
@@ -418,5 +392,8 @@
       }
     },
     "additionalProperties": true
-  }
+  },
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": []
 }

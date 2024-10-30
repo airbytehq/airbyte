@@ -66,7 +66,7 @@ async def test_run_poetry_publish(context: PythonRegistryPublishContext, package
         # need to use linux/amd64 because the pypiserver image is only available for that platform
         context.dagger_client.container(platform=Platform("linux/amd64"))
         .from_("pypiserver/pypiserver:v2.0.1")
-        .with_exec(["run", "-P", ".", "-a", "."])
+        .with_exec(["run", "-P", ".", "-a", "."], use_entrypoint=True)
         .with_exposed_port(8080)
         .as_service()
     )

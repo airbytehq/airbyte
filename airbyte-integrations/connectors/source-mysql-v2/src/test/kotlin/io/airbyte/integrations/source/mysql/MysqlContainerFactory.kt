@@ -50,8 +50,8 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationJsonObject =
-        MysqlSourceConfigurationJsonObject().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username
@@ -60,6 +60,21 @@ object MysqlContainerFactory {
             database = "test"
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
+            setMethodValue(UserDefinedCursor)
+        }
+
+    @JvmStatic
+    fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
+            host = mySQLContainer.host
+            port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
+            username = mySQLContainer.username
+            password = mySQLContainer.password
+            jdbcUrlParams = ""
+            database = "test"
+            checkpointTargetIntervalSeconds = 60
+            concurrency = 1
+            setMethodValue(CdcCursor())
         }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {

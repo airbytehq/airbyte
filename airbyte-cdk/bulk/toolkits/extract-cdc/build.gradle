@@ -1,5 +1,5 @@
 dependencies {
-    api platform('io.debezium:debezium-bom:2.7.3.Final')
+    api platform('io.debezium:debezium-bom:3.0.0.Final')
     api 'io.debezium:debezium-api'
     api 'io.debezium:debezium-embedded'
 

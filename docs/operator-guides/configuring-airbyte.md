@@ -19,9 +19,9 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 ## Kubernetes Deployments
 
-The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
+The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/deploying-airbyte.md) is via the `Helm Charts`.
 
-To configure the Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+To configure the Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/deploying-airbyte.md).
 Each application will consume the appropriate values from that file.
 
 If you want to manage your own Kube manifests, please refer to the `Helm Chart`.

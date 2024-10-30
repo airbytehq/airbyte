@@ -37,6 +37,7 @@ class MysqlSourceMetadataQuerier(
                     Pair("show variables where Variable_name = 'log_bin'", "ON"),
                     Pair("show variables where Variable_name = 'binlog_format'", "ROW"),
                     Pair("show variables where Variable_name = 'binlog_row_image'", "FULL"),
+                    Pair("show variables where Variable_name = 'gtid_mode'", "ON"),
                 )
 
             cdcVariableCheckQueries.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
@@ -139,7 +140,7 @@ class MysqlSourceMetadataQuerier(
                 .groupBy {
                     findTableName(
                         StreamIdentifier.from(
-                            StreamDescriptor().withName(it.tableName).withNamespace("public"),
+                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
                         ),
                     )
                 }

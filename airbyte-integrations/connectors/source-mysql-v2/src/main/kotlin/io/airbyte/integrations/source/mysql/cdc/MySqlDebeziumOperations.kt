@@ -8,10 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.CdcSourceConfiguration
-import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -26,11 +27,19 @@ import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
+import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
+import io.airbyte.integrations.source.mysql.MysqlCdcMetaFields
+import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLBooleanConverter
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLNumericConverter
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.connector.mysql.MySqlConnector
+import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
 import io.debezium.relational.history.HistoryRecord
@@ -48,53 +57,133 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.random.Random
 import kotlin.random.nextInt
+import org.apache.kafka.connect.json.JsonConverterConfig
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
 class MySqlDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
-    jdbcSourceConfiguration: JdbcSourceConfiguration,
-    cdcSourceConfiguration: CdcSourceConfiguration,
+    val configuration: MysqlSourceConfiguration,
     random: Random = Random.Default,
 ) : DebeziumOperations<MySqlPosition> {
     private val log = KotlinLogging.logger {}
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue
-    ): AirbyteRecordMessage {
+    ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
         val isDelete: Boolean = after.isNull
-
-        airbyteRecord.meta.changes.clear()
-        airbyteRecord.stream = source["table"].asText()
-        airbyteRecord.namespace = source["db"].asText()
+        // Identify the stream.
+        val streamID: StreamIdentifier =
+            StreamIdentifier.from(
+                StreamDescriptor()
+                    .withName(source["table"].asText())
+                    .withNamespace(source["db"].asText())
+            )
+        // Use either `before` or `after` as the record data, depending on the nature of the change.
+        val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
+        // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         val transactionTimestampJsonNode: JsonNode =
             OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-
-        val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
-        data.set<JsonNode>(CommonMetaField.CDC_UPDATED_AT.id, transactionTimestampJsonNode)
+        data.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            transactionTimestampJsonNode,
+        )
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
-        return airbyteRecord.withData(data)
+        // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
+        val position = MySqlPosition(source["file"].asText(), source["pos"].asLong())
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_FILE.id, TextCodec.encode(position.fileName))
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_POS.id, LongCodec.encode(position.position))
+        // Set the _ab_cdc_cursor meta-field value.
+        data.set<JsonNode>(MysqlCdcMetaFields.CDC_CURSOR.id, LongCodec.encode(position.cursorValue))
+        // Return a DeserializedRecord instance.
+        return DeserializedRecord(streamID, data, changes = emptyMap())
     }
 
-    private val airbyteRecord = AirbyteRecordMessage().withMeta(AirbyteRecordMessageMeta())
-
-    override fun position(offset: DebeziumOffset): MySqlPosition {
-        if (offset.wrapped.size != 1) {
-            throw ConfigErrorException("Expected exactly 1 key in $offset")
+    /**
+     * Checks if GTIDs from previously saved state (debeziumInput) are still valid on DB. And also
+     * check if binlog exists or not.
+     *
+     * Validate is not supposed to perform on synthetic state.
+     */
+    private fun validate(debeziumState: DebeziumState): CdcStateValidateResult {
+        val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
+        if (gtidSet.isNullOrEmpty()) {
+            return abortCdcSync()
         }
-        val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-        return MySqlPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
+
+        val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
+        val availableGtidSet = MySqlGtidSet(gtidSet)
+        if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
+            log.info {
+                "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
+            }
+            return abortCdcSync()
+        }
+
+        // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
+        // exists, check that they are not purged, or we may lose those data.
+        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+        if (!newGtidSet.isEmpty) {
+            val purgedGtidSet = queryPurgedIds()
+            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+                log.info {
+                    "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
+                }
+                return abortCdcSync()
+            }
+        }
+        val existingLogFiles: List<String> = getBinaryLogFileNames()
+        val found = existingLogFiles.contains(savedStateOffset.position.fileName)
+        if (!found) {
+            log.info {
+                "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server"
+            }
+            return abortCdcSync()
+        }
+        return CdcStateValidateResult.VALID
     }
+
+    private fun abortCdcSync(): CdcStateValidateResult {
+        val cdcIncrementalConfiguration: CdcIncrementalConfiguration =
+            configuration.incrementalConfiguration as CdcIncrementalConfiguration
+        return when (cdcIncrementalConfiguration.invalidCdcCursorPositionBehavior) {
+            InvalidCdcCursorPositionBehavior.FAIL_SYNC -> {
+                log.info { "Current position is invalid, aborting sync." }
+                CdcStateValidateResult.INVALID_ABORT
+            }
+            InvalidCdcCursorPositionBehavior.RESET_SYNC -> {
+                log.info { "Current position is invalid, resetting sync." }
+                CdcStateValidateResult.INVALID_RESET
+            }
+        }
+    }
+
+    private fun parseSavedOffset(debeziumState: DebeziumState): SavedOffset {
+        val position: MySqlPosition = position(debeziumState.offset)
+        val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
+        return SavedOffset(position, gtidSet)
+    }
+
+    data class SavedOffset(val position: MySqlPosition, val gtidSet: String?)
+
+    enum class CdcStateValidateResult {
+        VALID,
+        INVALID_ABORT,
+        INVALID_RESET
+    }
+
+    override fun position(offset: DebeziumOffset): MySqlPosition = Companion.position(offset)
 
     override fun position(recordValue: DebeziumRecordValue): MySqlPosition? {
         val file: JsonNode = recordValue.source["file"]?.takeIf { it.isTextual } ?: return null
@@ -146,11 +235,11 @@ class MySqlDebeziumOperations(
                         MySqlPosition(
                             fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
                                     ?: throw ConfigErrorException(
-                                        "No value for ${file.id} in: $sql"
+                                        "No value for ${file.id} in: $sql",
                                     ),
                             position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
                                     ?: throw ConfigErrorException(
-                                        "No value for ${pos.id} in: $sql"
+                                        "No value for ${pos.id} in: $sql",
                                     ),
                         )
                     if (rs.metaData.columnCount <= 4) {
@@ -169,6 +258,32 @@ class MySqlDebeziumOperations(
         }
     }
 
+    private fun queryPurgedIds(): MySqlGtidSet {
+        val purgedGtidField = Field("@@global.gtid_purged", StringFieldType)
+        jdbcConnectionFactory.get().use { connection: Connection ->
+            connection.createStatement().use { stmt: Statement ->
+                val sql = "SELECT @@global.gtid_purged"
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
+                    return MySqlGtidSet(rs.getString(purgedGtidField.id))
+                }
+            }
+        }
+    }
+
+    private fun getBinaryLogFileNames(): List<String> {
+        val logNameField = Field("Log_name", StringFieldType)
+        return jdbcConnectionFactory.get().use { connection: Connection ->
+            connection.createStatement().use { stmt: Statement ->
+                val sql = "SHOW BINARY LOGS"
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    generateSequence { if (rs.next()) rs.getString(logNameField.id) else null }
+                        .toList()
+                }
+            }
+        }
+    }
+
     override fun deserialize(
         opaqueStateValue: OpaqueStateValue,
         streams: List<Stream>
@@ -179,45 +294,17 @@ class MySqlDebeziumOperations(
             } catch (e: Exception) {
                 throw ConfigErrorException("Error deserializing $opaqueStateValue", e)
             }
+        val cdcValidationResult = validate(debeziumState)
+        if (cdcValidationResult != CdcStateValidateResult.VALID) {
+            if (cdcValidationResult == CdcStateValidateResult.INVALID_ABORT) {
+                throw ConfigErrorException("Current position is invalid.")
+            }
+            return synthesize()
+        }
+
         val properties: Map<String, String> =
             DebeziumPropertiesBuilder().with(commonProperties).withStreams(streams).buildMap()
         return DebeziumInput(properties, debeziumState, isSynthetic = false)
-    }
-
-    private fun deserializeDebeziumState(opaqueStateValue: OpaqueStateValue): DebeziumState {
-        val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
-        // Deserialize offset.
-        val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
-        val offsetMap: Map<JsonNode, JsonNode> =
-            offsetNode
-                .fields()
-                .asSequence()
-                .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
-                .toMap()
-        if (offsetMap.size != 1) {
-            throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
-        }
-        val offset = DebeziumOffset(offsetMap)
-        // Deserialize schema history.
-        val schemaNode: JsonNode =
-            stateNode[MYSQL_DB_HISTORY] ?: return DebeziumState(offset, schemaHistory = null)
-        val isCompressed: Boolean = stateNode[IS_COMPRESSED]?.asBoolean() ?: false
-        val uncompressedString: String =
-            if (isCompressed) {
-                val compressedBytes: ByteArray =
-                    Jsons.readValue(schemaNode.textValue(), ByteArray::class.java)
-                GZIPInputStream(ByteArrayInputStream(compressedBytes))
-                    .reader(Charsets.UTF_8)
-                    .readText()
-            } else {
-                schemaNode.textValue()
-            }
-        val schemaHistoryList: List<HistoryRecord> =
-            uncompressedString
-                .lines()
-                .filter { it.isNotBlank() }
-                .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
-        return DebeziumState(offset, DebeziumSchemaHistory(schemaHistoryList))
     }
 
     override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
@@ -249,7 +336,7 @@ class MySqlDebeziumOperations(
         return Jsons.objectNode().apply { set<JsonNode>(STATE, stateNode) }
     }
 
-    val databaseName: String = jdbcSourceConfiguration.namespaces.first()
+    val databaseName: String = configuration.namespaces.first()
     val serverID: Int = random.nextInt(MIN_SERVER_ID..MAX_SERVER_ID)
 
     val commonProperties: Map<String, String> by lazy {
@@ -258,7 +345,7 @@ class MySqlDebeziumOperations(
             .withDefault()
             .withConnector(MySqlConnector::class.java)
             .withDebeziumName(databaseName)
-            .withHeartbeats(cdcSourceConfiguration.debeziumHeartbeatInterval)
+            .withHeartbeats(configuration.debeziumHeartbeatInterval)
             // This to make sure that binary data represented as a base64-encoded String.
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
             .with("binary.handling.mode", "base64")
@@ -271,7 +358,11 @@ class MySqlDebeziumOperations(
             .with("snapshot.locking.mode", "none")
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-include-schema-changes
             .with("include.schema.changes", "false")
-            .withDatabase(jdbcSourceConfiguration.jdbcProperties)
+            .with(
+                "connect.keep.alive.interval.ms",
+                configuration.debeziumKeepAliveInterval.toMillis().toString(),
+            )
+            .withDatabase(configuration.jdbcProperties)
             .withDatabase("hostname", tunnelSession.address.hostName)
             .withDatabase("port", tunnelSession.address.port.toString())
             .withDatabase("dbname", databaseName)
@@ -279,6 +370,13 @@ class MySqlDebeziumOperations(
             .withDatabase("include.list", databaseName)
             .withOffset()
             .withSchemaHistory()
+            .with("converters", "datetime,numeric,boolean")
+            .with(
+                "datetime.type",
+                MySQLDateTimeConverter::class.java.getName(),
+            )
+            .with("numeric.type", MySQLNumericConverter::class.java.getName())
+            .with("boolean.type", MySQLBooleanConverter::class.java.getName())
             // TODO: add missing properties, like MySQL converters, etc. Do a full audit.
             .buildMap()
     }
@@ -307,5 +405,59 @@ class MySqlDebeziumOperations(
         const val MYSQL_CDC_OFFSET = "mysql_cdc_offset"
         const val MYSQL_DB_HISTORY = "mysql_db_history"
         const val IS_COMPRESSED = "is_compressed"
+
+        /**
+         * The name of the Debezium property that contains the unique name for the Debezium
+         * connector.
+         */
+        const val CONNECTOR_NAME_PROPERTY: String = "name"
+
+        /** Configuration for offset state key/value converters. */
+        val INTERNAL_CONVERTER_CONFIG: Map<String, String> =
+            java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, false.toString())
+
+        internal fun deserializeDebeziumState(opaqueStateValue: OpaqueStateValue): DebeziumState {
+            val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
+            // Deserialize offset.
+            val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
+            val offsetMap: Map<JsonNode, JsonNode> =
+                offsetNode
+                    .fields()
+                    .asSequence()
+                    .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
+                    .toMap()
+            if (offsetMap.size != 1) {
+                throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
+            }
+            val offset = DebeziumOffset(offsetMap)
+            // Deserialize schema history.
+            val schemaNode: JsonNode =
+                stateNode[MYSQL_DB_HISTORY] ?: return DebeziumState(offset, schemaHistory = null)
+            val isCompressed: Boolean = stateNode[IS_COMPRESSED]?.asBoolean() ?: false
+            val uncompressedString: String =
+                if (isCompressed) {
+                    val compressedBytes: ByteArray =
+                        Jsons.readValue(schemaNode.textValue(), ByteArray::class.java)
+                    GZIPInputStream(ByteArrayInputStream(compressedBytes))
+                        .reader(Charsets.UTF_8)
+                        .readText()
+                } else {
+                    schemaNode.textValue()
+                }
+            val schemaHistoryList: List<HistoryRecord> =
+                uncompressedString
+                    .lines()
+                    .filter { it.isNotBlank() }
+                    .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
+            return DebeziumState(offset, DebeziumSchemaHistory(schemaHistoryList))
+        }
+
+        internal fun position(offset: DebeziumOffset): MySqlPosition {
+            if (offset.wrapped.size != 1) {
+                throw ConfigErrorException("Expected exactly 1 key in $offset")
+            }
+            val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
+            return MySqlPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+        }
     }
 }

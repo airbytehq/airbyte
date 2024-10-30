@@ -15,7 +15,7 @@ First, make sure you have Docker installed. We'll be using the `docker-compose` 
 
 ### **Start Airbyte**
 
-If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
+If this is your first time using Airbyte, we suggest going through our [Quickstart](../using-airbyte/getting-started/oss-quickstart). 
 
 For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Prefect will be responsible for manually triggering the Airbyte job.
 
@@ -34,8 +34,6 @@ prefect create project "airbyte"
 ### Retrieving the Airbyte Connection ID
 
 We'll need the Airbyte Connection ID so our Prefect Flow knows which Airbyte Connection to trigger.
-
-![](../.gitbook/assets/airbyte_prefect_connection.png)
 
 This ID can be seen in the URL on the connection page in the Airbyte UI. The Airbyte UI can be accessed at `localhost:8000`.
 
@@ -70,18 +68,11 @@ The Airbyte Prefect Task accepts the following parameters:
 
 After running the file, `python3 airbyte_prefect_flow.py` this will register the Flow in Prefect Server.
 
-![](../.gitbook/assets/airbyte_prefect_register_flow.png)
-
 Access the link from the output from the previous command to see the Flow in Prefect Server, or you can navigate in Prefect UI to find the new Flow -> Access the link from the output from the previous command to see the Flow in the Prefect Server. Alternatively, you can go to the Prefect UI to find the new Flow.
 
-![](../.gitbook/assets/airbyte_prefect_flow.png)
-
 Click on the button `Run` and configure your first run.
-![](../.gitbook/assets/airbyte_prefect_flow_configure_run.png)
 
 After a few moments you should see the finished run.
-
-![](../.gitbook/assets/airbyte_prefect_flow_run.png)
 
 After that you have the option to configure a more complex Schedule to your Flow. See the [Prefect Schedule docs.](https://docs.prefect.io/core/concepts/schedules.html)
 
@@ -89,7 +80,7 @@ After that you have the option to configure a more complex Schedule to your Flow
 
 Don't be fooled by our simple example of only one Prefect Flow. Airbyte is a powerful data integration platform supporting many sources and destinations. The Airbyte Prefect Task means Airbyte can now be easily used with the Prefect ecosystem - give it a shot!
 
-We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
+We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). If you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
 ## Related articles and guides
 

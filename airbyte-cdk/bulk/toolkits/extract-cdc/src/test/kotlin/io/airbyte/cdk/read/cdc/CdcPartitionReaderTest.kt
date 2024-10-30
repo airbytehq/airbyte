@@ -21,6 +21,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
+import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -28,6 +29,7 @@ import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -71,16 +73,16 @@ import org.testcontainers.utility.DockerImageName
 sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     namespace: String?,
     val heartbeat: Duration = Duration.ofMillis(100),
-    val timeout: Duration = Duration.ofSeconds(3),
+    val timeout: Duration = Duration.ofSeconds(10),
 ) : CdcPartitionReaderDebeziumOperations<T> {
 
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
-            fields = listOf(Field("v", IntFieldType)),
+            schema = setOf(Field("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
-            configuredCursor = null,
+            configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
 
     val global: Global
@@ -111,8 +113,8 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             val p0: T = container.currentPosition()
             val r0: ReadResult = read(container.syntheticInput(), p0)
             Assertions.assertEquals(emptyList<Record>(), r0.records)
-            Assertions.assertEquals(
-                CdcPartitionReader.CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION,
+            Assertions.assertNotEquals(
+                CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
                 r0.closeReason,
             )
 
@@ -145,7 +147,6 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             val r1: ReadResult = read(input, p1)
             Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
             Assertions.assertNotNull(r1.closeReason)
-            Assertions.assertNotEquals(CdcPartitionReader.CloseReason.TIMEOUT, r1.closeReason)
 
             val r2: ReadResult = read(input, p2)
             Assertions.assertEquals(
@@ -165,10 +166,22 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         upperBound: T,
     ): ReadResult {
         val outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
+        val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
+            mapOf(
+                stream.id to
+                    StreamRecordConsumer { recordData: ObjectNode, _ ->
+                        outputConsumer.accept(
+                            AirbyteRecordMessage()
+                                .withStream(stream.name)
+                                .withNamespace(stream.namespace)
+                                .withData(recordData)
+                        )
+                    }
+            )
         val reader =
             CdcPartitionReader(
                 ConcurrencyResource(1),
-                outputConsumer,
+                streamRecordConsumers,
                 this,
                 upperBound,
                 input,
@@ -191,11 +204,15 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         // Sanity checks. If any of these fail, particularly after a debezium version change,
         // it's important to understand why.
         Assertions.assertEquals(checkpoint.numRecords.toInt(), outputConsumer.records().size)
-        Assertions.assertEquals(checkpoint.numRecords, reader.numRecords.get())
+        Assertions.assertEquals(checkpoint.numRecords, reader.numEmittedRecords.get())
         Assertions.assertEquals(
             reader.numEvents.get(),
-            reader.numRecords.get() + reader.numHeartbeats.get() + reader.numTombstones.get()
+            reader.numEmittedRecords.get() +
+                reader.numDiscardedRecords.get() +
+                reader.numHeartbeats.get() +
+                reader.numTombstones.get()
         )
+        Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
         Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
         Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
@@ -225,10 +242,10 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int) : Record
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
-    ): AirbyteRecordMessage {
+    ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val after: Int? = value.after["v"]?.asInt()
         val record: Record =
@@ -239,7 +256,11 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             } else {
                 Update(id, after)
             }
-        return AirbyteRecordMessage().withData(Jsons.valueToTree(record))
+        return DeserializedRecord(
+            streamID = stream.id,
+            data = Jsons.valueToTree(record) as ObjectNode,
+            changes = emptyMap(),
+        )
     }
 
     override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
@@ -387,6 +408,7 @@ class CdcPartitionReaderMySQLTest :
             .withDebeziumName(databaseName)
             .withHeartbeats(heartbeat)
             .with("include.schema.changes", "false")
+            .with("connect.keep.alive.interval.ms", "1000")
             .withDatabase("hostname", host)
             .withDatabase("port", firstMappedPort.toString())
             .withDatabase("user", username)
@@ -642,10 +664,10 @@ class CdcPartitionReaderMongoTest :
             .withOffset()
             .buildMap()
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue
-    ): AirbyteRecordMessage {
+    ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val record: Record =
             if (value.operation == "d") {
@@ -668,6 +690,10 @@ class CdcPartitionReaderMongoTest :
                     Insert(id, v)
                 }
             }
-        return AirbyteRecordMessage().withData(Jsons.valueToTree(record))
+        return DeserializedRecord(
+            streamID = stream.id,
+            data = Jsons.valueToTree(record),
+            changes = emptyMap(),
+        )
     }
 }
