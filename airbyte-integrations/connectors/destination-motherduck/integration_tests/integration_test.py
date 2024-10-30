@@ -345,13 +345,13 @@ def test_write(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "868-98-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "868-98-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def test_write_dupe(
@@ -387,13 +387,13 @@ def test_write_dupe(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "138-73-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "138-73-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def _airbyte_messages(
