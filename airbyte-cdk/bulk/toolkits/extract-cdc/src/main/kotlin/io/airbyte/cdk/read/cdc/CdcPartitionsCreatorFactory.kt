@@ -22,11 +22,10 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val debeziumOps: DebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
 
-
     /**
      * [AtomicReference] to a WAL position lower bound value shared by all [CdcPartitionsCreator]s.
-     * This value is updated by the [CdcPartitionsCreator] based on the incumbent state and is
-     * used to detect stalls.
+     * This value is updated by the [CdcPartitionsCreator] based on the incumbent state and is used
+     * to detect stalls.
      */
     private val lowerBoundReference = AtomicReference<T>()
 
