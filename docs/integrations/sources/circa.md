@@ -1,5 +1,5 @@
 # Simple Circa
-Airbyte connector for [SimpleCirca](www.simplecirca.com) would enable seamless data extraction from Simple Circa's platform, facilitating automated data integration into your data warehouse or analytics systems. This connector would pull key metrics, user engagement data, and content performance insights, offering streamlined reporting and analysis workflows. Ideal for organizations looking to consolidate Circa’s data with other sources for comprehensive business intelligence.
+Airbyte connector for [SimpleCirca](https://www.simplecirca.com/) would enable seamless data extraction from Simple Circa's platform, facilitating automated data integration into your data warehouse or analytics systems. This connector would pull key metrics, user engagement data, and content performance insights, offering streamlined reporting and analysis workflows. Ideal for organizations looking to consolidate Circa’s data with other sources for comprehensive business intelligence.
 
 ## Configuration
 
