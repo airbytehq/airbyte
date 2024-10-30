@@ -1,0 +1,22 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "lmcneil/Stock_Plans_for_Compensation_Management_Dashboard",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "properties": {
+            "data": {
+              "type": ["object", "null"]
+            }
+          },
+          "additionalProperties": true
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wd="urn:com.workday.report/Stock_Plans_for_Compensation_Management_Dashboard" xmlns:nyw="urn:com.netyourwork/aod" elementFormDefault="qualified" attributeFormDefault="qualified" targetNamespace="urn:com.workday.report/Stock_Plans_for_Compensation_Management_Dashboard">
+    <xsd:element name="Report_Data" type="wd:Report_DataType"/>
+    <xsd:element name="Execute_Report" type="wd:Execute_ReportType"/>
+    <xsd:simpleType name="RichText">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="Compensation_PlanReferenceEnumeration">
+        <xsd:restriction base="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <wd:enumeration xmlns:wd="urn:com.workday/bsvc" value="WID"/>
+                    <wd:enumeration xmlns:wd="urn:com.workday/bsvc" value="Compensation_Plan_ID"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Unique_IdentifierReferenceEnumeration">
+        <xsd:restriction base="xsd:string">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <wd:enumeration xmlns:wd="urn:com.workday/bsvc" value="IID"/>
+                    <wd:enumeration xmlns:wd="urn:com.workday/bsvc" value="WID"/>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="Report_ParametersType">
+        <xsd:sequence/>
+    </xsd:complexType>
+    <xsd:complexType name="Compensation_PlanObjectType">
+        <xsd:annotation xmlns:wstxns1="urn:com.workday/bsvc" wstxns1:Is_Reference_ID="1"/>
+        <xsd:sequence>
+            <xsd:element name="ID" type="wd:Compensation_PlanObjectIDType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="Descriptor" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>Display information used to describe an instance of an object. This 'optional' information is for outbound descriptive purposes only and is not processed on inbound Workday Web Services requests.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+    <xsd:complexType name="Unique_IdentifierObjectType">
+        <xsd:annotation xmlns:wstxns2="urn:com.workday/bsvc" wstxns2:Is_Reference_ID="1"/>
+        <xsd:sequence>
+            <xsd:element name="ID" type="wd:Unique_IdentifierObjectIDType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="Descriptor" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>Display information used to describe an instance of an object. This 'optional' information is for outbound descriptive purposes only and is not processed on inbound Workday Web Services requests.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+    <xsd:complexType name="Compensation_PlanObjectIDType">
+        <xsd:annotation>
+            <xsd:documentation>Contains a unique identifier for an instance of an object.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type" type="wd:Compensation_PlanReferenceEnumeration" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>The unique identifier type. Each "ID" for an instance of an object contains a type and a value. A single instance of an object can have multiple "ID" but only a single "ID" per "type".  Some "types" require a reference to a parent instance.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="Unique_IdentifierObjectIDType">
+        <xsd:annotation>
+            <xsd:documentation>Contains a unique identifier for an instance of an object.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type" type="wd:Unique_IdentifierReferenceEnumeration" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>The unique identifier type. Each "ID" for an instance of an object contains a type and a value. A single instance of an object can have multiple "ID" but only a single "ID" per "type".  Some "types" require a reference to a parent instance.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="Report_EntryType">
+        <xsd:sequence>
+            <xsd:element name="Stock_Plan" type="wd:Compensation_PlanObjectType" minOccurs="0"/>
+            <xsd:element name="Eligibility_Rules" type="wd:Unique_IdentifierObjectType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="Target__" type="xsd:decimal" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Report_DataType">
+        <xsd:sequence>
+            <xsd:element name="Report_Entry" type="wd:Report_EntryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Execute_ReportType">
+        <xsd:sequence>
+            <xsd:element name="Report_Parameters" type="wd:Report_ParametersType" minOccurs="0"/>
+            <xsd:element name="Authentication" type="wd:AuthenticationType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="MoneyType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:decimal">
+                <xsd:attribute name="Currency_Code" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="AuthenticationType">
+        <xsd:sequence>
+            <xsd:element name="Proxy_User_Name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

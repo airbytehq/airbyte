@@ -1,0 +1,97 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Reports
+
+definitions:
+  streams:
+    #    DO NOT RENAME -- used as template for all custom reports
+    Reports:
+      type: DeclarativeStream
+      name: Reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{report_id}}"
+          http_method: GET
+          request_parameters:
+            format: json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Report_Entry
+          schema_normalization: Default
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - data
+              value: "{{ record }}"
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_falcon.schema_loader.ReportSchemaLoader
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/Reports"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - tenant_id
+      - report_ids
+      - host
+    properties:
+      host:
+        type: string
+        order: 4
+        title: host
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+      tenant_id:
+        type: string
+        order: 2
+        title: tenant_id
+      report_ids:
+        type: array
+        order: 3
+        title: Report IDs
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Reports: false
+  testedStreams:
+    Reports:
+      hasRecords: true
+      streamHash: 9457f330b59cf7179fbaad9978ed0ae9719e5b5c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
