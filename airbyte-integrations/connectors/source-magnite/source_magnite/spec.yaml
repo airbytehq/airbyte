@@ -26,46 +26,37 @@ connectionSpecification:
     constraints:
       type: array
       items:
-        "$ref": "#/definitions/QueryConstraints"
+        type: object
+        required:
+          - field
+          - operator
+          - value
+        properties:
+          field: 
+            type: string 
+          operator:
+            type: string
+          value:
+            type: number
     orderings:
       type: array
       items:
-        "$ref": "#/definitions/QueryOrderings"
+        type: object
+        required:
+          - direction
+          - field
+        properties:
+          direction:
+            type: string
+          field:
+            type: string
     range:
-      "$ref": "#/definitions/QueryRange"
-definitions:
-  QueryConstraints:
-    description: Query Constraints
-    type: object
-    required:
-      - field
-      - operator
-      - value
-    properties:
-      field:
-        type: string
-      operator:
-        type: string
-      value:
-        type: float
-  QueryOrderings:
-    description: Query results ordering
-    type: object
-    required:
-      - direction
-      - field
-    properties:
-      direction:
-        type: string
-      field:
-        type: string
-  QueryRange:
-    type: object
-    required:
-      - range
-      - timezone
-    properties:
-      range:
-        type: string
-      timezone:
-        type: string
+      type: object
+      required:
+        - fromDate
+        - toDate
+      properties:
+        fromDate:
+          type: string
+        toDate:
+          type: string
