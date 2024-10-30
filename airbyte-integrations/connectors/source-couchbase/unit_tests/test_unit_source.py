@@ -8,6 +8,7 @@ import pytest
 from source_couchbase.source import SourceCouchbase
 from source_couchbase.streams import DocumentStream
 
+
 @pytest.fixture
 def config():
     return {

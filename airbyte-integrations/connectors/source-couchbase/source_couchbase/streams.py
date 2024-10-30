@@ -10,6 +10,7 @@ from couchbase.cluster import Cluster
 
 from .queries import get_documents_query
 
+
 class CouchbaseStream(Stream):
     primary_key = "_id"
 
@@ -23,6 +24,7 @@ class CouchbaseStream(Stream):
     @property
     def name(self) -> str:
         return self._name
+
 
 class DocumentStream(CouchbaseStream, CheckpointMixin):
     cursor_field = "_ab_cdc_updated_at"
@@ -46,17 +48,14 @@ class DocumentStream(CouchbaseStream, CheckpointMixin):
             "properties": {
                 "_id": {"type": "string"},
                 self.cursor_field: {"type": "integer"},
-                self.collection: {
-                    "type": "object",
-                    "additionalProperties": True
-                }
-            }
+                self.collection: {"type": "object", "additionalProperties": True},
+            },
         }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: AirbyteRecordMessage) -> Mapping[str, Any]:
         latest_cursor_value = latest_record.data.get(self.cursor_field)
         current_cursor_value = current_stream_state.get(self.cursor_field)
-        
+
         if latest_cursor_value is not None and (current_cursor_value is None or int(latest_cursor_value) > int(current_cursor_value)):
             return {self.cursor_field: int(latest_cursor_value)}
         return current_stream_state
@@ -71,19 +70,11 @@ class DocumentStream(CouchbaseStream, CheckpointMixin):
         cursor_value = stream_state.get(self.cursor_field, 0) if stream_state else 0
 
         query = get_documents_query(
-            self.bucket, 
-            self.scope, 
-            self.collection, 
-            self.cursor_field, 
-            cursor_value if sync_mode == SyncMode.incremental else None
+            self.bucket, self.scope, self.collection, self.cursor_field, cursor_value if sync_mode == SyncMode.incremental else None
         )
 
         for row in self.cluster.query(query):
-            record = AirbyteRecordMessage(
-                stream=self.name,
-                data=row,
-                emitted_at=int(datetime.now().timestamp()) * 1000
-            )
+            record = AirbyteRecordMessage(stream=self.name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
             yield AirbyteMessage(type=Type.RECORD, record=record)
             if sync_mode == SyncMode.incremental:
                 self.state = self.get_updated_state(self.state, record)

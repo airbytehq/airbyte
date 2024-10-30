@@ -1,7 +1,10 @@
-import pytest
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest.mock import MagicMock
 
+import pytest
 from source_couchbase.streams import DocumentStream
+
 
 @pytest.fixture
 def mock_cluster():

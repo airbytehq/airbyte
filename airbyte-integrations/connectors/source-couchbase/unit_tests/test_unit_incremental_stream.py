@@ -1,7 +1,11 @@
-import pytest
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest.mock import MagicMock
-from airbyte_cdk.models import SyncMode, AirbyteRecordMessage
+
+import pytest
+from airbyte_cdk.models import AirbyteRecordMessage, SyncMode
 from source_couchbase.streams import DocumentStream
+
 
 @pytest.fixture
 def mock_cluster():
