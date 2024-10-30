@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
@@ -17,6 +17,7 @@ from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
+from typing_extensions import override
 
 from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
@@ -287,16 +288,13 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return f"s3://{self.config.bucket}/{file_uri.split('#')[0]}"
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value, bufsize=262144)
-        # prefetch() works by requesting multiple blocks of data in advance,
-        # rather than waiting for one block to be retrieved before requesting the next.
-        remote_file.prefetch(remote_file.stat().st_size)
-        return remote_file
-
-    def file_size(self, file: RemoteFile):
-        file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
-        return file_size
+    @override
+    def file_size(self, file: RemoteFile) -> int:
+        s3_object: boto3.s3.Object = self.s3_client.get_object(
+            Bucket=self.config.bucket,
+            Key=file.uri,
+        )
+        return cast(int, s3_object.content_length)
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
