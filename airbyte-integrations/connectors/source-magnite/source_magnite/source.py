@@ -7,16 +7,24 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 import json
 import time
+from datetime import datetime, timedelta, date
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from .auth import CookieAuthenticator
+from .utils import (
+    date_to_string,
+    string_to_date
+)
+
+DATE_FORMAT = "%Y-%m-%d"
 
 class MagniteStream(HttpStream, ABC):
     http_method = "POST"
-    def __init__(self, name: str, path: str, primary_key: Union[str, List[str]], data_field: str, **kwargs: Any) -> None:
+    def __init__(self, config: Mapping[str, Any], name: str, path: str, primary_key: Union[str, List[str]], data_field: str, **kwargs: Any) -> None:
+        self._config = config
         self._name = name
         self._path = path
         self._primary_key = primary_key
@@ -83,18 +91,45 @@ class MagniteStream(HttpStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
+        if stream_slice and "fromDate" in stream_slice and "toDate" in stream_slice:
+            date_range = {"fromDate": stream_slice["fromDate"], "toDate": stream_slice["toDate"]}
+        else:
+            date_range = stream_slice
+
         request_payload = {
             "source": self.config["source"],
             "fields": self.config["fields"],
             "constraints": self.config["constraints"],
             "orderings": self.config["orderings"],
-            # "range": date_range,
-            "range": self.config["range"]
+            "range": date_range,
+            # "range": self.config["range"],
         }
         return request_payload
     
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        today: date = date.today()
+        start_date = None
+        if self.cursor_field:
+            start_date = stream_state and stream_state.get(self.cursor_field)
+        if start_date:
+            start_date = (
+                start_date if not self.cursor_field == "date" else start_date
+            )
+            start_date = max(start_date, self.config["range"]["fromDate"])
+        else:
+            start_date = string_to_date(self.config["range"]["fromDate"], DATE_FORMAT)
 
-# class Queries(MagniteStream):
+        while start_date <= today:
+            yield {
+                "fromDate": date_to_string(start_date),
+                "toDate": date_to_string(min(start_date + timedelta(days=self.config["window_in_days"] - 1), today)),
+            }
+            start_date += timedelta(days=self.config["window_in_days"])
+
+
+# class MagniteQueries(MagniteStream):
 
 #     primary_key = "id"
 
