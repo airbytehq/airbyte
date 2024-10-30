@@ -7,7 +7,6 @@ import os
 import random
 import string
 import tempfile
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Iterable
@@ -98,6 +97,11 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rand_string}"
 
 
+@pytest.fixture(scope="module")
+def other_test_table_name(test_table_name) -> str:
+    return test_table_name + "_other"
+
+
 @pytest.fixture
 def test_large_table_name() -> str:
     letters = string.ascii_lowercase
@@ -118,10 +122,24 @@ def table_schema() -> str:
 
 
 @pytest.fixture
+def other_table_schema() -> str:
+    schema = {
+        "type": "object",
+        "properties": {
+            "key3": {"type": ["null", "string"]},
+            "default": {"type": ["null", "string"]},
+        },
+    }
+    return schema
+
+
+@pytest.fixture
 def configured_catalogue(
     test_table_name: str,
+    other_test_table_name: str,
     test_large_table_name: str,
     table_schema: str,
+    other_table_schema: str,
 ) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -133,6 +151,16 @@ def configured_catalogue(
         destination_sync_mode=DestinationSyncMode.append,
         primary_key=[["key1"]],
     )
+    other_append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=other_test_table_name,
+            json_schema=other_table_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+        primary_key=[["key3"]],
+    )
     append_stream_large = ConfiguredAirbyteStream(
         stream=AirbyteStream(
             name=test_large_table_name,
@@ -143,7 +171,7 @@ def configured_catalogue(
         destination_sync_mode=DestinationSyncMode.append,
         primary_key=[["key1"]],
     )
-    return ConfiguredAirbyteCatalog(streams=[append_stream, append_stream_large])
+    return ConfiguredAirbyteCatalog(streams=[append_stream, other_append_stream, append_stream_large])
 
 
 @pytest.fixture
@@ -227,6 +255,34 @@ def airbyte_message3():
     )
 
 
+@pytest.fixture
+def airbyte_message4(other_test_table_name: str):
+    fake = Faker()
+    Faker.seed(0)
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=other_test_table_name,
+            data={"key3": fake.unique.first_name(), "default": str(fake.ssn())},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
+@pytest.fixture
+def airbyte_message5(other_test_table_name: str):
+    fake = Faker()
+    Faker.seed(1)
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream=other_test_table_name,
+            data={"key3": fake.unique.first_name(), "default": str(fake.ssn())},
+            emitted_at=int(datetime.now().timestamp()) * 1000,
+        ),
+    )
+
+
 @pytest.mark.disable_autouse
 def test_check_fails(invalid_config, request):
     destination = DestinationMotherDuck()
@@ -254,38 +310,49 @@ def test_write(
     airbyte_message1: AirbyteMessage,
     airbyte_message2: AirbyteMessage,
     airbyte_message3: AirbyteMessage,
+    airbyte_message4: AirbyteMessage,
+    airbyte_message5: AirbyteMessage,
     test_table_name: str,
     test_schema_name: str,
+    test_large_table_name: str,
 ):
     destination = DestinationMotherDuck()
     generator = destination.write(
         config,
         configured_catalogue,
-        [airbyte_message1, airbyte_message2, airbyte_message3],
+        [
+            airbyte_message1,
+            airbyte_message2,
+            airbyte_message3,
+            airbyte_message4,
+            airbyte_message5
+        ],
     )
 
     result = list(generator)
     assert len(result) == 1
-    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
     duckdb_config = {}
-    if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
+    if CONFIG_MOTHERDUCK_API_KEY in config:
+        duckdb_config["motherduck_token"] = config[CONFIG_MOTHERDUCK_API_KEY]
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
+
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "868-98-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "868-98-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def test_write_dupe(
@@ -314,20 +381,22 @@ def test_write_dupe(
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
             f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
         )
-        result = cursor.fetchall()
+        sql_result = cursor.fetchall()
 
-    assert len(result) == 2
-    assert result[0][0] == "Dennis"
-    assert result[1][0] == "Megan"
-    assert result[0][1] == "138-73-1034"
-    assert result[1][1] == "777-54-0664"
+    assert len(sql_result) == 2
+    assert sql_result[0][0] == "Dennis"
+    assert sql_result[1][0] == "Megan"
+    assert sql_result[0][1] == "138-73-1034"
+    assert sql_result[1][1] == "777-54-0664"
 
 
 def _airbyte_messages(
@@ -453,12 +522,14 @@ def test_large_number_of_writes(
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
             "SELECT count(1) "
             f"FROM {test_schema_name}.{test_large_table_name}"
         )
-        result = cursor.fetchall()
-    assert result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
+        sql_result = cursor.fetchall()
+        assert sql_result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
