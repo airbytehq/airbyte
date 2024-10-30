@@ -11,7 +11,7 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping, cast
 from urllib.parse import urlparse
 
 import orjson
@@ -61,7 +61,7 @@ class PatchedAirbyteMessage(AirbyteMessage):
     """Override class for the state message only."""
 
 
-PatchedAirbyteMessageSerializer: type = Serializer(
+PatchedAirbyteMessageSerializer = Serializer(
     PatchedAirbyteMessage,
     omit_none=True,
     custom_type_resolver=custom_type_resolver,
@@ -340,7 +340,9 @@ class DestinationMotherDuck(Destination):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(orjson.dumps(PatchedAirbyteMessageSerializer.dump(message)).decode())
+            print(orjson.dumps(PatchedAirbyteMessageSerializer.dump(
+                cast(PatchedAirbyteMessage, message),
+            )).decode())
 
     @override
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
