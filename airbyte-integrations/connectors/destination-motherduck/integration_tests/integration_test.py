@@ -303,6 +303,30 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
+@pytest.fixture()
+def sql_processor(
+        configured_catalogue,
+        test_schema_name,
+        config: Dict[str, str]
+    ):
+    destination = DestinationMotherDuck()
+    path = config.get("destination_path", "md:")
+    if CONFIG_MOTHERDUCK_API_KEY in config:
+        processor = destination._get_sql_processor(
+            configured_catalog=configured_catalogue,
+            schema_name=test_schema_name,
+            db_path=path,
+            motherduck_token=config[CONFIG_MOTHERDUCK_API_KEY]
+        )
+    else:
+        processor = destination._get_sql_processor(
+            configured_catalog=configured_catalogue,
+            schema_name=test_schema_name,
+            db_path=path,
+        )
+    return processor
+
+
 def test_write(
     config: Dict[str, str],
     request,
@@ -315,6 +339,7 @@ def test_write(
     test_table_name: str,
     test_schema_name: str,
     test_large_table_name: str,
+    sql_processor,
 ):
     destination = DestinationMotherDuck()
     generator = destination.write(
@@ -331,22 +356,11 @@ def test_write(
 
     result = list(generator)
     assert len(result) == 1
-    duckdb_config = {}
-    if CONFIG_MOTHERDUCK_API_KEY in config:
-        duckdb_config["motherduck_token"] = config[CONFIG_MOTHERDUCK_API_KEY]
-        duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
-    con = duckdb.connect(
-        database=config.get("destination_path", "md:"),
-        read_only=False,
-        config=duckdb_config,
+    sql_result = sql_processor._execute_sql(
+        "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
-    with con:
-        cursor = con.execute(
-            "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
-            f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
-        )
-        sql_result = cursor.fetchall()
 
     assert len(sql_result) == 2
     assert sql_result[0][0] == "Dennis"
@@ -365,6 +379,7 @@ def test_write_dupe(
     airbyte_message3: AirbyteMessage,
     test_table_name: str,
     test_schema_name: str,
+    sql_processor,
 ):
     destination = DestinationMotherDuck()
     generator = destination.write(
@@ -375,22 +390,11 @@ def test_write_dupe(
 
     result = list(generator)
     assert len(result) == 1
-    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
-    duckdb_config = {}
-    if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
-        duckdb_config["custom_user_agent"] = "airbyte_intg_test"
-    con = duckdb.connect(
-        database=config.get("destination_path", "md:"),
-        read_only=False,
-        config=duckdb_config,
+
+    sql_result = sql_processor._execute_sql(
+        "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
-    with con:
-        cursor = con.execute(
-            "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
-            f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
-        )
-        sql_result = cursor.fetchall()
 
     assert len(sql_result) == 2
     assert sql_result[0][0] == "Dennis"
@@ -503,6 +507,7 @@ def test_large_number_of_writes(
     test_schema_name: str,
     airbyte_message_generator: Callable[[int, int, str], Iterable[AirbyteMessage]],
     explanation: str,
+    sql_processor,
 ):
     destination = DestinationMotherDuck()
     generator = destination.write(
@@ -515,21 +520,9 @@ def test_large_number_of_writes(
 
     result = list(generator)
     assert len(result) == TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
-    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
-    duckdb_config = {}
-    if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
-        duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
-    con = duckdb.connect(
-        database=config.get("destination_path", "md:"),
-        read_only=False,
-        config=duckdb_config,
+    sql_result = sql_processor._execute_sql(
+        "SELECT count(1) "
+        f"FROM {test_schema_name}.{test_large_table_name}"
     )
-    with con:
-        cursor = con.execute(
-            "SELECT count(1) "
-            f"FROM {test_schema_name}.{test_large_table_name}"
-        )
-        sql_result = cursor.fetchall()
-        assert sql_result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
+    assert sql_result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
