@@ -49,10 +49,10 @@ fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ru
 fix-and-check = { shell = "poe fix && poe check" }
 
 # Use this when building on Mac M1/M2, to deploy and test on local `abctl` instances
-build-arm = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/arm64 && NEW_IMAGE=${USER}/destination-motherduck:dev-arm ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE" }
+build-arm = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/arm64 && NEW_IMAGE=${USER}/destination-motherduck:dev-arm ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
 
 # Use this when building for non-ARM architecture, or when building to deploy to Cloud
-build-amd = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/amd64 && NEW_IMAGE=${USER}/destination-motherduck:dev-amd ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE" }
+build-amd = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/amd64 && NEW_IMAGE=${USER}/destination-motherduck:dev-amd ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
 
 [tool.poetry.scripts]
 destination-motherduck = "destination_motherduck.run:run"

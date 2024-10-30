@@ -526,5 +526,5 @@ def test_large_number_of_writes(
             "SELECT count(1) "
             f"FROM {test_schema_name}.{test_large_table_name}"
         )
-        result = cursor.fetchall()
-    assert result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
+        sql_result = cursor.fetchall()
+        assert sql_result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
