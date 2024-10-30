@@ -7,7 +7,6 @@ import os
 import random
 import string
 import tempfile
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Iterable
@@ -332,13 +331,15 @@ def test_write(
 
     result = list(generator)
     assert len(result) == 1
-    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
     duckdb_config = {}
-    if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
+    if CONFIG_MOTHERDUCK_API_KEY in config:
+        duckdb_config["motherduck_token"] = config[CONFIG_MOTHERDUCK_API_KEY]
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
+
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
@@ -380,7 +381,9 @@ def test_write_dupe(
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
@@ -519,7 +522,9 @@ def test_large_number_of_writes(
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
     con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
+        database=config.get("destination_path", "md:"),
+        read_only=False,
+        config=duckdb_config,
     )
     with con:
         cursor = con.execute(
