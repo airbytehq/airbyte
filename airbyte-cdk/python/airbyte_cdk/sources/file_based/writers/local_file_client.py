@@ -7,7 +7,7 @@ from io import IOBase
 from typing import Any, Dict
 
 import psutil
-from airbyte_cdk.sources.declarative.models import FailureType
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 
 AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
@@ -15,7 +15,7 @@ DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 class LocalFileTransferClient:
-    FILE_SIZE_LIMIT = 1 * 1024 * 1024 * 1024
+    FILE_SIZE_LIMIT = 1_000_000_000
 
     def __init__(self) -> None:
         """
