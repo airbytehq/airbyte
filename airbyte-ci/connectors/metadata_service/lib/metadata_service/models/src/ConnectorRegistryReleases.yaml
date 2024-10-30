@@ -6,9 +6,6 @@ description: Contains information about different types of releases for a connec
 type: object
 additionalProperties: false
 properties:
-  isReleaseCandidate:
-    type: boolean
-    description: Whether the current version is a release candidate.
   releaseCandidates:
     $ref: "#/definitions/ConnectorReleaseCandidates"
   rolloutConfiguration:
@@ -27,7 +24,7 @@ definitions:
     minProperties: 1
     maxProperties: 1
     patternProperties:
-      "^\\d+\\.\\d+\\.\\d+$":
+      "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]+)?$":
         $ref: "#/definitions/VersionReleaseCandidate"
   VersionReleaseCandidate:
     description: Contains information about a release candidate version of a connector.

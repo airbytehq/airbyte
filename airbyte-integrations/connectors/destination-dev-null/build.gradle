@@ -1,17 +1,30 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'application'
+    id 'airbyte-bulk-connector'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.45.0'
-    features = ['db-destinations']
-    useLocalCdk = true
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = []
+    cdk = 'local'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.dev_null.TestingDestinations'
+    mainClass = 'io.airbyte.integrations.destination.dev_null.DevNullDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+
+    // Uncomment and replace to run locally
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
 dependencies {
+    // temporary dependencies so that we can continue running the legacy test suite.
+    // eventually we should remove those tests + rely solely on the bulk CDK tests.
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
+
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}

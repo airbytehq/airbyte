@@ -1,0 +1,9 @@
+{
+  "test_destination": {
+    "test_destination_type": "LOGGING",
+    "logging_config": {
+      "logging_type": "FirstN",
+      "max_entry_count": 100
+    }
+  }
+}

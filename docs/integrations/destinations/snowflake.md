@@ -131,10 +131,8 @@ to role identifier($airbyte_role);
 commit;
 ```
 
-3.  Run the script using the
-    [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or
-    [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select
-    the **All Queries** checkbox.
+3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). 
+  Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
 ### Step 2: Set up a data loading method
 

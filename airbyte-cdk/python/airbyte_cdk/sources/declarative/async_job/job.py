@@ -4,8 +4,8 @@
 from datetime import timedelta
 from typing import Optional
 
-from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
+from airbyte_cdk.sources.types import StreamSlice
 
 from .status import AsyncJobStatus
 
@@ -47,4 +47,4 @@ class AsyncJob:
         self._status = status
 
     def __repr__(self) -> str:
-        return f"AsyncJob(data={self.api_job_id()}, job_parameters={self.job_parameters()}, status={self.status()})"
+        return f"AsyncJob(api_job_id={self.api_job_id()}, job_parameters={self.job_parameters()}, status={self.status()})"

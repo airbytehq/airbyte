@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
@@ -15,7 +16,9 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Statement
 
 private val log = KotlinLogging.logger {}
@@ -24,6 +27,68 @@ private val log = KotlinLogging.logger {}
 class MysqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
+
+    override fun extraChecks() {
+        base.extraChecks()
+        if (base.config.global) {
+            // Extra checks for CDC
+            var cdcVariableCheckQueries: List<Pair<String, String>> =
+                listOf(
+                    Pair("show variables where Variable_name = 'log_bin'", "ON"),
+                    Pair("show variables where Variable_name = 'binlog_format'", "ROW"),
+                    Pair("show variables where Variable_name = 'binlog_row_image'", "FULL"),
+                    Pair("show variables where Variable_name = 'gtid_mode'", "ON"),
+                )
+
+            cdcVariableCheckQueries.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
+
+            // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
+            // it should be SHOW BINARY LOG STATUS. We will run both - if both have been failed we
+            // will throw exception.
+            try {
+                base.conn.createStatement().use { stmt: Statement ->
+                    stmt.execute("SHOW MASTER STATUS")
+                }
+            } catch (e: SQLException) {
+                try {
+                    base.conn.createStatement().use { stmt: Statement ->
+                        stmt.execute("SHOW BINARY LOG STATUS")
+                    }
+                } catch (ex: SQLException) {
+                    throw ConfigErrorException(
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                    )
+                }
+            }
+        }
+    }
+
+    private fun runVariableCheckSql(sql: String, expectedValue: String, conn: Connection) {
+        try {
+            conn.createStatement().use { stmt: Statement ->
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    if (!rs.next()) {
+                        throw ConfigErrorException("Could not query the variable $sql")
+                    }
+                    val resultValue: String = rs.getString("Value")
+                    if (!resultValue.equals(expectedValue, ignoreCase = true)) {
+                        throw ConfigErrorException(
+                            String.format(
+                                "The variable should be set to \"%s\", but it is \"%s\"",
+                                expectedValue,
+                                resultValue,
+                            ),
+                        )
+                    }
+                    if (rs.next()) {
+                        throw ConfigErrorException("Could not query the variable $sql")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            throw ConfigErrorException("Check query failed with: ${e.message}")
+        }
+    }
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
@@ -75,8 +140,8 @@ class MysqlSourceMetadataQuerier(
                 .groupBy {
                     findTableName(
                         StreamIdentifier.from(
-                            StreamDescriptor().withName(it.tableName).withNamespace("public")
-                        )
+                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
+                        ),
                     )
                 }
                 .mapNotNull { (table, rowsByTable) ->

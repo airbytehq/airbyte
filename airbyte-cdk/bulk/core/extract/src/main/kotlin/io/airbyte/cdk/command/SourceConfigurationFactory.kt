@@ -8,13 +8,13 @@ import io.airbyte.cdk.ConfigErrorException
  * configuration JSON object to a typed [Configuration] implementation which is more directly useful
  * to the rest of the connector.
  */
-interface SourceConfigurationFactory<I : ConfigurationJsonObjectBase, O : SourceConfiguration> {
+interface SourceConfigurationFactory<I : ConfigurationSpecification, O : SourceConfiguration> {
     fun makeWithoutExceptionHandling(pojo: I): O
 
     /** Wraps [makeWithoutExceptionHandling] exceptions in [ConfigErrorException]. */
-    fun make(pojo: I): O =
+    fun make(spec: I): O =
         try {
-            makeWithoutExceptionHandling(pojo)
+            makeWithoutExceptionHandling(spec)
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)

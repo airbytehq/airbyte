@@ -125,7 +125,7 @@ class IcebergHiveCatalogConfigTest {
    */
   @Test
   public void checksHiveCatalogWithoutS3ListObjectPermission() {
-    final IcebergDestination destinationFail = new IcebergDestination();
+    final IcebergOssDestination destinationFail = new IcebergOssDestination();
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(mockedJsonConfig);
     log.info("status={}", status);
@@ -135,7 +135,7 @@ class IcebergHiveCatalogConfigTest {
 
   @Test
   public void checksTempTableAlreadyExists() {
-    final IcebergDestination destinationFail = new IcebergDestination();
+    final IcebergOssDestination destinationFail = new IcebergOssDestination();
     doThrow(new AlreadyExistsException("Table already exists: temp_1123412341234")).when(catalog)
         .createTable(any(TableIdentifier.class), any(Schema.class));
     final AirbyteConnectionStatus status = destinationFail.check(mockedJsonConfig);
@@ -147,7 +147,7 @@ class IcebergHiveCatalogConfigTest {
 
   @Test
   public void checksHiveThriftUri() throws IllegalAccessException {
-    final IcebergDestination destinationFail = new IcebergDestination();
+    final IcebergOssDestination destinationFail = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
                                                                                    {
                                                                                      "catalog_config": {
@@ -178,7 +178,7 @@ class IcebergHiveCatalogConfigTest {
    */
   @Test
   public void checksHiveCatalogWithS3Success() {
-    final IcebergDestination destinationSuccess = new IcebergDestination();
+    final IcebergOssDestination destinationSuccess = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationSuccess.check(mockedJsonConfig);
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }

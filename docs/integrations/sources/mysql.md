@@ -7,10 +7,9 @@ Airbyte's certified MySQL connector offers the following features:
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
-
+<!-- env:oss -->
 **Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
-
-![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
+<!-- /env:oss -->
 
 ## Quick Start
 
@@ -78,12 +77,6 @@ binlog_expire_logs_seconds  = 864000
 #### Step 3: Create a new MySQL source in Airbyte UI
 
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `MySQL`, then create a new MySQL source.
-
-<HideInUI>
-
-![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
-
-</HideInUI>
 
 To fill out the required information:
 

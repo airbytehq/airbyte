@@ -1,5 +1,104 @@
 # CDK Migration Guide
 
+## Upgrading to 6.x.x
+
+Version 6.x.x of the CDK introduces concurrent processing of low-code incremental streams. This is breaking because non-manifest only connectors must update their self-managed `run.py` and `source.py` files. This section is intended to clarify how to upgrade a low-code connector to use the Concurrent CDK to sync incremental streams.
+
+> [!NOTE]
+> This version introduces parallel processing of only incremental streams.
+> It does not include the parallel processing of substreams that rely on a parent stream
+> It also does not include processing of full-refresh streams in parallel.
+
+Low-code incremental streams that match any of the following criteria are not supported by concurrent as of this version:
+- Uses a custom implementation of the `DatetimeBasedCursor` component
+- The `DatetimeBasedCursor` defines a `step` which will partition a stream's request into time intervals AND a 
+  `AddedField` / `HttpRequester` / `RecordFilter` that relies on interpolation of the `stream_state` value. See below
+  for the complete list
+
+In order to enable concurrency for a low-code connector, the following changes must be made:
+- In the connector's `source.py`, change the method signature to accept catalog, config, and state parameters. Change the invocation of `super()` to pass in those new parameters
+
+```python3
+class SourceName(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+```
+- In the connector's `run.py`, update it to pass variables
+
+```python3
+def _get_source(args: List[str]):
+    catalog_path = AirbyteEntrypoint.extract_catalog(args)
+    config_path = AirbyteEntrypoint.extract_config(args)
+    state_path = AirbyteEntrypoint.extract_state(args)
+    try:
+        return SourceName(
+            SourceName.read_catalog(catalog_path) if catalog_path else None,
+            SourceName.read_config(config_path) if config_path else None,
+            SourceName.read_state(state_path) if state_path else None,
+        )
+    except Exception as error:
+        print(
+            orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message=f"Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance. Error: {error}",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            ).decode()
+        )
+        return None
+
+
+def run():
+    _args = sys.argv[1:]
+    source = _get_source(_args)
+    if source:
+        launch(source, _args)
+```
+
+- Add the `ConcurrencyLevel` component to the connector's `manifest.yaml` file
+
+```yaml
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] or 10 }}"
+  max_concurrency: 20
+```
+
+### Connectors that have streams that cannot be processed concurrently
+
+Connectors that have streams that use `stream_state` during interpolation and must be run synchronously until they are fixed or updated:
+- Http Requester
+  - `source-insightly`: Uses an DatetimeBasedCursor with a step interval and the HttpRequester has request_parameters relying on `stream_state`. This should be replaced by `step_interval`
+  - `source-intercom`: Uses a custom `incremental_sync` component and `stream_state` used as part of the HttpRequester request_body_json. However, because this processed on a single slice, `stream_interval` can be used
+- Record Filter
+  - `source-chargebee`: Uses a custom `incremental_sync` component and `stream_state` in the RecordFilter condition. However, because this processed on a single slice, `stream_interval` can be used
+  - `source-intercom`: Uses a custom `incremental_sync` component and `stream_state` used as part of the RecordFilter condition. However, because this processed on a single slice, `stream_interval` can be used
+  - `source-railz`: Uses a custom `incremental_sync` component and `stream_state` used as part of the RecordFilter condition. This also uses multiple one month time intervals and is not currently compatible for concurrent
+  - `source-tiktok-marketing`: Contains DatetimeBasedCursor with a step interval and relies on a CustomRecordFilter with a condition relying on `stream_state`. This should be replaced by `stream_interval`
+- `AddFields`: No connectors use `stream_state` when performing an additive transformation for a record
+
+To enable concurrency on these streams, `stream_state` should be removed from the interpolated value and replaced
+by a thread safe interpolation context like `stream_interval` or `stream_partition`.
+
+### Upgrading manifest-only sources to process incremental streams concurrently
+
+All manifest-only sources are run using the `source-declarative-manifest` which serves as the base image with the common code and flows for connectors that only define a `manifest.yaml` file.
+
+Within this package, to enable concurrent processing:
+- Modify `airbyte-cdk` package in `pyproject.toml` to the current version
+- In `run.py`, parse all entrypoint arguments into the respective config, catalog, and state objects
+- In `run.py`, modify the flow that instantiates a `ManifestDeclarativeSource` from the `__injected_declarative_manifest` to instantiate a `ConcurrentDeclarativeSource`
+- In `run.py` modify the `SourceLocalYaml` class to accept config, catalog, and state. And use that in the `YamlDeclarativeSource.__init__`. This should look similar to the migration of sources that are not manifest-only
+
 ## Upgrading to 5.0.0
 
 Version 5.0.0 of the CDK updates the `airbyte_cdk.models` dependency to replace Pydantic v2 models with Python `dataclasses`. It also
@@ -10,21 +109,30 @@ The changes to Airbyte CDK itself are backwards-compatible, but some changes are
 - uses third-party libraries, such as `pandas`, to read data from sources, which output non-native Python objects that cannot be serialized by the [orjson](https://github.com/ijl/orjson) library.
 
 > [!NOTE]
-> All Serializers have omit_none=True parameter that is applied recursively. Thus, all None values are excluded from output. 
+> All Serializers have omit_none=True parameter that is applied recursively. Thus, all None values are excluded from output.
 > This is expected behaviour and does not break anything in protocol.
 
 ### Updating direct usage of Pydantic based Airbyte Protocol Models
 
-If the connector uses Pydantic based Airbyte Protocol Models, the code will need to be updated to reflect the changes `pydantic`.
-It is recommended to import protocol classes not directly by `import airbyte_protocol` statement, but from `airbyte_cdk.models` package.
-It is also recommended to use *-`Serializer` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON, e.g.
+- If the connector uses Pydantic based Airbyte Protocol Models, the code will need to be updated to reflect the changes `pydantic`.
+- It is recommended to import protocol classes not directly by `import airbyte_protocol` statement, but from `airbyte_cdk.models` package.
+- It is also recommended to use *-`Serializer` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON.
+  These are based on the [serpyco-rs](https://pypi.org/project/serpyco-rs/) library.
+- These classes have a `dump` method that converts the model to a dictionary and a `load` method that converts a dictionary to a model.
+- The recommended serialization strategy is to pass the dictionary to the `orjson` library when serializing as a JSON string.
+
+E.g.
+
 ```python3
-# Before (pydantic model message serialization) 
+import orjson
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer
+
+# Before (pydantic model message serialization)
 AirbyteMessage().model_dump_json()
 
 # After (dataclass model serialization)
 orjson.dumps(AirbyteMessageSerializer.dump(AirbyteMessage())).decode()
-
 ```
 
 ### Updating third-party libraries
@@ -55,14 +163,14 @@ We are unifying the `BackoffStrategy` interface as it currently differs from the
 
 Main impact: This change is mostly internal but we spotted a couple of tests that expect `backoff_time` to not have the `attempt_count` parameter so these tests would fail ([example](https://github.com/airbytehq/airbyte/blob/c9f45a0b85735f58102fcd78385f6f673e731aa6/airbyte-integrations/connectors/source-github/unit_tests/test_stream.py#L99)).
 
-This change should not impact the following classes even though they have a different interface as they accept `kwargs` and  `attempt_count` is currently passed as a keyword argument within the CDK. However, once there is a CDK change where `backoff_time` is called not as a keyword argument, they will fail: 
+This change should not impact the following classes even though they have a different interface as they accept `kwargs` and  `attempt_count` is currently passed as a keyword argument within the CDK. However, once there is a CDK change where `backoff_time` is called not as a keyword argument, they will fail:
 * Zendesk Support: ZendeskSupportBackoffStrategy (this one will be updated shortly after as it is used for CI to validate CDK changes)
 * Klaviyo: KlaviyoBackoffStrategy (the logic has been generified so we will remove this custom component shortly after this update)
 * GitHub: GithubStreamABCBackoffStrategy and ContributorActivityBackoffStrategy
 * Airtable: AirtableBackoffStrategy
 * Slack: SlackBackoffStrategy
 
-This change should not impact `WaitUntilMidnightBackoffStrategy` from source-gnews as well but it is interesting to note that its interface is also wrong as it considers the first parameter as a `requests.Response` instead of a `Optional[Union[requests.Response, requests.RequestException]]`. 
+This change should not impact `WaitUntilMidnightBackoffStrategy` from source-gnews as well but it is interesting to note that its interface is also wrong as it considers the first parameter as a `requests.Response` instead of a `Optional[Union[requests.Response, requests.RequestException]]`.
 
 ## Upgrading to 4.0.0
 
