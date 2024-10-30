@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [[tool.poetry.packages]]
-include = "destination_pgvector"
+include = "destination_motherduck"
 
 [tool.poetry.dependencies]
 python = "^3.10"
