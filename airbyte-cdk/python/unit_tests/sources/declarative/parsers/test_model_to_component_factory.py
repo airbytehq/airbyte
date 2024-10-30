@@ -7,9 +7,11 @@ import datetime
 from typing import Any, Mapping
 
 import freezegun
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -92,6 +94,10 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomOutputFormatConcurrentStreamStateConverter,
+)
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
@@ -2549,3 +2555,238 @@ def test_use_default_request_options_provider():
 
     assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
     assert isinstance(retriever.request_option_provider, DefaultRequestOptionsProvider)
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_start",
+    [
+        pytest.param({}, "2024-08-01T00:00:00.000000Z", id="test_create_concurrent_cursor_without_state"),
+        pytest.param({"updated_at": "2024-10-01T00:00:00.000000Z"}, "2024-10-01T00:00:00.000000Z", id="test_create_concurrent_cursor_with_state"),
+    ]
+)
+def test_create_concurrent_cursor_from_datetime_based_cursor_all_fields(stream_state, expected_start):
+    config = {
+        "start_time": "2024-08-01T00:00:00.000000Z",
+        "end_time": "2024-10-15T00:00:00.000000Z"
+    }
+
+    expected_cursor_field = "updated_at"
+    expected_start_boundary = "custom_start"
+    expected_end_boundary = "custom_end"
+    expected_step = datetime.timedelta(days=10)
+    expected_lookback_window = datetime.timedelta(days=3)
+    expected_datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    expected_cursor_granularity = datetime.timedelta(microseconds=1)
+
+    expected_start = pendulum.parse(expected_start)
+    expected_end = datetime.datetime(year=2024, month=10, day=15, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+    if stream_state:
+        # Using incoming state, the resulting already completed partition is the start_time up to the last successful
+        # partition indicated by the legacy sequential state
+        expected_concurrent_state = {
+            "slices": [
+                {
+                    "start": pendulum.parse(config["start_time"]),
+                    "end": pendulum.parse(stream_state["updated_at"]),
+                },
+            ],
+            "state_type": "date-range",
+            "legacy": {"updated_at": "2024-10-01T00:00:00.000000Z"},
+        }
+    else:
+        expected_concurrent_state = {
+            "slices": [
+                {
+                    "start": pendulum.parse(config["start_time"]),
+                    "end": pendulum.parse(config["start_time"]),
+                },
+            ],
+            "state_type": "date-range",
+            "legacy": {},
+        }
+
+    connector_state_manager = ConnectorStateManager()
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "start_datetime": "{{ config['start_time'] }}",
+        "end_datetime": "{{ config['end_time'] }}",
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D"
+    }
+
+    concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+        state_manager=connector_state_manager,
+        model_type=DatetimeBasedCursorModel,
+        component_definition=cursor_component_definition,
+        stream_name=stream_name,
+        stream_namespace=None,
+        config=config,
+        stream_state=stream_state,
+    )
+
+    assert concurrent_cursor._stream_name == stream_name
+    assert not concurrent_cursor._stream_namespace
+    assert concurrent_cursor._connector_state_manager == connector_state_manager
+    assert concurrent_cursor.cursor_field.cursor_field_key == expected_cursor_field
+    assert concurrent_cursor._slice_range == expected_step
+    assert concurrent_cursor._lookback_window == expected_lookback_window
+
+    assert concurrent_cursor.slice_boundary_fields[ConcurrentCursor._START_BOUNDARY] == expected_start_boundary
+    assert concurrent_cursor.slice_boundary_fields[ConcurrentCursor._END_BOUNDARY] == expected_end_boundary
+
+    assert concurrent_cursor.start == expected_start
+    assert concurrent_cursor._end_provider() == expected_end
+    assert concurrent_cursor._concurrent_state == expected_concurrent_state
+
+    assert isinstance(stream_state_converter, CustomOutputFormatConcurrentStreamStateConverter)
+    assert stream_state_converter._datetime_format == expected_datetime_format
+    assert stream_state_converter._is_sequential_state
+    assert stream_state_converter._cursor_granularity == expected_cursor_granularity
+
+
+@pytest.mark.parametrize(
+    "cursor_fields_to_replace,assertion_field,expected_value,expected_error",
+    [
+        pytest.param({"partition_field_start": None}, "slice_boundary_fields", ('start_time', 'custom_end'), None, id="test_no_partition_field_start"),
+        pytest.param({"partition_field_end": None}, "slice_boundary_fields", ('custom_start', 'end_time'), None, id="test_no_partition_field_end"),
+        pytest.param({"lookback_window": None}, "_lookback_window", None, None, id="test_no_lookback_window"),
+        pytest.param({"lookback_window": "{{ config.does_not_exist }}"}, "_lookback_window", None, None, id="test_no_lookback_window"),
+        pytest.param({"step": None}, None, None, ValueError, id="test_no_step_raises_exception"),
+        pytest.param({"cursor_granularity": None}, None, None, ValueError, id="test_no_cursor_granularity_exception"),
+        pytest.param({
+            "end_time": None,
+            "cursor_granularity": None,
+            "step": None,
+        }, "_slice_range", datetime.timedelta(days=61), None, id="test_uses_a_single_time_interval_when_no_specified_step_and_granularity"),
+    ]
+)
+@freezegun.freeze_time("2024-10-01T00:00:00")
+def test_create_concurrent_cursor_from_datetime_based_cursor(cursor_fields_to_replace, assertion_field, expected_value, expected_error):
+    connector_state_manager = ConnectorStateManager()
+
+    config = {
+        "start_time": "2024-08-01T00:00:00.000000Z",
+        "end_time": "2024-09-01T00:00:00.000000Z"
+    }
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "start_datetime": "{{ config['start_time'] }}",
+        "end_datetime": "{{ config['end_time'] }}",
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D",
+    }
+
+    for cursor_field_to_replace, value in cursor_fields_to_replace.items():
+        if value is None:
+            cursor_component_definition[cursor_field_to_replace] = value
+        else:
+            del cursor_component_definition[cursor_field_to_replace]
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    if expected_error:
+        with pytest.raises(expected_error):
+            connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+                state_manager=connector_state_manager,
+                model_type=DatetimeBasedCursorModel,
+                component_definition=cursor_component_definition,
+                stream_name=stream_name,
+                stream_namespace=None,
+                config=config,
+                stream_state={},
+            )
+    else:
+        concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+            state_manager=connector_state_manager,
+            model_type=DatetimeBasedCursorModel,
+            component_definition=cursor_component_definition,
+            stream_name=stream_name,
+            stream_namespace=None,
+            config=config,
+            stream_state={},
+        )
+
+        assert getattr(concurrent_cursor, assertion_field) == expected_value
+
+
+def test_create_concurrent_cursor_uses_min_max_datetime_format_if_defined():
+    """
+    Validates a special case for when the start_time.datetime_format and end_time.datetime_format are defined, the date to
+    string parser should not inherit from the parent DatetimeBasedCursor.datetime_format. The parent which uses an incorrect
+    precision would fail if it were used by the dependent children.
+    """
+    expected_start = datetime.datetime(year=2024, month=8, day=1, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+    expected_end = datetime.datetime(year=2024, month=9, day=1, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+
+    connector_state_manager = ConnectorStateManager()
+
+    config = {
+        "start_time": "2024-08-01T00:00:00Z",
+        "end_time": "2024-09-01T00:00:00Z"
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%MZ",
+        "start_datetime": {
+            "type": "MinMaxDatetime",
+            "datetime": "{{ config.start_time }}",
+            "datetime_format": "%Y-%m-%dT%H:%M:%SZ"
+        },
+        "end_datetime": {
+            "type": "MinMaxDatetime",
+            "datetime": "{{ config.end_time }}",
+            "datetime_format": "%Y-%m-%dT%H:%M:%SZ"
+        },
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D"
+    }
+
+    concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+        state_manager=connector_state_manager,
+        model_type=DatetimeBasedCursorModel,
+        component_definition=cursor_component_definition,
+        stream_name=stream_name,
+        stream_namespace=None,
+        config=config,
+        stream_state={},
+    )
+
+    assert concurrent_cursor.start == expected_start
+    assert concurrent_cursor._end_provider() == expected_end
+    assert concurrent_cursor._concurrent_state == {
+        "slices": [
+            {
+                "start": expected_start,
+                "end": expected_start,
+            },
+        ],
+        "state_type": "date-range",
+        "legacy": {},
+    }
