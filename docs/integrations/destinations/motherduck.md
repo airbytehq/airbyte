@@ -69,6 +69,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.11 | 2024-10-30 | [47979](https://github.com/airbytehq/airbyte/pull/47979) | Rename package. |
 | 0.1.10 | 2024-10-29 | [47958](https://github.com/airbytehq/airbyte/pull/47958) | Add state counts and other fixes. |
 | 0.1.9 | 2024-10-29 | [47950](https://github.com/airbytehq/airbyte/pull/47950) | Fix bug: add double quotes to column names that are reserved keywords. |
 | 0.1.8 | 2024-10-29 | [47952](https://github.com/airbytehq/airbyte/pull/47952) | Fix: Add max batch size for loads. |
