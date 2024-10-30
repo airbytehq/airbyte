@@ -18,6 +18,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
         isStreamSchemaRetroactive = false,
+        supportsDedup = false,
     ) {
     @Test
     override fun testBasicWrite() {
