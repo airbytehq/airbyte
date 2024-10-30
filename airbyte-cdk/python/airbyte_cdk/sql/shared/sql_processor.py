@@ -8,7 +8,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, final
+from typing import TYPE_CHECKING, Any, final
 
 import pandas as pd
 import sqlalchemy
@@ -468,7 +468,7 @@ class SqlProcessorBase(abc.ABC):
 
         return columns
 
-    def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:
+    def _execute_sql(self, sql: str | TextClause | Executable) -> Any:
         """Execute the given SQL statement."""
         if isinstance(sql, str):
             sql = text(sql)
