@@ -138,26 +138,31 @@ class CdcPartitionReader<T : Comparable<T>>(
             val debeziumRecordValue: DebeziumRecordValue? =
                 event.value()?.let { DebeziumRecordValue(Jsons.readTree(it)) }
             // Process records, ignoring heartbeats which are only used for completion checks.
-            val isRecord: Boolean
-            if (debeziumRecordValue == null) {
-                isRecord = false
-                numTombstones.incrementAndGet()
-            } else if (debeziumRecordValue.isHeartbeat) {
-                isRecord = false
-                numHeartbeats.incrementAndGet()
-            } else {
-                isRecord = true
+            val isRecord: Boolean = run {
+                if (debeziumRecordValue == null) {
+                    numTombstones.incrementAndGet()
+                    return@run false
+                }
+                if (debeziumRecordValue.isHeartbeat) {
+                    numHeartbeats.incrementAndGet()
+                    return@run false
+                }
                 val debeziumRecordKey = DebeziumRecordKey(Jsons.readTree(event.key()))
-                val deserializedRecord: DeserializedRecord =
+                val deserializedRecord: DeserializedRecord? =
                     readerOps.deserialize(debeziumRecordKey, debeziumRecordValue)
+                if (deserializedRecord == null) {
+                    numDiscardedRecords.incrementAndGet()
+                    return@run true
+                }
                 val streamRecordConsumer: StreamRecordConsumer? =
                     streamRecordConsumers[deserializedRecord.streamID]
                 if (streamRecordConsumer == null) {
                     numDiscardedRecords.incrementAndGet()
-                } else {
-                    streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
-                    numEmittedRecords.incrementAndGet()
+                    return@run true
                 }
+                streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
+                numEmittedRecords.incrementAndGet()
+                return@run true
             }
             // Look for reasons to close down the engine.
             val closeReason: CloseReason? = run {
