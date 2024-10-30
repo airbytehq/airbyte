@@ -109,6 +109,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             ],
             globs,
         )
+
     def file_size(self, file: RemoteFile) -> int:
         return 0
 
