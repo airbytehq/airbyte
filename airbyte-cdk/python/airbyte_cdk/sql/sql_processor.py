@@ -310,7 +310,7 @@ class SqlProcessorBase(abc.ABC):
         sql = f"CREATE SCHEMA IF NOT EXISTS {schema_name}"
 
         try:
-            self.execute_sql_command(sql)
+            self.run_sql_command(sql)
         except Exception as ex:
             # Ignore schema exists errors.
             if "already exists" not in str(ex):
@@ -450,7 +450,7 @@ class SqlProcessorBase(abc.ABC):
             {column_definition_str}
         )
         """
-        _ = self.execute_sql_command(cmd)
+        _ = self.run_sql_command(cmd)
 
     @final
     def _get_sql_column_definitions(
@@ -472,7 +472,7 @@ class SqlProcessorBase(abc.ABC):
 
         return columns
 
-    def execute_sql_command(self, sql: str | TextClause | Executable) -> None:
+    def run_sql_command(self, sql: str | TextClause | Executable) -> None:
         """Execute the given SQL statement without returning any results.
 
         This does not keep the connection open after the query is executed, and for
@@ -483,7 +483,7 @@ class SqlProcessorBase(abc.ABC):
 
         Usage example:
         ```
-        self.execute_sql_command("CREATE TABLE my_table (id INT PRIMARY KEY)")
+        self.run_sql_command("CREATE TABLE my_table (id INT PRIMARY KEY)")
         ```
         """
         # We reuse the `run_sql_query` method (for now) but we this may change in the future.
@@ -570,7 +570,7 @@ class SqlProcessorBase(abc.ABC):
     ) -> None:
         """Drop the given table."""
         exists_str = "IF EXISTS" if if_exists else ""
-        self.execute_sql_command(f"DROP TABLE {exists_str} {self._fully_qualified(table_name)}")
+        self.run_sql_command(f"DROP TABLE {exists_str} {self._fully_qualified(table_name)}")
 
     def _write_files_to_new_table(
         self,
@@ -624,7 +624,7 @@ class SqlProcessorBase(abc.ABC):
         column_type: sqlalchemy.types.TypeEngine[Any],
     ) -> None:
         """Add a column to the given table."""
-        self.execute_sql_command(
+        self.run_sql_command(
             text(f"ALTER TABLE {self._fully_qualified(table.name)} " f"ADD COLUMN {column_name} {column_type}"),
         )
 
@@ -671,7 +671,7 @@ class SqlProcessorBase(abc.ABC):
     ) -> None:
         nl = "\n"
         columns = [self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
-        self.execute_sql_command(
+        self.run_sql_command(
             f"""
             INSERT INTO {self._fully_qualified(final_table_name)} (
             {f',{nl}  '.join(columns)}
@@ -707,7 +707,7 @@ class SqlProcessorBase(abc.ABC):
                 f"DROP TABLE {self._fully_qualified(deletion_name)};",
             ]
         )
-        self.execute_sql_command(commands)
+        self.run_sql_command(commands)
 
     def _merge_temp_table_to_final_table(
         self,
@@ -726,7 +726,7 @@ class SqlProcessorBase(abc.ABC):
         non_pk_columns = columns - pk_columns
         join_clause = f"{nl} AND ".join(f"tmp.{pk_col} = final.{pk_col}" for pk_col in pk_columns)
         set_clause = f"{nl}  , ".join(f"{col} = tmp.{col}" for col in non_pk_columns)
-        self.execute_sql_command(
+        self.run_sql_command(
             f"""
             MERGE INTO {self._fully_qualified(final_table_name)} final
             USING (
