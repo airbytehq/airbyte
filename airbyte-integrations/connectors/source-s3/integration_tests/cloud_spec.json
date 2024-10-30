@@ -17,6 +17,12 @@
         "order": 1,
         "type": "string"
       },
+      "use_file_transfer": {
+        "title": "Use File Transfer (Experimental)",
+        "description": "Enable file-based bulk load",
+        "default": false,
+        "type": "boolean"
+      },
       "streams": {
         "title": "The list of streams to sync",
         "description": "Each instance of this configuration defines a <a href=\"https://docs.airbyte.com/cloud/core-concepts#stream\">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.",
