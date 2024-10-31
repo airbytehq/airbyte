@@ -1,0 +1,220 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  An Airbyte connector for Pabbly Email Marketing would allow users to sync and
+  transfer email data seamlessly between Pabbly and other platforms, such as
+  data warehouses or BI tools. This connector would enable real-time data
+  extraction for subscriber lists making it easy to automate reporting and
+  integrate Pabbly insights into a broader data ecosystem.
+
+check:
+  type: CheckStream
+  stream_names:
+    - subscriber_list
+
+definitions:
+  streams:
+    subscriber_list:
+      type: DeclarativeStream
+      name: subscriber_list
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscribers_list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers_list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriber_list"
+    personalization_tags:
+      type: DeclarativeStream
+      name: personalization_tags
+      primary_key:
+        - tag_value
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /personalization-tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - personalization_tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/personalization_tags"
+    delivery_servers:
+      type: DeclarativeStream
+      name: delivery_servers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /delivery-servers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/delivery_servers"
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - template_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /email-templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - email_templates
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://emails.pabbly.com/api
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key_2\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/subscriber_list"
+  - $ref: "#/definitions/streams/personalization_tags"
+  - $ref: "#/definitions/streams/delivery_servers"
+  - $ref: "#/definitions/streams/email_templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key_2
+    properties:
+      api_key_2:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    subscriber_list: true
+    personalization_tags: true
+    delivery_servers: true
+    email_templates: true
+  testedStreams:
+    subscriber_list:
+      hasRecords: true
+      streamHash: 88db37491254a79d1afee6e961a6f6f201daf51e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    personalization_tags:
+      hasRecords: true
+      streamHash: 154a9389c6c038b2743465b97ef1963c45b7fa9e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    delivery_servers:
+      hasRecords: true
+      streamHash: c32fd51fec25026258af726948f1c6ee5b632f71
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    email_templates:
+      hasRecords: true
+      streamHash: 860c506b8a375742bbda777325e092628ffc8599
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://apidocs.pabbly.com/
+
+schemas:
+  subscriber_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      list_id:
+        type:
+          - string
+          - "null"
+      list_name:
+        type:
+          - string
+          - "null"
+  personalization_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      tag_name:
+        type:
+          - string
+          - "null"
+      tag_value:
+        type: string
+    required:
+      - tag_value
+  delivery_servers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      message:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+  email_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      build_type:
+        type:
+          - string
+          - "null"
+      template_id:
+        type: string
+      template_subject:
+        type:
+          - string
+          - "null"
+    required:
+      - template_id
