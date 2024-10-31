@@ -40,7 +40,6 @@ Note that this is a semi-incremental stream and tests will need to be adapated a
 '''
 
 
-
 def _a_request() -> ChargebeeRequestBuilder:
     return ChargebeeRequestBuilder.site_migration_detail_endpoint(_SITE, _SITE_API_KEY)
 
@@ -65,6 +64,7 @@ def _a_record() -> RecordBuilder:
         record_cursor_path=NestedPath([_STREAM_NAME, _CURSOR_FIELD])
     )
 
+
 def _a_response() -> HttpResponseBuilder:
     return create_response_builder(
         find_template(_STREAM_NAME, __file__),
@@ -80,7 +80,9 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(), config, catalog, state, expecting_exception)
+    source = _source(catalog=catalog, config=config, state=state)
+    return read(source, config, catalog, state, expecting_exception)
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
