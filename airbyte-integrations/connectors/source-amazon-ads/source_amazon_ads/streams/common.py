@@ -110,18 +110,6 @@ class BasicAmazonAdsStream(Stream, ABC):
         self._client_id = config["client_id"]
         self._url = URL_MAPPING[config["region"]]
 
-    @property
-    @abstractmethod
-    def model(self) -> CatalogModel:
-        """
-        Pydantic model to represent json schema
-        """
-
-    def get_json_schema(self):
-        schema = self.model.schema()
-        expand_refs(schema)
-        return schema
-
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):

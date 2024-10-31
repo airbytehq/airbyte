@@ -86,7 +86,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._session.auth = authenticator
         self._report_download_session = self._session
-        self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
         self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
@@ -94,10 +93,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
         self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
         self._report_record_types = config.get("report_record_types")
-
-    @property
-    def model(self) -> CatalogModel:
-        return self._model
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -133,13 +128,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         for report_info in report_info_list:
             for metric_object in report_info.metric_objects:
-                yield self._model(
-                    profileId=report_info.profile_id,
-                    recordType=report_info.record_type,
-                    reportDate=report_date,
-                    recordId=self.get_record_id(metric_object, report_info.record_type),
-                    metric=metric_object,
-                ).dict()
+                yield {
+                    "profileId": report_info.profile_id,
+                    "recordType": report_info.record_type,
+                    "reportDate": report_date,
+                    "recordId": self.get_record_id(metric_object, report_info.record_type),
+                    "metric": metric_object,
+                }
 
     def get_record_id(self, metric_object: dict, record_type: str) -> str:
         return metric_object.get(self.metrics_type_to_id_map[record_type]) or str(uuid.uuid4())
@@ -191,17 +186,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def _incomplete_report_info(self, report_info_list):
         return [r for r in report_info_list if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
-
-    def _generate_model(self):
-        """
-        Generate pydantic model based on combined list of all the metrics
-        attributes for particular stream. This model later will be used for
-        discover schema generation.
-        """
-        metrics = set()
-        for metric_list in self.metrics_map.values():
-            metrics.update(set(metric_list))
-        return MetricsReport.generate_metric_model(metrics)
 
     def _get_auth_headers(self, profile_id: int):
         return (
