@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
   connectorSubtype: api
   connectorType: source
-  definitionId: 00a7dbf8-754f-4448-9788-5413ec8edde0
+  definitionId: 3a9334a1-c1a5-4485-8347-e297c8861bde
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-selzy
   githubIssueLabel: source-selzy

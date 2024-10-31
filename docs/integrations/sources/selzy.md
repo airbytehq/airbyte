@@ -7,8 +7,8 @@ Using this connector we can extract data from streams such as campaigns , templa
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `from` | `string` | From.  |  |
-| `to` | `string` | To.  |  |
+| `from` | `string` | From. In the format YYYY-MM-DD HH:MM |  |
+| `to` | `string` | To. In the format YYYY-MM-DD HH:MM |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

@@ -178,10 +178,12 @@ spec:
         order: 0
       from:
         type: string
+        description: In the format YYYY-MM-DD HH:MM
         title: From
         order: 1
       to:
         type: string
+        description: In the format YYYY-MM-DD HH:MM
         title: To
         order: 2
     additionalProperties: true
