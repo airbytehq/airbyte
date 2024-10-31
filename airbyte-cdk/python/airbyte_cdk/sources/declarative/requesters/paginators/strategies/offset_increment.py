@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Config, Record
@@ -39,7 +39,7 @@ class OffsetIncrement(PaginationStrategy):
     config: Config
     page_size: Optional[Union[str, int]]
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    decoder: Decoder = field(default_factory=lambda: PaginationDecoderDecorator(decoder=JsonDecoder(parameters={})))
     inject_on_first_request: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:

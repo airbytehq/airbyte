@@ -9,10 +9,10 @@ from base_images import version_registry  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import Optional
 
     import dagger
 
@@ -21,20 +21,21 @@ class NoBaseImageAddressInMetadataError(Exception):
     pass
 
 
-class UpdateBaseImageMetadata(Step):
+class UpdateBaseImageMetadata(StepModifyingFiles):
+
+    BASE_IMAGE_LIST_CACHE_TTL_SECONDS = 60 * 60 * 24  # 1 day
+
     context: ConnectorContext
 
     title = "Upgrade the base image to the latest version in metadata.yaml"
 
-    modified_files: List[str]
-
     def __init__(
         self,
         context: ConnectorContext,
+        connector_directory: dagger.Directory,
         set_if_not_exists: bool = False,
-        connector_directory: Optional[dagger.Directory] = None,
     ) -> None:
-        super().__init__(context)
+        super().__init__(context, connector_directory)
         self.set_if_not_exists = set_if_not_exists
         self.modified_files = []
         self.connector_directory = connector_directory
@@ -47,6 +48,7 @@ class UpdateBaseImageMetadata(Step):
                 self.dagger_client,
                 self.context.connector.language,
                 (self.context.docker_hub_username.value, self.context.docker_hub_password.value),
+                cache_ttl_seconds=self.BASE_IMAGE_LIST_CACHE_TTL_SECONDS,
             )
             return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
         except NotImplementedError:

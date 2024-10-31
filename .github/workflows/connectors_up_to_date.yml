@@ -11,7 +11,7 @@ on:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=10 --language=python --language=low-code --language=manifest-only"
+        default: '--concurrency=10 --language=python --language=low-code --language=manifest-only --metadata-query="''-rc.'' not in data.dockerImageTag" --metadata-query="''source-declarative-manifest'' not in data.dockerRepository"'
       auto-merge:
         description: "Whether to auto-merge the PRs created by the action."
         default: "false"
@@ -25,12 +25,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Run airbyte-ci connectors up-to-date
-        id: airbyte-ci-connectors-up-to-date
+      - name: Run airbyte-ci connectors up-to-date [WORKFLOW]
+        if: github.event_name == 'workflow_dispatch'
+        id: airbyte-ci-connectors-up-to-date-workflow-dispatch
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -39,4 +40,20 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=10 --language=python --language=low-code --support-level=community --support-level=certified' }} up-to-date --ignore-connector=source-declarative-manifest --create-prs ${{ github.event.inputs.auto-merge == 'false' && '' || '--auto-merge' }}"
+          subcommand: "connectors ${{ github.event.inputs.connectors-options }} up-to-date  --create-prs ${{ github.event.inputs.auto-merge == 'false' && '' || '--auto-merge' }}"
+      - name: Run airbyte-ci connectors up-to-date [SCHEDULE]
+        if: github.event_name == 'schedule'
+        id: airbyte-ci-connectors-up-to-date-schedule
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: 'connectors --concurrency=10 --language=python --language=low-code --support-level=community --support-level=certified --metadata-query="\"source-declarative-manifest\" not in data.dockerRepository"  --metadata-query="\"-rc.\" not in data.dockerImageTag" up-to-date --ignore-connector=source-declarative-manifest --create-prs --auto-merge'

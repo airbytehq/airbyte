@@ -48,13 +48,16 @@ Airbyte [credits](https://airbyte.com/pricing) are by default assigned per works
 
 ## Managing User Roles
 
-Airbyte offers multiple user roles to enable teams to securely access workspaces or organizations. Some roles are only available to certain products.
+Airbyte offers multiple user roles to enable teams to securely access workspaces or organizations. All roles are available to Cloud Teams and Self-Managed Enterprise users. Cloud users only have admin roles.
 
 | Role                                                                                                                    | Cloud | Cloud Teams | Enterprise |
 | ----------------------------------------------------------------------------------------------------------------------- | ----- | ----------- | ---------- |
-| **Organization Admin:** Administer the whole organization, create workspaces in it, and manage organization permissions |       | ✅          | ✅         |
-| **Workspace Admin:** Administer the workspace, create workspace permissions                                             | ✅    |             |            |
+| **Organization Admin:** Administer the whole organization, create workspaces in it, and manage organization permissions |   ✅    | ✅          | ✅         |
+| **Workspace Admin:** Administer the workspace, create workspace permissions                                             | ✅    |      ✅       |    ✅        |
 | **Workspace Reader:** View information within a workspace, cannot modify anything within a workspace                    |       | ✅          | ✅         |
+
+
+More information about specific roles can be found in our [Role-Based Access Control documentation](../access-management/rbac.md).
 
 ## Switch between multiple workspaces
 

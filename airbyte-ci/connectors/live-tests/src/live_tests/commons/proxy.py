@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Optional
 
 import dagger
 
@@ -12,7 +11,8 @@ from . import mitm_addons
 
 class Proxy:
     """
-    This class is a wrapper around a mitmproxy container. It allows to declare a mitmproxy container, bind it as a service to a different container and retrieve the mitmproxy stream file.
+    This class is a wrapper around a mitmproxy container. It allows to declare a mitmproxy container,
+    bind it as a service to a different container and retrieve the mitmproxy stream file.
     """
 
     MITMPROXY_IMAGE = "mitmproxy/mitmproxy:10.2.4"
@@ -25,7 +25,7 @@ class Proxy:
         dagger_client: dagger.Client,
         hostname: str,
         session_id: str,
-        stream_for_server_replay: Optional[dagger.File] = None,
+        stream_for_server_replay: dagger.File | None = None,
     ) -> None:
         self.dagger_client = dagger_client
         self.hostname = hostname
@@ -58,7 +58,7 @@ class Proxy:
         proxy_container = (
             self.dagger_client.container()
             .from_(self.MITMPROXY_IMAGE)
-            .with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"], skip_entrypoint=True)
+            .with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"])
             # This is caching the mitmproxy stream files, which can contain sensitive information
             # We want to nuke this cache after test suite execution.
             .with_mounted_cache("/dumps", self.dump_cache_volume)
@@ -114,7 +114,7 @@ class Proxy:
         cert_path_in_volume = "/mitmproxy_dir/mitmproxy-ca.pem"
         ca_certificate_path = "/usr/local/share/ca-certificates/mitmproxy.crt"
 
-        python_version_output = (await container.with_exec(["python", "--version"], skip_entrypoint=True).stdout()).strip()
+        python_version_output = (await container.with_exec(["python", "--version"]).stdout()).strip()
         python_version = python_version_output.split(" ")[-1]
         python_version_minor_only = ".".join(python_version.split(".")[:-1])
         requests_cert_path = f"/usr/local/lib/python{python_version_minor_only}/site-packages/certifi/cacert.pem"
@@ -122,17 +122,11 @@ class Proxy:
             return await (
                 container.with_service_binding(self.hostname, await self.get_service())
                 .with_mounted_cache("/mitmproxy_dir", self.mitmproxy_dir_cache)
-                .with_exec(
-                    ["cp", cert_path_in_volume, requests_cert_path],
-                    skip_entrypoint=True,
-                )
-                .with_exec(
-                    ["cp", cert_path_in_volume, ca_certificate_path],
-                    skip_entrypoint=True,
-                )
+                .with_exec(["cp", cert_path_in_volume, requests_cert_path])
+                .with_exec(["cp", cert_path_in_volume, ca_certificate_path])
                 # The following command make the container use the proxy for all outgoing HTTP requests
                 .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path)
-                .with_exec(["update-ca-certificates"], skip_entrypoint=True)
+                .with_exec(["update-ca-certificates"])
                 .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
             )
@@ -142,14 +136,14 @@ class Proxy:
             logging.warn(f"Failed to bind container to proxy: {e}")
             return container
 
-    async def retrieve_http_dump(self) -> Optional[dagger.File]:
+    async def retrieve_http_dump(self) -> dagger.File | None:
         """We mount the cache volume, where the mitmproxy container saves the stream file, to a fresh container.
         We then copy the stream file to a new directory and return it as a dagger.File.
         The copy operation to /to_export is required as Dagger does not support direct access to files in cache volumes.
 
 
         Returns:
-            Optional[dagger.File]: The mitmproxy stream file if it exists, None otherwise.
+            dagger.File | None: The mitmproxy stream file if it exists, None otherwise.
         """
         container = (
             self.dagger_client.container()
@@ -157,19 +151,12 @@ class Proxy:
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_mounted_cache("/dumps", self.dump_cache_volume)
         )
-        dump_files = (await container.with_exec(["ls", "/dumps"], skip_entrypoint=True).stdout()).splitlines()
+        dump_files = (await container.with_exec(["ls", "/dumps"]).stdout()).splitlines()
         if self.MITM_STREAM_FILE not in dump_files:
             return None
         return await (
-            container.with_exec(["mkdir", "/to_export"])
-            .with_exec(
-                [
-                    "cp",
-                    "-r",
-                    f"/dumps/{self.MITM_STREAM_FILE}",
-                    f"/to_export/{self.MITM_STREAM_FILE}",
-                ]
-            )
+            container.with_exec(["mkdir", "/to_export"], use_entrypoint=True)
+            .with_exec(["cp", "-r", f"/dumps/{self.MITM_STREAM_FILE}", f"/to_export/{self.MITM_STREAM_FILE}"], use_entrypoint=True)
             .file(f"/to_export/{self.MITM_STREAM_FILE}")
         )
 
@@ -179,7 +166,7 @@ class Proxy:
             self.dagger_client.container()
             .from_("alpine:latest")
             .with_mounted_cache("/to_clear", self.dump_cache_volume)
-            .with_exec(["rm", "-rf", "/to_clear/*"])
+            .with_exec(["rm", "-rf", "/to_clear/*"], use_entrypoint=True)
             .sync()
         )
         logging.info(f"Cache volume {self.dump_cache_volume} cleared")
