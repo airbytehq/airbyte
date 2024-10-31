@@ -17,52 +17,13 @@ check:
 
 definitions:
   streams:
-    users:
-      type: DeclarativeStream
-      name: users
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 20
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /users
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - users
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/users"
     events:
       type: DeclarativeStream
       name: events
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 20
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /events
@@ -73,66 +34,31 @@ definitions:
             type: DpathExtractor
             field_path:
               - events
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
-    tickets:
-      type: DeclarativeStream
-      name: tickets
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 20
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /events/{{ stream_partition.event_id }}/tickets
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - tickets
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/events"
-              parent_key: id
-              partition_field: event_id
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/tickets"
     attendees:
       type: DeclarativeStream
       name: attendees
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 20
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /events/{{ stream_partition.event_id }}/attendees
@@ -143,16 +69,28 @@ definitions:
             type: DpathExtractor
             field_path:
               - attendees
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/events"
               parent_key: id
               partition_field: event_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/events"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -162,16 +100,6 @@ definitions:
       name: categories
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 20
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /categories
@@ -182,25 +110,109 @@ definitions:
             type: DpathExtractor
             field_path:
               - categories
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/categories"
-    transactions:
-      type: DeclarativeStream
-      name: transactions
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: offset
             inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/{{ stream_partition.event_id }}/tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tickets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - refno
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /events/{{ stream_partition.event_id }}/transactions
@@ -211,16 +223,28 @@ definitions:
             type: DpathExtractor
             field_path:
               - transactions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/events"
               parent_key: id
               partition_field: event_id
-      primary_key:
-        - refno
+              stream:
+                $ref: "#/definitions/streams/events"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -264,166 +288,78 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://developer.eventzilla.net/docs/
-  testedStreams:
-    users:
-      hasRecords: true
-      streamHash: 36e02d511453abc071ab086736ee7fe061b37bc3
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    events:
-      hasRecords: true
-      streamHash: 2f83dbb203ddcbe62179952490a0a4cce9938e40
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    tickets:
-      hasRecords: true
-      streamHash: 502cdb83195fec4afe3d295cd36a512a808de64d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    attendees:
-      hasRecords: true
-      streamHash: d1b26490b356c28fb1888b371d955e9459fa35bd
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    categories:
-      hasRecords: true
-      streamHash: 1e934ce454587a1aeffd96ef3e6716dff78e3eb4
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    transactions:
-      hasRecords: true
-      streamHash: 5d664f17e991b555a68cdf58250c2108a19c4240
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
-    users: false
     events: true
-    tickets: false
     attendees: false
     categories: false
+    tickets: false
+    users: false
     transactions: false
+  testedStreams:
+    events:
+      streamHash: f9fe484687d4e31ce37624e7eca6056fffe086ba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attendees:
+      streamHash: b6fc0aa7a306b8d42beab9cb83f46f6dfdb8d615
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 12edf4da2b31d4f53713f6562e12403f4b94a5e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tickets:
+      streamHash: be36a1402a27c4d6bc69ffe88f9c6dfd8acb451e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 136f69bf38a643670c0de65d045697a971d74459
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transactions:
+      streamHash: 6e1d3a52da1e821680358c6bc8735bd39e9308c5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developer.eventzilla.net/docs/
 
 schemas:
-  users:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      email:
-        type:
-          - string
-          - "null"
-      company:
-        type:
-          - string
-          - "null"
-      website:
-        type:
-          - string
-          - "null"
-      timezone:
-        type:
-          - string
-          - "null"
-      username:
-        type:
-          - string
-          - "null"
-      zip_code:
-        type:
-          - string
-          - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      last_seen:
-        type:
-          - string
-          - "null"
-      user_type:
-        type:
-          - string
-          - "null"
-      avatar_url:
-        type:
-          - string
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-      twitter_id:
-        type:
-          - string
-          - "null"
-      facebook_id:
-        type:
-          - string
-          - "null"
-      address_line1:
-        type:
-          - string
-          - "null"
-      address_line2:
-        type:
-          - string
-          - "null"
-      phone_primary:
-        type:
-          - string
-          - "null"
-      address_region:
-        type:
-          - string
-          - "null"
-      address_country:
-        type:
-          - string
-          - "null"
-      address_locality:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   events:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       description:
         type:
           - string
           - "null"
-      id:
-        type: number
-      url:
+      bgimage_url:
         type:
           - string
           - "null"
-      title:
+      categories:
         type:
           - string
           - "null"
-      venue:
+      currency:
         type:
           - string
           - "null"
@@ -431,11 +367,7 @@ schemas:
         type:
           - number
           - "null"
-      status:
-        type:
-          - string
-          - "null"
-      currency:
+      description_html:
         type:
           - string
           - "null"
@@ -447,6 +379,12 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type: number
+      invite_code:
+        type:
+          - string
+          - "null"
       language:
         type:
           - string
@@ -455,13 +393,9 @@ schemas:
         type:
           - string
           - "null"
-      time_zone:
+      show_remaining:
         type:
-          - string
-          - "null"
-      categories:
-        type:
-          - string
+          - boolean
           - "null"
       start_date:
         type:
@@ -471,15 +405,7 @@ schemas:
         type:
           - string
           - "null"
-      utc_offset:
-        type:
-          - string
-          - "null"
-      bgimage_url:
-        type:
-          - string
-          - "null"
-      invite_code:
+      status:
         type:
           - string
           - "null"
@@ -491,58 +417,156 @@ schemas:
         type:
           - number
           - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
       timezone_code:
         type:
           - string
-          - "null"
-      show_remaining:
-        type:
-          - boolean
-          - "null"
-      twitter_hashtag:
-        type:
-          - string
-          - "null"
-      description_html:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  tickets:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      id:
-        type: number
-      price:
-        type:
-          - number
           - "null"
       title:
         type:
           - string
           - "null"
-      is_visible:
+      twitter_hashtag:
         type:
-          - boolean
+          - string
           - "null"
-      group_price:
+      url:
+        type:
+          - string
+          - "null"
+      utc_offset:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  attendees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bar_code:
+        type:
+          - string
+          - "null"
+      buyer_first_name:
+        type:
+          - string
+          - "null"
+      buyer_last_name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      event_date:
+        type:
+          - string
+          - "null"
+      event_id:
         type:
           - number
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_attended:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      questions:
+        type:
+          - array
+          - "null"
+      refno:
+        type:
+          - string
           - "null"
       ticket_type:
         type:
           - string
           - "null"
-      unlock_code:
+      transaction_amount:
+        type:
+          - number
+          - "null"
+      transaction_date:
         type:
           - string
+          - "null"
+      transaction_status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type: string
+    required:
+      - category
+  tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      additional_instructions:
+        type:
+          - string
+          - "null"
+      allow_partial_payment:
+        type:
+          - boolean
+          - "null"
+      boxoffice_only:
+        type:
+          - boolean
+          - "null"
+      group_discount:
+        type:
+          - number
+          - "null"
+      group_percentage:
+        type:
+          - number
+          - "null"
+      group_price:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_visible:
+        type:
+          - boolean
           - "null"
       limit_maximum:
         type:
@@ -552,11 +576,19 @@ schemas:
         type:
           - number
           - "null"
-      boxoffice_only:
+      partial_payment_amount:
         type:
-          - boolean
+          - number
           - "null"
-      group_discount:
+      partial_payment_frequency:
+        type:
+          - string
+          - "null"
+      partial_payment_installments:
+        type:
+          - number
+          - "null"
+      price:
         type:
           - number
           - "null"
@@ -572,10 +604,6 @@ schemas:
         type:
           - string
           - "null"
-      group_percentage:
-        type:
-          - number
-          - "null"
       sales_start_date:
         type:
           - string
@@ -584,60 +612,58 @@ schemas:
         type:
           - string
           - "null"
-      allow_partial_payment:
-        type:
-          - boolean
-          - "null"
-      partial_payment_amount:
-        type:
-          - number
-          - "null"
-      additional_instructions:
+      ticket_type:
         type:
           - string
           - "null"
-      partial_payment_frequency:
+      title:
         type:
           - string
           - "null"
-      partial_payment_installments:
+      unlock_code:
         type:
-          - number
+          - string
           - "null"
-    additionalProperties: true
-  attendees:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      id:
-        type: number
+      address_country:
+        type:
+          - string
+          - "null"
+      address_line1:
+        type:
+          - string
+          - "null"
+      address_line2:
+        type:
+          - string
+          - "null"
+      address_locality:
+        type:
+          - string
+          - "null"
+      address_region:
+        type:
+          - string
+          - "null"
+      avatar_url:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
       email:
         type:
           - string
           - "null"
-      refno:
-        type:
-          - string
-          - "null"
-      bar_code:
-        type:
-          - string
-          - "null"
-      event_id:
-        type:
-          - number
-          - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      questions:
-        type:
-          - array
-          - "null"
-      event_date:
+      facebook_id:
         type:
           - string
           - "null"
@@ -645,81 +671,56 @@ schemas:
         type:
           - string
           - "null"
-      is_attended:
+      id:
+        type: number
+      last_name:
         type:
           - string
           - "null"
-      ticket_type:
+      last_seen:
         type:
           - string
           - "null"
-      payment_type:
+      phone_primary:
         type:
           - string
           - "null"
-      buyer_last_name:
+      timezone:
         type:
           - string
           - "null"
+      twitter_id:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip_code:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       buyer_first_name:
         type:
           - string
           - "null"
-      transaction_date:
-        type:
-          - string
-          - "null"
-      transaction_amount:
-        type:
-          - number
-          - "null"
-      transaction_status:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  categories:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - category
-    properties:
-      category:
-        type: string
-    additionalProperties: true
-  transactions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - refno
-    properties:
-      email:
-        type:
-          - string
-          - "null"
-      refno:
-        type: string
-      title:
-        type:
-          - string
-          - "null"
-      user_id:
-        type:
-          - number
-          - "null"
-      comments:
-        type:
-          - string
-          - "null"
-      event_id:
-        type:
-          - number
-          - "null"
-      event_date:
-        type:
-          - string
-          - "null"
-      promo_code:
+      buyer_last_name:
         type:
           - string
           - "null"
@@ -727,27 +728,41 @@ schemas:
         type:
           - number
           - "null"
-      payment_type:
+      comments:
         type:
           - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      event_date:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
           - "null"
       eventzilla_fee:
         type:
           - number
           - "null"
-      buyer_last_name:
+      payment_type:
         type:
           - string
           - "null"
-      transaction_tax:
+      promo_code:
+        type:
+          - string
+          - "null"
+      refno:
+        type: string
+      tickets_in_transaction:
         type:
           - number
           - "null"
-      buyer_first_name:
-        type:
-          - string
-          - "null"
-      transaction_date:
+      title:
         type:
           - string
           - "null"
@@ -755,7 +770,7 @@ schemas:
         type:
           - number
           - "null"
-      transaction_status:
+      transaction_date:
         type:
           - string
           - "null"
@@ -763,8 +778,17 @@ schemas:
         type:
           - number
           - "null"
-      tickets_in_transaction:
+      transaction_status:
+        type:
+          - string
+          - "null"
+      transaction_tax:
         type:
           - number
           - "null"
-    additionalProperties: true
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - refno
