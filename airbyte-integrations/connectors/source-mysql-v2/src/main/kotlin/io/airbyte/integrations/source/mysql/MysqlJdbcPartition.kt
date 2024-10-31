@@ -228,8 +228,10 @@ class MysqlJdbcCdcRfrSnapshotPartition(
         )
 }
 
-/** Implementation of a [JdbcPartition] for a CDC snapshot partition.
- *  Used for incremental CDC initial sync. */
+/**
+ * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC
+ * initial sync.
+ */
 class MysqlJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
