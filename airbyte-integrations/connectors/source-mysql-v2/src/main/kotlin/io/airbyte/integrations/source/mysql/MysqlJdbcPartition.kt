@@ -178,8 +178,8 @@ sealed class MysqlJdbcResumablePartition(
     open val isLowerBoundIncluded: Boolean = false
 }
 
-/** Implementation of a [JdbcPartition] for a snapshot partition. */
-class MysqlJdbcSnapshotPartition(
+/** RFR for cursor based read. */
+class MysqlJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
@@ -193,7 +193,8 @@ class MysqlJdbcSnapshotPartition(
         get() =
             MysqlJdbcStreamStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
-                primaryKeyCheckpoint = listOf(),
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
@@ -203,7 +204,34 @@ class MysqlJdbcSnapshotPartition(
         )
 }
 
-/** Implementation of a [JdbcPartition] for a CDC snapshot partition. */
+/** RFR for CDC. */
+class MysqlJdbcCdcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+
+    override val completeState: OpaqueStateValue
+        get() =
+            MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+            )
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+/**
+ * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC
+ * initial sync.
+ */
 class MysqlJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
