@@ -13,7 +13,8 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurati
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.avro.toAvroSchema
-import io.airbyte.cdk.load.data.toAirbyteValue
+import io.airbyte.cdk.load.data.csv.toAirbyteValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.avro.toAvroReader
