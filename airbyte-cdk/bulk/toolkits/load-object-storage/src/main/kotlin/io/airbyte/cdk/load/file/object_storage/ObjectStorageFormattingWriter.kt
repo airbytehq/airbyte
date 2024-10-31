@@ -69,6 +69,7 @@ class JsonFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     override fun accept(record: DestinationRecord) {
         outputStream.write(recordDecorator.decorate(record).toJson().serializeToString())
+        outputStream.write("\n")
     }
 
     override fun close() {
