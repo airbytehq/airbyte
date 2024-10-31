@@ -12,6 +12,25 @@ from airbyte_cdk.destinations.sinks.base import StreamSinkBase
 HttpWriteMethod = Literal["POST", "PUT", "PATCH", "DELETE"]
 
 
+class HttpAuthenticator:
+    """An authenticator for HTTP requests.
+
+    TODO: Reuse the existing authenticator implementations we have for sources.
+    """
+
+    def __init__(self, username: str, password: str) -> None:
+        self.username = username
+        self.password = password
+
+    def authenticate(self, request: requests.PreparedRequest) -> None:
+        """Authenticate an HTTP request."""
+        request.prepare_auth(auth=(self.username, self.password))
+
+    def inject_auth(self, request: requests.PreparedRequest) -> None:
+        """Inject authentication into an HTTP request."""
+        request.prepare_auth(auth=(self.username, self.password))
+
+
 class RestSink(StreamSinkBase):
     """A sink that sends records to a REST API."""
 
@@ -34,12 +53,13 @@ class RestSink(StreamSinkBase):
         self,
         base_url: str,
         path_template: str,
+        authenticator: HttpAuthenticator,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.base_url = base_url
-        self.path = path_template
-        self.records = []
+        self.path_template = path_template
+        self.authenticator = authenticator
 
     @override
     def _write_record(self, record: Record) -> None:
@@ -61,9 +81,12 @@ class RestSink(StreamSinkBase):
         """Update a single record that already exists in the sink.
 
         This method updates the record in the REST API.
+
+        Raises:
+            requests.HTTPError: If something goes wrong, for instance if the record does not exist
+                or a network error occurs.
         """
-        # Send the record to the REST API.
-        response: requests.Response = requests.request(
+        request = requests.Request(
             method=self.update_method,
             url=self.path_template.format(
                 base_url=self.base_url,
@@ -72,15 +95,21 @@ class RestSink(StreamSinkBase):
             ),
             json=record,
         )
+        prepared_request = request.prepare()
+        self.authenticator.inject_auth(prepared_request)
+        response = requests.Session().send(prepared_request)
         response.raise_for_status()
 
     def _insert_record(self, record: Record) -> None:
         """Insert a single record that does not exist in the sink.
 
         This method inserts the record into the REST API.
+
+        Raises:
+            requests.HTTPError: If something goes wrong, for instance if the record already exists
+                or a network error occurs.
         """
-        # Send the record to the REST API.
-        response: requests.Response = requests.request(
+        request = requests.Request(
             method=self.insert_method,
             url=self.path_template.format(
                 base_url=self.base_url,
@@ -89,4 +118,7 @@ class RestSink(StreamSinkBase):
             ),
             json=record,
         )
+        prepared_request = request.prepare()
+        self.authenticator.inject_auth(prepared_request)
+        response = requests.Session().send(prepared_request)
         response.raise_for_status()
