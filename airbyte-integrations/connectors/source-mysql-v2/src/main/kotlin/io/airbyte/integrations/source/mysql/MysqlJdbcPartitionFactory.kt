@@ -45,7 +45,7 @@ class MysqlJdbcPartitionFactory(
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
-    private fun findPkUppderBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
         // find upper bound using maxPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -78,7 +78,7 @@ class MysqlJdbcPartitionFactory(
                 )
             }
 
-            val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)
+            val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
 
             if (sharedState.configuration.global) {
                 return MysqlJdbcCdcRfrSnapshotPartition(
@@ -161,7 +161,7 @@ class MysqlJdbcPartitionFactory(
                 Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)
+                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
                 if (sv.pkVal == upperBound.asText()) {
                     return null
                 }
@@ -188,7 +188,7 @@ class MysqlJdbcPartitionFactory(
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
 
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                    val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)
+                    val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
 
                     return MysqlJdbcCdcRfrSnapshotPartition(
                         selectQueryGenerator,
@@ -210,7 +210,7 @@ class MysqlJdbcPartitionFactory(
                 Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                val upperBound = findPkUppderBound(stream, pkChosenFromCatalog)
+                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
                 if (sv.pkValue == upperBound.asText()) {
                     return null
                 }
