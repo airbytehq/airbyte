@@ -19,7 +19,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
-from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
@@ -80,7 +79,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
-    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+    def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]], authenticator: Oauth2Authenticator):
         super().__init__(config, profiles)
         self._state = {}
         self._session = requests.Session()
@@ -156,7 +155,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return wrapped
 
     @backoff_max_tries
-    def _init_and_try_read_records(self, profile: Profile, report_date):
+    def _init_and_try_read_records(self, profile: dict[str, Any], report_date: str):
         report_info_list = self._init_reports(profile, report_date)
         self.logger.info(f"Waiting for {len(report_info_list)} report(s) to be generated")
         self._try_read_records(report_info_list)
@@ -261,9 +260,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             yield start_date.format(self.REPORT_DATE_FORMAT)
             start_date = start_date.add(days=1)
 
-    def get_start_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
-        today = pendulum.today(tz=profile.timezone).date()
-        start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
+    def get_start_date(self, profile: dict[str, Any], stream_state: Mapping[str, Any]) -> Date:
+        today = pendulum.today(tz=profile['timezone']).date()
+        start_date = stream_state.get(str(profile['profileId']), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
             # Taking date from state if it's not older than 60 days
@@ -272,9 +271,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
         return today
 
-    def stream_profile_slices(self, profile: Profile, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_profile_slices(self, profile: dict[str, Any], stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         start_date = self.get_start_date(profile, stream_state)
-        for report_date in self.get_date_range(start_date, profile.timezone):
+        for report_date in self.get_date_range(start_date, profile['timezone']):
             yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
@@ -303,16 +302,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         return self._state
 
-    def _update_state(self, profile: Profile, report_date: str):
+    def _update_state(self, profile: dict[str, Any], report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self._look_back_window - 1)
+        look_back_date = pendulum.today(tz=profile['timezone']).date().subtract(days=self._look_back_window - 1)
         start_date = self.get_start_date(profile, self._state)
         updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
 
-        stream_state_value = self._state.get(str(profile.profileId), {}).get(self.cursor_field)
+        stream_state_value = self._state.get(str(profile['profileId']), {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        self._state.setdefault(str(profile.profileId), {})[self.cursor_field] = updated_state
+        self._state.setdefault(str(profile['profileId']), {})[self.cursor_field] = updated_state
 
     @abstractmethod
     def _get_init_report_body(self, report_date: str, record_type: str, profile) -> Dict[str, Any]:
@@ -325,7 +324,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         ReportInitFailure,
         max_tries=5,
     )
-    def _init_reports(self, profile: Profile, report_date: str) -> List[ReportInfo]:
+    def _init_reports(self, profile: dict[str, Any], report_date: str) -> List[ReportInfo]:
         """
         Send report generation requests for all profiles and for all record types for specific day.
         :report_date - date for generating metric report.
@@ -346,15 +345,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 # different metric list for each record.
                 request_record_type = record_type.split("_")[0]
                 self.logger.info(
-                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date"
+                    f"Initiating report generation for {profile['profileId']} profile with {record_type} type for {report_date} date"
                 )
                 response = self._send_http_request(
                     urljoin(self._url, self.report_init_endpoint(request_record_type)),
-                    profile.profileId,
+                    profile['profileId'],
                     report_init_body,
                 )
                 if response.status_code != self.report_is_created:
-                    error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                    error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile['profileId']} profile: {response.text}"
                     if self._skip_known_errors(response):
                         self.logger.warning(error_msg)
                         break
@@ -365,7 +364,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     ReportInfo(
                         report_id=response.reportId,
                         record_type=record_type,
-                        profile_id=profile.profileId,
+                        profile_id=profile['profileId'],
                         status=Status.IN_PROGRESS,
                         metric_objects=[],
                     )

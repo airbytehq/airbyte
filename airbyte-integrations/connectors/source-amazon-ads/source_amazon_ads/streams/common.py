@@ -14,8 +14,6 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorR
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic.v1 import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
-from source_amazon_ads.schemas import CatalogModel
-from source_amazon_ads.schemas.profile import Profile
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of
@@ -105,7 +103,7 @@ class BasicAmazonAdsStream(Stream, ABC):
 
     is_resumable = False
 
-    def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
+    def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]] = None):
         self._profiles = profiles or []
         self._client_id = config["client_id"]
         self._url = URL_MAPPING[config["region"]]
@@ -119,7 +117,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
 
     data_field = ""
 
-    def __init__(self, config: Mapping[str, Any], *args, profiles: List[Profile] = None, **kwargs):
+    def __init__(self, config: Mapping[str, Any], *args, profiles: List[dict[str, Any]] = None, **kwargs):
         # Each AmazonAdsStream instance are dependant on list of profiles.
         BasicAmazonAdsStream.__init__(self, config, profiles=profiles)
         HttpStream.__init__(self, *args, **kwargs)
@@ -221,7 +219,7 @@ class SubProfilesStream(AmazonAdsStream):
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
-            self._current_profile_id = profile.profileId
+            self._current_profile_id = profile['profileId']
             yield from super().read_records(*args, **kwargs)
 
     def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:

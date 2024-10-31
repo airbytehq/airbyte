@@ -11,7 +11,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
-from .schemas import Profile
 from .streams import (
     AttributionReportPerformanceAdgroup,
     AttributionReportPerformanceCampaign,
@@ -148,13 +147,13 @@ class SourceAmazonAds(AbstractSource):
         )
 
     @staticmethod
-    def _choose_profiles(config: Mapping[str, Any], available_profiles: List[Profile]):
+    def _choose_profiles(config: Mapping[str, Any], available_profiles: List[dict[str, Any]]):
         requested_profiles = config.get("profiles", [])
         requested_marketplace_ids = config.get("marketplace_ids", [])
         if requested_profiles or requested_marketplace_ids:
             return [
                 profile
                 for profile in available_profiles
-                if profile.profileId in requested_profiles or profile.accountInfo.marketplaceStringId in requested_marketplace_ids
+                if profile['profileId'] in requested_profiles or profile['accountInfo']['marketplaceStringId'] in requested_marketplace_ids
             ]
         return available_profiles

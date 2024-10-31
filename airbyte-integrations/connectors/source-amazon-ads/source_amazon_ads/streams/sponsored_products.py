@@ -12,17 +12,6 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from requests import Response
-from source_amazon_ads.schemas import (
-    ProductAd,
-    ProductAdGroupBidRecommendations,
-    ProductAdGroups,
-    ProductAdGroupSuggestedKeywords,
-    ProductCampaign,
-    ProductTargeting,
-    SponsoredProductCampaignNegativeKeywordsModel,
-    SponsoredProductKeywordsModel,
-    SponsoredProductNegativeKeywordsModel,
-)
 from source_amazon_ads.streams.common import SubProfilesStream
 
 LOGGER = logging.getLogger("airbyte")
@@ -80,7 +69,6 @@ class SponsoredProductCampaigns(SponsoredProductsV3):
     primary_key = "campaignId"
     data_field = "campaigns"
     state_filter = None
-    model = ProductCampaign
     content_type = "application/vnd.spCampaign.v3+json"
 
     def path(self, **kwargs) -> str:
@@ -104,7 +92,6 @@ class SponsoredProductAdGroups(SponsoredProductsV3):
     primary_key = "adGroupId"
     data_field = "adGroups"
     content_type = "application/vnd.spAdGroup.v3+json"
-    model = ProductAdGroups
 
     def path(self, **kwargs) -> str:
         return "/sp/adGroups/list"
@@ -194,7 +181,6 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
     primary_key = None
     data_field = "bidRecommendations"
     content_type = "application/vnd.spthemebasedbidrecommendation.v4+json"
-    model = ProductAdGroupBidRecommendations
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "/sp/targets/bid/recommendations"
@@ -233,7 +219,6 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
 
     primary_key = None
     data_field = ""
-    model = ProductAdGroupSuggestedKeywords
 
     @property
     def http_method(self, **kwargs) -> str:
@@ -268,7 +253,6 @@ class SponsoredProductKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "keywords"
     content_type = "application/vnd.spKeyword.v3+json"
-    model = SponsoredProductKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/keywords/list"
@@ -283,7 +267,6 @@ class SponsoredProductNegativeKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "negativeKeywords"
     content_type = "application/vnd.spNegativeKeyword.v3+json"
-    model = SponsoredProductNegativeKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/negativeKeywords/list"
@@ -298,7 +281,6 @@ class SponsoredProductCampaignNegativeKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "campaignNegativeKeywords"
     content_type = "application/vnd.spCampaignNegativeKeyword.v3+json"
-    model = SponsoredProductCampaignNegativeKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/campaignNegativeKeywords/list"
@@ -313,7 +295,6 @@ class SponsoredProductAds(SponsoredProductsV3):
     primary_key = "adId"
     data_field = "productAds"
     content_type = "application/vnd.spProductAd.v3+json"
-    model = ProductAd
 
     def path(self, **kwargs) -> str:
         return "sp/productAds/list"
@@ -327,7 +308,6 @@ class SponsoredProductTargetings(SponsoredProductsV3):
     primary_key = "targetId"
     data_field = "targetingClauses"
     content_type = "application/vnd.spTargetingClause.v3+json"
-    model = ProductTargeting
 
     def path(self, **kwargs) -> str:
         return "sp/targets/list"
