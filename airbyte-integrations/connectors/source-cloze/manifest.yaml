@@ -1,0 +1,6524 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: |-
+  Cloze is a CRM tool.
+  Docs : https://api.cloze.com/api-docs/#!/Get_Started/get_v1_profile
+
+check:
+  type: CheckStream
+  stream_names:
+    - segments
+
+definitions:
+  streams:
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: people_segments
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customfields
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    people_stages:
+      type: DeclarativeStream
+      name: people_stages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: people_stages
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people_stages"
+    project_segments:
+      type: DeclarativeStream
+      name: project_segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: project_segments
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_segments"
+    project_stages:
+      type: DeclarativeStream
+      name: project_stages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: project_stages
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_stages"
+    steps:
+      type: DeclarativeStream
+      name: steps
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: steps
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/steps"
+    views:
+      type: DeclarativeStream
+      name: views
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: views
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/views"
+    team_members:
+      type: DeclarativeStream
+      name: team_members
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: team/members
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_members"
+    team_roles:
+      type: DeclarativeStream
+      name: team_roles
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: team/roles
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_roles"
+    people:
+      type: DeclarativeStream
+      name: people
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: people/find
+          http_method: GET
+          request_parameters:
+            user: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - people
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagenumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagesize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.cloze.com/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: api_key
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/people_stages"
+  - $ref: "#/definitions/streams/project_segments"
+  - $ref: "#/definitions/streams/project_stages"
+  - $ref: "#/definitions/streams/steps"
+  - $ref: "#/definitions/streams/views"
+  - $ref: "#/definitions/streams/team_members"
+  - $ref: "#/definitions/streams/team_roles"
+  - $ref: "#/definitions/streams/people"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - email
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      email:
+        type: string
+        title: Email
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    segments: true
+    custom_fields: true
+    people_stages: true
+    project_segments: true
+    project_stages: true
+    steps: true
+    views: true
+    team_members: true
+    team_roles: true
+    people: true
+  testedStreams:
+    segments:
+      streamHash: e3d11ea810e642b9bf92a82dea034869245bea41
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_fields:
+      streamHash: 94c0f498b0c6a43f104ba590448edc0c54a2ee69
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people_stages:
+      streamHash: 5fff71428d8708863dc3d1bb25835822f2b44bef
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_segments:
+      streamHash: e9bb15ee02c31ad079a1885c1486042441099ffe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_stages:
+      streamHash: c822d947f2b3e4edceaa33c4369bae59559180e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    steps:
+      streamHash: 1e23f9d5628cbe5fffbf66c994609f949e712e91
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    views:
+      streamHash: 85606cd0f06a8662988b3bc2f51e8fb62cc3ca5c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    team_members:
+      streamHash: 0da5300511b4083e44d99bb12bff61f87f40633b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    team_roles:
+      streamHash: 547bedf223edf7d2331f2ef9e4a301c561037687
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
+      streamHash: 1ce0389dcf3da2d75775d843fd0a768c11dda161
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      locked:
+        type:
+          - boolean
+          - "null"
+      mergebehavior:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      only:
+        type:
+          - object
+          - "null"
+        properties:
+          entity:
+            type:
+              - boolean
+              - "null"
+          person:
+            type:
+              - boolean
+              - "null"
+          project:
+            type:
+              - boolean
+              - "null"
+      relations:
+        type:
+          - object
+          - "null"
+        properties:
+          entity:
+            type:
+              - boolean
+              - "null"
+          person:
+            type:
+              - boolean
+              - "null"
+          project:
+            type:
+              - boolean
+              - "null"
+      segments:
+        type:
+          - object
+          - "null"
+        properties:
+          project:
+            type:
+              - boolean
+              - "null"
+          project1:
+            type:
+              - boolean
+              - "null"
+      uilocked:
+        type:
+          - boolean
+          - "null"
+      values:
+        type:
+          - object
+          - "null"
+        properties:
+          ad:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          admin:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+          ae:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          af:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          af-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ag:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ai:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          al:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          am:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ao:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          aq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-ae:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-bh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-dz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-eg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-iq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-jo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-kw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-lb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-ly:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-ma:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-om:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-qa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-sa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-sy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-tn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ar-ye:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          as:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          at:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          au:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          aw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ax:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          az:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          az-cyrl-az:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          az-latn-az:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ba:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bd:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          be:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          be-by:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          best-case:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bg-bg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bj:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          br:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bs:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bs-latn-ba:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          by:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          bz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ca:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ca-es:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cd:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ch:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ci:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ck:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          co:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          commit:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          consent:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          contract:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cs-cz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cx:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cxo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cy-gb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          cz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          da-dk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de-at:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de-ch:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de-de:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de-li:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          de-lu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          director:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          dj:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          dk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          dm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          do:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          dv-mv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          dz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ec:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ee:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          eg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          eh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          el-gr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-029:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-au:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-bz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-ca:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-gb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-ie:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-jm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-nz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-ph:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-tt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-us:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          en-zw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          er:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-ar:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-bo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-cl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-co:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-cr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-do:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-ec:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-es:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-gt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-hn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-mx:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-ni:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-pa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-pe:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-pr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-py:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-sv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-us:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-uy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          es-ve:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          et:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          et-ee:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          eu-es:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fa-ir:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          female:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fi-fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fj:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fo-fo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          formal:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-be:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-ca:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-ch:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-fr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-lu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          fr-mc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ga:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gd:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ge:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gl-es:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gs:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gu-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          gy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          he-il:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hi-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hr-ba:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hr-hr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ht:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hu-hu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          hy-am:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          id:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          id-id:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ie:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          il:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          im:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          informal:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          io:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          iq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ir:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          is:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          is-is:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          it:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          it-ch:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          it-it:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ja-jp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          je:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          jm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          jo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          jp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ka-ge:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ke:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ki:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kk-kz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          km:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kn-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ko-kr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kok-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ky:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ky-kg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          kz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          la:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          legal:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          legitimate:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          li:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ls:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lt-lt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          lv-lv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ly:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ma:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          male:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          manager:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          marketing:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+          mc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          md:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          me:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mi-nz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mk-mk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ml:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mn-mn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mq:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mr-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ms:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ms-bn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ms-my:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mt-mt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mx:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          my:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          mz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          na:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nb-no:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ne:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          neutral:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ng:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ni:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nl-be:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nl-nl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nn-no:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          "no":
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-calls:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-contact:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-emails:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-mass-emails:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-postal:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-texts:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          no-visits:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          np:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ns-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          nz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          om:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          other:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pa-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pe:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ph:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pl-pl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ps:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pt-br:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pt-pt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          public:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          pw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          py:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          qa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          quz-bo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          quz-ec:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          quz-pe:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          r-and-d:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+          re:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ro:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ro-ro:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          rs:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ru:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ru-ru:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          rw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sa:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sa-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sales:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+          sb:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sd:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          se:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          se-fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          se-no:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          se-se:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          service:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+          sg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sh:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          si:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sj:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sk-sk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sl-si:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sma-no:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sma-se:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          smj-no:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          smj-se:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          smn-fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sms-fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          so:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sq-al:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sr-cyrl-ba:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sr-cyrl-cs:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sr-latn-ba:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sr-latn-cs:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ss:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          st:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sv-fi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sv-se:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sw-ke:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sx:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          sz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ta-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          td:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          te-in:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          th:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          th-th:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tj:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tl:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tn-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          to:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tr-tr:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tt-ru:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tv:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          tz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ua:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ug:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          uk-ua:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          um:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ur-pk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          us:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          uy:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          uz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          uz-cyrl-uz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          uz-latn-uz:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          va:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vc:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ve:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vi:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vi-vn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vital:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vp:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          vu:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          wf:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          withdrawn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ws:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          xh-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          ye:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          yt:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zh-cn:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zh-hk:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zh-mo:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zh-sg:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zh-tw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zm:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zu-za:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+          zw:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+  people_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  project_segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  project_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  steps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          current:
+            type:
+              - object
+              - "null"
+            properties:
+              steps:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    key:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          future:
+            type:
+              - object
+              - "null"
+            properties:
+              steps:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    key:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+      project1:
+        type:
+          - object
+          - "null"
+        properties:
+          current:
+            type:
+              - object
+              - "null"
+            properties:
+              steps:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    key:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          future:
+            type:
+              - object
+              - "null"
+            properties:
+              steps:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    key:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+  views:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      companies:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - object
+              - "null"
+            properties:
+              plural:
+                type:
+                  - string
+                  - "null"
+              singular:
+                type:
+                  - string
+                  - "null"
+          views:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      people:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - object
+              - "null"
+            properties:
+              plural:
+                type:
+                  - string
+                  - "null"
+              singular:
+                type:
+                  - string
+                  - "null"
+          views:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      projects:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - object
+              - "null"
+            properties:
+              plural:
+                type:
+                  - string
+                  - "null"
+              singular:
+                type:
+                  - string
+                  - "null"
+          views:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+  team_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      isMe:
+        type:
+          - boolean
+          - "null"
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  team_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignee:
+        type:
+          - string
+          - "null"
+      birthday:
+        type:
+          - string
+          - "null"
+      direct:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            value:
+              type:
+                - string
+                - "null"
+      first:
+        type:
+          - string
+          - "null"
+      firstSeen:
+        type:
+          - number
+          - "null"
+      headline:
+        type:
+          - string
+          - "null"
+      jobtitle:
+        type:
+          - string
+          - "null"
+      keywords:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      last:
+        type:
+          - string
+          - "null"
+      lastChanged:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pictures:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      segment:
+        type:
+          - string
+          - "null"
+      stage:
+        type:
+          - string
+          - "null"
+      step:
+        type:
+          - string
+          - "null"
+      syncKey:
+        type:
+          - string
+          - "null"
+      views:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      visibility:
+        type:
+          - string
+          - "null"
