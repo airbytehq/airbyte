@@ -23,8 +23,11 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-fastbill
+  ab_internal:
+    ql: 100
+    sl: 100
   supportLevel: community
   tags:
     - language:manifest-only
