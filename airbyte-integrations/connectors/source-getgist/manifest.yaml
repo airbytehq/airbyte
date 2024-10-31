@@ -1,0 +1,738 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  An Airbyte connector for [Gist](https://getgist.com/) would enable data
+  syncing between Gist and various data platforms or databases. This connector
+  could pull data from key objects like contacts, tags, segments, campaigns,
+  forms, and subscription types, facilitating integration with other tools in a
+  data pipeline. By automating data extraction from Gist, users can analyze
+  customer interactions and engagement more efficiently in their preferred
+  analytics or storage environment.
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    collections:
+      type: DeclarativeStream
+      name: collections
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /collections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collections
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collections"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    subscription_types:
+      type: DeclarativeStream
+      name: subscription_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscription_types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscription_types
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscription_types"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    teammates:
+      type: DeclarativeStream
+      name: teammates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teammates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teammates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teammates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.getgist.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/collections"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/subscription_types"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/teammates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it in the Integration Settings on your Gist
+          dashboard at https://app.getgist.com/projects/_/settings/api-key.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    collections: true
+    tags: true
+    segments: true
+    forms: true
+    campaigns: true
+    subscription_types: true
+    teams: true
+    teammates: true
+  testedStreams:
+    contacts:
+      streamHash: 49b9cdb8238e3f2b5dc813c044073a630b773187
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    collections:
+      streamHash: 034e8c67b7ec340ad31ba76bd1af0519a191fb78
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 3411a9921f4a5bccae4e94b5e3100e6fa476782d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    segments:
+      streamHash: 187daf256e669ec49e71b6cd7068376aa9a77bc5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    forms:
+      streamHash: 857d7d34cfb95312d7ab805f6b4f008a9fc73dc0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigns:
+      streamHash: a433c7562d2dd18b809ba5ac38ae9c3084f87272
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    subscription_types:
+      streamHash: 18e3eef2fa47d8b7b2ac87513b20431cf0003230
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: f3390aa899f54c537fb91b67ca86a2555863dd50
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teammates:
+      streamHash: 4471bfef6156ab7fe71f7935d89d15773bac6398
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.getgist.com/api
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      custom_properties:
+        type:
+          - object
+          - "null"
+        properties: {}
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_name:
+        type:
+          - string
+          - "null"
+      last_seen_at:
+        type:
+          - number
+          - "null"
+      location_data:
+        type:
+          - object
+          - "null"
+        properties: {}
+      name:
+        type:
+          - string
+          - "null"
+      segments:
+        type:
+          - array
+          - "null"
+      signed_up_at:
+        type:
+          - number
+          - "null"
+      social_profiles:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      unsubscribed_from_emails:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  collections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - number
+          - "null"
+      default_locale:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      translations:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              icon:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - number
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+      form_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_subscriber_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      email_click_rate:
+        type:
+          - string
+          - "null"
+      email_count:
+        type:
+          - number
+          - "null"
+      email_open_rate:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unsubscribed_subscriber_count:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  subscription_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      contact_count:
+        type:
+          - number
+          - "null"
+      display_order:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - number
+          - "null"
+      emoji:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      teammate_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    required:
+      - id
+  teammates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agent_status:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - string
+          - "null"
+      away_mode_enabled:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      has_inbox_seat:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      last_active_on:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    required:
+      - id
