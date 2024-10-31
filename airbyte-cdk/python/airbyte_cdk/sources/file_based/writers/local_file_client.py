@@ -62,6 +62,7 @@ class LocalFileTransferClient:
             # Measure the time for reading
             logger.info("Starting to read the file")
             start_read_time = time.time()
+            # todo: read chunks or allow reader to implement their own download process https://github.com/airbytehq/airbyte-internal-issues/issues/10480
             file_content = fp.read()  # Read the file content
             read_duration = time.time() - start_read_time
             logger.info(f"Time taken to read the file: {read_duration:,.2f} seconds.")
