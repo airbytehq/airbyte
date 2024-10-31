@@ -1,0 +1,797 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Elasticmail is an email delivery and marketing platform.
+
+  Using this connector we extract data from streams such as campaigns , contacts
+  , lists and statistics!
+
+  Docs : https://elasticemail.com/developers/api-documentation/rest-api
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Content
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    events:
+      type: DeclarativeStream
+      name: events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    files:
+      type: DeclarativeStream
+      name: files
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    inboundroute:
+      type: DeclarativeStream
+      name: inboundroute
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: inboundroute
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboundroute"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    statistics:
+      type: DeclarativeStream
+      name: statistics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: statistics
+          http_method: GET
+          request_parameters:
+            from: "{{ config['from'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: Missing required parameter - from
+                    http_codes:
+                      - 400
+                    error_message: Please enter " FROM "
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statistics"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+          request_parameters:
+            scopeType: "{{ config['scope_type'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: Missing required parameter - scopeType
+                    http_codes:
+                      - 400
+                    error_message: Please enter scope type
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.elasticemail.com/v4/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-ElasticEmail-ApiKey
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/inboundroute"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/statistics"
+  - $ref: "#/definitions/streams/templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      scope_type:
+        type: string
+        title: scope type
+        enum:
+          - Personal
+          - Global
+        order: 1
+      from:
+        type: string
+        title: From
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        format: date-time
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: true
+    contacts: true
+    events: true
+    files: true
+    inboundroute: true
+    lists: true
+    segments: true
+    statistics: true
+    templates: true
+  testedStreams:
+    campaigns:
+      streamHash: 41fbc0a48daf17b86f6b0a421a443c70e943d4e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: c7cda90b0c63afaf621ec5305134d30c8491200a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: f217344ed4bb39e56f487a1c9a47dd7da938f21b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    files:
+      streamHash: 8f885dddf20aee665691852cb3cb3c1a2d1d9bde
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inboundroute:
+      streamHash: 7b2c797f57d0ee3ea1d0b517768535ea3cbbdbfa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: 3380bc055963d77b500814a2918a339bfffaddc1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    segments:
+      streamHash: 7b70d5ab087b477ec5ae5fc14debb32a91443084
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    statistics:
+      streamHash: 582a9673808200009b054803e616e352da909451
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: f6aa0b75ced8878e0c39f13696d93a1ec5d77083
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      From:
+        type:
+          - string
+          - "null"
+      Poolname:
+        type:
+          - string
+          - "null"
+      ReplyTo:
+        type:
+          - string
+          - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      TemplateName:
+        type:
+          - string
+          - "null"
+      Utm:
+        type:
+          - object
+          - "null"
+        properties: {}
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Activity:
+        type:
+          - object
+          - "null"
+        properties:
+          FriendlyErrorMessage:
+            type:
+              - string
+              - "null"
+          TotalClicked:
+            type:
+              - number
+              - "null"
+          TotalFailed:
+            type:
+              - number
+              - "null"
+          TotalOpened:
+            type:
+              - number
+              - "null"
+          TotalSent:
+            type:
+              - number
+              - "null"
+      Consent:
+        type:
+          - object
+          - "null"
+        properties:
+          ConsentDate:
+            type:
+              - string
+              - "null"
+          ConsentIP:
+            type:
+              - string
+              - "null"
+          ConsentTracking:
+            type:
+              - string
+              - "null"
+      CustomFields:
+        type:
+          - object
+          - "null"
+      DateAdded:
+        type:
+          - string
+          - "null"
+      DateUpdated:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - string
+          - "null"
+      FirstName:
+        type:
+          - string
+          - "null"
+      LastName:
+        type:
+          - string
+          - "null"
+      Source:
+        type:
+          - number
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StatusChangeDate:
+        type:
+          - string
+          - "null"
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ChannelName:
+        type:
+          - string
+          - "null"
+      EventDate:
+        type:
+          - string
+          - "null"
+      EventType:
+        type:
+          - string
+          - "null"
+      FromEmail:
+        type:
+          - string
+          - "null"
+      IPAddress:
+        type:
+          - string
+          - "null"
+      Message:
+        type:
+          - string
+          - "null"
+      MessageCategory:
+        type:
+          - string
+          - "null"
+      MsgID:
+        type:
+          - string
+          - "null"
+      PoolName:
+        type:
+          - string
+          - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      To:
+        type:
+          - string
+          - "null"
+      TransactionID:
+        type:
+          - string
+          - "null"
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ContentType:
+        type:
+          - string
+          - "null"
+      DateAdded:
+        type:
+          - string
+          - "null"
+      ExpirationDate:
+        type:
+          - string
+          - "null"
+      FileID:
+        type:
+          - number
+          - "null"
+      FileName:
+        type:
+          - string
+          - "null"
+      Size:
+        type:
+          - number
+          - "null"
+  inboundroute:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ActionParameter:
+        type:
+          - string
+          - "null"
+      ActionType:
+        type:
+          - string
+          - "null"
+      Filter:
+        type:
+          - string
+          - "null"
+      FilterType:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PublicId:
+        type:
+          - string
+          - "null"
+      SortOrder:
+        type:
+          - number
+          - "null"
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AllowUnsubscribe:
+        type:
+          - boolean
+          - "null"
+      DateAdded:
+        type:
+          - string
+          - "null"
+      ListName:
+        type:
+          - string
+          - "null"
+      PublicListID:
+        type:
+          - string
+          - "null"
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Name:
+        type:
+          - string
+          - "null"
+      Rule:
+        type:
+          - string
+          - "null"
+  statistics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Bounced:
+        type:
+          - number
+          - "null"
+      Clicked:
+        type:
+          - number
+          - "null"
+      Complaints:
+        type:
+          - number
+          - "null"
+      Delivered:
+        type:
+          - number
+          - "null"
+      EmailTotal:
+        type:
+          - number
+          - "null"
+      InProgress:
+        type:
+          - number
+          - "null"
+      Inbound:
+        type:
+          - number
+          - "null"
+      ManualCancel:
+        type:
+          - number
+          - "null"
+      NotDelivered:
+        type:
+          - number
+          - "null"
+      Opened:
+        type:
+          - number
+          - "null"
+      Recipients:
+        type:
+          - number
+          - "null"
+      SmsTotal:
+        type:
+          - number
+          - "null"
+      Unsubscribed:
+        type:
+          - number
+          - "null"
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Body:
+        type:
+          - array
+          - "null"
+      DateAdded:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      TemplateScope:
+        type:
+          - string
+          - "null"
+      TemplateType:
+        type:
+          - string
+          - "null"
