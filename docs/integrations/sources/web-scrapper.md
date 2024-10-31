@@ -1,5 +1,5 @@
 # Web Scrapper
-Web Scrapper connector enables data synchronization from Web Scrapper source to various data destination. It gives information about sitemaps, users, scraping jobs etc.
+[Web Scrapper](https://webscraper.io/documentation/web-scraper-cloud/api) connector enables data synchronization from Web Scrapper source to various data destination. It gives information about sitemaps, users, scraping jobs etc.
 
 ## Configuration
 
@@ -10,7 +10,8 @@ Web Scrapper connector enables data synchronization from Web Scrapper source to 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| sitemaps | id | DefaultPaginator | ✅ |  ❌  |
+| sitemap_list | id | DefaultPaginator | ✅ |  ❌  |
+| sitemap_detail | id | DefaultPaginator | ✅ |  ❌  |
 | users |  | No pagination | ✅ |  ❌  |
 | scraping_jobs | id | DefaultPaginator | ✅ |  ❌  |
 | scraping_job_data_quality |  | No pagination | ✅ |  ❌  |
