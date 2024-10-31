@@ -114,6 +114,7 @@
     },
     "required": ["client_id", "client_secret", "refresh_token"]
   },
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
   "supportsNormalization": false,
   "supportsDBT": false,
   "advanced_auth": {
