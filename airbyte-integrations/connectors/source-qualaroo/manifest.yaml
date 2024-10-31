@@ -721,7 +721,6 @@ streams:
 check:
   type: CheckStream
   stream_names:
-  - "responses"
   - "surveys"
 spec:
   type: Spec
