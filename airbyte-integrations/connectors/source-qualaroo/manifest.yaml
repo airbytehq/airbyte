@@ -212,6 +212,8 @@ definitions:
           - http_codes:
             - 500
             action: FAIL
+            - 504
+            action: IGNORE
         path: "nudges/{{ stream_slice.parent_id }}/responses.json"
       partition_router:
         type: SubstreamPartitionRouter
