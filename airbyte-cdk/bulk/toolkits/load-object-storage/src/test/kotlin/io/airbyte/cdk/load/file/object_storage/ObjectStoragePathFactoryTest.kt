@@ -63,7 +63,8 @@ class ObjectStoragePathFactoryTest {
                 stagingPrefix = "staging/prefix",
                 pathSuffixPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
-                fileNamePattern = "{date}-{timestamp}-{part_number}-{sync_id}{format_extension}"
+                fileNamePattern = "{date}-{timestamp}-{part_number}-{sync_id}{format_extension}",
+                usesStagingDirectory = true
             )
     }
 
