@@ -154,7 +154,23 @@ class MysqlJdbcPartitionFactory(
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
+        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+
+        if (
+            pkChosenFromCatalog.isEmpty() &&
+                stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH
+        ) {
+            if (
+                streamState.streamFeedBootstrap.currentState ==
+                    MysqlJdbcStreamStateValue.snapshotCompleted
+            ) {
+                return null
+            }
+            return MysqlJdbcNonResumableSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+            )
+        }
 
         if (!isCursorBased) {
             val sv: MysqlCdcInitialSnapshotStateValue =
@@ -189,7 +205,9 @@ class MysqlJdbcPartitionFactory(
 
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-
+                    if (sv.pkVal == upperBound.asText()) {
+                        return null
+                    }
                     return MysqlJdbcCdcRfrSnapshotPartition(
                         selectQueryGenerator,
                         streamState,
@@ -208,9 +226,11 @@ class MysqlJdbcPartitionFactory(
         } else {
             val sv: MysqlJdbcStreamStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+            println("sv: $sv")
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+                println("pkval: ${sv.pkValue}, upperBound: ${upperBound.asText()}")
                 if (sv.pkValue == upperBound.asText()) {
                     return null
                 }
