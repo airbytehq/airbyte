@@ -36,7 +36,13 @@ def _append_destination_record_count(
 
 
 class StreamSinkBase(abc.ABC):
+    """Base class for stream sinks."""
+
     MAX_BUFFERED_RECORDS = 10_000
+    """Maximum number of records to buffer before flushing."""
+
+    MAX_BUFFER_AGE_IN_SECONDS = 60 * 3  # 3 minutes
+    """Maximum age of buffered records before flushing."""
 
     def __init__(
         self,
@@ -44,31 +50,38 @@ class StreamSinkBase(abc.ABC):
         *,
         destination_config: dict,
         stream_namespace: str = "",
-        catalog_provider: CatalogProvider | ConfiguredAirbyteCatalog,
+        catalog_provider: CatalogProvider,
         message_repository: MessageRepository,
     ) -> None:
-        if isinstance(catalog_provider, CatalogProvider):
-            self.catalog_provider = catalog_provider
-        elif isinstance(catalog_provider, ConfiguredAirbyteCatalog):
-            self.catalog_provider = CatalogProvider(catalog=catalog_provider)
-        else:
-            raise ValueError("catalog_provider must be either CatalogProvider or ConfiguredAirbyteCatalog")
-
+        self.catalog_provider = catalog_provider
         self.destination_config = destination_config
-        self.records_buffered = 0
-        self.records_finalized = 0
         self.stream_name = stream_name
         self.stream_namespace = stream_namespace
-        self.last_flush_time = 0
         self.message_repository = message_repository
+
+        self.records_buffered = 0
+        self.records_finalized = 0
+        self.last_flush_time = now()
 
     @property
     def needs_flush(self) -> bool:
         """Return True if there are records buffered and ready to be flushed.
 
+        By default, this method returns True if the number of buffered records exceeds
+        `MAX_BUFFERED_RECORDS` or if the time since the last flush exceeds
+        `MAX_BUFFER_AGE_IN_SECONDS`.
+
         Implementations can customize this to flush records based on their own criteria.
         """
-        return self.records_buffered >= self.MAX_BUFFERED_RECORDS
+        return (
+            self.records_buffered >= self.MAX_BUFFERED_RECORDS  # buffer is full
+            or self.seconds_since_last_flush >= self.MAX_BUFFER_AGE_IN_SECONDS  # max latency elapsed
+        )
+
+    @property
+    def seconds_since_last_flush(self) -> int:
+        """Return the number of seconds since the last flush."""
+        return now().diff(self.last_flush_time).in_seconds()
 
     def _write_record(self, record: Record) -> None:
         """Write a single record to the sink.
