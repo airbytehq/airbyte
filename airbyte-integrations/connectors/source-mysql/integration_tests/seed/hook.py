@@ -5,14 +5,14 @@ import json
 import random
 import string
 import sys
+from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 from typing import List, Tuple
 
 import mysql.connector
-from mysql.connector import Error
 import pytz
-from contextlib import contextmanager
+from mysql.connector import Error
 
 support_file_path_prefix = "/connector/integration_tests"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
