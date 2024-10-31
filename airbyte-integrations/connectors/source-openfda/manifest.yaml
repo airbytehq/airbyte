@@ -15,256 +15,17 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Animal and Veterinary Adverse Events
+    - animal_veterinary_adverse_events
 
 definitions:
   streams:
-    Drugs:
+    animal_veterinary_adverse_events:
       type: DeclarativeStream
-      name: Drugs
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: drug/drugsfda.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Drugs"
-    Drug NDC Library:
-      type: DeclarativeStream
-      name: Drug NDC Library
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: drug/ndc.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
+      name: animal_veterinary_adverse_events
       primary_key:
-        - product_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Drug NDC Library"
-    Drug Adverse Events:
-      type: DeclarativeStream
-      name: Drug Adverse Events
+        - unique_aer_id_number
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: drug/event.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Drug Adverse Events"
-    Food Adverse Events:
-      type: DeclarativeStream
-      name: Food Adverse Events
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: food/event.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - report_number
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Food Adverse Events"
-    Drug Product Labelling:
-      type: DeclarativeStream
-      name: Drug Product Labelling
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: drug/label.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Drug Product Labelling"
-    Tobacco Problem Reports:
-      type: DeclarativeStream
-      name: Tobacco Problem Reports
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: tobacco/problem.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - report_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Tobacco Problem Reports"
-    Food Enforcement Reports:
-      type: DeclarativeStream
-      name: Food Enforcement Reports
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: food/enforcement.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      primary_key:
-        - recall_number
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Food Enforcement Reports"
-    Drug recall Enforcement Reports:
-      type: DeclarativeStream
-      name: Drug recall Enforcement Reports
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: drug/enforcement.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Drug recall Enforcement Reports"
-    Animal and Veterinary Adverse Events:
-      type: DeclarativeStream
-      name: Animal and Veterinary Adverse Events
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
         requester:
           $ref: "#/definitions/base_requester"
           path: animalandveterinary/event.json
@@ -275,26 +36,301 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
-      primary_key:
-        - unique_aer_id_number
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Animal and Veterinary Adverse Events"
+          $ref: "#/schemas/animal_veterinary_adverse_events"
+    tobacco_problems_reports:
+      type: DeclarativeStream
+      name: tobacco_problems_reports
+      primary_key:
+        - report_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tobacco/problem.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tobacco_problems_reports"
+    food_adverse_events:
+      type: DeclarativeStream
+      name: food_adverse_events
+      primary_key:
+        - report_number
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: food/event.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/food_adverse_events"
+    food_enforcement_reports:
+      type: DeclarativeStream
+      name: food_enforcement_reports
+      primary_key:
+        - recall_number
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: food/enforcement.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/food_enforcement_reports"
+    drug_adverse_events:
+      type: DeclarativeStream
+      name: drug_adverse_events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drug/event.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drug_adverse_events"
+    drug_product_labelling:
+      type: DeclarativeStream
+      name: drug_product_labelling
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drug/label.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drug_product_labelling"
+    drug_ndc_library:
+      type: DeclarativeStream
+      name: drug_ndc_library
+      primary_key:
+        - product_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drug/ndc.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drug_ndc_library"
+    drug_recall_enforcement_reports:
+      type: DeclarativeStream
+      name: drug_recall_enforcement_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drug/enforcement.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drug_recall_enforcement_reports"
+    drugs:
+      type: DeclarativeStream
+      name: drugs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drug/drugsfda.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drugs"
   base_requester:
     type: HttpRequester
     url_base: https://api.fda.gov/
 
 streams:
-  - $ref: "#/definitions/streams/Animal and Veterinary Adverse Events"
-  - $ref: "#/definitions/streams/Tobacco Problem Reports"
-  - $ref: "#/definitions/streams/Food Adverse Events"
-  - $ref: "#/definitions/streams/Food Enforcement Reports"
-  - $ref: "#/definitions/streams/Drug Adverse Events"
-  - $ref: "#/definitions/streams/Drug Product Labelling"
-  - $ref: "#/definitions/streams/Drug NDC Library"
-  - $ref: "#/definitions/streams/Drug recall Enforcement Reports"
-  - $ref: "#/definitions/streams/Drugs"
+  - $ref: "#/definitions/streams/animal_veterinary_adverse_events"
+  - $ref: "#/definitions/streams/tobacco_problems_reports"
+  - $ref: "#/definitions/streams/food_adverse_events"
+  - $ref: "#/definitions/streams/food_enforcement_reports"
+  - $ref: "#/definitions/streams/drug_adverse_events"
+  - $ref: "#/definitions/streams/drug_product_labelling"
+  - $ref: "#/definitions/streams/drug_ndc_library"
+  - $ref: "#/definitions/streams/drug_recall_enforcement_reports"
+  - $ref: "#/definitions/streams/drugs"
 
 spec:
   type: Spec
@@ -306,237 +342,167 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist: {}
-  testedStreams:
-    Drugs:
-      hasRecords: true
-      streamHash: cff0b11fd01a2418d371affe62b9abad7f52235a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Drug NDC Library:
-      hasRecords: true
-      streamHash: 9a785707a4b6acc914c81bb6a23943208c89530b
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Drug Adverse Events:
-      hasRecords: true
-      streamHash: 8629f4ea8622c0b789530e8edfb86407e5f3a370
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Food Adverse Events:
-      hasRecords: true
-      streamHash: eec68b374991af3ad3176057a49dbc787ceb0031
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Drug Product Labelling:
-      hasRecords: true
-      streamHash: b9760cadc7faba163ea5dd4481a60ffc42f95dc9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Tobacco Problem Reports:
-      hasRecords: true
-      streamHash: cdd0524fbb2a374a2b8d61b0d33a24e21fd4ce1a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Food Enforcement Reports:
-      hasRecords: true
-      streamHash: e74735930c681c0f29f670bc91356845bc8ad3f6
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Drug recall Enforcement Reports:
-      hasRecords: true
-      streamHash: 1db306f8b107363c27d5fda20fbe099f8bb825a7
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Animal and Veterinary Adverse Events:
-      hasRecords: true
-      streamHash: 5465ec2aad975ac1e722505fabd7afa6edfe2c91
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
-    Drugs: true
-    Drug NDC Library: true
-    Drug Adverse Events: true
-    Food Adverse Events: true
-    Drug Product Labelling: true
-    Tobacco Problem Reports: true
-    Food Enforcement Reports: true
-    Drug recall Enforcement Reports: true
-    Animal and Veterinary Adverse Events: true
+    animal_veterinary_adverse_events: true
+    tobacco_problems_reports: true
+    food_adverse_events: true
+    food_enforcement_reports: true
+    drug_adverse_events: true
+    drug_product_labelling: true
+    drug_ndc_library: true
+    drug_recall_enforcement_reports: true
+    drugs: true
+  testedStreams:
+    animal_veterinary_adverse_events:
+      streamHash: 1d0606cba68cd120e0e232fe4c17a4052a81a21b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tobacco_problems_reports:
+      streamHash: 9abc5a930b34a95b05781474ce33d3813517d6e7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    food_adverse_events:
+      streamHash: 47564cfd48ee2b7e8f3dea3865a5d9e0ae320d41
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    food_enforcement_reports:
+      streamHash: 672fd13cf7193fe36af6e381ceb415d1a9cc5a5f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drug_adverse_events:
+      streamHash: 0fb7eea38b63cb80d6a875aed3b775d57e7db890
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drug_product_labelling:
+      streamHash: c680cd6d8b4d7c25af12a0f1178c9a2a8526384d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drug_ndc_library:
+      streamHash: 904ce65d91f343f4e7dbd7900e29922e1df56f8f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drug_recall_enforcement_reports:
+      streamHash: 3eabe167039177cba2fa2d94cd4121fed5856ee9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drugs:
+      streamHash: 828d896d5246308d786abbe20e3cd693afb7a2d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
-  Drugs:
+  animal_veterinary_adverse_events:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      openfda:
+      animal:
         type:
           - object
           - "null"
         properties:
-          nui:
+          age:
             type:
-              - array
+              - object
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          unii:
+            properties:
+              max:
+                type:
+                  - string
+                  - "null"
+              min:
+                type:
+                  - string
+                  - "null"
+              qualifier:
+                type:
+                  - string
+                  - "null"
+              unit:
+                type:
+                  - string
+                  - "null"
+          breed:
             type:
-              - array
+              - object
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          route:
+            properties:
+              breed_component:
+                anyOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+              is_crossbred:
+                type:
+                  - string
+                  - "null"
+          female_animal_physiological_status:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          rxcui:
+          gender:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          spl_id:
+          reproductive_status:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          brand_name:
+          species:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          spl_set_id:
+          weight:
             type:
-              - array
+              - object
               - "null"
-            items:
-              type:
-                - string
-                - "null"
-          package_ndc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          product_ndc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          generic_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          product_type:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_cs:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_pe:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          substance_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_epc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_moa:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          manufacturer_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          application_number:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-      products:
+            properties:
+              max:
+                type:
+                  - string
+                  - "null"
+              min:
+                type:
+                  - string
+                  - "null"
+              qualifier:
+                type:
+                  - string
+                  - "null"
+              unit:
+                type:
+                  - string
+                  - "null"
+      drug:
         type:
           - array
           - "null"
@@ -545,11 +511,53 @@ schemas:
             - object
             - "null"
           properties:
-            route:
+            active_ingredients:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  dose:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      denominator:
+                        type:
+                          - string
+                          - "null"
+                      denominator_unit:
+                        type:
+                          - string
+                          - "null"
+                      numerator:
+                        type:
+                          - string
+                          - "null"
+                      numerator_unit:
+                        type:
+                          - string
+                          - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            administered_by:
               type:
                 - string
                 - "null"
-            te_code:
+            ae_abated_after_stopping_drug:
+              type:
+                - string
+                - "null"
+            ae_reappeared_after_resuming_drug:
+              type:
+                - string
+                - "null"
+            atc_vet_code:
               type:
                 - string
                 - "null"
@@ -561,40 +569,150 @@ schemas:
               type:
                 - string
                 - "null"
-            product_number:
+            dose:
+              type:
+                - object
+                - "null"
+              properties:
+                denominator:
+                  type:
+                    - string
+                    - "null"
+                denominator_unit:
+                  type:
+                    - string
+                    - "null"
+                numerator:
+                  type:
+                    - string
+                    - "null"
+                numerator_unit:
+                  type:
+                    - string
+                    - "null"
+            first_exposure_date:
               type:
                 - string
                 - "null"
-            reference_drug:
+            frequency_of_administration:
+              type:
+                - object
+                - "null"
+              properties:
+                unit:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            last_exposure_date:
               type:
                 - string
                 - "null"
-            marketing_status:
+            lot_expiration:
               type:
                 - string
                 - "null"
-            active_ingredients:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  strength:
-                    type:
-                      - string
-                      - "null"
-            reference_standard:
+            lot_number:
               type:
                 - string
                 - "null"
-      submissions:
+            manufacturer:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                registration_number:
+                  type:
+                    - string
+                    - "null"
+            manufacturing_date:
+              type:
+                - string
+                - "null"
+            number_of_defective_items:
+              type:
+                - string
+                - "null"
+            number_of_items_returned:
+              type:
+                - string
+                - "null"
+            off_label_use:
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+            previous_ae_to_drug:
+              type:
+                - string
+                - "null"
+            previous_exposure_to_drug:
+              type:
+                - string
+                - "null"
+            product_ndc:
+              type:
+                - string
+                - "null"
+            route:
+              type:
+                - string
+                - "null"
+            used_according_to_label:
+              type:
+                - string
+                - "null"
+      duration:
+        type:
+          - object
+          - "null"
+        properties:
+          unit:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      health_assessment_prior_to_exposure:
+        type:
+          - object
+          - "null"
+        properties:
+          assessed_by:
+            type:
+              - string
+              - "null"
+          condition:
+            type:
+              - string
+              - "null"
+      number_of_animals_affected:
+        type:
+          - string
+          - "null"
+      number_of_animals_treated:
+        type:
+          - string
+          - "null"
+      onset_date:
+        type:
+          - string
+          - "null"
+      original_receive_date:
+        type:
+          - string
+          - "null"
+      outcome:
         type:
           - array
           - "null"
@@ -603,96 +721,132 @@ schemas:
             - object
             - "null"
           properties:
-            review_priority:
+            medical_status:
               type:
                 - string
                 - "null"
-            submission_type:
+            number_of_animals_affected:
               type:
                 - string
                 - "null"
-            application_docs:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  date:
-                    type:
-                      - string
-                      - "null"
-                  title:
-                    type:
-                      - string
-                      - "null"
-            submission_number:
-              type:
-                - string
-                - "null"
-            submission_status:
-              type:
-                - string
-                - "null"
-            submission_class_code:
-              type:
-                - string
-                - "null"
-            submission_status_date:
-              type:
-                - string
-                - "null"
-            submission_public_notes:
-              type:
-                - string
-                - "null"
-            submission_property_type:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  code:
-                    type:
-                      - string
-                      - "null"
-            submission_class_code_description:
-              type:
-                - string
-                - "null"
-      sponsor_name:
+      primary_reporter:
         type:
           - string
           - "null"
-      application_number:
+      reaction:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            accuracy:
+              type:
+                - string
+                - "null"
+            number_of_animals_affected:
+              type:
+                - string
+                - "null"
+            veddra_term_code:
+              type:
+                - string
+                - "null"
+            veddra_term_name:
+              type:
+                - string
+                - "null"
+            veddra_version:
+              type:
+                - string
+                - "null"
+      receiver:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street_address:
+            type:
+              - string
+              - "null"
+      report_id:
         type:
           - string
           - "null"
-    additionalProperties: true
-  Drug NDC Library:
+      secondary_reporter:
+        type:
+          - string
+          - "null"
+      serious_ae:
+        type:
+          - string
+          - "null"
+      time_between_exposure_and_onset:
+        type:
+          - string
+          - "null"
+      treated_for_ae:
+        type:
+          - string
+          - "null"
+      type_of_information:
+        type:
+          - string
+          - "null"
+      unique_aer_id_number:
+        type: string
+    required:
+      - unique_aer_id_number
+  tobacco_problems_reports:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - product_id
+    additionalProperties: true
     properties:
-      route:
+      date_submitted:
+        type:
+          - string
+          - "null"
+      nonuser_affected:
+        type:
+          - string
+          - "null"
+      number_health_problems:
+        type:
+          - number
+          - "null"
+      number_product_problems:
+        type:
+          - number
+          - "null"
+      number_tobacco_products:
+        type:
+          - number
+          - "null"
+      report_id:
+        type: number
+      reported_health_problems:
         type:
           - array
           - "null"
@@ -700,7 +854,145 @@ schemas:
           type:
             - string
             - "null"
-      spl_id:
+      reported_product_problems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tobacco_products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - report_id
+  food_adverse_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      consumer:
+        type:
+          - object
+          - "null"
+        properties:
+          age:
+            type:
+              - string
+              - "null"
+          age_unit:
+            type:
+              - string
+              - "null"
+          gender:
+            type:
+              - string
+              - "null"
+      date_created:
+        type:
+          - string
+          - "null"
+      date_started:
+        type:
+          - string
+          - "null"
+      outcomes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            industry_code:
+              type:
+                - string
+                - "null"
+            industry_name:
+              type:
+                - string
+                - "null"
+            name_brand:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+      reactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      report_number:
+        type: string
+    required:
+      - report_number
+  food_enforcement_reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_1:
+        type:
+          - string
+          - "null"
+      address_2:
+        type:
+          - string
+          - "null"
+      center_classification_date:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      code_info:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      distribution_pattern:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      initial_firm_notification:
+        type:
+          - string
+          - "null"
+      more_code_info:
         type:
           - string
           - "null"
@@ -708,159 +1000,15 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          nui:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          upc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          unii:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          rxcui:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          spl_set_id:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_cs:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_pe:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_epc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_moa:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          manufacturer_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          is_original_packager:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - boolean
-                - "null"
-      finished:
-        type:
-          - boolean
-          - "null"
-      packaging:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            description:
-              type:
-                - string
-                - "null"
-            sample:
-              type:
-                - boolean
-                - "null"
-            package_ndc:
-              type:
-                - string
-                - "null"
-            marketing_end_date:
-              type:
-                - string
-                - "null"
-            marketing_start_date:
-              type:
-                - string
-                - "null"
-      brand_name:
+      postal_code:
         type:
           - string
           - "null"
-      product_id:
-        type: string
-      dosage_form:
+      product_description:
         type:
           - string
           - "null"
-      pharm_class:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      product_ndc:
-        type:
-          - string
-          - "null"
-      dea_schedule:
-        type:
-          - string
-          - "null"
-      generic_name:
-        type:
-          - string
-          - "null"
-      labeler_name:
+      product_quantity:
         type:
           - string
           - "null"
@@ -868,69 +1016,63 @@ schemas:
         type:
           - string
           - "null"
-      brand_name_base:
+      reason_for_recall:
         type:
           - string
           - "null"
-      brand_name_suffix:
+      recall_initiation_date:
         type:
           - string
           - "null"
-      active_ingredients:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            name:
-              type:
-                - string
-                - "null"
-            strength:
-              type:
-                - string
-                - "null"
-      application_number:
+      recall_number:
+        type: string
+      recalling_firm:
         type:
           - string
           - "null"
-      marketing_category:
+      report_date:
         type:
           - string
           - "null"
-      marketing_end_date:
+      state:
         type:
           - string
           - "null"
-      marketing_start_date:
+      status:
         type:
           - string
           - "null"
-      listing_expiration_date:
+      termination_date:
         type:
           - string
           - "null"
-    additionalProperties: true
-  Drug Adverse Events:
+      voluntary_mandated:
+        type:
+          - string
+          - "null"
+    required:
+      - recall_number
+  drug_adverse_events:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      sender:
+      companynumb:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          sendertype:
-            type:
-              - string
-              - "null"
-          senderorganization:
-            type:
-              - string
-              - "null"
+      duplicate:
+        type:
+          - string
+          - "null"
+      fulfillexpeditecriteria:
+        type:
+          - string
+          - "null"
+      occurcountry:
+        type:
+          - string
+          - "null"
       patient:
         type:
           - object
@@ -945,11 +1087,140 @@ schemas:
                 - object
                 - "null"
               properties:
+                actiondrug:
+                  type:
+                    - string
+                    - "null"
+                activesubstance:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    activesubstancename:
+                      type:
+                        - string
+                        - "null"
+                drugadditional:
+                  type:
+                    - string
+                    - "null"
+                drugadministrationroute:
+                  type:
+                    - string
+                    - "null"
+                drugauthorizationnumb:
+                  type:
+                    - string
+                    - "null"
+                drugbatchnumb:
+                  type:
+                    - string
+                    - "null"
+                drugcharacterization:
+                  type:
+                    - string
+                    - "null"
+                drugcumulativedosagenumb:
+                  type:
+                    - string
+                    - "null"
+                drugcumulativedosageunit:
+                  type:
+                    - string
+                    - "null"
+                drugdosageform:
+                  type:
+                    - string
+                    - "null"
+                drugdosagetext:
+                  type:
+                    - string
+                    - "null"
+                drugenddate:
+                  type:
+                    - string
+                    - "null"
+                drugenddateformat:
+                  type:
+                    - string
+                    - "null"
+                drugindication:
+                  type:
+                    - string
+                    - "null"
+                drugintervaldosagedefinition:
+                  type:
+                    - string
+                    - "null"
+                drugintervaldosageunitnumb:
+                  type:
+                    - string
+                    - "null"
+                drugrecurreadministration:
+                  type:
+                    - string
+                    - "null"
+                drugseparatedosagenumb:
+                  type:
+                    - string
+                    - "null"
+                drugstartdate:
+                  type:
+                    - string
+                    - "null"
+                drugstartdateformat:
+                  type:
+                    - string
+                    - "null"
+                drugstructuredosagenumb:
+                  type:
+                    - string
+                    - "null"
+                drugstructuredosageunit:
+                  type:
+                    - string
+                    - "null"
+                medicinalproduct:
+                  type:
+                    - string
+                    - "null"
                 openfda:
                   type:
                     - object
                     - "null"
                   properties:
+                    application_number:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    brand_name:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    generic_name:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    manufacturer_name:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
                     nui:
                       type:
                         - array
@@ -958,7 +1229,55 @@ schemas:
                         type:
                           - string
                           - "null"
-                    unii:
+                    package_ndc:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    pharm_class_cs:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    pharm_class_epc:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    pharm_class_moa:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    pharm_class_pe:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    product_ndc:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    product_type:
                       type:
                         - array
                         - "null"
@@ -990,63 +1309,7 @@ schemas:
                         type:
                           - string
                           - "null"
-                    brand_name:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
                     spl_set_id:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    package_ndc:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    product_ndc:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    generic_name:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    product_type:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    pharm_class_cs:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    pharm_class_pe:
                       type:
                         - array
                         - "null"
@@ -1062,7 +1325,7 @@ schemas:
                         type:
                           - string
                           - "null"
-                    pharm_class_epc:
+                    unii:
                       type:
                         - array
                         - "null"
@@ -1070,124 +1333,49 @@ schemas:
                         type:
                           - string
                           - "null"
-                    pharm_class_moa:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    manufacturer_name:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    application_number:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                actiondrug:
+          patientagegroup:
+            type:
+              - string
+              - "null"
+          patientdeath:
+            type:
+              - object
+              - "null"
+            properties: {}
+          patientonsetage:
+            type:
+              - string
+              - "null"
+          patientonsetageunit:
+            type:
+              - string
+              - "null"
+          patientsex:
+            type:
+              - string
+              - "null"
+          patientweight:
+            type:
+              - string
+              - "null"
+          reaction:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                reactionmeddrapt:
                   type:
                     - string
                     - "null"
-                drugenddate:
+                reactionmeddraversionpt:
                   type:
                     - string
                     - "null"
-                drugbatchnumb:
-                  type:
-                    - string
-                    - "null"
-                drugstartdate:
-                  type:
-                    - string
-                    - "null"
-                drugadditional:
-                  type:
-                    - string
-                    - "null"
-                drugdosageform:
-                  type:
-                    - string
-                    - "null"
-                drugdosagetext:
-                  type:
-                    - string
-                    - "null"
-                drugindication:
-                  type:
-                    - string
-                    - "null"
-                activesubstance:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    activesubstancename:
-                      type:
-                        - string
-                        - "null"
-                medicinalproduct:
-                  type:
-                    - string
-                    - "null"
-                drugenddateformat:
-                  type:
-                    - string
-                    - "null"
-                drugstartdateformat:
-                  type:
-                    - string
-                    - "null"
-                drugcharacterization:
-                  type:
-                    - string
-                    - "null"
-                drugauthorizationnumb:
-                  type:
-                    - string
-                    - "null"
-                drugseparatedosagenumb:
-                  type:
-                    - string
-                    - "null"
-                drugadministrationroute:
-                  type:
-                    - string
-                    - "null"
-                drugstructuredosagenumb:
-                  type:
-                    - string
-                    - "null"
-                drugstructuredosageunit:
-                  type:
-                    - string
-                    - "null"
-                drugcumulativedosagenumb:
-                  type:
-                    - string
-                    - "null"
-                drugcumulativedosageunit:
-                  type:
-                    - string
-                    - "null"
-                drugrecurreadministration:
-                  type:
-                    - string
-                    - "null"
-                drugintervaldosageunitnumb:
-                  type:
-                    - string
-                    - "null"
-                drugintervaldosagedefinition:
+                reactionoutcome:
                   type:
                     - string
                     - "null"
@@ -1200,98 +1388,15 @@ schemas:
                 type:
                   - string
                   - "null"
-          reaction:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                reactionoutcome:
-                  type:
-                    - string
-                    - "null"
-                reactionmeddrapt:
-                  type:
-                    - string
-                    - "null"
-                reactionmeddraversionpt:
-                  type:
-                    - string
-                    - "null"
-          patientsex:
-            type:
-              - string
-              - "null"
-          patientdeath:
-            type:
-              - object
-              - "null"
-            properties: {}
-          patientweight:
-            type:
-              - string
-              - "null"
-          patientagegroup:
-            type:
-              - string
-              - "null"
-          patientonsetage:
-            type:
-              - string
-              - "null"
-          patientonsetageunit:
-            type:
-              - string
-              - "null"
-      serious:
-        type:
-          - string
-          - "null"
-      receiver:
-        type:
-          - object
-          - "null"
-        properties:
-          receivertype:
-            type:
-              - string
-              - "null"
-          receiverorganization:
-            type:
-              - string
-              - "null"
-      duplicate:
-        type:
-          - string
-          - "null"
-      reporttype:
-        type:
-          - string
-          - "null"
-      companynumb:
-        type:
-          - string
-          - "null"
-      receiptdate:
-        type:
-          - string
-          - "null"
-      receivedate:
-        type:
-          - string
-          - "null"
-      occurcountry:
-        type:
-          - string
-          - "null"
       primarysource:
         type:
           - object
           - "null"
         properties:
+          literaturereference:
+            type:
+              - string
+              - "null"
           qualification:
             type:
               - string
@@ -1300,10 +1405,39 @@ schemas:
             type:
               - string
               - "null"
-      safetyreportid:
+      primarysourcecountry:
         type:
           - string
           - "null"
+      receiptdate:
+        type:
+          - string
+          - "null"
+      receiptdateformat:
+        type:
+          - string
+          - "null"
+      receivedate:
+        type:
+          - string
+          - "null"
+      receivedateformat:
+        type:
+          - string
+          - "null"
+      receiver:
+        type:
+          - object
+          - "null"
+        properties:
+          receiverorganization:
+            type:
+              - string
+              - "null"
+          receivertype:
+            type:
+              - string
+              - "null"
       reportduplicate:
         type:
           - object
@@ -1317,23 +1451,11 @@ schemas:
             type:
               - string
               - "null"
-      seriousnessdeath:
+      reporttype:
         type:
           - string
           - "null"
-      seriousnessother:
-        type:
-          - string
-          - "null"
-      transmissiondate:
-        type:
-          - string
-          - "null"
-      receiptdateformat:
-        type:
-          - string
-          - "null"
-      receivedateformat:
+      safetyreportid:
         type:
           - string
           - "null"
@@ -1341,19 +1463,32 @@ schemas:
         type:
           - string
           - "null"
-      primarysourcecountry:
+      sender:
+        type:
+          - object
+          - "null"
+        properties:
+          senderorganization:
+            type:
+              - string
+              - "null"
+          sendertype:
+            type:
+              - string
+              - "null"
+      serious:
+        type:
+          - string
+          - "null"
+      seriousnesscongenitalanomali:
+        type:
+          - string
+          - "null"
+      seriousnessdeath:
         type:
           - string
           - "null"
       seriousnessdisabling:
-        type:
-          - string
-          - "null"
-      transmissiondateformat:
-        type:
-          - string
-          - "null"
-      fulfillexpeditecriteria:
         type:
           - string
           - "null"
@@ -1365,85 +1500,22 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  Food Adverse Events:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - report_number
-    properties:
-      consumer:
-        type:
-          - object
-          - "null"
-        properties:
-          age:
-            type:
-              - string
-              - "null"
-          gender:
-            type:
-              - string
-              - "null"
-          age_unit:
-            type:
-              - string
-              - "null"
-      outcomes:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      products:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            role:
-              type:
-                - string
-                - "null"
-            name_brand:
-              type:
-                - string
-                - "null"
-            industry_code:
-              type:
-                - string
-                - "null"
-            industry_name:
-              type:
-                - string
-                - "null"
-      reactions:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      date_created:
+      seriousnessother:
         type:
           - string
           - "null"
-      date_started:
+      transmissiondate:
         type:
           - string
           - "null"
-      report_number:
-        type: string
-    additionalProperties: true
-  Drug Product Labelling:
+      transmissiondateformat:
+        type:
+          - string
+          - "null"
+  drug_product_labelling:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       version:
         type:
@@ -1457,328 +1529,7 @@ schemas:
           type:
             - string
             - "null"
-      id:
-        type:
-          - string
-          - "null"
-      set_id:
-        type:
-          - string
-          - "null"
-      openfda:
-        type:
-          - object
-          - "null"
-        properties:
-          nui:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          upc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          unii:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          route:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          rxcui:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          spl_id:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          brand_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          spl_set_id:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          package_ndc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          product_ndc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          generic_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          product_type:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_cs:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          substance_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_epc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_moa:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          manufacturer_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          application_number:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          is_original_packager:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - boolean
-                - "null"
-          original_packager_product_ndc:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-      purpose:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      stop_use:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      warnings:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      pregnancy:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      questions:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      do_not_use:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      overdosage:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      when_using:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      precautions:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      how_supplied:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      microbiology:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      spl_medguide:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      boxed_warning:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      geriatric_use:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      pediatric_use:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      effective_time:
-        type:
-          - string
-          - "null"
-      nursing_mothers:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      clinical_studies:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      pharmacodynamics:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      pharmacokinetics:
+      abuse:
         type:
           - array
           - "null"
@@ -1794,6 +1545,14 @@ schemas:
           type:
             - string
             - "null"
+      active_ingredient_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       adverse_reactions:
         type:
           - array
@@ -1802,7 +1561,7 @@ schemas:
           type:
             - string
             - "null"
-      contraindications:
+      adverse_reactions_table:
         type:
           - array
           - "null"
@@ -1810,7 +1569,7 @@ schemas:
           type:
             - string
             - "null"
-      drug_interactions:
+      animal_pharmacology_and_or_toxicology:
         type:
           - array
           - "null"
@@ -1818,7 +1577,7 @@ schemas:
           type:
             - string
             - "null"
-      microbiology_table:
+      animal_pharmacology_and_or_toxicology_table:
         type:
           - array
           - "null"
@@ -1826,7 +1585,7 @@ schemas:
           type:
             - string
             - "null"
-      spl_medguide_table:
+      ask_doctor:
         type:
           - array
           - "null"
@@ -1834,7 +1593,7 @@ schemas:
           type:
             - string
             - "null"
-      general_precautions:
+      ask_doctor_or_pharmacist:
         type:
           - array
           - "null"
@@ -1842,7 +1601,7 @@ schemas:
           type:
             - string
             - "null"
-      inactive_ingredient:
+      boxed_warning:
         type:
           - array
           - "null"
@@ -1850,23 +1609,7 @@ schemas:
           type:
             - string
             - "null"
-      mechanism_of_action:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      recent_major_changes:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      storage_and_handling:
+      carcinogenesis_and_mutagenesis_and_impairment_of_fertility:
         type:
           - array
           - "null"
@@ -1882,6 +1625,206 @@ schemas:
           type:
             - string
             - "null"
+      clinical_pharmacology_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      clinical_studies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      clinical_studies_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contraindications:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      controlled_substance:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dependence:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      description_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      do_not_use:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dosage_and_administration:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dosage_and_administration_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dosage_forms_and_strengths:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dosage_forms_and_strengths_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      drug_abuse_and_dependence:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      drug_abuse_and_dependence_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      drug_and_or_laboratory_test_interactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      drug_interactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      drug_interactions_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      effective_time:
+        type:
+          - string
+          - "null"
+      general_precautions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      geriatric_use:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      geriatric_use_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      how_supplied:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      how_supplied_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type:
+          - string
+          - "null"
+      inactive_ingredient:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      inactive_ingredient_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       indications_and_usage:
         type:
           - array
@@ -1890,7 +1833,87 @@ schemas:
           type:
             - string
             - "null"
-      warnings_and_cautions:
+      indications_and_usage_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      information_for_patients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      information_for_patients_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      instructions_for_use:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      instructions_for_use_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      keep_out_of_reach_of_children:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      labor_and_delivery:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      laboratory_tests:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      mechanism_of_action:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      microbiology:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      microbiology_table:
         type:
           - array
           - "null"
@@ -1914,7 +1937,7 @@ schemas:
           type:
             - string
             - "null"
-      drug_interactions_table:
+      nursing_mothers:
         type:
           - array
           - "null"
@@ -1922,294 +1945,51 @@ schemas:
           type:
             - string
             - "null"
-      information_for_patients:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      spl_unclassified_section:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      dosage_and_administration:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      spl_product_data_elements:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      dosage_forms_and_strengths:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      clinical_pharmacology_table:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      pregnancy_or_breast_feeding:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      use_in_specific_populations:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      keep_out_of_reach_of_children:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      spl_unclassified_section_table:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      dosage_and_administration_table:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      package_label_principal_display_panel:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      carcinogenesis_and_mutagenesis_and_impairment_of_fertility:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-    additionalProperties: true
-  Tobacco Problem Reports:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - report_id
-    properties:
-      report_id:
-        type: number
-      date_submitted:
-        type:
-          - string
-          - "null"
-      nonuser_affected:
-        type:
-          - string
-          - "null"
-      tobacco_products:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      number_health_problems:
-        type:
-          - number
-          - "null"
-      number_product_problems:
-        type:
-          - number
-          - "null"
-      number_tobacco_products:
-        type:
-          - number
-          - "null"
-      reported_health_problems:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      reported_product_problems:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-    additionalProperties: true
-  Food Enforcement Reports:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - recall_number
-    properties:
-      city:
-        type:
-          - string
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      country:
-        type:
-          - string
-          - "null"
-      openfda:
-        type:
-          - object
-          - "null"
-      event_id:
-        type:
-          - string
-          - "null"
-      address_1:
-        type:
-          - string
-          - "null"
-      address_2:
-        type:
-          - string
-          - "null"
-      code_info:
-        type:
-          - string
-          - "null"
-      postal_code:
-        type:
-          - string
-          - "null"
-      report_date:
-        type:
-          - string
-          - "null"
-      product_type:
-        type:
-          - string
-          - "null"
-      recall_number:
-        type: string
-      classification:
-        type:
-          - string
-          - "null"
-      more_code_info:
-        type:
-          - string
-          - "null"
-      recalling_firm:
-        type:
-          - string
-          - "null"
-      product_quantity:
-        type:
-          - string
-          - "null"
-      termination_date:
-        type:
-          - string
-          - "null"
-      reason_for_recall:
-        type:
-          - string
-          - "null"
-      voluntary_mandated:
-        type:
-          - string
-          - "null"
-      product_description:
-        type:
-          - string
-          - "null"
-      distribution_pattern:
-        type:
-          - string
-          - "null"
-      recall_initiation_date:
-        type:
-          - string
-          - "null"
-      initial_firm_notification:
-        type:
-          - string
-          - "null"
-      center_classification_date:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  Drug recall Enforcement Reports:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      city:
-        type:
-          - string
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      country:
-        type:
-          - string
-          - "null"
       openfda:
         type:
           - object
           - "null"
         properties:
+          application_number:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          brand_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          generic_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          is_original_packager:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - boolean
+                - "null"
+          manufacturer_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           nui:
             type:
               - array
@@ -2218,7 +1998,7 @@ schemas:
               type:
                 - string
                 - "null"
-          upc:
+          original_packager_product_ndc:
             type:
               - array
               - "null"
@@ -2226,7 +2006,55 @@ schemas:
               type:
                 - string
                 - "null"
-          unii:
+          package_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_cs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_epc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_moa:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_pe:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_type:
             type:
               - array
               - "null"
@@ -2258,14 +2086,6 @@ schemas:
               type:
                 - string
                 - "null"
-          brand_name:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
           spl_set_id:
             type:
               - array
@@ -2274,7 +2094,7 @@ schemas:
               type:
                 - string
                 - "null"
-          package_ndc:
+          substance_name:
             type:
               - array
               - "null"
@@ -2282,7 +2102,7 @@ schemas:
               type:
                 - string
                 - "null"
-          product_ndc:
+          unii:
             type:
               - array
               - "null"
@@ -2290,7 +2110,7 @@ schemas:
               type:
                 - string
                 - "null"
-          generic_name:
+          upc:
             type:
               - array
               - "null"
@@ -2298,7 +2118,458 @@ schemas:
               type:
                 - string
                 - "null"
-          product_type:
+      other_safety_information:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      overdosage:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      package_label_principal_display_panel:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      patient_medication_information:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pediatric_use:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pediatric_use_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pharmacodynamics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pharmacodynamics_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pharmacogenomics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pharmacokinetics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pharmacokinetics_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      precautions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      precautions_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pregnancy:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pregnancy_or_breast_feeding:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      purpose:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      purpose_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      questions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      recent_major_changes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      recent_major_changes_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      references:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      references_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      risks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      route:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      safe_handling_warning:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      set_id:
+        type:
+          - string
+          - "null"
+      spl_medguide:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_medguide_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_patient_package_insert:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_patient_package_insert_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_product_data_elements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_unclassified_section:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_unclassified_section_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      statement_of_identity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      stop_use:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      storage_and_handling:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      teratogenic_effects:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      use_in_specific_populations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      use_in_specific_populations_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      user_safety_warnings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      warnings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      warnings_and_cautions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      warnings_and_cautions_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      warnings_table:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      when_using:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+  drug_ndc_library:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_ingredients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            strength:
+              type:
+                - string
+                - "null"
+      application_number:
+        type:
+          - string
+          - "null"
+      brand_name:
+        type:
+          - string
+          - "null"
+      brand_name_base:
+        type:
+          - string
+          - "null"
+      brand_name_suffix:
+        type:
+          - string
+          - "null"
+      dea_schedule:
+        type:
+          - string
+          - "null"
+      dosage_form:
+        type:
+          - string
+          - "null"
+      finished:
+        type:
+          - boolean
+          - "null"
+      generic_name:
+        type:
+          - string
+          - "null"
+      labeler_name:
+        type:
+          - string
+          - "null"
+      listing_expiration_date:
+        type:
+          - string
+          - "null"
+      marketing_category:
+        type:
+          - string
+          - "null"
+      marketing_end_date:
+        type:
+          - string
+          - "null"
+      marketing_start_date:
+        type:
+          - string
+          - "null"
+      openfda:
+        type:
+          - object
+          - "null"
+        properties:
+          is_original_packager:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - boolean
+                - "null"
+          manufacturer_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          nui:
             type:
               - array
               - "null"
@@ -2307,22 +2578,6 @@ schemas:
                 - string
                 - "null"
           pharm_class_cs:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          pharm_class_pe:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          substance_name:
             type:
               - array
               - "null"
@@ -2346,7 +2601,7 @@ schemas:
               type:
                 - string
                 - "null"
-          manufacturer_name:
+          pharm_class_pe:
             type:
               - array
               - "null"
@@ -2354,7 +2609,170 @@ schemas:
               type:
                 - string
                 - "null"
+          rxcui:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          spl_set_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          unii:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          upc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      packaging:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            marketing_end_date:
+              type:
+                - string
+                - "null"
+            marketing_start_date:
+              type:
+                - string
+                - "null"
+            package_ndc:
+              type:
+                - string
+                - "null"
+            sample:
+              type:
+                - boolean
+                - "null"
+      pharm_class:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      product_id:
+        type: string
+      product_ndc:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      route:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      spl_id:
+        type:
+          - string
+          - "null"
+    required:
+      - product_id
+  drug_recall_enforcement_reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_1:
+        type:
+          - string
+          - "null"
+      address_2:
+        type:
+          - string
+          - "null"
+      center_classification_date:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      code_info:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      distribution_pattern:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      initial_firm_notification:
+        type:
+          - string
+          - "null"
+      more_code_info:
+        type:
+          - string
+          - "null"
+      openfda:
+        type:
+          - object
+          - "null"
+        properties:
           application_number:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          brand_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          generic_name:
             type:
               - array
               - "null"
@@ -2370,6 +2788,22 @@ schemas:
               type:
                 - boolean
                 - "null"
+          manufacturer_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          nui:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           original_packager_product_ndc:
             type:
               - array
@@ -2378,63 +2812,119 @@ schemas:
               type:
                 - string
                 - "null"
-      event_id:
-        type:
-          - string
-          - "null"
-      address_1:
-        type:
-          - string
-          - "null"
-      address_2:
-        type:
-          - string
-          - "null"
-      code_info:
-        type:
-          - string
-          - "null"
+          package_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_cs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_epc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_moa:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_pe:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          route:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          rxcui:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          spl_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          spl_set_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          substance_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          unii:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          upc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
       postal_code:
-        type:
-          - string
-          - "null"
-      report_date:
-        type:
-          - string
-          - "null"
-      product_type:
-        type:
-          - string
-          - "null"
-      recall_number:
-        type:
-          - string
-          - "null"
-      classification:
-        type:
-          - string
-          - "null"
-      more_code_info:
-        type:
-          - string
-          - "null"
-      recalling_firm:
-        type:
-          - string
-          - "null"
-      product_quantity:
-        type:
-          - string
-          - "null"
-      termination_date:
-        type:
-          - string
-          - "null"
-      reason_for_recall:
-        type:
-          - string
-          - "null"
-      voluntary_mandated:
         type:
           - string
           - "null"
@@ -2442,7 +2932,15 @@ schemas:
         type:
           - string
           - "null"
-      distribution_pattern:
+      product_quantity:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      reason_for_recall:
         type:
           - string
           - "null"
@@ -2450,22 +2948,193 @@ schemas:
         type:
           - string
           - "null"
-      initial_firm_notification:
+      recall_number:
         type:
           - string
           - "null"
-      center_classification_date:
+      recalling_firm:
         type:
           - string
           - "null"
-    additionalProperties: true
-  Animal and Veterinary Adverse Events:
+      report_date:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      termination_date:
+        type:
+          - string
+          - "null"
+      voluntary_mandated:
+        type:
+          - string
+          - "null"
+  drugs:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - unique_aer_id_number
+    additionalProperties: true
     properties:
-      drug:
+      application_number:
+        type:
+          - string
+          - "null"
+      openfda:
+        type:
+          - object
+          - "null"
+        properties:
+          application_number:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          brand_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          generic_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          manufacturer_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          nui:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          package_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_cs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_epc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_moa:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pharm_class_pe:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_ndc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          route:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          rxcui:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          spl_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          spl_set_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          substance_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          unii:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      products:
         type:
           - array
           - "null"
@@ -2474,78 +3143,6 @@ schemas:
             - object
             - "null"
           properties:
-            dose:
-              type:
-                - object
-                - "null"
-              properties:
-                numerator:
-                  type:
-                    - string
-                    - "null"
-                denominator:
-                  type:
-                    - string
-                    - "null"
-                numerator_unit:
-                  type:
-                    - string
-                    - "null"
-                denominator_unit:
-                  type:
-                    - string
-                    - "null"
-            route:
-              type:
-                - string
-                - "null"
-            brand_name:
-              type:
-                - string
-                - "null"
-            lot_number:
-              type:
-                - string
-                - "null"
-            dosage_form:
-              type:
-                - string
-                - "null"
-            product_ndc:
-              type:
-                - string
-                - "null"
-            atc_vet_code:
-              type:
-                - string
-                - "null"
-            manufacturer:
-              type:
-                - object
-                - "null"
-              properties:
-                name:
-                  type:
-                    - string
-                    - "null"
-                registration_number:
-                  type:
-                    - string
-                    - "null"
-            off_label_use:
-              anyOf:
-                - type: string
-                - type: array
-                  items:
-                    type: string
-            lot_expiration:
-              type:
-                - string
-                - "null"
-            administered_by:
-              type:
-                - string
-                - "null"
             active_ingredients:
               type:
                 - array
@@ -2555,163 +3152,51 @@ schemas:
                   - object
                   - "null"
                 properties:
-                  dose:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      numerator:
-                        type:
-                          - string
-                          - "null"
-                      denominator:
-                        type:
-                          - string
-                          - "null"
-                      numerator_unit:
-                        type:
-                          - string
-                          - "null"
-                      denominator_unit:
-                        type:
-                          - string
-                          - "null"
                   name:
                     type:
                       - string
                       - "null"
-            last_exposure_date:
+                  strength:
+                    type:
+                      - string
+                      - "null"
+            brand_name:
               type:
                 - string
                 - "null"
-            manufacturing_date:
+            dosage_form:
               type:
                 - string
                 - "null"
-            first_exposure_date:
+            marketing_status:
               type:
                 - string
                 - "null"
-            previous_ae_to_drug:
+            product_number:
               type:
                 - string
                 - "null"
-            used_according_to_label:
+            reference_drug:
               type:
                 - string
                 - "null"
-            number_of_items_returned:
+            reference_standard:
               type:
                 - string
                 - "null"
-            number_of_defective_items:
+            route:
               type:
                 - string
                 - "null"
-            previous_exposure_to_drug:
+            te_code:
               type:
                 - string
                 - "null"
-            frequency_of_administration:
-              type:
-                - object
-                - "null"
-              properties:
-                unit:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-            ae_abated_after_stopping_drug:
-              type:
-                - string
-                - "null"
-            ae_reappeared_after_resuming_drug:
-              type:
-                - string
-                - "null"
-      animal:
+      sponsor_name:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          age:
-            type:
-              - object
-              - "null"
-            properties:
-              max:
-                type:
-                  - string
-                  - "null"
-              min:
-                type:
-                  - string
-                  - "null"
-              unit:
-                type:
-                  - string
-                  - "null"
-              qualifier:
-                type:
-                  - string
-                  - "null"
-          breed:
-            type:
-              - object
-              - "null"
-            properties:
-              is_crossbred:
-                type:
-                  - string
-                  - "null"
-              breed_component:
-                anyOf:
-                  - type: string
-                  - type: array
-                    items:
-                      type: string
-          gender:
-            type:
-              - string
-              - "null"
-          weight:
-            type:
-              - object
-              - "null"
-            properties:
-              max:
-                type:
-                  - string
-                  - "null"
-              min:
-                type:
-                  - string
-                  - "null"
-              unit:
-                type:
-                  - string
-                  - "null"
-              qualifier:
-                type:
-                  - string
-                  - "null"
-          species:
-            type:
-              - string
-              - "null"
-          reproductive_status:
-            type:
-              - string
-              - "null"
-          female_animal_physiological_status:
-            type:
-              - string
-              - "null"
-      outcome:
+      submissions:
         type:
           - array
           - "null"
@@ -2720,142 +3205,77 @@ schemas:
             - object
             - "null"
           properties:
-            medical_status:
+            application_docs:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+            review_priority:
               type:
                 - string
                 - "null"
-            number_of_animals_affected:
+            submission_class_code:
               type:
                 - string
                 - "null"
-      duration:
-        type:
-          - object
-          - "null"
-        properties:
-          unit:
-            type:
-              - string
-              - "null"
-          value:
-            type:
-              - string
-              - "null"
-      reaction:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            accuracy:
+            submission_class_code_description:
               type:
                 - string
                 - "null"
-            veddra_version:
+            submission_number:
               type:
                 - string
                 - "null"
-            veddra_term_code:
+            submission_property_type:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  code:
+                    type:
+                      - string
+                      - "null"
+            submission_public_notes:
               type:
                 - string
                 - "null"
-            veddra_term_name:
+            submission_status:
               type:
                 - string
                 - "null"
-            number_of_animals_affected:
+            submission_status_date:
               type:
                 - string
                 - "null"
-      receiver:
-        type:
-          - object
-          - "null"
-        properties:
-          city:
-            type:
-              - string
-              - "null"
-          state:
-            type:
-              - string
-              - "null"
-          country:
-            type:
-              - string
-              - "null"
-          postal_code:
-            type:
-              - string
-              - "null"
-          organization:
-            type:
-              - string
-              - "null"
-          street_address:
-            type:
-              - string
-              - "null"
-      report_id:
-        type:
-          - string
-          - "null"
-      onset_date:
-        type:
-          - string
-          - "null"
-      serious_ae:
-        type:
-          - string
-          - "null"
-      treated_for_ae:
-        type:
-          - string
-          - "null"
-      primary_reporter:
-        type:
-          - string
-          - "null"
-      secondary_reporter:
-        type:
-          - string
-          - "null"
-      type_of_information:
-        type:
-          - string
-          - "null"
-      unique_aer_id_number:
-        type: string
-      original_receive_date:
-        type:
-          - string
-          - "null"
-      number_of_animals_treated:
-        type:
-          - string
-          - "null"
-      number_of_animals_affected:
-        type:
-          - string
-          - "null"
-      time_between_exposure_and_onset:
-        type:
-          - string
-          - "null"
-      health_assessment_prior_to_exposure:
-        type:
-          - object
-          - "null"
-        properties:
-          condition:
-            type:
-              - string
-              - "null"
-          assessed_by:
-            type:
-              - string
-              - "null"
-    additionalProperties: true
+            submission_type:
+              type:
+                - string
+                - "null"
