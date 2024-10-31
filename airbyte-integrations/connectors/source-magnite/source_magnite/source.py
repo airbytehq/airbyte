@@ -49,21 +49,24 @@ class MagniteStream(HttpStream, ABC):
         response_json = response.json()
 
         if self._data_field:
-            result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}/results"
+            result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}"
             while True:
                 result_response = requests.get(result_url, headers=self.authenticator.get_auth_header())
-                if result_response.status_code == 200:
-                    yield from result_response.json()
-                    break
-                elif result_response.status_code == 202:
-                    self.logger.info("Query results are not ready yet. Checking again in 5 seconds...")
-                    time.sleep(5)
-                elif result_response.status_code == 412:
+                query_status = result_response.json()['status']
+                if result_response.status_code == 412:
                     self.logger.warning("Precondition faild! A query is already running")
                     break
-                else:
-                    self.logger.error(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
+                if query_status == 1 or query_status == 2: # created or running queries
+                    self.logger.info("Query results are not ready yet. Checking again in 5 seconds...")
+                    time.sleep(5)
+                elif query_status == 3: # completed query
+                    self.logger.info(f"Query results ready")
+                    data_response = requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header())
+                    yield from data_response.json()
                     break
+                else: # error(4) or cancelled(5) query
+                    self.logger.error(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
+                    raise Exception(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
         else:
             yield from response_json
 
@@ -91,6 +94,7 @@ class MagniteStream(HttpStream, ABC):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
         if stream_slice and "fromDate" in stream_slice and "toDate" in stream_slice:
+            self.logger.info(f"Fetching data from {stream_slice['fromDate']} to {stream_slice['toDate']}")
             date_range = {"fromDate": stream_slice["fromDate"], "toDate": stream_slice["toDate"]}
         else:
             date_range = stream_slice
