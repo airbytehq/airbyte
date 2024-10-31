@@ -246,12 +246,14 @@ class SnowflakeDestinationHandler(
 
     @Throws(Exception::class)
     override fun execute(sql: Sql) {
-        val beginBlock = """
+        val beginBlock =
+            """
             BEGIN
             BEGIN TRANSACTION
         """.trimIndent()
-        
-        val endBlock = """
+
+        val endBlock =
+            """
             COMMIT;
             EXCEPTION
             WHEN OTHER THEN
@@ -261,10 +263,10 @@ class SnowflakeDestinationHandler(
                 END;
             END
         """.trimIndent()
-        
+
         val transactions = sql.asSqlStrings(beginBlock, endBlock)
         val queryId = UUID.randomUUID()
-        
+
         for (transaction in transactions) {
             val transactionId = UUID.randomUUID()
             LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction)
