@@ -42,7 +42,6 @@ airbyte_cdk.sources.streams.core.Stream
     │           |    └── SponsoredBrandsAdGroups
     │           └── SponsoredBrandsKeywords
     └── ReportStream
-        ├── SponsoredBrandsReportStream
         ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
