@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class S3V2WriteTest(path: String) :
@@ -17,17 +17,39 @@ abstract class S3V2WriteTest(path: String) :
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
+        isStreamSchemaRetroactive = false,
+        supportsDedup = false,
     ) {
-    private val log = KotlinLogging.logger {}
-
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
 
     @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    @Disabled
+    @Test
     override fun testMidSyncCheckpointingStreamState() {
-        log.warn { "Disabled until it doesn't block." }
+        super.testMidSyncCheckpointingStreamState()
+    }
+
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
+    @Disabled("append mode doesn't yet work")
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }
 

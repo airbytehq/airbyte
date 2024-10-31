@@ -1,4 +1,4 @@
-# Zendesk talk source connector
+# Zendesk Talk source connector
 
 This directory contains the manifest-only connector for `source-zendesk-talk`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.

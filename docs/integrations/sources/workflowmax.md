@@ -60,6 +60,7 @@ Then authorize your source with the required information.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2024-10-28 | [47527](https://github.com/airbytehq/airbyte/pull/47527) | Update dependencies |
 | 0.0.1 | 2024-10-13 | [46866](https://github.com/airbytehq/airbyte/pull/46866) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
