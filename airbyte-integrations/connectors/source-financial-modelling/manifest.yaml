@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -13,13 +13,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Stocks List
+    - stocks
 
 definitions:
   streams:
-    Stocks List:
+    stocks:
       type: DeclarativeStream
-      name: Stocks List
+      name: stocks
       retriever:
         type: SimpleRetriever
         requester:
@@ -34,10 +34,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Stocks List"
-    ETFs List:
+          $ref: "#/schemas/stocks"
+    etfs:
       type: DeclarativeStream
-      name: ETFs List
+      name: etfs
       retriever:
         type: SimpleRetriever
         requester:
@@ -52,10 +52,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ETFs List"
-    "Tradable Search ":
+          $ref: "#/schemas/etfs"
+    stock_available_traded:
       type: DeclarativeStream
-      name: "Tradable Search "
+      name: stock_available_traded
       retriever:
         type: SimpleRetriever
         requester:
@@ -70,10 +70,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Tradable Search "
-    CIK List:
+          $ref: "#/schemas/stock_available_traded"
+    stock_cik_list:
       type: DeclarativeStream
-      name: CIK List
+      name: stock_cik_list
       retriever:
         type: SimpleRetriever
         requester:
@@ -88,10 +88,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/CIK List"
-    Euronext Symbols:
+          $ref: "#/schemas/stock_cik_list"
+    stock_euronext_symbols:
       type: DeclarativeStream
-      name: Euronext Symbols
+      name: stock_euronext_symbols
       retriever:
         type: SimpleRetriever
         requester:
@@ -106,10 +106,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Euronext Symbols"
-    Exchange Symbols:
+          $ref: "#/schemas/stock_euronext_symbols"
+    stock_exchange_symbols:
       type: DeclarativeStream
-      name: Exchange Symbols
+      name: stock_exchange_symbols
       retriever:
         type: SimpleRetriever
         requester:
@@ -124,10 +124,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Exchange Symbols"
-    Available Indexes:
+          $ref: "#/schemas/stock_exchange_symbols"
+    stock_available_indexes:
       type: DeclarativeStream
-      name: Available Indexes
+      name: stock_available_indexes
       retriever:
         type: SimpleRetriever
         requester:
@@ -142,10 +142,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Available Indexes"
-    Company Profile:
+          $ref: "#/schemas/stock_available_indexes"
+    company_profile:
       type: DeclarativeStream
-      name: Company Profile
+      name: company_profile
       retriever:
         type: SimpleRetriever
         requester:
@@ -164,14 +164,14 @@ definitions:
               parent_key: symbol
               partition_field: symbol
               stream:
-                $ref: "#/definitions/streams/Exchange Symbols"
+                $ref: "#/definitions/streams/stock_exchange_symbols"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Company Profile"
-    Screener (Stock):
+          $ref: "#/schemas/company_profile"
+    stock_screener:
       type: DeclarativeStream
-      name: Screener (Stock)
+      name: stock_screener
       retriever:
         type: SimpleRetriever
         requester:
@@ -189,10 +189,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Screener (Stock)"
-    Historical Market Cap:
+          $ref: "#/schemas/stock_screener"
+    historical_market_cap:
       type: DeclarativeStream
-      name: Historical Market Cap
+      name: historical_market_cap
       retriever:
         type: SimpleRetriever
         requester:
@@ -200,9 +200,7 @@ definitions:
           path: historical-market-capitalization/{{ stream_partition.symbol}}
           http_method: GET
           request_parameters:
-            limit: "{{ config['limit'] }}"
-            from: "{{ config['from'] }}"
-            to: "{{ config['to'] }}"
+            limit: "500"
         record_selector:
           type: RecordSelector
           extractor:
@@ -215,14 +213,36 @@ definitions:
               parent_key: symbol
               partition_field: symbol
               stream:
-                $ref: "#/definitions/streams/Exchange Symbols"
+                $ref: "#/definitions/streams/stock_exchange_symbols"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Historical Market Cap"
-    Delisted Companies:
+          $ref: "#/schemas/historical_market_cap"
+    delisted_companies:
       type: DeclarativeStream
-      name: Delisted Companies
+      name: delisted_companies
       retriever:
         type: SimpleRetriever
         requester:
@@ -237,10 +257,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Delisted Companies"
-    Exchange Prices:
+          $ref: "#/schemas/delisted_companies"
+    exchange_prices:
       type: DeclarativeStream
-      name: Exchange Prices
+      name: exchange_prices
       retriever:
         type: SimpleRetriever
         requester:
@@ -259,14 +279,14 @@ definitions:
               parent_key: symbol
               partition_field: symbol
               stream:
-                $ref: "#/definitions/streams/Exchange Symbols"
+                $ref: "#/definitions/streams/stock_exchange_symbols"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Exchange Prices"
-    All RealTime Full Stock Prices:
+          $ref: "#/schemas/exchange_prices"
+    all_realtime_stock_prices:
       type: DeclarativeStream
-      name: All RealTime Full Stock Prices
+      name: all_realtime_stock_prices
       retriever:
         type: SimpleRetriever
         requester:
@@ -281,10 +301,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/All RealTime Full Stock Prices"
-    ALL FX Prices:
+          $ref: "#/schemas/all_realtime_stock_prices"
+    all_fx_prices:
       type: DeclarativeStream
-      name: ALL FX Prices
+      name: all_fx_prices
       retriever:
         type: SimpleRetriever
         requester:
@@ -299,10 +319,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ALL FX Prices"
-    Stock Historical Price:
+          $ref: "#/schemas/all_fx_prices"
+    stock_historical_price:
       type: DeclarativeStream
-      name: Stock Historical Price
+      name: stock_historical_price
       retriever:
         type: SimpleRetriever
         requester:
@@ -311,9 +331,6 @@ definitions:
             historical-chart/{{ config['time_frame'] }}/{{
             stream_partition.symbol}}
           http_method: GET
-          request_parameters:
-            from: "{{ config[\"from\"] }}"
-            to: "{{ config[\"to\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -326,14 +343,36 @@ definitions:
               parent_key: symbol
               partition_field: symbol
               stream:
-                $ref: "#/definitions/streams/Exchange Symbols"
+                $ref: "#/definitions/streams/stock_exchange_symbols"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Stock Historical Price"
-    Forex List:
+          $ref: "#/schemas/stock_historical_price"
+    forex_list:
       type: DeclarativeStream
-      name: Forex List
+      name: forex_list
       retriever:
         type: SimpleRetriever
         requester:
@@ -348,10 +387,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Forex List"
-    Cryptocurrencies List:
+          $ref: "#/schemas/forex_list"
+    cryptocurrencies_list:
       type: DeclarativeStream
-      name: Cryptocurrencies List
+      name: cryptocurrencies_list
       retriever:
         type: SimpleRetriever
         requester:
@@ -366,7 +405,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Cryptocurrencies List"
+          $ref: "#/schemas/cryptocurrencies_list"
   base_requester:
     type: HttpRequester
     url_base: https://financialmodelingprep.com/api/v3/
@@ -379,23 +418,23 @@ definitions:
         inject_into: request_parameter
 
 streams:
-  - $ref: "#/definitions/streams/Stocks List"
-  - $ref: "#/definitions/streams/ETFs List"
-  - $ref: "#/definitions/streams/Tradable Search "
-  - $ref: "#/definitions/streams/CIK List"
-  - $ref: "#/definitions/streams/Euronext Symbols"
-  - $ref: "#/definitions/streams/Exchange Symbols"
-  - $ref: "#/definitions/streams/Available Indexes"
-  - $ref: "#/definitions/streams/Company Profile"
-  - $ref: "#/definitions/streams/Screener (Stock)"
-  - $ref: "#/definitions/streams/Historical Market Cap"
-  - $ref: "#/definitions/streams/Delisted Companies"
-  - $ref: "#/definitions/streams/Exchange Prices"
-  - $ref: "#/definitions/streams/All RealTime Full Stock Prices"
-  - $ref: "#/definitions/streams/ALL FX Prices"
-  - $ref: "#/definitions/streams/Stock Historical Price"
-  - $ref: "#/definitions/streams/Forex List"
-  - $ref: "#/definitions/streams/Cryptocurrencies List"
+  - $ref: "#/definitions/streams/stocks"
+  - $ref: "#/definitions/streams/etfs"
+  - $ref: "#/definitions/streams/stock_available_traded"
+  - $ref: "#/definitions/streams/stock_cik_list"
+  - $ref: "#/definitions/streams/stock_euronext_symbols"
+  - $ref: "#/definitions/streams/stock_exchange_symbols"
+  - $ref: "#/definitions/streams/stock_available_indexes"
+  - $ref: "#/definitions/streams/company_profile"
+  - $ref: "#/definitions/streams/stock_screener"
+  - $ref: "#/definitions/streams/historical_market_cap"
+  - $ref: "#/definitions/streams/delisted_companies"
+  - $ref: "#/definitions/streams/exchange_prices"
+  - $ref: "#/definitions/streams/all_realtime_stock_prices"
+  - $ref: "#/definitions/streams/all_fx_prices"
+  - $ref: "#/definitions/streams/stock_historical_price"
+  - $ref: "#/definitions/streams/forex_list"
+  - $ref: "#/definitions/streams/cryptocurrencies_list"
 
 spec:
   type: Spec
@@ -404,6 +443,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
@@ -419,192 +459,187 @@ spec:
           MCX, MEX, MIL, MUN, NASDAQ, NEO, NSE, NYSE, NZE, OEM, OQX, OSL, OTC,
           PNK, PRA, RIS, SAO, SAU, SES, SET, SGO, SHH, SHZ, SIX, STO, STU, TAI,
           TLV, TSX, TSXV, TWO, VIE, VSE, WSE, XETRA
+        order: 1
         title: Exchange
         default: NASDAQ
-        order: 1
       marketcapmorethan:
         type: string
         description: >-
           Used in screener to filter out stocks with a market cap more than the
           give marketcap
-        title: marketCapMoreThan
         order: 2
+        title: Market Cap More Than
       marketcaplowerthan:
         type: string
         description: >-
           Used in screener to filter out stocks with a market cap lower than the
           give marketcap
-        title: marketCapLowerThan
         order: 3
-      limit:
-        type: number
-        title: Limit
-        order: 4
-      from:
-        type: string
-        description: >-
-          Used when fetching historical data : The date from which you need the
-          data
-        title: From
-        order: 5
-      to:
-        type: string
-        description: >-
-          Used when fetching historical data : The date till which you need the
-          data
-        title: To
-        order: 6
+        title: Market Cap Lower Than
       time_frame:
         type: string
         description: For example 1min, 5min, 15min, 30min, 1hour, 4hour
+        order: 4
         title: Time Frame
-        default: 1hour
-        order: 7
+        default: 4hour
+        enum:
+          - 1min
+          - 5min
+          - 15min
+          - 30min
+          - 1hour
+          - 4hour
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 5
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    Stocks List: true
-    ETFs List: true
-    "Tradable Search ": true
-    CIK List: true
-    Euronext Symbols: true
-    Exchange Symbols: true
-    Available Indexes: true
-    Company Profile: true
-    Screener (Stock): true
-    Historical Market Cap: true
-    Delisted Companies: true
-    Exchange Prices: true
-    All RealTime Full Stock Prices: true
-    ALL FX Prices: true
-    Stock Historical Price: true
-    Forex List: true
-    Cryptocurrencies List: true
+    stocks: true
+    etfs: true
+    stock_available_traded: true
+    stock_cik_list: true
+    stock_euronext_symbols: true
+    stock_exchange_symbols: true
+    stock_available_indexes: true
+    company_profile: true
+    stock_screener: true
+    historical_market_cap: true
+    delisted_companies: true
+    exchange_prices: true
+    all_realtime_stock_prices: true
+    all_fx_prices: true
+    stock_historical_price: true
+    forex_list: true
+    cryptocurrencies_list: true
   testedStreams:
-    Stocks List:
-      streamHash: cc38f7c2accf01a623390f1b5031121c6926cd23
+    stocks:
+      streamHash: 3cd737fdc10d93f8ad402f1781e4eb2a950bc448
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    ETFs List:
-      streamHash: f08fb5bcd027301665bdac95bd9d25f2a722b7d4
+    etfs:
+      streamHash: 673db891b91ef5e11d7654988deca5b9a84126c1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    "Tradable Search ":
-      streamHash: d6da7696f9c319ab0412aeebea0158fd7e07611f
+    stock_available_traded:
+      streamHash: b7a0c8bf3655b170d6abd23b084c892e530a1eda
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    CIK List:
-      streamHash: 5352740d1258ae19c9a9c5e3430c80f7a4277cd8
+    stock_cik_list:
+      streamHash: b96ddd9895c89cd2c2172b4e0c6edd3451d8cee2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Euronext Symbols:
-      streamHash: cdf9fd57c629070d901ea38cd21e4c99f1c6c3a9
+    stock_euronext_symbols:
+      streamHash: 97ecd8911004c1f18f5f27a725cb82966bfadc08
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Exchange Symbols:
-      streamHash: 5c97666741aefdbe38f18d19c3d460f7e3aa39ec
+    stock_exchange_symbols:
+      streamHash: 530a5008ec34b27f4ed2369bd12d008a0a8f072b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Available Indexes:
-      streamHash: f242c0a80c3d6ca2b85b073db2d7621d65c31fb7
+    stock_available_indexes:
+      streamHash: 1b924b9c1aca45e1f5549477e35ab46c97119d25
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Company Profile:
-      streamHash: adae9912a98218fae7a2b63c4def255780a114f1
+    company_profile:
+      streamHash: ca5f0a46e2125e9c19bf1b4864708dfef2410159
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Screener (Stock):
-      streamHash: 34ea29de20e806e4a61ce5dd61afa08902821232
+    stock_screener:
+      streamHash: 195eabf9d812e08642831553194a031a68afea78
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Historical Market Cap:
-      streamHash: 7cb404bfa08436349158cce597d6fc2f0ec9e457
+    historical_market_cap:
+      streamHash: 3ae2520b60408749857f78c32660dc58365bcf99
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Delisted Companies:
-      streamHash: 878f46edec7e921133e3b920ef73615d961e710c
+    delisted_companies:
+      streamHash: 04a19a5fe538f784395c7cae746e1e3b8e9abaad
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Exchange Prices:
-      streamHash: 527606a74d3d7a020c5fcad5ae74696b041a3d68
+    exchange_prices:
+      streamHash: 5fb72a0ee2b701570641f692e8949861867f77f5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    All RealTime Full Stock Prices:
-      streamHash: afb7b7ff361aecf31f31be0ecebc1c3ed398b3d7
+    all_realtime_stock_prices:
+      streamHash: 4bcca1e1e7d9d89eb4c0e9176b0e63088434cd0a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    ALL FX Prices:
-      streamHash: dc67357866ce9d0c4e78da728fb019af0adc4b1b
+    all_fx_prices:
+      streamHash: c44a516cc4eabd4a8a53ae88903f6c9b66e6a41a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Stock Historical Price:
-      streamHash: e3f9d808c76d90267a87fd38dfa24c2fc5e73eea
+    stock_historical_price:
+      streamHash: 56225db87b1856894c6ef2001bcab9caf4dac374
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Forex List:
-      streamHash: 022b53d5162e18edf6d494d854bddce3ee6b41f7
-      hasResponse: true
-      responsesAreSuccessful: true
+    forex_list:
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Cryptocurrencies List:
-      streamHash: 613e1a01410a095a56632d86ef141ffaa032cd11
+      streamHash: f50787ec42b2f4cdec2297da114c99b830a5115a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    cryptocurrencies_list:
+      hasRecords: true
+      streamHash: 1db6a40be5714e012f2cd25bb59eea41fa1cd361
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
-  Stocks List:
+  stocks:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -633,7 +668,7 @@ schemas:
         type:
           - string
           - "null"
-  ETFs List:
+  etfs:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -662,7 +697,7 @@ schemas:
         type:
           - string
           - "null"
-  "Tradable Search ":
+  stock_available_traded:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -691,7 +726,7 @@ schemas:
         type:
           - string
           - "null"
-  CIK List:
+  stock_cik_list:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -704,7 +739,7 @@ schemas:
         type:
           - string
           - "null"
-  Euronext Symbols:
+  stock_euronext_symbols:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -729,7 +764,7 @@ schemas:
         type:
           - string
           - "null"
-  Exchange Symbols:
+  stock_exchange_symbols:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -822,7 +857,7 @@ schemas:
         type:
           - number
           - "null"
-  Available Indexes:
+  stock_available_indexes:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -847,7 +882,7 @@ schemas:
         type:
           - string
           - "null"
-  Company Profile:
+  company_profile:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -996,7 +1031,7 @@ schemas:
         type:
           - string
           - "null"
-  Screener (Stock):
+  stock_screener:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1061,15 +1096,13 @@ schemas:
         type:
           - number
           - "null"
-  Historical Market Cap:
+  historical_market_cap:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       date:
-        type:
-          - string
-          - "null"
+        type: string
       marketCap:
         type:
           - number
@@ -1078,7 +1111,9 @@ schemas:
         type:
           - string
           - "null"
-  Delisted Companies:
+    required:
+      - date
+  delisted_companies:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1103,7 +1138,7 @@ schemas:
         type:
           - string
           - "null"
-  Exchange Prices:
+  exchange_prices:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1156,7 +1191,7 @@ schemas:
         type:
           - number
           - "null"
-  All RealTime Full Stock Prices:
+  all_realtime_stock_prices:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1205,7 +1240,7 @@ schemas:
         type:
           - number
           - "null"
-  ALL FX Prices:
+  all_fx_prices:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1242,7 +1277,7 @@ schemas:
         type:
           - string
           - "null"
-  Stock Historical Price:
+  stock_historical_price:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1252,9 +1287,7 @@ schemas:
           - number
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       high:
         type:
           - number
@@ -1271,7 +1304,9 @@ schemas:
         type:
           - number
           - "null"
-  Forex List:
+    required:
+      - date
+  forex_list:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1296,7 +1331,7 @@ schemas:
         type:
           - string
           - "null"
-  Cryptocurrencies List:
+  cryptocurrencies_list:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
