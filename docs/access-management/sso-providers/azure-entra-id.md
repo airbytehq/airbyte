@@ -54,10 +54,10 @@ Copy the **Value** (the Client Secret itself) immediately after creation. You wo
 
 You'll need to pass your Airbyte contact the following information of the created application.
 
-* **Client Secret**: as copied above
-* **Application (client) ID**: You'll find this in the **Essentials** section on the **Overview** page of the application you created
-* **OpenID Connect metadata document**: You'll find this in the **Endpoints** panel, that you can open from the top bar on the **Overview** page
-* **Email Domain**: Users signing in from this domain will be required to sign in via SSO.
+- **Client Secret**: as copied above
+- **Application (client) ID**: You'll find this in the **Essentials** section on the **Overview** page of the application you created
+- **OpenID Connect metadata document**: You'll find this in the **Endpoints** panel, that you can open from the top bar on the **Overview** page
+- **Email Domain**: Users signing in from this domain will be required to sign in via SSO.
 
 Once we've received this information from you, We'll setup SSO for you and let you know once it's ready to be used.
 
