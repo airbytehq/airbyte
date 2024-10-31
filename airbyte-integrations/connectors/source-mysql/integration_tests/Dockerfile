@@ -5,9 +5,9 @@ WORKDIR /usr/src/app
 
 # Copy the script to the container
 COPY seed/hook.py .
-COPY seed/requirement.txt .
+COPY seed/requirements.txt .
 
-RUN pip install --no-cache-dir -r ./requirement.txt
+RUN pip install --no-cache-dir -r ./requirements.txt
 
 # Give execution rights to the script and pre-generate all scripts.
 RUN chmod +x ./hook.py

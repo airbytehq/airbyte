@@ -10,8 +10,9 @@ from pathlib import Path
 from typing import List, Tuple
 
 import mysql.connector
-import pytz
 from mysql.connector import Error
+import pytz
+from contextlib import contextmanager
 
 support_file_path_prefix = "/connector/integration_tests"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
@@ -28,10 +29,11 @@ secret_active_config_cdc_file = support_file_path_prefix + '/temp/config_cdc_act
 
 la_timezone = pytz.timezone('America/Los_Angeles')
 
+@contextmanager
 def connect_to_db():
     with open(secret_config_file) as f:
         secret = json.load(f)
-
+    conn = None
     try:
         conn = mysql.connector.connect(
             database=None,
@@ -41,39 +43,39 @@ def connect_to_db():
             port=secret["port"]
         )
         print("Connected to the database successfully")
-        return conn
+        yield conn
     except Error as error:
         print(f"Error connecting to the database: {error}")
+        if conn:
+            conn.rollback()
         sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+            print("Database connection closed")
 
 def insert_records(conn, schema_name: str, table_name: str, records: List[Tuple[str, str]]) -> None:
+    insert_query = f"INSERT INTO {schema_name}.{table_name} (id, name) VALUES (%s, %s) ON DUPLICATE KEY UPDATE id=id"
     try:
-        cursor = conn.cursor()
-        insert_query = f"INSERT INTO {schema_name}.{table_name} (id, name) VALUES (%s, %s) ON DUPLICATE KEY UPDATE id=id"
-
-        for record in records:
-            cursor.execute(insert_query, record)
-
-        conn.commit()
-        print("Records inserted successfully")
+        with conn.cursor() as cursor:
+            for record in records:
+                cursor.execute(insert_query, record)
+            conn.commit()
+            print("Records inserted successfully")
     except Error as error:
         print(f"Error inserting records: {error}")
         conn.rollback()
-    finally:
-        cursor.close()
 
 def create_schema(conn, schema_name: str) -> None:
+    create_schema_query = f"CREATE DATABASE IF NOT EXISTS {schema_name}"
     try:
-        cursor = conn.cursor()
-        create_schema_query = f"CREATE DATABASE IF NOT EXISTS {schema_name}"
-        cursor.execute(create_schema_query)
-        conn.commit()
-        print(f"Database '{schema_name}' created successfully")
+        with conn.cursor() as cursor:
+            cursor.execute(create_schema_query)
+            conn.commit()
+            print(f"Database '{schema_name}' created successfully")
     except Error as error:
         print(f"Error creating database: {error}")
         conn.rollback()
-    finally:
-        cursor.close()
 
 def write_supporting_file(schema_name: str) -> None:
     print(f"writing schema name to files: {schema_name}")
@@ -102,22 +104,20 @@ def write_supporting_file(schema_name: str) -> None:
             json.dump(secret, f)
 
 def create_table(conn, schema_name: str, table_name: str) -> None:
-    try:
-        cursor = conn.cursor()
-        create_table_query = f"""
+    create_table_query = f"""
             CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
                 id VARCHAR(100) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL
             )
         """
-        cursor.execute(create_table_query)
-        conn.commit()
-        print(f"Table '{schema_name}.{table_name}' created successfully")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(create_table_query)
+            conn.commit()
+            print(f"Table '{schema_name}.{table_name}' created successfully")
     except Error as error:
         print(f"Error creating table: {error}")
         conn.rollback()
-    finally:
-        cursor.close()
 
 def generate_schema_date_with_suffix() -> str:
     current_date = datetime.datetime.now(la_timezone).strftime("%Y%m%d")
@@ -136,70 +136,59 @@ def cdc_insert():
         ('4', 'four'),
         ('5', 'five')
     ]
-    connection = connect_to_db()
     table_name = 'id_and_name_cat'
-    if connection:
-        insert_records(connection, schema_name, table_name, new_records)
-        connection.close()
+    with connect_to_db() as conn:
+        insert_records(conn, schema_name, table_name, new_records)
 
 def setup():
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
     table_name = "id_and_name_cat"
-
     records = [
         ('1', 'one'),
         ('2', 'two'),
         ('3', 'three')
     ]
-
-    connection = connect_to_db()
-    create_schema(connection, schema_name)
-    create_table(connection, schema_name, table_name)
-    insert_records(connection, schema_name, table_name, records)
-    connection.close()
+    with connect_to_db() as conn:
+        create_schema(conn, schema_name)
+        create_table(conn, schema_name, table_name)
+        insert_records(conn, schema_name, table_name, records)
 
 def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
 
 def delete_schemas_with_prefix(conn, date_prefix):
-    try:
-        cursor = conn.cursor()
-
-        query = f"""
+    query = f"""
             SELECT schema_name
             FROM information_schema.schemata
             WHERE schema_name LIKE '{date_prefix}%';
         """
-
-        cursor.execute(query)
-        schemas = cursor.fetchall()
-
-        for schema in schemas:
-            drop_query = f"DROP DATABASE IF EXISTS {schema[0]};"
-            cursor.execute(drop_query)
-            print(f"Database {schema[0]} has been dropped.")
-
-        conn.commit()
-    except Error as e:
-        print(f"An error occurred: {e}")
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            schemas = cursor.fetchall()
+            for schema in schemas:
+                drop_query = f"DROP DATABASE IF EXISTS {schema[0]};"
+                cursor.execute(drop_query)
+                print(f"Database {schema[0]} has been dropped.")
+            conn.commit()
+    except Error as error:
+        print(f"An error occurred in deleting schema: {e}")
         sys.exit(1)
-    finally:
-        cursor.close()
 
 def teardown() -> None:
-    conn = connect_to_db()
     today = datetime.datetime.now(la_timezone)
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
-    delete_schemas_with_prefix(conn, formatted_yesterday)
+    with connect_to_db() as conn:
+        delete_schemas_with_prefix(conn, formatted_yesterday)
 
 def final_teardown() -> None:
-    conn = connect_to_db()
     schema_name = load_schema_name_from_catalog()
     print(f"delete database {schema_name}")
-    delete_schemas_with_prefix(conn, schema_name)
+    with connect_to_db() as conn:
+        delete_schemas_with_prefix(conn, schema_name)
 
 if __name__ == "__main__":
     command = sys.argv[1]
