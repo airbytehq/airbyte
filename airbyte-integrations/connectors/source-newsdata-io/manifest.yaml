@@ -1,0 +1,215 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: Connector for NewsData.io to get the latest news in pagination.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Latest News
+
+definitions:
+  streams:
+    Latest News:
+      type: DeclarativeStream
+      name: Latest News
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /latest
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['apikey'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.nextPage }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Latest News"
+  base_requester:
+    type: HttpRequester
+    url_base: https://newsdata.io/api/1
+
+streams:
+  - $ref: "#/definitions/streams/Latest News"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - apikey
+    properties:
+      apikey:
+        type: string
+        title: apiKey
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Latest News: true
+  testedStreams:
+    Latest News:
+      streamHash: bbbf096fa719151bb5156216e10c73d7198d89f0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Latest News:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      nextPage:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            ai_org:
+              type:
+                - string
+                - "null"
+            ai_region:
+              type:
+                - string
+                - "null"
+            ai_tag:
+              type:
+                - string
+                - "null"
+            article_id:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            content:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            creator:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            duplicate:
+              type:
+                - boolean
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            keywords:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            language:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            pubDate:
+              type:
+                - string
+                - "null"
+            pubDateTZ:
+              type:
+                - string
+                - "null"
+            sentiment:
+              type:
+                - string
+                - "null"
+            sentiment_stats:
+              type:
+                - string
+                - "null"
+            source_icon:
+              type:
+                - string
+                - "null"
+            source_id:
+              type:
+                - string
+                - "null"
+            source_name:
+              type:
+                - string
+                - "null"
+            source_priority:
+              type:
+                - number
+                - "null"
+            source_url:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
