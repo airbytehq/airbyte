@@ -8,7 +8,6 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Connecto
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
 from source_amazon_ads.declarative_source_adapter import DeclarativeSourceAdapter
-from source_amazon_ads.schemas import Profile
 
 from .utils import command_check, url_strip_query
 
@@ -129,14 +128,14 @@ def test_filter_profiles_exist():
         {"profileId": 333, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_3", "id": "333", "type": "vendor"}},
     ]
 
-    mock_profiles = [Profile.parse_obj(profile) for profile in mock_objs]
+    mock_profiles = [profile for profile in mock_objs]
 
     filtered_profiles = source._choose_profiles({}, mock_profiles)
     assert len(filtered_profiles) == 3
 
     filtered_profiles = source._choose_profiles({"profiles": [111]}, mock_profiles)
     assert len(filtered_profiles) == 1
-    assert filtered_profiles[0].profileId == 111
+    assert filtered_profiles[0]['profileId'] == 111
 
     filtered_profiles = source._choose_profiles({"profiles": [111, 333]}, mock_profiles)
     assert len(filtered_profiles) == 2
@@ -149,7 +148,7 @@ def test_filter_profiles_exist():
 
     filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1"]}, mock_profiles)
     assert len(filtered_profiles) == 1
-    assert filtered_profiles[0].accountInfo.marketplaceStringId == "mkt_id_1"
+    assert filtered_profiles[0]['accountInfo']['marketplaceStringId'] == "mkt_id_1"
 
     filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1", "mkt_id_3"]}, mock_profiles)
     assert len(filtered_profiles) == 2
@@ -159,4 +158,4 @@ def test_filter_profiles_exist():
 
     filtered_profiles = source._choose_profiles({"profiles": [111], "marketplace_ids": ["mkt_id_1"]}, mock_profiles)
     assert len(filtered_profiles) == 1
-    assert filtered_profiles[0].profileId == 111
+    assert filtered_profiles[0]['profileId'] == 111
