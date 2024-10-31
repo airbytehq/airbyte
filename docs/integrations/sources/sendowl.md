@@ -7,8 +7,8 @@ Docs : https://dashboard.sendowl.com/developers/api/introduction
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
+| `username` | `string` | Username. Enter you API Key |  |
+| `password` | `string` | Password. Enter your API secret |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

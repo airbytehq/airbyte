@@ -151,10 +151,12 @@ spec:
     properties:
       username:
         type: string
+        description: Enter you API Key
         title: Username
         order: 0
       password:
         type: string
+        description: Enter your API secret
         title: Password
         always_show: true
         airbyte_secret: true

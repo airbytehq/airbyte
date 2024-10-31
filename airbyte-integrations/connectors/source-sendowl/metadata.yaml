@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
   connectorSubtype: api
   connectorType: source
-  definitionId: 0ef96db6-980e-4344-9223-24325ec2c72d
+  definitionId: f167a487-8c2d-4407-9777-81f939900689
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-sendowl
   githubIssueLabel: source-sendowl
