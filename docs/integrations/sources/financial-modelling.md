@@ -28,12 +28,12 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 | Available Indexes |  | No pagination | ✅ |  ❌  |
 | Company Profile |  | No pagination | ✅ |  ❌  |
 | Screener (Stock) |  | No pagination | ✅ |  ❌  |
-| Historical Market Cap |  | No pagination | ✅ |  ❌  |
+| Historical Market Cap |  | No pagination | ✅ |  ✅  |
 | Delisted Companies |  | No pagination | ✅ |  ❌  |
 | Exchange Prices |  | No pagination | ✅ |  ❌  |
 | All RealTime Full Stock Prices |  | No pagination | ✅ |  ❌  |
 | ALL FX Prices |  | No pagination | ✅ |  ❌  |
-| Stock Historical Price |  | No pagination | ✅ |  ❌  |
+| Stock Historical Price |  | No pagination | ✅ |  ✅  |
 | Forex List |  | No pagination | ✅ |  ❌  |
 | Cryptocurrencies List |  | No pagination | ✅ |  ❌  |
 
