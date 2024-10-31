@@ -1,0 +1,937 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  [NoCRM](https://nocrm.io) connector enables seamless data integration between
+  NoCRM.io, a lead management tool, and other platforms or data warehouses. It
+  allows for the automated extraction and synchronization of lead data,
+  activities, and contact details from NoCRM.io into analytics  systems,
+  supporting data-driven decisions and streamlined workflows. 
+
+check:
+  type: CheckStream
+  stream_names:
+    - steps
+
+definitions:
+  streams:
+    steps:
+      type: DeclarativeStream
+      name: steps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /steps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/steps"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pipelines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    clients_folders:
+      type: DeclarativeStream
+      name: clients_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients_folders"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    predefined_tags:
+      type: DeclarativeStream
+      name: predefined_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /predefined_tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/predefined_tags"
+    fields:
+      type: DeclarativeStream
+      name: fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fields"
+    leads:
+      type: DeclarativeStream
+      name: leads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leads
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    follow_ups:
+      type: DeclarativeStream
+      name: follow_ups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /follow_ups
+          http_method: GET
+          request_parameters:
+            lead_id: "{{ stream_partition.lead_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: lead_id
+              stream:
+                $ref: "#/definitions/streams/leads"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/follow_ups"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.nocrm.io/api/v2
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/steps"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/clients_folders"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/predefined_tags"
+  - $ref: "#/definitions/streams/fields"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/follow_ups"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Generate it from the admin section of your noCRM.io
+          account.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      subdomain:
+        type: string
+        description: >-
+          The subdomain specific to your noCRM.io account, e.g., 'yourcompany'
+          in 'yourcompany.nocrm.io'.
+        name: subdomain
+        title: Subdomain
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    steps: true
+    pipelines: true
+    clients_folders: true
+    categories: true
+    predefined_tags: true
+    fields: true
+    leads: true
+    follow_ups: true
+    users: true
+    teams: true
+    webhooks: true
+  testedStreams:
+    steps:
+      streamHash: f9383377c2a917bd1d80394f906fb5fc3c34327d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pipelines:
+      streamHash: c56ddd411475d8a1764c3170fcaf3130217eb42b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clients_folders:
+      streamHash: b258a35224e9897a2422253ad04099dd74a0bcdf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: c8f2774764ad7965caa3da2bfb79a743dda9ac46
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    predefined_tags:
+      streamHash: 66f44c26da1cad6aeeea34b3c0f72ed3cd7b3546
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    fields:
+      streamHash: 830858410ab66014306bba6d33828f6129c6cd31
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leads:
+      streamHash: ce9ef907cbe5ea8d0073a6988666529d8f7fe00a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    follow_ups:
+      streamHash: ae0bdd23b6884fd73eec8985bc0c2307031e88f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 5f65fe700c7db30213f7a0f9c6463a371b8b73e6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: b32beabce74952a939b1d8c9cd560f47f111b14a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: d0407e0ba63f4cd0c357002959d38498f920fc66
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.nocrm.io/api
+
+schemas:
+  steps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      pipeline_id:
+        type:
+          - number
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  clients_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_active:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_required:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  predefined_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_key:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parent_type:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      attachment_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      html_description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      next_action_at:
+        type:
+          - string
+          - "null"
+      pipeline:
+        type:
+          - string
+          - "null"
+      remind_date:
+        type:
+          - string
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      step:
+        type:
+          - string
+          - "null"
+      step_id:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  follow_ups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      lead_id:
+        type:
+          - number
+          - "null"
+      next_action_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tasks_count:
+        type:
+          - number
+          - "null"
+      tasks_done_count:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      has_activated:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      is_disabled:
+        type:
+          - boolean
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      event:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_disabled:
+        type:
+          - boolean
+          - "null"
+      target:
+        type:
+          - string
+          - "null"
+      target_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
