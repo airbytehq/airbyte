@@ -45,10 +45,10 @@ interface StreamCopier {
      *
      * @return the name of the destination table
      */
-    @Throws(Exception::class) fun createDestinationTable(): String?
+    @Throws(Exception::class) fun createDestinationTable(): String
 
     /** Generates a merge SQL statement from the temporary table to the final table. */
-    @Throws(Exception::class) fun generateMergeStatement(destTableName: String?): String
+    @Throws(Exception::class) fun generateMergeStatement(destTableName: String): String
 
     /**
      * Cleans up the copier by removing the staging file and dropping the temporary table after
@@ -62,7 +62,7 @@ interface StreamCopier {
      * @return A string that unqiuely identifies the file. E.g. the filename, or a unique suffix
      * that is appended to a shared filename prefix
      */
-    fun prepareStagingFile(): String?
+    fun prepareStagingFile(): String
 
     /** @return current staging file name */
     val currentFile: String?

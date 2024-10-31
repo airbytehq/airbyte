@@ -25,10 +25,7 @@ POST <YOUR_WEBAPP_URL>/api/v1/applications/token
 Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
 
 ```yaml
-{
-    "client_id" : "",
-    "client_secret": ""
-}
+{ "client_id": "", "client_secret": "" }
 ```
 
 The API response should provide an `access_token` which is a Bearer Token valid for 60 minutes that can be used to make requests to the API. Once your `access_token` expires, you may make a new request to the `applications/token` endpoint to get a new token.
@@ -45,20 +42,19 @@ Expect a response like the following:
 
 ```json
 {
-    "data": [
-        {
-            "workspaceId": "b5367aab-9d68-4fea-800f-0000000000",
-            "name": "Finance Team",
-            "dataResidency": "auto"
-        },
-        {
-            "workspaceId": "b5367aab-9d68-4fea-800f-0000000001",
-            "name": "Analytics Team",
-            "dataResidency": "auto"
-        },
-    ]
+  "data": [
+    {
+      "workspaceId": "b5367aab-9d68-4fea-800f-0000000000",
+      "name": "Finance Team",
+      "dataResidency": "auto"
+    },
+    {
+      "workspaceId": "b5367aab-9d68-4fea-800f-0000000001",
+      "name": "Analytics Team",
+      "dataResidency": "auto"
+    }
+  ]
 }
 ```
 
 To go further, you may use our [Python](https://github.com/airbytehq/airbyte-api-python-sdk) and [Java](https://github.com/airbytehq/airbyte-api-java-sdk) SDKs to make API requests directly in code, or our [Terraform Provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest) (which uses the Airbyte API) to declare your Airbyte configuration as infrastructure.
-

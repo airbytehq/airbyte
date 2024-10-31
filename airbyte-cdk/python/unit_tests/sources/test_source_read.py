@@ -309,11 +309,19 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
 
 
 def _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source):
-    status_from_concurrent_source = [message for message in messages_from_concurrent_source if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS]
+    status_from_concurrent_source = [
+        message
+        for message in messages_from_concurrent_source
+        if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS
+    ]
 
     assert status_from_concurrent_source
     _verify_messages(
-        [message for message in messages_from_abstract_source if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS],
+        [
+            message
+            for message in messages_from_abstract_source
+            if message.type == MessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS
+        ],
         status_from_concurrent_source,
     )
 
@@ -329,8 +337,14 @@ def _assert_record_messages(messages_from_abstract_source, messages_from_concurr
 
 
 def _assert_errors(messages_from_abstract_source, messages_from_concurrent_source):
-    errors_from_concurrent_source = [message for message in messages_from_concurrent_source if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR]
-    errors_from_abstract_source = [message for message in messages_from_abstract_source if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR]
+    errors_from_concurrent_source = [
+        message
+        for message in messages_from_concurrent_source
+        if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR
+    ]
+    errors_from_abstract_source = [
+        message for message in messages_from_abstract_source if message.type == MessageType.TRACE and message.trace.type == TraceType.ERROR
+    ]
 
     assert errors_from_concurrent_source
     # exceptions might differ from both framework hence we only assert the count
@@ -352,7 +366,13 @@ def _init_sources(stream_slice_to_partitions, state, logger):
 
 def _init_source(stream_slice_to_partitions, state, logger, source):
     streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, FinalStateCursor(stream_name=f"stream{i}", stream_namespace=None, message_repository=InMemoryMessageRepository()))
+        StreamFacade.create_from_stream(
+            _MockStream(stream_slices, f"stream{i}"),
+            source,
+            logger,
+            state,
+            FinalStateCursor(stream_name=f"stream{i}", stream_namespace=None, message_repository=InMemoryMessageRepository()),
+        )
         for i, stream_slices in enumerate(stream_slice_to_partitions)
     ]
     source.set_streams(streams)

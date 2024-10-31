@@ -4,18 +4,24 @@
 
 import os
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import List, Set, Tuple
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.airbyte_ci import wrap_in_secret
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 from pipelines.helpers.git import get_modified_files
 from pipelines.helpers.utils import transform_strs_to_paths
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
+CONNECTORS_WITH_STRICT_ENCRYPT_VARIANTS = {
+    Connector(c.relative_connector_path.replace("-strict-encrypt", ""))
+    for c in ALL_CONNECTORS
+    if c.technical_name.endswith("-strict-encrypt")
+}
 
 
 def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
@@ -24,6 +30,23 @@ def log_selected_connectors(selected_connectors_with_modified_files: List[Connec
         main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
     else:
         main_logger.info("No connectors to run.")
+
+
+def get_base_connector_and_variants(connector: Connector) -> Set[Connector]:
+    base_connector_path = connector.relative_connector_path.replace("-strict-encrypt", "")
+    base_connector = Connector(base_connector_path)
+    strict_encrypt_connector_path = f"{base_connector.relative_connector_path}-strict-encrypt"
+    if base_connector in CONNECTORS_WITH_STRICT_ENCRYPT_VARIANTS:
+        return {base_connector, Connector(strict_encrypt_connector_path)}
+    else:
+        return {base_connector}
+
+
+def update_selected_connectors_with_variants(selected_connectors: Set[Connector]) -> Set[Connector]:
+    updated_selected_connectors = set()
+    for selected_connector in selected_connectors:
+        updated_selected_connectors.update(get_base_connector_and_variants(selected_connector))
+    return updated_selected_connectors
 
 
 def get_selected_connectors_with_modified_files(
@@ -78,6 +101,9 @@ def get_selected_connectors_with_modified_files(
     # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
+    # We always want to pair selection of a base connector with its variant, e vice versa
+    selected_connectors = update_selected_connectors_with_variants(selected_connectors)
+
     selected_connectors_with_modified_files = []
     for connector in selected_connectors:
         connector_with_modified_files = ConnectorWithModifiedFiles(
@@ -89,6 +115,7 @@ def get_selected_connectors_with_modified_files(
         else:
             if connector_with_modified_files.has_metadata_change:
                 selected_connectors_with_modified_files.append(connector_with_modified_files)
+
     return selected_connectors_with_modified_files
 
 
@@ -99,8 +126,6 @@ def validate_environment(is_local: bool) -> None:
             raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
-            "GCP_GSM_CREDENTIALS",
-            "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
             "DOCKER_HUB_USERNAME",
             "DOCKER_HUB_PASSWORD",
@@ -108,37 +133,6 @@ def validate_environment(is_local: bool) -> None:
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-
-
-def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
-    """Check if the connector secrets should be loaded from Airbyte GSM or from the local secrets directory.
-
-    Args:
-        use_remote_secrets (Optional[bool]): Whether to use remote connector secrets or local connector secrets according to user inputs.
-
-    Raises:
-        click.UsageError: If the --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.
-
-    Returns:
-        bool: Whether to use remote connector secrets (True) or local connector secrets (False).
-    """
-    gcp_gsm_credentials_is_set = bool(os.getenv("GCP_GSM_CREDENTIALS"))
-    if use_remote_secrets is None:
-        if gcp_gsm_credentials_is_set:
-            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
-            return True
-        else:
-            main_logger.info("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
-            return False
-    if use_remote_secrets:
-        if gcp_gsm_credentials_is_set:
-            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
-            return True
-        else:
-            raise click.UsageError("The --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.")
-    else:
-        main_logger.info("Using local connector secrets as the --use-local-secrets flag was provided")
-        return False
 
 
 @click.group(
@@ -149,19 +143,17 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
         "test": "pipelines.airbyte_ci.connectors.test.commands.test",
         "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
-        "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
-        "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
+        "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
-        "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
-        "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
-        "up_to_date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
+        "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
+        "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
+        "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
+        "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
+        "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
+        "pull-request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
     },
-)
-@click.option(
-    "--use-remote-secrets/--use-local-secrets",
-    help="Use Airbyte GSM connector secrets or local connector secrets.",
-    type=bool,
-    default=None,
 )
 @click.option(
     "--name",
@@ -178,7 +170,12 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     help="Filter connectors to test by support_level.",
     type=click.Choice(SupportLevelEnum),
 )
-@click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option(
+    "--modified/--not-modified",
+    help="Only test modified connectors in the current branch. Archived connectors are ignored",
+    default=False,
+    type=bool,
+)
 @click.option(
     "--metadata-changes-only/--not-metadata-changes-only",
     help="Only test connectors with modified metadata files in the current branch.",
@@ -223,6 +220,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     type=click.STRING,
     required=False,
     envvar="DOCKER_HUB_USERNAME",
+    callback=wrap_in_secret,
 )
 @click.option(
     "--docker-hub-password",
@@ -230,9 +228,9 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     type=click.STRING,
     required=False,
     envvar="DOCKER_HUB_PASSWORD",
+    callback=wrap_in_secret,
 )
 @click_merge_args_into_context_obj
-@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
 @click.pass_context
 @click_ignore_unused_kwargs
 async def connectors(

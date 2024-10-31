@@ -107,21 +107,39 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.1   | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retriable                                                                                                                                                  |
-| 4.0.0   | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code                                                                                                                                                                |
-| 3.0.0   | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request                                                                                                          |
-| 2.1.2   | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry.                                                                                                                                                   |
-| 2.1.1   | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib                                                                                                                                                            |
-| 2.1.0   | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
-| 2.0.0   | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams                                                                                                  |
-| 1.8.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                    |
-| 1.8.3   | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list`                                                                                                                    |
-| 1.8.2   | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token`                                                                                                    |
-| 1.8.1   | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array                                                                                                            |
-| 1.8.0   | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas                                                                                         |
-| 1.7.1   | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection                                                                                                               |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.3.3 | 2024-08-17 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
+| 4.3.2 | 2024-08-12 | [43856](https://github.com/airbytehq/airbyte/pull/43856) | Update dependencies |
+| 4.3.1 | 2024-08-03 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |
+| 4.3.0 | 2024-07-31 | [42920](https://github.com/airbytehq/airbyte/pull/42920) | Migrate to CDK v4.1.0 |
+| 4.2.2 | 2024-07-27 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
+| 4.2.1 | 2024-07-20 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
+| 4.2.0 | 2024-07-17 | [42085](https://github.com/airbytehq/airbyte/pull/42085) | Migrate to CDK v2.4.0 |
+| 4.1.0 | 2024-07-17 | [42021](https://github.com/airbytehq/airbyte/pull/42021) | Migrate to CDK v1.8.0 |
+| 4.0.8 | 2024-07-13 | [41835](https://github.com/airbytehq/airbyte/pull/41835) | Update dependencies |
+| 4.0.7 | 2024-07-10 | [41470](https://github.com/airbytehq/airbyte/pull/41470) | Update dependencies |
+| 4.0.6 | 2024-07-09 | [41100](https://github.com/airbytehq/airbyte/pull/41100) | Update dependencies |
+| 4.0.5 | 2024-07-06 | [40894](https://github.com/airbytehq/airbyte/pull/40894) | Update dependencies |
+| 4.0.4 | 2024-06-25 | [40417](https://github.com/airbytehq/airbyte/pull/40417) | Update dependencies |
+| 4.0.3 | 2024-06-22 | [40102](https://github.com/airbytehq/airbyte/pull/40102) | Update dependencies |
+| 4.0.2 | 2024-04-24 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0 |
+| 4.0.1 | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retryable |
+| 4.0.0 | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code |
+| 3.0.0 | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request |
+| 2.1.2 | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
+| 2.1.1 | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib |
+| 2.1.0 | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
+| 2.0.0 | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams |
+| 1.8.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.8.3 | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list` |
+| 1.8.2 | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token` |
+| 1.8.1 | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array |
+| 1.8.0 | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas |
+| 1.7.1 | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection |
 | 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                                                                                                             |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                                                                                                                       |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                                                                                                                     |
@@ -153,3 +171,5 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 | 0.1.2   | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108)   | Allow all domains to be used as `api_url`                                                                                                                                          |
 | 0.1.1   | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932)   | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK                                                                                         |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)   | Initial Release                                                                                                                                                                    |
+
+</details>

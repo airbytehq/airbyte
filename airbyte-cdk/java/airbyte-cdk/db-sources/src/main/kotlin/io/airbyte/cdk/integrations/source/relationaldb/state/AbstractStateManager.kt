@@ -27,7 +27,7 @@ constructor(
     cursorFunction: Function<S, String>?,
     cursorFieldFunction: Function<S, List<String>>?,
     cursorRecordCountFunction: Function<S, Long>?,
-    namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
+    namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>,
     onlyIncludeIncrementalStreams: Boolean = false
 ) : StateManager {
     /**

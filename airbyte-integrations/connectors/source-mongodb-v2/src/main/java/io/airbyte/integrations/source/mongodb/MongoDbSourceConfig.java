@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE_LOOKUP_OPTION;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIGURATION_KEY;
@@ -18,9 +19,11 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.OptionalInt;
 
 /**
@@ -41,7 +44,12 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public JsonNode getDatabaseConfig() {
-    return rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+    JsonNode rawDbConfigNode = rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+    // Add other properties to the raw db config. Unfortunately, due to the setup of the config json,
+    // other connection properties need to
+    // be added to this config.
+    addAdvancedPropertiesToDatabaseConfig(rawDbConfigNode);
+    return rawDbConfigNode;
   }
 
   public String getAuthSource() {
@@ -105,6 +113,18 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     } else {
       return true;
     }
+  }
+
+  public String getUpdateCaptureMode() {
+    if (rawConfig.has(UPDATE_CAPTURE_MODE)) {
+      return rawConfig.get(UPDATE_CAPTURE_MODE).asText();
+    } else {
+      return CAPTURE_MODE_LOOKUP_OPTION;
+    }
+  }
+
+  private void addAdvancedPropertiesToDatabaseConfig(JsonNode dbConfig) {
+    ((ObjectNode) dbConfig).put(UPDATE_CAPTURE_MODE, getUpdateCaptureMode());
   }
 
 }

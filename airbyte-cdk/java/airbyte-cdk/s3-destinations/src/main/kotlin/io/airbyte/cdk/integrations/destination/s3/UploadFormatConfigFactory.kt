@@ -8,16 +8,16 @@ import io.airbyte.cdk.integrations.destination.s3.avro.UploadAvroFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.csv.UploadCsvFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.jsonl.UploadJsonlFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.parquet.UploadParquetFormatConfig
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object UploadFormatConfigFactory {
-    internal val LOGGER: Logger = LoggerFactory.getLogger(UploadFormatConfigFactory::class.java)
 
     fun getUploadFormatConfig(config: JsonNode): UploadFormatConfig {
         val formatConfig = config["format"]
-        LOGGER.info("File upload format config: {}", formatConfig.toString())
+        LOGGER.info { "File upload format config: $formatConfig" }
         val formatType =
             FileUploadFormat.valueOf(
                 formatConfig["format_type"].asText().uppercase(Locale.getDefault())

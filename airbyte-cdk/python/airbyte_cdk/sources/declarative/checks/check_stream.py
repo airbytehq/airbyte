@@ -7,8 +7,8 @@ import traceback
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
-from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
@@ -24,11 +24,11 @@ class CheckStream(ConnectionChecker):
     stream_names: List[str]
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
 
-    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        streams = source.streams(config)
+    def check_connection(self, source: AbstractSource, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        streams = source.streams(config=config)
         stream_name_to_stream = {s.name: s for s in streams}
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"
@@ -37,9 +37,9 @@ class CheckStream(ConnectionChecker):
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
 
             stream = stream_name_to_stream[stream_name]
-            availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()
+            availability_strategy = HttpAvailabilityStrategy()
             try:
-                stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
+                stream_is_available, reason = availability_strategy.check_availability(stream, logger)
                 if not stream_is_available:
                     return False, reason
             except Exception as error:

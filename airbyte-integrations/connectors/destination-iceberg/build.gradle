@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.44.23'
     features = ['db-destinations']
     useLocalCdk = false
 }
@@ -19,29 +19,29 @@ java {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestination'
+    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestinationRunner'
 }
 
 dependencies {
 
-    implementation('org.apache.spark:spark-sql_2.13:3.3.2') {
+    implementation('org.apache.spark:spark-sql_2.13:3.5.1') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation('org.apache.spark:spark-hive_2.13:3.3.2') {
+    implementation('org.apache.spark:spark-hive_2.13:3.5.1') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.3.0'
+    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.5_2.13:1.5.2'
 
     // force awssdk version required by Iceberg
-    implementation "software.amazon.awssdk:utils:2.20.18"
-    implementation "software.amazon.awssdk:url-connection-client:2.20.18"
-    implementation "software.amazon.awssdk:s3:2.20.18"
-    implementation "software.amazon.awssdk:glue:2.20.18"
-    implementation "software.amazon.awssdk:dynamodb:2.20.18"
-    implementation "software.amazon.awssdk:kms:2.20.18"
-    implementation "software.amazon.awssdk:sts:2.20.18"
-    implementation "software.amazon.awssdk:sdk-core:2.20.18"
-    implementation "software.amazon.awssdk:aws-core:2.20.18"
+    implementation "software.amazon.awssdk:utils:2.24.5"
+    implementation "software.amazon.awssdk:url-connection-client:2.24.5"
+    implementation "software.amazon.awssdk:s3:2.24.5"
+    implementation "software.amazon.awssdk:glue:2.24.5"
+    implementation "software.amazon.awssdk:dynamodb:2.24.5"
+    implementation "software.amazon.awssdk:kms:2.24.5"
+    implementation "software.amazon.awssdk:sts:2.24.5"
+    implementation "software.amazon.awssdk:sdk-core:2.24.5"
+    implementation "software.amazon.awssdk:aws-core:2.24.5"
 
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
@@ -49,8 +49,14 @@ dependencies {
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
 
-    testImplementation libs.testcontainers.postgresql
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    implementation('org.antlr:antlr4-runtime') {
+        version {
+            strictly('4.9.3')
+        }
+    }
+
+    testImplementation 'org.testcontainers:postgresql:1.19.0'
+    integrationTestJavaImplementation 'org.testcontainers:postgresql:1.19.0'
 
     testImplementation 'org.mockito:mockito-inline:4.7.0'
 }

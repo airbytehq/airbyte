@@ -12,18 +12,16 @@ import requests
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
-from pipelines.helpers.execution.run_steps import StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import Iterable, List, Optional
+    from typing import Any, Iterable, List, Optional
 
     from anyio import Semaphore
 
@@ -34,7 +32,6 @@ class CheckIsMigrationCandidate(Step):
     """Check if the connector is a candidate for migration to poetry.
     Candidate conditions:
     - The connector is a Python connector.
-    - The connector is a source connector.
     - The connector has a setup.py file.
     - The connector has a base image defined in the metadata.
     - The connector has not been migrated to poetry yet.
@@ -52,12 +49,6 @@ class CheckIsMigrationCandidate(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a Python connector.",
-            )
-        if self.context.connector.connector_type != "source":
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector is not a source connector.",
             )
         if "poetry.lock" in connector_dir_entries and "pyproject.toml" in connector_dir_entries:
             return StepResult(
@@ -94,7 +85,7 @@ class PoetryInit(Step):
         "build-backend": "poetry.core.masonry.api",
     }
 
-    def __init__(self, context: PipelineContext, new_version: str) -> None:
+    def __init__(self, context: PipelineContext, new_version: str | None) -> None:
         super().__init__(context)
         self.new_version = new_version
 
@@ -167,9 +158,11 @@ class PoetryInit(Step):
 
     async def get_dependencies(self, connector_container: dagger.Container, groups: Optional[List[str]] = None) -> set[str]:
         package = "." if not groups else f'.[{",".join(groups)}]'
-        connector_container = await connector_container.with_exec(["pip", "install", package])
+        connector_container = await connector_container.with_exec(["pip", "install", package], use_entrypoint=True)
 
-        pip_install_dry_run_output = await connector_container.with_exec(["pip", "install", package, "--dry-run"]).stdout()
+        pip_install_dry_run_output = await connector_container.with_exec(
+            ["pip", "install", package, "--dry-run"], use_entrypoint=True
+        ).stdout()
 
         non_transitive_deps = []
         for line in pip_install_dry_run_output.splitlines():
@@ -185,7 +178,7 @@ class PoetryInit(Step):
             base_container,
             str(self.context.connector.code_directory),
         )
-        with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"])
+        with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"], use_entrypoint=True)
 
         egg_info_dir = with_egg_info.directory(f"{self.package_name}.egg-info")
         egg_info_files = {file_path: await egg_info_dir.file(file_path).contents() for file_path in await egg_info_dir.entries()}
@@ -196,7 +189,7 @@ class PoetryInit(Step):
         latest_pip_freeze = (
             await self.context.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
             .from_(f"{self.context.connector.metadata['dockerRepository']}:latest")
-            .with_exec(["pip", "freeze"], skip_entrypoint=True)
+            .with_exec(["pip", "freeze"])
             .stdout()
         )
         latest_dependencies = {
@@ -223,7 +216,7 @@ class PoetryInit(Step):
         toml_string = toml.dumps(pyproject)
         try:
             with_poetry_lock = await connector_container.with_new_file("pyproject.toml", contents=toml_string).with_exec(
-                ["poetry", "install"]
+                ["poetry", "install"], use_entrypoint=True
             )
         except dagger.ExecError as e:
             return StepResult(
@@ -231,10 +224,14 @@ class PoetryInit(Step):
                 status=StepStatus.FAILURE,
                 stderr=str(e),
             )
-        with_new_version = await with_poetry_lock.with_exec(["poetry", "version", self.new_version])
-        await with_new_version.file("pyproject.toml").export(f"{self.context.connector.code_directory}/pyproject.toml")
+
+        dir = with_poetry_lock
+        if self.new_version:
+            dir = await dir.with_exec(["poetry", "version", self.new_version], use_entrypoint=True)
+
+        await dir.file("pyproject.toml").export(f"{self.context.connector.code_directory}/pyproject.toml")
         self.logger.info(f"Generated pyproject.toml for {self.context.connector.technical_name}")
-        await with_new_version.file("poetry.lock").export(f"{self.context.connector.code_directory}/poetry.lock")
+        await dir.file("poetry.lock").export(f"{self.context.connector.code_directory}/poetry.lock")
         self.logger.info(f"Generated poetry.lock for {self.context.connector.technical_name}")
         return StepResult(step=self, status=StepStatus.SUCCESS, output=(dependencies, dev_dependencies))
 
@@ -252,7 +249,7 @@ class DeleteSetUpPy(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS, output=original_setup_py)
 
 
-class RestoreOriginalState(Step):
+class RestorePoetryState(Step):
     context: ConnectorContext
 
     title = "Restore original state"
@@ -267,7 +264,7 @@ class RestoreOriginalState(Step):
         self.doc_path = context.connector.documentation_file_path
         self.original_setup_py = self.setup_path.read_text() if self.setup_path.exists() else None
         self.original_metadata = self.metadata_path.read_text()
-        self.original_docs = self.doc_path.read_text()
+        self.original_docs = self.doc_path.read_text() if self.doc_path and self.doc_path.exists() else None
         self.original_readme = self.readme_path.read_text()
 
     async def _run(self) -> StepResult:
@@ -276,7 +273,8 @@ class RestoreOriginalState(Step):
         self.logger.info(f"Restored setup.py for {self.context.connector.technical_name}")
         self.metadata_path.write_text(self.original_metadata)
         self.logger.info(f"Restored metadata.yaml for {self.context.connector.technical_name}")
-        self.doc_path.write_text(self.original_docs)
+        if self.doc_path and self.original_docs:
+            self.doc_path.write_text(self.original_docs)
         self.logger.info(f"Restored documentation file for {self.context.connector.technical_name}")
         self.readme_path.write_text(self.original_readme)
         self.logger.info(f"Restored README.md for {self.context.connector.technical_name}")
@@ -319,10 +317,10 @@ class RegressionTest(Step):
             )
 
         try:
-            await new_connector_container.with_exec(["spec"])
+            await new_connector_container.with_exec(["spec"], use_entrypoint=True)
             await new_connector_container.with_mounted_file(
                 "pyproject.toml", (await self.context.get_connector_dir(include=["pyproject.toml"])).file("pyproject.toml")
-            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"], skip_entrypoint=True)
+            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"])
         except dagger.ExecError as e:
             return StepResult(
                 step=self,
@@ -340,10 +338,10 @@ class RegressionTest(Step):
         previous_pip_freeze = (
             await self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
             .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest')
-            .with_exec(["pip", "freeze"], skip_entrypoint=True)
+            .with_exec(["pip", "freeze"])
             .stdout()
         ).splitlines()
-        current_pip_freeze = (await new_connector_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()).splitlines()
+        current_pip_freeze = (await new_connector_container.with_exec(["pip", "freeze"]).stdout()).splitlines()
         main_dependencies_names = []
         for dep in original_main_dependencies:
             match = re.match(PACKAGE_NAME_PATTERN, dep)
@@ -405,69 +403,44 @@ class UpdateReadMe(Step):
 
 
 async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
-    restore_original_state = RestoreOriginalState(context)
-    new_version = get_bumped_version(context.connector.version, "patch")
+    restore_original_state = RestorePoetryState(context)
+    new_version = None
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
-    steps_to_run: list[StepToRun | list[StepToRun]] = [
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_MIGRATION_CANDIDATE, step=CheckIsMigrationCandidate(context))],
+    steps_to_run: STEP_TREE = []
+
+    steps_to_run.append(
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_CHECK_MIGRATION_CANDIDATE, step=CheckIsMigrationCandidate(context))]
+    )
+
+    steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.POETRY_INIT,
+                id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT,
                 step=PoetryInit(context, new_version),
-                depends_on=[CONNECTOR_TEST_STEP_ID.CHECK_MIGRATION_CANDIDATE],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_CHECK_MIGRATION_CANDIDATE],
             )
-        ],
+        ]
+    )
+
+    steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.DELETE_SETUP_PY, step=DeleteSetUpPy(context), depends_on=[CONNECTOR_TEST_STEP_ID.POETRY_INIT]
+                id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY,
+                step=DeleteSetUpPy(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT],
             )
-        ],
+        ]
+    )
+
+    steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context), depends_on=[CONNECTOR_TEST_STEP_ID.DELETE_SETUP_PY]
+                id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_UPDATE_README,
+                step=UpdateReadMe(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
             )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.REGRESSION_TEST,
-                step=RegressionTest(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                args=lambda results: {
-                    "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
-                    "original_dependencies": results[CONNECTOR_TEST_STEP_ID.POETRY_INIT].output[0],
-                    "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.POETRY_INIT].output[1],
-                },
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                step=BumpDockerImageTagInMetadata(
-                    context, await context.get_repo_dir(include=[str(context.connector.code_directory)]), new_version, export_metadata=True
-                ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
-                step=AddChangelogEntry(
-                    context,
-                    await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
-                    new_version,
-                    "Manage dependencies with Poetry.",
-                    "0",
-                    export_docs=True,
-                ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UPDATE_README, step=UpdateReadMe(context), depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST]
-            )
-        ],
-    ]
+        ]
+    )
     async with semaphore:
         async with context:
             try:
@@ -485,3 +458,11 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             context.report = report
 
     return report
+
+
+async def run_connector_migration_to_poetry_pipeline_wrapper(context: ConnectorContext, semaphore: Semaphore, *args: Any) -> Report:
+    """
+    Wrapper for running the connector migration to poetry pipeline,
+    allowing it to match the expected signature for run_connectors_pipelines without accepting any additional arguments.
+    """
+    return await run_connector_migration_to_poetry_pipeline(context, semaphore)

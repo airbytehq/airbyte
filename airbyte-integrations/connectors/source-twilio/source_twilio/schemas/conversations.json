@@ -1,44 +1,57 @@
 {
   "properties": {
     "sid": {
+      "description": "The unique identifier for the conversation.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the conversation.",
       "type": ["null", "string"]
     },
     "chat_service_sid": {
+      "description": "The SID (Service Identifier) for the chat service to which the conversation belongs.",
       "type": ["null", "string"]
     },
     "messaging_service_sid": {
+      "description": "The SID for the messaging service associated with the conversation.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A human-readable name assigned to the conversation.",
       "type": ["null", "string"]
     },
     "unique_name": {
+      "description": "A unique name assigned to the conversation for easy identification.",
       "type": ["null", "string"]
     },
     "attributes": {
+      "description": "Additional attributes or metadata associated with the conversation.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the conversation was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the conversation was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The current state of the conversation (e.g., active, inactive).",
       "type": ["null", "string"]
     },
     "timers": {
+      "description": "Information about timers set for the conversation.",
       "type": ["null", "object"]
     },
     "bindings": {
+      "description": "Information about the communication channels bound to the conversation.",
       "type": ["null", "object"]
     },
     "url": {
+      "description": "The URL endpoint for accessing or interacting with the conversation data.",
       "type": ["null", "string"]
     }
   },

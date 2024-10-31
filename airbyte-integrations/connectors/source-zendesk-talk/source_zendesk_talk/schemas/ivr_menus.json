@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "default": {
+      "description": "The default action or response for this IVR menu.",
       "type": ["null", "boolean"]
     },
     "greeting_id": {
+      "description": "The ID of the greeting message associated with this IVR menu.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier of the IVR menu.",
       "type": ["null", "integer"]
     },
     "ivr_id": {
+      "description": "The ID of the IVR associated with this menu.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the IVR menu.",
       "type": ["null", "string"]
     }
   }

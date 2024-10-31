@@ -8,18 +8,24 @@ from typing import Dict, List
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
-from pipelines.airbyte_ci.connectors.test.steps.common import RegressionTests
+from pipelines.airbyte_ci.connectors.test.steps.common import LiveTests
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
+from pipelines.consts import LOCAL_BUILD_PLATFORM, MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS, ContextState
+from pipelines.hacks import do_regression_test_status_check
 from pipelines.helpers.execution import argument_parsing
 from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
+from pipelines.models.secrets import GSMSecretStore
 from pipelines.models.steps import STEP_PARAMS
+
+GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
+GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
+REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression Test Results Reviewed and Approved"
 
 
 @click.command(
@@ -67,6 +73,18 @@ from pipelines.models.steps import STEP_PARAMS
     type=click.Choice([step_id.value for step_id in CONNECTOR_TEST_STEP_ID]),
     help="Only run specific step by name. Can be used multiple times to keep multiple steps.",
 )
+@click.option(
+    "--global-status-check-context",
+    "global_status_check_context",
+    help="The context of the global status check which will be sent to GitHub status API.",
+    default=GITHUB_GLOBAL_CONTEXT_FOR_TESTS,
+)
+@click.option(
+    "--global-status-check-description",
+    "global_status_check_description",
+    help="The description of the global status check which will be sent to GitHub status API.",
+    default=GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS,
+)
 @click.argument(
     "extra_params", nargs=-1, type=click.UNPROCESSED, callback=argument_parsing.build_extra_params_mapping(CONNECTOR_TEST_STEP_ID)
 )
@@ -78,6 +96,8 @@ async def test(
     concurrent_cat: bool,
     skip_steps: List[str],
     only_steps: List[str],
+    global_status_check_context: str,
+    global_status_check_description: str,
     extra_params: Dict[CONNECTOR_TEST_STEP_ID, STEP_PARAMS],
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
@@ -85,14 +105,22 @@ async def test(
     Args:
         ctx (click.Context): The click context.
     """
+    ctx.obj["global_status_check_context"] = global_status_check_context
+    ctx.obj["global_status_check_description"] = global_status_check_description
+
+    if ctx.obj["ci_gcp_credentials"]:
+        ctx.obj["secret_stores"][MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS] = GSMSecretStore(ctx.obj["ci_gcp_credentials"])
+    else:
+        main_logger.warn(f"The credentials to connect to {MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS} were are not defined.")
+
     if only_steps and skip_steps:
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
         skip_steps = list(skip_steps)
-        skip_steps += [CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS]
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 
+    do_regression_test_status_check(ctx, REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT, main_logger)
     if ctx.obj["selected_connectors_with_modified_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
     else:
@@ -108,23 +136,24 @@ async def test(
     )
 
     connectors_tests_contexts = [
-        ConnectorContext(
-            pipeline_name=f"Testing connector {connector.technical_name}",
+        ConnectorTestContext(
+            pipeline_name=f"{global_status_check_context} on {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
@@ -134,6 +163,7 @@ async def test(
             concurrent_cat=concurrent_cat,
             run_step_options=run_step_options,
             targeted_platforms=[LOCAL_BUILD_PLATFORM],
+            secret_stores=ctx.obj["secret_stores"],
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -153,9 +183,9 @@ async def test(
         return False
 
     finally:
-        if RegressionTests.regression_tests_artifacts_dir.exists():
-            shutil.rmtree(RegressionTests.regression_tests_artifacts_dir)
-            main_logger.info(f"  Test artifacts cleaned up from {RegressionTests.regression_tests_artifacts_dir}")
+        if LiveTests.local_tests_artifacts_dir.exists():
+            shutil.rmtree(LiveTests.local_tests_artifacts_dir)
+            main_logger.info(f"  Test artifacts cleaned up from {LiveTests.local_tests_artifacts_dir}")
 
     @ctx.call_on_close
     def send_commit_status_check() -> None:

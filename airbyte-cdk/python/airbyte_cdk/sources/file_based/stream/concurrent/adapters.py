@@ -22,6 +22,7 @@ from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFin
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -42,7 +43,7 @@ This module contains adapters to help enabling concurrency on File-based Stream 
 """
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBasedStream):
     @classmethod
     def create_from_stream(
@@ -127,6 +128,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         return self._legacy_stream.supports_incremental
 
     @property
+    @deprecated(version="3.7.0")
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._legacy_stream.availability_strategy
 
@@ -145,7 +147,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         return self._legacy_stream.get_files()
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
-        yield from self._legacy_stream.read_records_from_slice(stream_slice)
+        yield from self._legacy_stream.read_records_from_slice(stream_slice)  # type: ignore[misc] # Only Mapping[str, Any] is expected for legacy streams, not AirbyteMessage
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()
@@ -226,10 +228,10 @@ class FileBasedStreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    yield Record(data_to_return, self.stream_name())
-                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD:
+                    yield Record(data_to_return, self)
+                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record is not None:
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
-                    yield Record(record_data.record.data, self.stream_name())
+                    yield Record(record_data.record.data, self)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:

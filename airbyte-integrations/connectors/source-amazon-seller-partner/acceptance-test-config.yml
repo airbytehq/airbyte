@@ -4,8 +4,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_amazon_seller_partner/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "2.0.1"
+        deployment_mode: "cloud"
+      - spec_path: "integration_tests/spec_oss.json"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,11 +16,7 @@ acceptance_tests:
         timeout_seconds: 60
   discovery:
     tests:
-      - config_path:
-          "secrets/config.json"
-          # refactored `spec`, but `app_id` is required for `1.2.0`
-        backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -103,6 +99,10 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_FORECASTING_RETAIL_REPORT
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
+          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
   incremental:
     tests:
       - config_path: "secrets/config.json"

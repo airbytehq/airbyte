@@ -7,11 +7,11 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.19
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-mailchimp
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -37,10 +37,7 @@ data:
           - scopeType: stream
             impactedScopes: ["segment_members", "list_members"]
       1.0.0:
-        message:
-          Version 1.0.0 introduces schema changes to all incremental streams.
-          A full schema refresh and data reset are required to upgrade to this version.
-          For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
+        message: Version 1.0.0 introduces schema changes to all incremental streams. A full schema refresh and data reset are required to upgrade to this version. For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
         upgradeDeadline: "2024-01-10"
   releaseStage: generally_available
   suggestedStreams:
@@ -53,4 +50,24 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailchimp_config_oauth_dev_null
+          id: 46a5be1e-a798-407b-a7ae-00184e04b690
+        - name: mailchimp_config_dev_null
+          id: 7da811da-0320-407a-8d6e-7120eeead385
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MAILCHIMP_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MAILCHIMP__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

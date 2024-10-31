@@ -8,7 +8,7 @@ data:
   icon: mqtt.svg
   license: MIT
   name: MQTT
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

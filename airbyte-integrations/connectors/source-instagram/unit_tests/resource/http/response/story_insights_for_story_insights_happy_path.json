@@ -1,0 +1,88 @@
+{
+  "data": [
+    {
+      "name": "replies",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 0
+        }
+      ],
+      "title": "replies title",
+      "description": "replies description.",
+      "id": "3874523487643/insights/replies/lifetime"
+    },
+    {
+      "name": "impressions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 105
+        }
+      ],
+      "title": "impressions title",
+      "description": "Impressions description.",
+      "id": "3874523487643/insights/impressions/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 105
+        }
+      ],
+      "title": "Reach title",
+      "description": "Reach description.",
+      "id": "3874523487643/insights/reach/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 5
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "3874523487643/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 23
+        }
+      ],
+      "title": "Profile visits title.",
+      "description": "Profile visits description.",
+      "id": "3874523487643/insights/profile_visits/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 0
+        }
+      ],
+      "title": "Shares title",
+      "description": "Shares description.",
+      "id": "3874523487643/insights/shares/lifetime"
+    },
+    {
+      "name": "total_interactions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 4
+        }
+      ],
+      "title": "Total interactions title",
+      "description": "Total interactions description.",
+      "id": "3874523487643/insights/total_interactions/lifetime"
+    }
+  ]
+}

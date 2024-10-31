@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor.abstract_concurrent_file_based_cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY
+from airbyte_cdk.sources.streams import NO_CURSOR_STATE_KEY
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
@@ -32,11 +32,11 @@ class FileBasedFinalStateCursor(AbstractConcurrentFileBasedCursor):
         # Normally the connector state manager operates at the source-level. However, we only need it to write the sentinel
         # state message rather than manage overall source state. This is also only temporary as we move to the resumable
         # full refresh world where every stream uses a FileBasedConcurrentCursor with incremental state.
-        self._connector_state_manager = ConnectorStateManager(stream_instance_map={})
+        self._connector_state_manager = ConnectorStateManager()
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+        return {NO_CURSOR_STATE_KEY: True}
 
     def observe(self, record: Record) -> None:
         pass

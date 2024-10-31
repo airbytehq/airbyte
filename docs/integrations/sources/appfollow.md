@@ -35,7 +35,25 @@ The Appfollow connector ideally should gracefully handle Appfollow API limitatio
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject               |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.0   | 2023-08-05 | [29128](https://github.com/airbytehq/airbyte/pull/29128) | Migrate to low-code and add new streams  |
-| 0.1.1   | 2022-08-11 | [14418](https://github.com/airbytehq/airbyte/pull/14418) | New Source: Appfollow |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                 |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
+| 1.1.0 | 2024-08-23 | [44598](https://github.com/airbytehq/airbyte/pull/44598) | Refactor connector to manifest-only format |
+| 1.0.12 | 2024-08-17 | [44338](https://github.com/airbytehq/airbyte/pull/44338) | Update dependencies |
+| 1.0.11 | 2024-08-12 | [43931](https://github.com/airbytehq/airbyte/pull/43931) | Update dependencies |
+| 1.0.10 | 2024-08-10 | [43681](https://github.com/airbytehq/airbyte/pull/43681) | Update dependencies |
+| 1.0.9 | 2024-08-03 | [43293](https://github.com/airbytehq/airbyte/pull/43293) | Update dependencies |
+| 1.0.8 | 2024-07-27 | [42387](https://github.com/airbytehq/airbyte/pull/42387) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41372](https://github.com/airbytehq/airbyte/pull/41372) | Update dependencies |
+| 1.0.6 | 2024-07-09 | [41234](https://github.com/airbytehq/airbyte/pull/41234) | Update dependencies |
+| 1.0.5 | 2024-07-06 | [40793](https://github.com/airbytehq/airbyte/pull/40793) | Update dependencies |
+| 1.0.4 | 2024-06-25 | [40284](https://github.com/airbytehq/airbyte/pull/40284) | Update dependencies |
+| 1.0.3 | 2024-06-22 | [40014](https://github.com/airbytehq/airbyte/pull/40014) | Update dependencies |
+| 1.0.2 | 2024-06-04 | [38966](https://github.com/airbytehq/airbyte/pull/38966) | [autopull] Upgrade base image to v1.2.1 |
+| 1.0.1 | 2024-05-20 | [38388](https://github.com/airbytehq/airbyte/pull/38388) | [autopull] base image + poetry + up_to_date |
+| 1.0.0 | 2023-08-05 | [29128](https://github.com/airbytehq/airbyte/pull/29128) | Migrate to low-code and add new streams |
+| 0.1.1 | 2022-08-11 | [14418](https://github.com/airbytehq/airbyte/pull/14418) | New Source: Appfollow |
+
+</details>

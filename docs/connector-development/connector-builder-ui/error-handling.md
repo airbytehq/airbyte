@@ -6,7 +6,7 @@ When using the "Test" button to run a test sync of the connector, the Connector 
 
 Error handlers allow for the connector to decide how to continue fetching data according to the contents of the response from the partner API. Depending on attributes of the response such as status code, text body, or headers, the connector can continue making requests, retry unsuccessful attempts, or fail the sync.
 
-An error handler is made of two parts, "Backoff strategy" and "Response filter". When the conditions of the response filter are met, the connector will proceed with the sync according to behavior specified. See the [Response filter](#response-filter) section for a detailed breakdown of possible response filter actions. In the event of a failed request that needs to be retried, the backoff strategy determines how long the connector should wait before attempting the request again. 
+An error handler is made of two parts, "Backoff strategy" and "Response filter". When the conditions of the response filter are met, the connector will proceed with the sync according to behavior specified. See the [Response filter](#response-filter) section for a detailed breakdown of possible response filter actions. In the event of a failed request that needs to be retried, the backoff strategy determines how long the connector should wait before attempting the request again.
 
 When an error handler is not configured for a stream, the connector will default to retrying requests that received a 429 and 5XX status code in the response 5 times using a 5-second exponential backoff. This default retry behavior is recommended if the API documentation does not specify error handling or retry behavior.
 
@@ -15,10 +15,11 @@ Refer to the documentation of the API you are building a connector for to determ
 ## Backoff strategies
 
 The API documentation will usually cover when to reattempt a failed request that is retryable. This is often through a `429 Too Many Requests` response status code, but it can vary for different APIs. The following backoff strategies are supported in the connector builder:
-* [Constant](#constant)
-* [Exponential](#exponential)
-* [Wait time from header](#wait-time-from-header)
-* [Wait until time from header](#wait-until-time-from-header)
+
+- [Constant](#constant)
+- [Exponential](#exponential)
+- [Wait time from header](#wait-time-from-header)
+- [Wait until time from header](#wait-until-time-from-header)
 
 ### Constant
 
@@ -38,7 +39,7 @@ Note: When no backoff strategy is defined, the connector defaults to using an ex
 
 #### Example
 
-The [Delighted API](https://app.delighted.com/docs/api#rate-limits) is an API that recommends using an exponential backoff. In this case, the API documentation recommends retrying requests after 2 seconds, 4 seconds, then 8 seconds and so on. 
+The [Delighted API](https://app.delighted.com/docs/api#rate-limits) is an API that recommends using an exponential backoff. In this case, the API documentation recommends retrying requests after 2 seconds, 4 seconds, then 8 seconds and so on.
 
 Although a lot of API documentation does not call out using an exponential backoff, some APIs like the [Posthog API](https://posthog.com/docs/api) mention rate limits that are advantageous to use an exponential backoff. In this case, the rate limit of 240 requests/min should work for most syncs. However, if there is a spike in traffic, then the exponential backoff allows the connector to avoid sending more requests than the endpoint can support.
 
@@ -62,7 +63,7 @@ The "Wait until time from header" backoff strategy allows the connector to wait 
 
 #### Example
 
-The [Recurly API](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits) is an API that defines a header `X-RateLimit-Reset` which specifies when the request rate limit will be reset. 
+The [Recurly API](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits) is an API that defines a header `X-RateLimit-Reset` which specifies when the request rate limit will be reset.
 
 Take for example a connector that makes a request at 25/04/2023 01:00:00 GMT and receives a response with a 429 status code and the header `X-RateLimit-Reset` set to 1682413200. This epoch time is equivalent to 25/04/2023 02:00:00 GMT. Using the `X-RateLimit-Reset` header value, the connector will pause the sync for one hour before attempting subsequent requests to the Recurly API.
 
@@ -75,9 +76,10 @@ A response filter should be used when a connector needs to interpret an API resp
 ### Response conditions
 
 The following conditions can be specified on the "Response filter" and are used to determine if attributes of the response match the filter. When more than one of condition is specified, the filter will take action if the response satisfies any of the conditions:
-* [If error message matches](#if-error-message-matches)
-* [and predicate is fulfilled](#and-predicate-is-fulfilled)
-* [and HTTP codes match](#and-http-codes-match)
+
+- [If error message matches](#if-error-message-matches)
+- [and predicate is fulfilled](#and-predicate-is-fulfilled)
+- [and HTTP codes match](#and-http-codes-match)
 
 #### If error message matches
 
@@ -106,6 +108,7 @@ The Pocket API emits API responses for rate limiting errors using a 403 error st
 ### Then execute action
 
 If a response from the API matches the predicates of the response filter the connector will continue the sync according to the "Then execute action" definition. This is a list of the actions that a connector can take:
+
 - SUCCESS: The response was successful and the connector will extract records from the response and emit them to a destination. The connector will continue fetching the next set of records from the API.
 - RETRY: The response was unsuccessful, but the error is transient and may be successful on subsequent attempts. The request will be retried according to the backoff policy defined on the error handler.
 - IGNORE: The response was unsuccessful, but the error should be ignored. The connector will not emit any records for the current response. The connector will continue fetching the next set of records from the API.

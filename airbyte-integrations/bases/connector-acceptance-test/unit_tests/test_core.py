@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -32,6 +31,7 @@ from airbyte_protocol.models import (
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
     Config,
+    DiscoveryTestConfig,
     ExpectedRecordsConfig,
     FileTypesConfig,
     IgnoredFieldsConfiguration,
@@ -83,10 +83,11 @@ def test_discovery_uniquely_named_streams():
             "json_schema": {"properties": {"created": {"type": "string"}}},
             "default_cursor_field": ["created"],
             "supported_sync_modes": ["full_refresh", "incremental"],
+            "namespace": "test_namespace",
         }
     )
     streams = [stream_a, stream_a]
-    assert t.duplicated_stream_names(streams) == ["test_stream"]
+    assert t.duplicated_stream_names(streams) == [("test_namespace", "test_stream")]
     streams.pop()
     assert len(t.duplicated_stream_names(streams)) == 0
 
@@ -556,6 +557,227 @@ def test_catalog_has_supported_data_types(discovered_catalog, expectation):
 
 
 @pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": None,
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["string"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"]],
+                    },
+                ),
+            },
+            pytest.raises(AssertionError, match="Stream stream_1 does not have defined primary key in schema"),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["object"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'object'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["array"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "data": {"type": ["object"], "properties": {"id": {"type": ["array"]}}},
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["data", "id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["array"]}, "timestamp": {"type": ["integer"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError, match="Stream stream_1 contains primary key with forbidden type of {'array'}"
+            ),
+        ),
+        (
+            {
+                "stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_1",
+                        "json_schema": {"properties": {"id": {"type": ["object", "null"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["timestamp"], ["id"]],
+                    },
+                ),
+                "stream_2": AirbyteStream.parse_obj(
+                    {
+                        "name": "stream_2",
+                        "json_schema": {"properties": {"id": {"type": ["array"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": [["id"]],
+                    },
+                ),
+            },
+            pytest.raises(
+                AssertionError,
+                match=(
+                    "Stream stream_1 does not have defined primary key in schema\n  "
+                    "Stream stream_1 contains primary key with forbidden type of .*\n  "
+                    "Stream stream_2 contains primary key with forbidden type of {'array'}"
+                ),
+            ),
+        ),
+    ],
+    ids=[
+        "when_no_source_defined_primary_key_then_pass",
+        "when_correct_data_type_then_pass",
+        "when_nested_key_correct_data_type_then_pass",
+        "when_composite_key_correct_data_type_then_pass",
+        "when_no_key_found_in_schema_then_fail",
+        "when_data_type_is_object_then_fail",
+        "when_nested_key_data_type_is_object_then_fail",
+        "when_composite_key_data_type_is_object_then_fail",
+        "when_data_type_is_array_then_fail",
+        "when_nested_key_data_type_is_array_then_fail",
+        "when_composite_key_data_type_is_array_then_fail",
+        "when_multiple_errors_found_then_fail_all_errors_reported",
+    ],
+)
+def test_primary_keys_data_type(discovered_catalog, expectation):
+    t = test_core.TestDiscovery()
+    inputs = DiscoveryTestConfig()
+    with expectation:
+        t.test_primary_keys_data_type(inputs, discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "test_strictness_level, configured_catalog_path",
     [
         (Config.TestStrictnessLevel.high, None),
@@ -667,7 +889,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             None,
             does_not_raise(),
         ),
-        # Expected and Actual records are not equal but we ignore fast changing field
+        # Expected and Actual records are not equal, but we ignore fast changing field
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
@@ -677,7 +899,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             None,
             does_not_raise(),
         ),
-        # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
+        # Expected and Actual records are not equal, but we ignore fast changing field (for case when exact_order=True)
         (
             {"type": "object"},
             {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
@@ -717,7 +939,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             [["primary_key"]],
             does_not_raise(),
         ),
-        # Match by primary key when non primary key field values differ
+        # Match by primary key when non-primary key field values differ
         (
             {"type": "object"},
             {},
@@ -789,6 +1011,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             should_validate_data_points=False,
             should_validate_stream_statuses=False,
             should_validate_state_messages=False,
+            should_validate_primary_keys_data_type=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
@@ -1489,6 +1712,7 @@ async def test_read_validate_async_output_stream_statuses(mocker):
         should_validate_data_points=False,
         should_validate_stream_statuses=True,
         should_validate_state_messages=False,
+        should_validate_primary_keys_data_type=False,
         should_fail_on_extra_columns=False,
         empty_streams=set(),
         expected_records_by_stream={},
@@ -1590,6 +1814,7 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
             should_validate_data_points=False,
             should_validate_stream_statuses=True,
             should_validate_state_messages=False,
+            should_validate_primary_keys_data_type=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream={},
@@ -1703,19 +1928,19 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
     config = BasicReadTestConfig(config_path="config_path", file_types=FileTypesConfig(skip_test=False))
 
     if should_fail:
-        with pytest.raises(AssertionError) as e:
+        with pytest.raises(AssertionError):
             await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
     else:
         await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
 
+
 @pytest.mark.parametrize(
     ("state_message_params", "should_fail"),
     (
-            ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
-            ({"type": AirbyteStateType.STREAM}, True),
-            ({"type": AirbyteStateType.LEGACY}, True),
-            ({}, True),  # Case where state was not emitted
-
+        ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
+        ({"type": AirbyteStateType.STREAM}, True),
+        ({"type": AirbyteStateType.LEGACY}, True),
+        ({}, True),  # Case where state was not emitted
     ),
 )
 async def test_read_validate_async_output_state_messages(mocker, state_message_params, should_fail):
@@ -1730,7 +1955,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
     )
     stream = AirbyteStreamState(
         stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
-        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True)
+        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True)
     )
     async_stream_output = [
         AirbyteMessage(
@@ -1784,13 +2009,14 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
                 should_validate_data_points=False,
                 should_validate_stream_statuses=True,
                 should_validate_state_messages=True,
+                should_validate_primary_keys_data_type=False,
                 should_fail_on_extra_columns=False,
                 empty_streams=set(),
                 expected_records_by_stream={},
                 docker_runner=docker_runner_mock,
                 ignored_fields=None,
                 detailed_logger=MagicMock(),
-                certified_file_based_connector=False
+                certified_file_based_connector=False,
             )
     else:
         await t.test_read(
@@ -1801,11 +2027,125 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
             should_validate_data_points=False,
             should_validate_stream_statuses=True,
             should_validate_state_messages=True,
+            should_validate_primary_keys_data_type=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream={},
             docker_runner=docker_runner_mock,
             ignored_fields=None,
             detailed_logger=MagicMock(),
-            certified_file_based_connector=False
+            certified_file_based_connector=False,
+        )
+
+
+@pytest.mark.parametrize(
+    ("primary_key", "record", "expectation"),
+    (
+        ([["id"]], {"id": "1"}, does_not_raise()),
+        ([["data", "id"]], {"data": {"id": "1"}}, does_not_raise()),
+        ([["id"], ["timestamp"]], {"id": "1", "timestamp": 1}, does_not_raise()),
+        (None, {"id": "1"}, does_not_raise()),
+        (
+            [["id"]],
+            {"id": {"_id": "1"}},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'object'"),
+        ),
+        (
+            [["data", "id"]],
+            {"data": {"id": {"_id": "1"}}},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'object'"),
+        ),
+        (
+            [["id"], ["timestamp"]],
+            {"id": {"_id": "1"}, "timestamp": 1},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'object'"),
+        ),
+        (
+            [["id"]],
+            {"id": ["1"]},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'array'"),
+        ),
+        (
+            [["data", "id"]],
+            {"data": {"id": ["1"]}},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'array'"),
+        ),
+        (
+            [["id"], ["timestamp"]],
+            {"id": ["1"], "timestamp": 1},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with forbidden type of 'array'"),
+        ),
+        (
+            [["id"]],
+            {"id": None},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with null values in all"),
+        ),
+        (
+            [["data", "id"]],
+            {"data": {"id": None}},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with null values in all"),
+        ),
+        (
+            [["id"], ["timestamp"]],
+            {"id": None, "timestamp": None},
+            pytest.raises(AssertionError, match="Stream stream_1 contains primary key with null values in all"),
+        ),
+        ([["id"], ["timestamp"]], {"id": None, "timestamp": 1}, does_not_raise()),
+    ),
+    ids=(
+        "when_correct_data_type_then_pass",
+        "when_nested_key_correct_data_type_then_pass",
+        "when_composite_key_correct_data_type_then_pass",
+        "when_no_key_defined_then_pass",
+        "when_data_type_is_object_then_fail",
+        "when_nested_key_data_type_is_object_then_fail",
+        "when_composite_key_data_type_is_object_then_fail",
+        "when_data_type_is_array_then_fail",
+        "when_nested_key_data_type_is_array_then_fail",
+        "when_composite_key_data_type_is_array_then_fail",
+        "when_key_is_null_then_fail",
+        "when_nested_key_is_null_then_fail",
+        "when_composite_key_all_sub_keys_are_null_then_fail",
+        "when_composite_key_one_sub_key_is_null_then_pass",
+    ),
+)
+async def test_read_validate_primary_keys_data_type(mocker, primary_key, record, expectation):
+    stream_name = "stream_1"
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name=stream_name,
+                    json_schema={},
+                    supported_sync_modes=["full_refresh"],
+                    source_defined_primary_key=primary_key,
+                ),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            ),
+        ],
+    )
+    stream_output = [
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=1)),
+    ]
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=stream_output))
+
+    t = test_core.TestBasicRead()
+    with expectation:
+        await t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=_DEFAULT_RECORD_CONFIG,
+            should_validate_schema=False,
+            should_validate_data_points=False,
+            should_validate_stream_statuses=False,
+            should_validate_state_messages=False,
+            should_validate_primary_keys_data_type=True,
+            should_fail_on_extra_columns=False,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            ignored_fields=None,
+            detailed_logger=MagicMock(),
+            certified_file_based_connector=False,
         )

@@ -10,12 +10,12 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.stream.Collectors
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import org.apache.commons.io.FileUtils
 
 private val log = KotlinLogging.logger {}
@@ -29,6 +29,7 @@ private val log = KotlinLogging.logger {}
  * writing, we avoid doing so to simplify the migration to async flushing.
  */
 object SerialFlush {
+    val RANDOM_CONNECTION_ID: UUID = UUID.randomUUID()
     /**
      * Logic handling how destinations with staging areas (aka bucket storages) will flush their
      * buffer
@@ -46,8 +47,6 @@ object SerialFlush {
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ): FlushBufferFunction {
         // TODO: (ryankfu) move this block of code that executes before the lambda to
         // #onStartFunction
@@ -69,10 +68,9 @@ object SerialFlush {
             val message =
                 String.format(
                     "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                    conflictingStreams
-                        .stream()
-                        .map { config: WriteConfig -> config.namespace + "." + config.streamName }
-                        .collect(Collectors.joining(", "))
+                    conflictingStreams.joinToString(", ") { config: WriteConfig ->
+                        config.namespace + "." + config.streamName
+                    }
                 )
             throw ConfigErrorException(message)
         }
@@ -90,14 +88,14 @@ object SerialFlush {
             }
 
             val writeConfig = pairToWriteConfig.getValue(pair)
-            val schemaName = writeConfig.outputSchemaName
-            val stageName = stagingOperations.getStageName(schemaName, writeConfig.outputTableName)
+            val schemaName = writeConfig.rawNamespace
+            val stageName = stagingOperations.getStageName(schemaName, writeConfig.rawTableName)
             val stagingPath =
                 stagingOperations.getStagingPath(
-                    SerialStagingConsumerFactory.Companion.RANDOM_CONNECTION_ID,
+                    RANDOM_CONNECTION_ID,
                     schemaName,
                     writeConfig.streamName,
-                    writeConfig.outputTableName,
+                    writeConfig.rawTableName,
                     writeConfig.writeDatetime
                 )
             try {
@@ -115,14 +113,10 @@ object SerialFlush {
                         database,
                         stageName,
                         stagingPath,
-                        java.util.List.of(stagedFile),
-                        writeConfig.outputTableName,
+                        listOf(stagedFile),
+                        writeConfig.rawTableName,
                         schemaName,
                         stagingOperations,
-                        writeConfig.namespace,
-                        writeConfig.streamName,
-                        typerDeduperValve,
-                        typerDeduper
                     )
                 }
             } catch (e: Exception) {

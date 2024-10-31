@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "campaign.id": {
+      "description": "The unique identifier for the campaign.",
       "type": ["null", "integer"]
     },
     "label.id": {
+      "description": "The unique identifier for the label.",
       "type": ["null", "integer"]
     },
     "campaign.resource_name": {
+      "description": "The resource name of the campaign.",
       "type": ["null", "string"]
     },
     "campaign_label.resource_name": {
+      "description": "The resource name of the relationship between a campaign and a label.",
       "type": ["null", "string"]
     },
     "label.name": {
+      "description": "The name of the label.",
       "type": ["null", "string"]
     },
     "label.resource_name": {
+      "description": "The resource name of the label.",
       "type": ["null", "string"]
     }
   }

@@ -17,7 +17,7 @@ interface StreamCopierFactory<T> {
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
         sqlOperations: SqlOperations?
-    ): StreamCopier?
+    ): StreamCopier
 
     companion object {
         @JvmStatic

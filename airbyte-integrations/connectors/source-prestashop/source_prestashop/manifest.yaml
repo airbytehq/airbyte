@@ -53,8 +53,12 @@ definitions:
         request_parameters:
           $ref: "#/definitions/requester/request_parameters"
           date: "1"
-          sort: "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key'] }}_ASC]"
-          "filter[{{ parameters['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
+          sort:
+            "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key']
+            }}_ASC]"
+          "filter[{{ parameters['cursor_field'] }}]":
+            "[{{ stream_slice['start_time']
+            }},{{ stream_slice['end_time'] }}]"
   addresses_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -63,6 +67,131 @@ definitions:
       data_key: "addresses"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the address.
+            type:
+              - "null"
+              - integer
+          id_customer:
+            description: ID of the customer to whom the address belongs.
+            type:
+              - "null"
+              - string
+          id_manufacturer:
+            description: ID of the manufacturer associated with the address.
+            type:
+              - "null"
+              - string
+          id_supplier:
+            description: ID of the supplier associated with the address.
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            description: ID of the warehouse linked to the address.
+            type:
+              - "null"
+              - string
+          id_country:
+            description: ID of the country associated with the address.
+            type:
+              - "null"
+              - string
+          id_state:
+            description: ID of the state or region associated with the address.
+            type:
+              - "null"
+              - string
+          alias:
+            description: An alias for the address for easy identification.
+            type:
+              - "null"
+              - string
+          company:
+            description: Company name associated with the address.
+            type:
+              - "null"
+              - string
+          lastname:
+            description: Last name of the person associated with the address.
+            type:
+              - "null"
+              - string
+          firstname:
+            description: First name of the person associated with the address.
+            type:
+              - "null"
+              - string
+          vat_number:
+            description: VAT (Value Added Tax) number associated with the address.
+            type:
+              - "null"
+              - string
+          address1:
+            description: First line of the address.
+            type:
+              - "null"
+              - string
+          address2:
+            description: Second line of the address (if applicable).
+            type:
+              - "null"
+              - string
+          postcode:
+            description: Postal code of the address.
+            type:
+              - "null"
+              - string
+          city:
+            description: City of the address.
+            type:
+              - "null"
+              - string
+          other:
+            description: Any additional information or notes about the address.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number for the address.
+            type:
+              - "null"
+              - string
+          phone_mobile:
+            description: Mobile phone number for the address.
+            type:
+              - "null"
+              - string
+          dni:
+            description:
+              DNI (Documento Nacional de Identidad) number associated with
+              the address.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Flag indicating if the address is deleted or not.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date when the address was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date when the address was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
   carriers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -70,6 +199,122 @@ definitions:
       path: "/carriers"
       data_key: "carriers"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the carrier
+            type:
+              - "null"
+              - integer
+          deleted:
+            description: Indicates if the carrier is deleted or not
+            type:
+              - "null"
+              - string
+          is_module:
+            description: Indicates if the carrier is provided by a module
+            type:
+              - "null"
+              - string
+          id_tax_rules_group:
+            description: ID of the tax rules group applied to this carrier
+            type:
+              - "null"
+              - string
+          id_reference:
+            description: Reference identifier for the carrier
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the carrier
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the carrier is active or not
+            type:
+              - "null"
+              - string
+          is_free:
+            description: Indicates if the carrier is free for shipping or not
+            type:
+              - "null"
+              - string
+          url:
+            description: URL for additional information about the carrier
+            type:
+              - "null"
+              - string
+          shipping_handling:
+            description: Indicates if the carrier charges handling fees
+            type:
+              - "null"
+              - string
+          shipping_external:
+            description: Indicates if the carrier provides external shipping
+            type:
+              - "null"
+              - string
+          range_behavior:
+            description: Behavior of the price range for this carrier
+            type:
+              - "null"
+              - string
+          shipping_method:
+            description: Specific shipping method used by the carrier
+            type:
+              - string
+              - integer
+          max_width:
+            description: Maximum width of the package allowed for this carrier
+            type:
+              - "null"
+              - string
+          max_height:
+            description: Maximum height of the package allowed for this carrier
+            type:
+              - "null"
+              - string
+          max_depth:
+            description: Maximum depth of the package allowed for this carrier
+            type:
+              - "null"
+              - string
+          max_weight:
+            description: Maximum weight of the package allowed for this carrier
+            type:
+              - "null"
+              - string
+          grade:
+            description: Grade of the carrier based on its performance
+            type:
+              - "null"
+              - string
+          external_module_name:
+            description: Name of the external module used by the carrier
+            type:
+              - "null"
+              - string
+          need_range:
+            description: Indicates if a price range is needed for this carrier
+            type:
+              - "null"
+              - string
+          position:
+            description: Position of the carrier in the carrier list
+            type:
+              - "null"
+              - string
+          delay:
+            description: Estimated delivery time delay for this carrier
+            type:
+              - "null"
+              - string
   cart_rules_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -78,6 +323,208 @@ definitions:
       data_key: "cart_rules"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the cart rule.
+            type:
+              - "null"
+              - integer
+          id_customer:
+            description: ID of the customer associated with the cart rule.
+            type:
+              - "null"
+              - string
+          date_from:
+            description: The start date and time when the cart rule becomes active.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_to:
+            description: The end date and time when the cart rule expires.
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            description: A brief description of the cart rule and its conditions.
+            type:
+              - "null"
+              - string
+          quantity:
+            description:
+              Minimum quantity of products required to trigger the cart
+              rule.
+            type:
+              - "null"
+              - string
+          quantity_per_user:
+            description:
+              Maximum quantity of product per user that the cart rule applies
+              to.
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority order in which cart rules are applied during checkout.
+            type:
+              - "null"
+              - string
+          partial_use:
+            description:
+              Indicates whether the cart rule can be partially used or
+              applied multiple times.
+            type:
+              - "null"
+              - string
+          code:
+            description:
+              The unique code that customers can apply at checkout to trigger
+              the discount.
+            type:
+              - "null"
+              - string
+          minimum_amount:
+            description: Minimum order amount required to trigger the cart rule.
+            type:
+              - "null"
+              - string
+          minimum_amount_tax:
+            description:
+              Minimum order amount that includes taxes to trigger the cart
+              rule.
+            type:
+              - "null"
+              - string
+          minimum_amount_currency:
+            description: Currency code for the minimum order amount.
+            type:
+              - "null"
+              - string
+          minimum_amount_shipping:
+            description:
+              Minimum order amount that includes shipping cost to trigger
+              the cart rule.
+            type:
+              - "null"
+              - string
+          country_restriction:
+            description:
+              ISO country codes for countries the cart rule is applicable
+              to.
+            type:
+              - "null"
+              - string
+          carrier_restriction:
+            description: IDs of carriers the cart rule is restricted to.
+            type:
+              - "null"
+              - string
+          group_restriction:
+            description: Customer group IDs that are eligible for the cart rule.
+            type:
+              - "null"
+              - string
+          cart_rule_restriction:
+            description:
+              IDs of other cart rules that are restricted in conjunction
+              with this rule.
+            type:
+              - "null"
+              - string
+          product_restriction:
+            description:
+              IDs of specific products that the cart rule is restricted
+              to.
+            type:
+              - "null"
+              - string
+          shop_restriction:
+            description: IDs of shops where the cart rule is restricted to apply.
+            type:
+              - "null"
+              - string
+          free_shipping:
+            description: Indicates whether the cart rule offers free shipping.
+            type:
+              - "null"
+              - string
+          reduction_percent:
+            description: Percentage reduction applied by the cart rule.
+            type:
+              - "null"
+              - string
+          reduction_amount:
+            description: Fixed reduction amount applied by the cart rule.
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            description: Indicates whether the reduction amount includes taxes.
+            type:
+              - "null"
+              - string
+          reduction_currency:
+            description: Currency code for the reduction amount.
+            type:
+              - "null"
+              - string
+          reduction_product:
+            description: ID of the product to which the reduction applies.
+            type:
+              - "null"
+              - string
+          reduction_exclude_special:
+            description:
+              Indicates whether special offers are excluded from the cart
+              rule.
+            type:
+              - "null"
+              - string
+          gift_product:
+            description: ID of the product that will be added as a gift.
+            type:
+              - "null"
+              - string
+          gift_product_attribute:
+            description: ID of the product attribute for the gift product.
+            type:
+              - "null"
+              - string
+          highlight:
+            description:
+              Indicates whether the cart rule should be highlighted for
+              customers.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the cart rule is currently active.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the cart rule was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the cart rule was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: Name of the cart rule displayed to customers.
+            type:
+              - "null"
+              - string
   carts_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -86,6 +533,149 @@ definitions:
       data_key: "carts"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the cart
+            type:
+              - "null"
+              - integer
+          id_address_delivery:
+            description: ID of the delivery address for the cart
+            type:
+              - "null"
+              - string
+          id_address_invoice:
+            description: ID of the invoice address for the cart
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: ID of the currency used for the cart
+            type:
+              - "null"
+              - string
+          id_customer:
+            description: ID of the customer who owns the cart
+            type:
+              - "null"
+              - string
+          id_guest:
+            description: ID of the guest user associated with the cart
+            type:
+              - "null"
+              - string
+          id_lang:
+            description: ID of the language used for the cart
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description: ID of the shop group to which the shop belongs
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: ID of the shop where the cart was created
+            type:
+              - "null"
+              - string
+          id_carrier:
+            description: ID of the carrier for shipping the cart items
+            type:
+              - "null"
+              - string
+          recyclable:
+            description: Indicates if the cart items are recyclable
+            type:
+              - "null"
+              - string
+          gift:
+            description: Indicates if the cart includes a gift
+            type:
+              - "null"
+              - string
+          gift_message:
+            description: Message associated with the gift included in the cart
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            description: Identifier for the mobile theme used for the cart
+            type:
+              - "null"
+              - string
+          delivery_option:
+            description: Selected delivery options for the cart
+            type:
+              - "null"
+              - string
+          secure_key:
+            description: Unique secure key associated with the cart for security purposes
+            type:
+              - "null"
+              - string
+          allow_seperated_package:
+            description: Indicates if the cart allows separated packaging for items
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time when the cart was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date and time when the cart was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            description: Associations with other resources related to the cart
+            type: object
+            properties:
+              cart_rows:
+                description: Details of the products added to the cart
+                type: array
+                items:
+                  description: Information about each product in the cart
+                  type: object
+                  properties:
+                    id_product:
+                      description: ID of the product in the cart
+                      type:
+                        - "null"
+                        - string
+                    id_product_attribute:
+                      description:
+                        ID of the product attribute selected for the cart
+                        item
+                      type:
+                        - "null"
+                        - string
+                    id_address_delivery:
+                      description:
+                        ID of the delivery address associated with the
+                        cart item
+                      type:
+                        - "null"
+                        - string
+                    id_customization:
+                      description: ID of the customization related to the cart item
+                      type:
+                        - "null"
+                        - string
+                    quantity:
+                      description: Quantity of the product in the cart
+                      type:
+                        - "null"
+                        - string
   categories_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -94,6 +684,110 @@ definitions:
       data_key: "categories"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the category.
+            type:
+              - "null"
+              - integer
+          id_parent:
+            description: The identifier of the parent category.
+            type:
+              - "null"
+              - string
+          level_depth:
+            description: The level depth of the category in the category tree.
+            type:
+              - "null"
+              - string
+          nb_products_recursive:
+            description: The number of products in this category and its subcategories.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the category is active or not.
+            type:
+              - "null"
+              - string
+          id_shop_default:
+            description: The default shop identifier for the category.
+            type:
+              - "null"
+              - string
+          is_root_category:
+            description: Indicates whether the category is a root category.
+            type:
+              - "null"
+              - string
+          position:
+            description: The position of the category in a list of categories.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the category was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the category was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: The name of the category.
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            description: The URL-friendly version of the category name.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the category.
+            type:
+              - "null"
+              - string
+          meta_title:
+            description: The meta title for the category.
+            type:
+              - "null"
+              - string
+          meta_description:
+            description: The meta description for the category.
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            description: The meta keywords for the category.
+            type:
+              - "null"
+              - string
+          associations:
+            description: This field contains associations related to the category.
+            type: object
+            properties:
+              categories:
+                description: List of sub-categories associated with the main category.
+                type: array
+                items:
+                  description: Properties related to each sub-category.
+                  type: object
+                  properties:
+                    id:
+                      description: The unique identifier for the category.
+                      type:
+                        - "null"
+                        - string
   combinations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -101,6 +795,139 @@ definitions:
       path: "/combinations"
       data_key: "combinations"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: ID of this combination
+            type:
+              - "null"
+              - integer
+          id_product:
+            description: ID of the product this combination belongs to
+            type:
+              - "null"
+              - string
+          location:
+            description: Location of this combination in the warehouse
+            type:
+              - "null"
+              - string
+          ean13:
+            description: EAN-13 barcode for this combination
+            type:
+              - "null"
+              - string
+          isbn:
+            description: ISBN code for this combination
+            type:
+              - "null"
+              - string
+          upc:
+            description: UPC code for this combination
+            type:
+              - "null"
+              - string
+          mpn:
+            description: Manufacturer Part Number for this combination
+            type:
+              - "null"
+              - string
+          quantity:
+            description: Quantity available for this combination
+            type:
+              - "null"
+              - integer
+          reference:
+            description: Reference code for this combination
+            type:
+              - "null"
+              - string
+          supplier_reference:
+            description: Supplier reference code for this combination
+            type:
+              - "null"
+              - string
+          wholesale_price:
+            description: Wholesale price for this combination
+            type:
+              - "null"
+              - string
+          price:
+            description: Price of this combination
+            type:
+              - "null"
+              - string
+          ecotax:
+            description: Ecotax value for this combination
+            type:
+              - "null"
+              - string
+          weight:
+            description: Weight of this combination
+            type:
+              - "null"
+              - string
+          unit_price_impact:
+            description: Impact on unit price for this combination
+            type:
+              - "null"
+              - string
+          minimal_quantity:
+            description: Minimal quantity that can be ordered
+            type:
+              - "null"
+              - string
+          low_stock_threshold:
+            description: Threshold quantity for low stock
+            type:
+              - "null"
+              - string
+          low_stock_alert:
+            description: Threshold quantity for low stock alert
+            type:
+              - "null"
+              - string
+          default_on:
+            description: Indicates if this combination is set as default
+            type:
+              - "null"
+              - string
+          available_date:
+            description: Date when this combination is available
+            type:
+              - "null"
+              - string
+            format: date
+          associations:
+            description: Related data associated with this combination
+            type: object
+            properties:
+              product_option_values:
+                description: Product option values associated with this combination
+                type: array
+                items:
+                  description: ID of the product option value
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+              images:
+                description: Images associated with this combination
+                type: array
+                items:
+                  description: ID of the image
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   configurations_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -109,6 +936,53 @@ definitions:
       data_key: "configurations"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the configuration data.
+            type:
+              - "null"
+              - integer
+          value:
+            description: The value of the configuration parameter.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or key of the configuration parameter.
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description:
+              The identifier of the shop group associated with the configuration
+              data.
+            type:
+              - "null"
+              - string
+          id_shop:
+            description:
+              The identifier of the shop associated with the configuration
+              data.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date when the configuration data was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date when the configuration data was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
   contacts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -116,6 +990,37 @@ definitions:
       path: "/contacts"
       data_key: "contacts"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the contact.
+            type:
+              - "null"
+              - integer
+          email:
+            description: The email address of the contact.
+            type:
+              - "null"
+              - string
+          customer_service:
+            description: The contact information for customer service representative.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the contact or contact group.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the contact or contact group.
+            type:
+              - "null"
+              - string
   content_management_system_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -123,6 +1028,69 @@ definitions:
       path: "/content_management_system"
       data_key: "content_management_system"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the CMS data.
+            type:
+              - "null"
+              - integer
+          id_cms_category:
+            description: The identifier for the category to which the CMS data belongs.
+            type:
+              - "null"
+              - string
+          position:
+            description: The position of the CMS data within its category.
+            type:
+              - "null"
+              - string
+          indexation:
+            description: Indicates if the CMS data is set for indexation or not.
+            type:
+              - "null"
+              - string
+          active:
+            description:
+              Indicates if the content management system data is active
+              or not.
+            type:
+              - "null"
+              - string
+          meta_description:
+            description: The meta description used for SEO purposes.
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            description: The meta keywords used in SEO.
+            type:
+              - "null"
+              - string
+          meta_title:
+            description: The meta title used in SEO.
+            type:
+              - "null"
+              - string
+          head_seo_title:
+            description: The SEO title used for head tags.
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            description: The URL-friendly version of the CMS data's title.
+            type:
+              - "null"
+              - string
+          content:
+            description: The actual content of the CMS data.
+            type:
+              - "null"
+              - string
   countries_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -130,6 +1098,82 @@ definitions:
       path: "/countries"
       data_key: "countries"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the country.
+            type:
+              - "null"
+              - integer
+          id_zone:
+            description:
+              Identifier for the geographical zone or region to which the
+              country belongs.
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: Identifier for the currency used in this country.
+            type:
+              - "null"
+              - string
+          call_prefix:
+            description:
+              The call prefix or telephone code used to make calls to this
+              country.
+            type:
+              - "null"
+              - string
+          iso_code:
+            description: The ISO code representing the country.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the country is currently active or not.
+            type:
+              - "null"
+              - string
+          contains_states:
+            description:
+              Specifies if the country contains states or regions within
+              its territory.
+            type:
+              - "null"
+              - string
+          need_identification_number:
+            description:
+              Specifies if an identification number is required for transactions
+              in this country.
+            type:
+              - "null"
+              - string
+          need_zip_code:
+            description:
+              Indicates if a zip code is required for addressing purposes
+              in this country.
+            type:
+              - "null"
+              - string
+          zip_code_format:
+            description: Format or pattern of the zip codes used in the country.
+            type:
+              - "null"
+              - string
+          display_tax_label:
+            description: Denotes whether the tax label is displayed for this country.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the country.
+            type:
+              - "null"
+              - string
   currencies_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -137,6 +1181,81 @@ definitions:
       path: "/currencies"
       data_key: "currencies"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the currency.
+            type:
+              - "null"
+              - integer
+          names:
+            description:
+              Object containing the names of the currency in different
+              languages.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the currency.
+            type:
+              - "null"
+              - string
+          symbol:
+            description: Symbol used to represent the currency.
+            type:
+              - "null"
+              - string
+          iso_code:
+            description: The ISO code representing the currency.
+            type:
+              - "null"
+              - string
+          numeric_iso_code:
+            description: The numeric ISO code representing the currency.
+            type:
+              - "null"
+              - string
+          precision:
+            description: Number of decimal places used for the currency.
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            description:
+              The conversion rate of the currency compared to the default
+              currency.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Flag to indicate if the currency has been deleted.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the currency is currently active or not.
+            type:
+              - "null"
+              - string
+          unofficial:
+            description: Flag to indicate if the currency is unofficial.
+            type:
+              - "null"
+              - string
+          modified:
+            description: Timestamp of the last modification of the currency.
+            type:
+              - "null"
+              - string
+          pattern:
+            description: Pattern used when displaying the currency.
+            type:
+              - "null"
+              - string
   customer_messages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -145,6 +1264,73 @@ definitions:
       data_key: "customer_messages"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the customer message
+            type:
+              - "null"
+              - integer
+          id_employee:
+            description: The identifier of the employee who sent the message
+            type:
+              - "null"
+              - string
+          id_customer_thread:
+            description:
+              The identifier of the customer thread this message belongs
+              to
+            type:
+              - "null"
+              - string
+          ip_address:
+            description: The IP address from which the message was sent
+            type:
+              - "null"
+              - string
+          message:
+            description: The content of the message
+            type:
+              - "null"
+              - string
+          file_name:
+            description: The name of the file attached to the message
+            type:
+              - "null"
+              - string
+          user_agent:
+            description: The user agent string associated with the message sender
+            type:
+              - "null"
+              - string
+          private:
+            description:
+              Indicates if the message is private (e.g., only visible to
+              specific users)
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the message was added
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the message was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          read:
+            description: Indicates if the message has been read by the recipient
+            type:
+              - "null"
+              - string
   customers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -153,6 +1339,199 @@ definitions:
       data_key: "customers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the customer
+            type:
+              - "null"
+              - integer
+          id_default_group:
+            description: The default group id assigned to the customer
+            type:
+              - "null"
+              - string
+          id_lang:
+            description: Language identifier associated with the customer
+            type:
+              - "null"
+              - string
+          newsletter_date_add:
+            description: Date and time when the customer subscribed to the newsletter
+            type:
+              - "null"
+              - string
+          ip_registration_newsletter:
+            description: IP address of the customer when they registered for newsletter
+            type:
+              - "null"
+              - string
+          last_passwd_gen:
+            description: Date and time of the last password generation
+            type:
+              - "null"
+              - string
+          secure_key:
+            description: Security key associated with the customer account
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates if the customer account has been deleted
+            type:
+              - "null"
+              - string
+          passwd:
+            description: Customer's password (encrypted)
+            type:
+              - "null"
+              - string
+          lastname:
+            description: Customer's last name
+            type:
+              - "null"
+              - string
+          firstname:
+            description: Customer's first name
+            type:
+              - "null"
+              - string
+          email:
+            description: Customer's email address
+            type:
+              - "null"
+              - string
+          id_gender:
+            description: Gender identifier of the customer
+            type:
+              - "null"
+              - string
+          birthday:
+            description: Customer's date of birth
+            type:
+              - "null"
+              - string
+          newsletter:
+            description: Indicates if the customer is subscribed to the newsletter
+            type:
+              - "null"
+              - string
+          optin:
+            description:
+              Indicates whether the customer has opted-in for promotional
+              communications
+            type:
+              - "null"
+              - string
+          website:
+            description: Customer's website URL
+            type:
+              - "null"
+              - string
+          company:
+            description: Customer's company name
+            type:
+              - "null"
+              - string
+          siret:
+            description: SIRET code for the customer
+            type:
+              - "null"
+              - string
+          ape:
+            description: APE code for the customer
+            type:
+              - "null"
+              - string
+          outstanding_allow_amount:
+            description: Maximum amount allowed for outstanding payments
+            type:
+              - "null"
+              - string
+          show_public_prices:
+            description: Indicates if the customer prefers to view public prices
+            type:
+              - "null"
+              - string
+          id_risk:
+            description: Risk level identifier linked to the customer
+            type:
+              - "null"
+              - string
+          max_payment_days:
+            description: Maximum number of payment days allowed for the customer
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the customer account is active or not
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes or comments related to the customer
+            type:
+              - "null"
+              - string
+          is_guest:
+            description: Indicates if the customer is a guest without registering
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: Shop identifier to which the customer belongs
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description: Shop group identifier associated with the customer
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time when the customer account was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date and time of the last update to the customer account
+            type:
+              - "null"
+              - string
+            format: date-time
+          reset_password_token:
+            description: Token generated for resetting customer's password
+            type:
+              - "null"
+              - string
+          reset_password_validity:
+            description: Validity period for the password reset token
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            description: Contains associations related to the customer.
+            type: object
+            properties:
+              groups:
+                description: List of customer groups associated with the customer
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description:
+                        The unique identifier of a group associated with
+                        the customer
+                      type:
+                        - "null"
+                        - string
   customer_threads_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -161,6 +1540,89 @@ definitions:
       data_key: "customer_threads"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for each customer thread
+            type:
+              - "null"
+              - integer
+          id_lang:
+            description: Identifier of the language used in the customer thread
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: Identifier of the shop the customer thread belongs to
+            type:
+              - "null"
+              - string
+          id_customer:
+            description: Identifier of the customer associated with the customer thread
+            type:
+              - "null"
+              - string
+          id_order:
+            description: Identifier of the order related to the customer thread
+            type:
+              - "null"
+              - string
+          id_product:
+            description: Identifier of the product related to the customer thread
+            type:
+              - "null"
+              - string
+          id_contact:
+            description: Identifier of the contact associated with the customer thread
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address associated with the customer thread
+            type:
+              - "null"
+              - string
+          token:
+            description: Unique token associated with the customer thread
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the customer thread (e.g., open, closed)
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time when the customer thread was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date and time when the customer thread was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            description: Associated customer messages for this customer thread
+            type: object
+            properties:
+              customer_messages:
+                description: List of customer messages
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for each customer message
+                      type:
+                        - "null"
+                        - string
   deliveries_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -168,6 +1630,54 @@ definitions:
       path: "/deliveries"
       data_key: "deliveries"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the delivery
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            description: Identifier of the carrier associated with the delivery
+            type:
+              - "null"
+              - string
+          id_range_price:
+            description: Identifier for the price range that applies to the delivery
+            type:
+              - "null"
+              - string
+          id_range_weight:
+            description: Identifier for the weight range that applies to the delivery
+            type:
+              - "null"
+              - string
+          id_zone:
+            description:
+              Identifier for the geographical zone to which the delivery
+              applies
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: Identifier of the shop to which the delivery belongs
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description: Identifier of the shop group to which the delivery belongs
+            type:
+              - "null"
+              - string
+          price:
+            description: The price associated with the delivery
+            type:
+              - "null"
+              - string
   employees_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -175,6 +1685,149 @@ definitions:
       path: "/employees"
       data_key: "employees"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the employee
+            type:
+              - "null"
+              - integer
+          id_lang:
+            description: Language identifier for the employee
+            type:
+              - "null"
+              - string
+          last_passwd_gen:
+            description: Date of the last password generation for the employee
+            type:
+              - "null"
+              - string
+          stats_date_from:
+            description: Start date for statistical data range
+            type:
+              - "null"
+              - string
+            format: date
+          stats_date_to:
+            description: End date for statistical data range
+            type:
+              - "null"
+              - string
+            format: date
+          stats_compare_from:
+            description: Date for statistical comparison starting point
+            type:
+              - "null"
+              - string
+            format: date
+          stats_compare_to:
+            description: Date for statistical comparison ending point
+            type:
+              - "null"
+              - string
+            format: date
+          passwd:
+            description: Password of the employee
+            type:
+              - "null"
+              - string
+          lastname:
+            description: Last name of the employee
+            type:
+              - "null"
+              - string
+          firstname:
+            description: First name of the employee
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the employee
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the employee is active
+            type:
+              - "null"
+              - string
+          id_profile:
+            description: Identifier of the employee's profile
+            type:
+              - "null"
+              - string
+          bo_color:
+            description: Color setting for back office interface
+            type:
+              - "null"
+              - string
+          default_tab:
+            description: Default tab displayed in back office upon login
+            type:
+              - "null"
+              - string
+          bo_theme:
+            description: Theme setting for back office
+            type:
+              - "null"
+              - string
+          bo_css:
+            description: Custom CSS for back office styling
+            type:
+              - "null"
+              - string
+          bo_width:
+            description: Width configuration for back office layout
+            type:
+              - "null"
+              - string
+          bo_menu:
+            description: Menu configuration for back office
+            type:
+              - "null"
+              - string
+          stats_compare_option:
+            description: Option for statistical comparison
+            type:
+              - "null"
+              - string
+          preselect_date_range:
+            description: Preselected date range configuration
+            type:
+              - "null"
+              - string
+          id_last_order:
+            description: Identifier of the last order associated with the employee
+            type:
+              - "null"
+              - string
+          id_last_customer_message:
+            description:
+              Identifier of the last customer message associated with the
+              employee
+            type:
+              - "null"
+              - string
+          id_last_customer:
+            description: Identifier of the last customer associated with the employee
+            type:
+              - "null"
+              - string
+          reset_password_token:
+            description: Token for resetting the employee's password
+            type:
+              - "null"
+              - string
+          reset_password_validity:
+            description: Token validity for resetting the employee's password
+            type:
+              - "null"
+              - string
+            format: date-time
   groups_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -183,6 +1836,49 @@ definitions:
       data_key: "groups"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the group.
+            type:
+              - "null"
+              - integer
+          reduction:
+            description: The reduction value applied to the group.
+            type:
+              - "null"
+              - string
+          price_display_method:
+            description: The method used to display prices for the group.
+            type:
+              - "null"
+              - string
+          show_prices:
+            description: Flag indicating if prices should be shown for the group.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the group was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the group was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: The name of the group.
+            type:
+              - "null"
+              - string
   guests_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -190,6 +1886,94 @@ definitions:
       path: "/guests"
       data_key: "guests"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the guest data entry
+            type:
+              - "null"
+              - integer
+          id_customer:
+            description:
+              Unique identifier of the customer associated with the guest
+              data
+            type:
+              - "null"
+              - string
+          id_operating_system:
+            description: Identifier for the operating system of the guest user
+            type:
+              - "null"
+              - string
+          id_web_browser:
+            description: Identifier for the web browser of the guest user
+            type:
+              - "null"
+              - string
+          javascript:
+            description: Whether the guest user has JavaScript enabled
+            type:
+              - "null"
+              - string
+          screen_resolution_x:
+            description: The horizontal screen resolution of the guest user
+            type:
+              - "null"
+              - string
+          screen_resolution_y:
+            description: The vertical screen resolution of the guest user
+            type:
+              - "null"
+              - string
+          screen_color:
+            description: The color capabilities of the guest user's screen
+            type:
+              - "null"
+              - string
+          sun_java:
+            description: Whether the guest user has Sun Java installed
+            type:
+              - "null"
+              - string
+          adobe_flash:
+            description: Whether the guest user has Adobe Flash installed
+            type:
+              - "null"
+              - string
+          adobe_director:
+            description: Whether the guest user has Adobe Director installed
+            type:
+              - "null"
+              - string
+          apple_quicktime:
+            description: Whether the guest user has Apple QuickTime installed
+            type:
+              - "null"
+              - string
+          real_player:
+            description: Whether the guest user has RealPlayer installed
+            type:
+              - "null"
+              - string
+          windows_media:
+            description: Whether the guest user has Windows Media Player installed
+            type:
+              - "null"
+              - string
+          accept_language:
+            description: The language preferences of the guest user
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            description: Whether the guest user is using a mobile theme
+            type:
+              - "null"
+              - string
   image_types_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -197,6 +1981,57 @@ definitions:
       path: "/image_types"
       data_key: "image_types"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the image type.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the image type.
+            type:
+              - "null"
+              - string
+          width:
+            description: Width dimension of the image type.
+            type:
+              - "null"
+              - string
+          height:
+            description: Height dimension of the image type.
+            type:
+              - "null"
+              - string
+          categories:
+            description: List of categories associated with the image type.
+            type:
+              - "null"
+              - string
+          products:
+            description: List of products associated with the image type.
+            type:
+              - "null"
+              - string
+          manufacturers:
+            description: List of manufacturers associated with the image type.
+            type:
+              - "null"
+              - string
+          suppliers:
+            description: List of suppliers associated with the image type.
+            type:
+              - "null"
+              - string
+          stores:
+            description: List of stores associated with the image type.
+            type:
+              - "null"
+              - string
   languages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -204,6 +2039,57 @@ definitions:
       path: "/languages"
       data_key: "languages"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the language.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the language.
+            type:
+              - "null"
+              - string
+          iso_code:
+            description: The ISO code for the language.
+            type:
+              - "null"
+              - string
+          locale:
+            description: The locale setting for the language.
+            type:
+              - "null"
+              - string
+          language_code:
+            description: The language code to identify the language.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the language is currently active or not (true/false).
+            type:
+              - "null"
+              - string
+          is_rtl:
+            description: Indicates if the language is written from right to left (true/false).
+            type:
+              - "null"
+              - string
+          date_format_lite:
+            description: The lite format for displaying dates in this language.
+            type:
+              - "null"
+              - string
+          date_format_full:
+            description: The full format for displaying dates in this language.
+            type:
+              - "null"
+              - string
   manufacturers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -212,6 +2098,84 @@ definitions:
       data_key: "manufacturers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the manufacturer.
+            type:
+              - "null"
+              - integer
+          active:
+            description: Specifies if the manufacturer is active or not.
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            description: The SEO-friendly URL slug for the manufacturer.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the manufacturer.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the manufacturer was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the manufacturer was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            description: The detailed description of the manufacturer.
+            type:
+              - "null"
+              - string
+          short_description:
+            description: A brief description of the manufacturer.
+            type:
+              - "null"
+              - string
+          meta_title:
+            description: The meta title for the manufacturer.
+            type:
+              - "null"
+              - string
+          meta_description:
+            description: The meta description for the manufacturer.
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            description: The meta keywords for the manufacturer.
+            type:
+              - "null"
+              - string
+          associations:
+            description: Contains associated data for the manufacturer.
+            type: object
+            properties:
+              addresses:
+                description: Addresses associated with the manufacturer.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the address.
+                      type:
+                        - "null"
+                        - string
   messages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -220,6 +2184,53 @@ definitions:
       data_key: "messages"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the message.
+            type:
+              - "null"
+              - integer
+          id_cart:
+            description: The ID of the cart associated with the message.
+            type:
+              - "null"
+              - string
+          id_order:
+            description: The ID of the order related to the message.
+            type:
+              - "null"
+              - string
+          id_customer:
+            description: The ID of the customer who sent the message.
+            type:
+              - "null"
+              - string
+          id_employee:
+            description: The ID of the employee who received the message.
+            type:
+              - "null"
+              - string
+          message:
+            description: The content of the message.
+            type:
+              - "null"
+              - string
+          private:
+            description: Indicates if the message is private or not.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the message was added.
+            type:
+              - "null"
+              - string
+            format: date-time
   order_carriers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -228,6 +2239,58 @@ definitions:
       data_key: "order_carriers"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the order carrier
+            type:
+              - "null"
+              - integer
+          id_order:
+            description: The identifier for the order associated with the carrier
+            type:
+              - "null"
+              - string
+          id_carrier:
+            description: The identifier for the carrier associated with the order
+            type:
+              - "null"
+              - string
+          id_order_invoice:
+            description: The identifier for the order invoice
+            type:
+              - "null"
+              - string
+          weight:
+            description: The weight of the shipment
+            type:
+              - "null"
+              - string
+          shipping_cost_tax_excl:
+            description: The shipping cost excluding tax
+            type:
+              - "null"
+              - string
+          shipping_cost_tax_incl:
+            description: The shipping cost including tax
+            type:
+              - "null"
+              - string
+          tracking_number:
+            description: The tracking number for the shipment
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the carrier information was added
+            type:
+              - "null"
+              - string
+            format: date-time
   order_details_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -235,6 +2298,247 @@ definitions:
       path: "/order_details"
       data_key: "order_details"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the order detail
+            type:
+              - "null"
+              - integer
+          id_order:
+            description: The ID of the order to which this detail belongs
+            type:
+              - "null"
+              - string
+          product_id:
+            description: The product ID in the order detail
+            type:
+              - "null"
+              - string
+          product_attribute_id:
+            description: The attribute ID associated with the product
+            type:
+              - "null"
+              - string
+          product_quantity_reinjected:
+            description: The quantity of the product reinjected
+            type:
+              - "null"
+              - string
+          group_reduction:
+            description: The group reduction amount for the product
+            type:
+              - "null"
+              - string
+          discount_quantity_applied:
+            description: The quantity of discount applied to this product
+            type:
+              - "null"
+              - string
+          download_hash:
+            description: The hash value for downloading the product
+            type:
+              - "null"
+              - string
+          download_deadline:
+            description: The deadline for downloading the product
+            type:
+              - "null"
+              - string
+          id_order_invoice:
+            description: The invoice ID associated with this order detail
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            description: The warehouse ID where the product is stored
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: The shop ID where the product was ordered
+            type:
+              - "null"
+              - string
+          id_customization:
+            description: The customization ID associated with the product
+            type:
+              - "null"
+              - string
+          product_name:
+            description: The name of the product
+            type:
+              - "null"
+              - string
+          product_quantity:
+            description: The quantity of the product in this order detail
+            type:
+              - "null"
+              - string
+          product_quantity_in_stock:
+            description: The quantity of the product in stock
+            type:
+              - "null"
+              - string
+          product_quantity_return:
+            description: The quantity of the product returned
+            type:
+              - "null"
+              - string
+          product_quantity_refunded:
+            description: The quantity of the product refunded
+            type:
+              - "null"
+              - string
+          product_price:
+            description: The unit price of the product
+            type:
+              - "null"
+              - string
+          reduction_percent:
+            description: The percentage of reduction applied to the product
+            type:
+              - "null"
+              - string
+          reduction_amount:
+            description: The total reduction amount for the product
+            type:
+              - "null"
+              - string
+          reduction_amount_tax_incl:
+            description: The reduction amount including tax
+            type:
+              - "null"
+              - string
+          reduction_amount_tax_excl:
+            description: The reduction amount excluding tax
+            type:
+              - "null"
+              - string
+          product_quantity_discount:
+            description: The quantity discount applied to the product
+            type:
+              - "null"
+              - string
+          product_ean13:
+            description: The EAN13 code of the product
+            type:
+              - "null"
+              - string
+          product_isbn:
+            description: The ISBN code of the product
+            type:
+              - "null"
+              - string
+          product_upc:
+            description: The UPC code of the product
+            type:
+              - "null"
+              - string
+          product_mpn:
+            description: The Manufacturer Part Number of the product
+            type:
+              - "null"
+              - string
+          product_reference:
+            description: The reference code of the product
+            type:
+              - "null"
+              - string
+          product_supplier_reference:
+            description: The supplier reference code of the product
+            type:
+              - "null"
+              - string
+          product_weight:
+            description: The weight of the product
+            type:
+              - "null"
+              - string
+          tax_computation_method:
+            description: The method used to compute taxes for the product
+            type:
+              - "null"
+              - string
+          id_tax_rules_group:
+            description: The tax rules group ID applied to the product
+            type:
+              - "null"
+              - string
+          ecotax:
+            description: The ecological tax amount for the product
+            type:
+              - "null"
+              - string
+          ecotax_tax_rate:
+            description: The tax rate applied to the ecological tax
+            type:
+              - "null"
+              - string
+          download_nb:
+            description: The number of downloads allowed for the product
+            type:
+              - "null"
+              - string
+          unit_price_tax_incl:
+            description: The unit price including tax
+            type:
+              - "null"
+              - string
+          unit_price_tax_excl:
+            description: The unit price excluding tax
+            type:
+              - "null"
+              - string
+          total_price_tax_incl:
+            description: The total price including tax for the product
+            type:
+              - "null"
+              - string
+          total_price_tax_excl:
+            description: The total price excluding tax for the product
+            type:
+              - "null"
+              - string
+          total_shipping_price_tax_excl:
+            description: The total shipping price excluding tax
+            type:
+              - "null"
+              - string
+          total_shipping_price_tax_incl:
+            description: The total shipping price including tax
+            type:
+              - "null"
+              - string
+          purchase_supplier_price:
+            description: The purchase price from the supplier
+            type:
+              - "null"
+              - string
+          original_product_price:
+            description: The original price of the product before any reductions
+            type:
+              - "null"
+              - string
+          original_wholesale_price:
+            description: The original wholesale price of the product
+            type:
+              - "null"
+              - string
+          total_refunded_tax_excl:
+            description: The total amount refunded excluding tax
+            type:
+              - "null"
+              - string
+          total_refunded_tax_incl:
+            description: The total amount refunded including tax
+            type:
+              - "null"
+              - string
   order_histories_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -243,6 +2547,42 @@ definitions:
       data_key: "order_histories"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the order history entry.
+            type:
+              - "null"
+              - integer
+          id_employee:
+            description:
+              The identifier of the employee who made the order history
+              entry.
+            type:
+              - "null"
+              - string
+          id_order_state:
+            description:
+              The identifier of the order state for this order history
+              entry.
+            type:
+              - "null"
+              - string
+          id_order:
+            description: The unique identifier of the associated order.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the order history entry was added.
+            type:
+              - "null"
+              - string
+            format: date-time
   order_invoices_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -251,6 +2591,110 @@ definitions:
       data_key: "order_invoices"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for this invoice.
+            type:
+              - "null"
+              - integer
+          id_order:
+            description: The id of the order associated with this invoice.
+            type:
+              - "null"
+              - string
+          number:
+            description: The unique invoice number.
+            type:
+              - "null"
+              - string
+          delivery_number:
+            description: The delivery number related to this invoice.
+            type:
+              - "null"
+              - string
+          delivery_date:
+            description:
+              The expected delivery date for the order associated with
+              this invoice.
+            type:
+              - "null"
+              - string
+          total_discount_tax_excl:
+            description: Total discount amount excluding tax applied to the invoice.
+            type:
+              - "null"
+              - string
+          total_discount_tax_incl:
+            description: Total discount amount including tax applied to the invoice.
+            type:
+              - "null"
+              - string
+          total_paid_tax_excl:
+            description: Total amount paid excluding tax for the invoice.
+            type:
+              - "null"
+              - string
+          total_paid_tax_incl:
+            description: Total amount paid including tax for the invoice.
+            type:
+              - "null"
+              - string
+          total_products:
+            description: Total cost of products in the invoice excluding tax.
+            type:
+              - "null"
+              - string
+          total_products_wt:
+            description: Total cost of products in the invoice including tax.
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            description: Total shipping cost excluding tax for the invoice.
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            description: Total shipping cost including tax for the invoice.
+            type:
+              - "null"
+              - string
+          shipping_tax_computation_method:
+            description: The method used to compute shipping tax for this invoice.
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_excl:
+            description: Total wrapping cost excluding tax for the invoice.
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_incl:
+            description: Total wrapping cost including tax for the invoice.
+            type:
+              - "null"
+              - string
+          shop_address:
+            description: The address of the shop from which the order was placed.
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes or comments related to the invoice.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the invoice was created.
+            type:
+              - "null"
+              - string
+            format: date-time
   order_payments_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -259,6 +2703,73 @@ definitions:
       data_key: "order_payments"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the payment
+            type:
+              - "null"
+              - integer
+          order_reference:
+            description: The reference number of the corresponding order
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: The currency ID used for the payment
+            type:
+              - "null"
+              - string
+          amount:
+            description: The total amount of the payment
+            type:
+              - "null"
+              - string
+          payment_method:
+            description: The payment method used for the transaction
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            description: The currency conversion rate used for the payment
+            type:
+              - "null"
+              - string
+          transaction_id:
+            description: The unique identifier of the payment transaction
+            type:
+              - "null"
+              - string
+          card_number:
+            description: The masked credit card number
+            type:
+              - "null"
+              - string
+          card_brand:
+            description: The brand of the credit card used for the payment
+            type:
+              - "null"
+              - string
+          card_expiration:
+            description: The expiration date of the credit card used for the payment
+            type:
+              - "null"
+              - string
+          card_holder:
+            description: The name of the cardholder
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the payment was added
+            type:
+              - "null"
+              - string
+            format: date-time
   orders_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -267,6 +2778,324 @@ definitions:
       data_key: "orders"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the order
+            type:
+              - "null"
+              - integer
+          id_address_delivery:
+            description: Identifier for the delivery address
+            type:
+              - "null"
+              - string
+          id_address_invoice:
+            description: Identifier for the invoice address
+            type:
+              - "null"
+              - string
+          id_cart:
+            description: Identifier for the cart associated with the order
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: Identifier for the currency used in the order
+            type:
+              - "null"
+              - string
+          id_lang:
+            description: Identifier for the language used in the order
+            type:
+              - "null"
+              - string
+          id_customer:
+            description: Identifier for the customer who placed the order
+            type:
+              - "null"
+              - string
+          id_carrier:
+            description: Identifier for the carrier service used for delivery
+            type:
+              - "null"
+              - string
+          current_state:
+            description: Current status/state of the order
+            type:
+              - "null"
+              - string
+          module:
+            description: Payment module used for the order
+            type:
+              - "null"
+              - string
+          invoice_number:
+            description: Invoice number related to the order
+            type:
+              - "null"
+              - string
+          invoice_date:
+            description: Date of the invoice associated with the order
+            type:
+              - "null"
+              - string
+          delivery_number:
+            description: Delivery number associated with the order
+            type:
+              - "null"
+              - string
+          delivery_date:
+            description: Expected delivery date of the order
+            type:
+              - "null"
+              - string
+          valid:
+            description: Flag indicating if the order is valid
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time when the order was added
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date and time when the order was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          shipping_number:
+            description: Shipping number linked to the order
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description: Identifier for the shop group to which the order belongs
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: Identifier for the shop where the order was placed
+            type:
+              - "null"
+              - string
+          secure_key:
+            description: Security key associated with the order
+            type:
+              - "null"
+              - string
+          payment:
+            description: Payment method used for the order
+            type:
+              - "null"
+              - string
+          recyclable:
+            description: Flag indicating if the order is recyclable
+            type:
+              - "null"
+              - string
+          gift:
+            description: Flag indicating if the order is a gift
+            type:
+              - "null"
+              - string
+          gift_message:
+            description: Message included with the gift order
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            description: Mobile theme used for the order
+            type:
+              - "null"
+              - string
+          total_discounts:
+            description: Total amount of discounts applied to the order
+            type:
+              - "null"
+              - string
+          total_discounts_tax_incl:
+            description: Total amount of discounts with tax included
+            type:
+              - "null"
+              - string
+          total_discounts_tax_excl:
+            description: Total amount of discounts without tax included
+            type:
+              - "null"
+              - string
+          total_paid:
+            description: Total amount paid for the order
+            type:
+              - "null"
+              - string
+          total_paid_tax_incl:
+            description: Total amount paid with tax included
+            type:
+              - "null"
+              - string
+          total_paid_tax_excl:
+            description: Total amount paid without tax included
+            type:
+              - "null"
+              - string
+          total_paid_real:
+            description: Actual total amount paid for the order
+            type:
+              - "null"
+              - string
+          total_products:
+            description: Total cost of products in the order
+            type:
+              - "null"
+              - string
+          total_products_wt:
+            description: Total cost of products with tax included
+            type:
+              - "null"
+              - string
+          total_shipping:
+            description: Total cost of shipping
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            description: Total cost of shipping with tax included
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            description: Total cost of shipping without tax included
+            type:
+              - "null"
+              - string
+          carrier_tax_rate:
+            description: Tax rate applied to the carrier service
+            type:
+              - "null"
+              - string
+          total_wrapping:
+            description: Total cost of wrapping services
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_incl:
+            description: Total cost of wrapping services with tax included
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_excl:
+            description: Total cost of wrapping services without tax included
+            type:
+              - "null"
+              - string
+          round_mode:
+            description: Rounding mode used in calculations
+            type:
+              - "null"
+              - string
+          round_type:
+            description: Rounding type applied in calculations
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            description: Currency conversion rate at the time of the order
+            type:
+              - "null"
+              - string
+          reference:
+            description: Reference code of the order
+            type:
+              - "null"
+              - string
+          associations:
+            description: Associations related to the order
+            type: object
+            properties:
+              order_rows:
+                description: Data of the order rows
+                type: array
+                items:
+                  description: Properties of each order row
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the order row
+                      type:
+                        - "null"
+                        - string
+                    product_id:
+                      description: Identifier for the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_attribute_id:
+                      description:
+                        Identifier for the product attribute of the ordered
+                        product
+                      type:
+                        - "null"
+                        - string
+                    product_quantity:
+                      description: Quantity of the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_name:
+                      description: Name of the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_reference:
+                      description: Reference code of the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_ean13:
+                      description: EAN-13 barcode for the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_isbn:
+                      description: ISBN for the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_upc:
+                      description: UPC for the ordered product
+                      type:
+                        - "null"
+                        - string
+                    product_price:
+                      description: Price of the ordered product
+                      type:
+                        - "null"
+                        - string
+                    id_customization:
+                      description:
+                        Identifier for customization related to the product
+                        on the order row
+                      type:
+                        - "null"
+                        - string
+                    unit_price_tax_incl:
+                      description: Unit price of the product including tax
+                      type:
+                        - "null"
+                        - string
+                    unit_price_tax_excl:
+                      description: Unit price of the product excluding tax
+                      type:
+                        - "null"
+                        - string
   order_slip_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -275,6 +3104,89 @@ definitions:
       data_key: "order_slips"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the order slip
+            type:
+              - "null"
+              - integer
+          id_customer:
+            description: The ID of the customer associated with this order slip
+            type:
+              - "null"
+              - string
+          id_order:
+            description: The ID of the order related to this order slip
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            description: The conversion rate used for currency conversion
+            type:
+              - "null"
+              - string
+          total_products_tax_excl:
+            description: The total value of products in the order slip excluding tax
+            type:
+              - "null"
+              - string
+          total_products_tax_incl:
+            description: The total value of products in the order slip including tax
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            description: The total shipping cost in the order slip excluding tax
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            description: The total shipping cost in the order slip including tax
+            type:
+              - "null"
+              - string
+          amount:
+            description: The total amount for the order slip
+            type:
+              - "null"
+              - string
+          shipping_cost:
+            description: The total shipping cost for the order slip
+            type:
+              - "null"
+              - string
+          shipping_cost_amount:
+            description: The amount of shipping cost included in the order slip
+            type:
+              - "null"
+              - string
+          partial:
+            description: Indicates if the order slip is for a partial refund or credit
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the order slip was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the order slip was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          order_slip_type:
+            description: The type of order slip (e.g., refund, credit note)
+            type:
+              - "null"
+              - string
   order_states_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -282,6 +3194,92 @@ definitions:
       path: "/order_states"
       data_key: "order_states"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the order state.
+            type:
+              - "null"
+              - integer
+          unremovable:
+            description: Indicates if the order state can be removed.
+            type:
+              - "null"
+              - string
+          delivery:
+            description: Indicates if the order has been delivered.
+            type:
+              - "null"
+              - string
+          hidden:
+            description: Indicates if the order state is hidden from users.
+            type:
+              - "null"
+              - string
+          send_email:
+            description: Indicates if an email should be sent for this order state.
+            type:
+              - "null"
+              - string
+          module_name:
+            description: The name of the module associated with the order state.
+            type:
+              - "null"
+              - string
+          invoice:
+            description: Indicates if the order has been invoiced.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color associated with the order state for visual identification.
+            type:
+              - "null"
+              - string
+          logable:
+            description: Indicates if the order state allows logging.
+            type:
+              - "null"
+              - string
+          shipped:
+            description: Indicates if the order has been shipped.
+            type:
+              - "null"
+              - string
+          paid:
+            description: Indicates if the order has been paid for.
+            type:
+              - "null"
+              - string
+          pdf_delivery:
+            description: URL to the PDF file associated with the delivery of the order.
+            type:
+              - "null"
+              - string
+          pdf_invoice:
+            description: URL to the PDF file associated with the invoice of the order.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates if the order state has been deleted.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or label of the order state.
+            type:
+              - "null"
+              - string
+          template:
+            description: The template used for the order state.
+            type:
+              - "null"
+              - string
   price_ranges_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -289,6 +3287,34 @@ definitions:
       path: "/price_ranges"
       data_key: "price_ranges"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the price range data
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            description:
+              The unique identifier for the carrier associated with the
+              price range
+            type:
+              - "null"
+              - string
+          delimiter1:
+            description: The first delimiter for the price range data
+            type:
+              - "null"
+              - string
+          delimiter2:
+            description: The second delimiter for the price range data
+            type:
+              - "null"
+              - string
   product_customization_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -296,6 +3322,57 @@ definitions:
       path: "/product_customization_fields"
       data_key: "customization_fields"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the product customization field.
+            type:
+              - "null"
+              - integer
+          id_product:
+            description:
+              The ID of the product to which this customization field is
+              associated.
+            type:
+              - "null"
+              - string
+          type:
+            description:
+              The type of customization field such as text, image, file,
+              etc.
+            type:
+              - "null"
+              - string
+          required:
+            description:
+              A flag indicating whether this customization field is required
+              for the product.
+            type:
+              - "null"
+              - string
+          is_module:
+            description:
+              A flag indicating whether the customization field is a module
+              or not.
+            type:
+              - "null"
+              - string
+          is_deleted:
+            description:
+              A flag indicating whether the customization field has been
+              deleted.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or label of the customization field.
+            type:
+              - "null"
+              - string
   product_features_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -303,6 +3380,27 @@ definitions:
       path: "/product_features"
       data_key: "product_features"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the product feature.
+            type:
+              - "null"
+              - integer
+          position:
+            description: The position of the product feature in the list of features.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the product feature.
+            type:
+              - "null"
+              - string
   product_feature_values_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -310,6 +3408,32 @@ definitions:
       path: "/product_feature_values"
       data_key: "product_feature_values"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the product feature value.
+            type:
+              - "null"
+              - integer
+          id_feature:
+            description: The identifier of the feature associated with the product.
+            type:
+              - "null"
+              - string
+          custom:
+            description: Any custom data related to the product feature value.
+            type:
+              - "null"
+              - string
+          value:
+            description: The actual value of the product feature.
+            type:
+              - "null"
+              - string
   product_options_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -317,6 +3441,58 @@ definitions:
       path: "/product_options"
       data_key: "product_options"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the product option
+            type:
+              - "null"
+              - integer
+          is_color_group:
+            description: Indicates if the product option group represents colors
+            type:
+              - "null"
+              - string
+          group_type:
+            description: Type or category of the product option group
+            type:
+              - "null"
+              - string
+          position:
+            description: Position of the product option group in the list
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the product option group
+            type:
+              - "null"
+              - string
+          public_name:
+            description: Publicly visible name of the product option group
+            type:
+              - "null"
+              - string
+          associations:
+            description: Associations between product options and their values
+            type: object
+            properties:
+              product_option_values:
+                description: List of product option values associated with this option
+                type: array
+                items:
+                  description: Product option value information
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the product option value
+                      type:
+                        - "null"
+                        - string
   product_option_values_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -324,6 +3500,41 @@ definitions:
       path: "/product_option_values"
       data_key: "product_option_values"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the product option value.
+            type:
+              - "null"
+              - integer
+          id_attribute_group:
+            description:
+              The identifier of the attribute group to which the product
+              option value belongs.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color of the product option value.
+            type:
+              - "null"
+              - string
+          position:
+            description:
+              The position or order of the product option value in the
+              list of values.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or label of the product option value.
+            type:
+              - "null"
+              - string
   products_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -332,6 +3543,417 @@ definitions:
       data_key: "products"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The ID of the product.
+            type:
+              - "null"
+              - integer
+          id_manufacturer:
+            description: The manufacturer ID of the product.
+            type:
+              - "null"
+              - string
+          id_supplier:
+            description: The supplier ID of the product.
+            type:
+              - "null"
+              - string
+          id_category_default:
+            description: The default category ID of the product.
+            type:
+              - "null"
+              - string
+          new:
+            description: Indicates if the product is new.
+            type:
+              - "null"
+              - string
+          cache_default_attribute:
+            description: Cache for default attribute of the product.
+            type:
+              - "null"
+              - string
+          id_default_image:
+            description: The default image ID of the product.
+            type:
+              - "null"
+              - string
+          id_default_combination:
+            description: The default combination ID of the product.
+            type:
+              - integer
+              - string
+          id_tax_rules_group:
+            description: The tax rules group ID associated with the product.
+            type:
+              - "null"
+              - string
+          position_in_category:
+            description: The position of the product in its category.
+            type:
+              - "null"
+              - string
+          manufacturer_name:
+            description: The name of the manufacturer of the product.
+            type:
+              - string
+              - boolean
+          quantity:
+            description: The quantity of the product.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the product.
+            type:
+              - "null"
+              - string
+          id_shop_default:
+            description: The default shop ID for the product.
+            type:
+              - "null"
+              - string
+          reference:
+            description: The reference code of the product.
+            type:
+              - "null"
+              - string
+          supplier_reference:
+            description: The supplier reference code of the product.
+            type:
+              - "null"
+              - string
+          location:
+            description: The location of the product.
+            type:
+              - "null"
+              - string
+          width:
+            description: The width of the product.
+            type:
+              - "null"
+              - string
+          height:
+            description: The height of the product.
+            type:
+              - "null"
+              - string
+          depth:
+            description: The depth of the product.
+            type:
+              - "null"
+              - string
+          weight:
+            description: The weight of the product.
+            type:
+              - "null"
+              - string
+          quantity_discount:
+            description: Information about quantity discounts for the product.
+            type:
+              - "null"
+              - string
+          ean13:
+            description: The EAN13 code of the product.
+            type:
+              - "null"
+              - string
+          isbn:
+            description: The ISBN code of the product.
+            type:
+              - "null"
+              - string
+          upc:
+            description: The UPC code of the product.
+            type:
+              - "null"
+              - string
+          mpn:
+            description: The MPN code of the product.
+            type:
+              - "null"
+              - string
+          cache_is_pack:
+            description: Cache indication for product as a pack.
+            type:
+              - "null"
+              - string
+          cache_has_attachments:
+            description: Cache for attachments associated with the product.
+            type:
+              - "null"
+              - string
+          is_virtual:
+            description: Indicates if the product is virtual.
+            type:
+              - "null"
+              - string
+          state:
+            description: The state of the product.
+            type:
+              - "null"
+              - string
+          additional_delivery_times:
+            description: Additional delivery times for the product.
+            type:
+              - "null"
+              - string
+          delivery_in_stock:
+            description: Delivery information when product is in stock.
+            type:
+              - "null"
+              - string
+          delivery_out_stock:
+            description: Delivery information when product is out of stock.
+            type:
+              - "null"
+              - string
+          on_sale:
+            description: Indicates if the product is on sale.
+            type:
+              - "null"
+              - string
+          online_only:
+            description: Indicates if the product is available only online.
+            type:
+              - "null"
+              - string
+          ecotax:
+            description: The ecotax associated with the product.
+            type:
+              - "null"
+              - string
+          minimal_quantity:
+            description: The minimal quantity of the product in an order.
+            type:
+              - "null"
+              - string
+          low_stock_threshold:
+            description: The threshold for low stock alerts.
+            type:
+              - "null"
+              - string
+          low_stock_alert:
+            description: Alert information for low stock of the product.
+            type:
+              - "null"
+              - string
+          price:
+            description: The price of the product.
+            type:
+              - "null"
+              - string
+          wholesale_price:
+            description: The wholesale price of the product.
+            type:
+              - "null"
+              - string
+          unity:
+            description: The unit of measurement for the product.
+            type:
+              - "null"
+              - string
+          unit_price_ratio:
+            description: The unit price ratio of the product.
+            type:
+              - "null"
+              - string
+          additional_shipping_cost:
+            description: Additional shipping cost associated with the product.
+            type:
+              - "null"
+              - string
+          customizable:
+            description: Indicates if the product is customizable.
+            type:
+              - "null"
+              - string
+          text_fields:
+            description: Text fields associated with the product.
+            type:
+              - "null"
+              - string
+          uploadable_files:
+            description: Information about uploadable files for the product.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the product is active or not.
+            type:
+              - "null"
+              - string
+          redirect_type:
+            description: The type of redirect for the product.
+            type:
+              - "null"
+              - string
+          id_type_redirected:
+            description: The ID of the redirected type.
+            type:
+              - "null"
+              - string
+          available_for_order:
+            description: Indicates if the product is available for order.
+            type:
+              - "null"
+              - string
+          available_date:
+            description: The date when the product is available.
+            type:
+              - "null"
+              - string
+          show_condition:
+            description: Indicates if the condition of the product is shown.
+            type:
+              - "null"
+              - string
+          condition:
+            description: The condition of the product.
+            type:
+              - "null"
+              - string
+          show_price:
+            description: Indicates if the price is shown for the product.
+            type:
+              - "null"
+              - string
+          indexed:
+            description: Indicates if the product is indexed.
+            type:
+              - "null"
+              - string
+          visibility:
+            description: The visibility setting of the product.
+            type:
+              - "null"
+              - string
+          advanced_stock_management:
+            description:
+              Indicates if advanced stock management is enabled for the
+              product.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date when the product was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date when the product was updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          pack_stock_type:
+            description: The stock type of the product pack.
+            type:
+              - "null"
+              - string
+          meta_description:
+            description: The meta description of the product.
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            description: The meta keywords of the product.
+            type:
+              - "null"
+              - string
+          meta_title:
+            description: The meta title of the product.
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            description: The rewritten link of the product.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the product.
+            type:
+              - "null"
+              - string
+          description:
+            description: The description of the product.
+            type:
+              - "null"
+              - string
+          description_short:
+            description: A short description of the product.
+            type:
+              - "null"
+              - string
+          available_now:
+            description: Information about availability now.
+            type:
+              - "null"
+              - string
+          available_later:
+            description: Information about availability later.
+            type:
+              - "null"
+              - string
+          associations:
+            description:
+              Associations related to the product such as categories, images,
+              and stock availables.
+            type: object
+            properties:
+              categories:
+                description: Related categories associated with the product.
+                type: array
+                items:
+                  description: Details of each category associated with the product.
+                  type: object
+                  properties:
+                    id:
+                      description: The category ID associated with the product.
+                      type:
+                        - "null"
+                        - string
+              images:
+                description: Images associated with the product.
+                type: array
+                items:
+                  description: Details of each image associated with the product.
+                  type: object
+                  properties:
+                    id:
+                      description: The image ID associated with the product.
+                      type:
+                        - "null"
+                        - string
+              stock_availables:
+                description: Stock availability information related to the product.
+                type: array
+                items:
+                  description:
+                    Details of each stock availability record related to
+                    the product.
+                  type: object
+                  properties:
+                    id:
+                      description: The stock available ID associated with the product.
+                      type:
+                        - "null"
+                        - string
+                    id_product_attribute:
+                      description:
+                        The product attribute ID associated with the stock
+                        available.
+                      type:
+                        - "null"
+                        - string
   product_suppliers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -339,6 +3961,49 @@ definitions:
       path: "/product_suppliers"
       data_key: "product_suppliers"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the product supplier entry.
+            type:
+              - "null"
+              - integer
+          id_product:
+            description: Unique identifier for the product associated with the supplier.
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            description: Identifier for the product attribute if applicable.
+            type:
+              - "null"
+              - string
+          id_supplier:
+            description: Unique identifier for the supplier of the product.
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: Unique identifier for the currency used in pricing.
+            type:
+              - "null"
+              - string
+          product_supplier_reference:
+            description: Unique reference code for the product used by the supplier.
+            type:
+              - "null"
+              - string
+          product_supplier_price_te:
+            description:
+              Price at which the supplier offers the product, excluding
+              taxes.
+            type:
+              - "null"
+              - string
   shop_groups_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -346,6 +4011,51 @@ definitions:
       path: "/shop_groups"
       data_key: "shop_groups"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the shop group.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the shop group.
+            type:
+              - "null"
+              - string
+          share_customer:
+            description:
+              Indicates if customers are shared among shops within this
+              group.
+            type:
+              - "null"
+              - string
+          share_order:
+            description: Indicates if orders are shared among shops within this group.
+            type:
+              - "null"
+              - string
+          share_stock:
+            description:
+              Indicates if stock information is shared among shops within
+              this group.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the shop group is active or not.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates whether the shop group has been deleted.
+            type:
+              - "null"
+              - string
   shops_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -353,6 +4063,47 @@ definitions:
       path: "/shops"
       data_key: "shops"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the shop.
+            type:
+              - "null"
+              - integer
+          id_shop_group:
+            description: The shop group ID the shop is associated with.
+            type:
+              - "null"
+              - string
+          id_category:
+            description: The category ID that the shop belongs to.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the shop is active or not.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates if the shop has been deleted.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the shop.
+            type:
+              - "null"
+              - string
+          theme_name:
+            description: The name of the theme used by the shop.
+            type:
+              - "null"
+              - string
   shop_urls_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -360,6 +4111,52 @@ definitions:
       path: "/shop_urls"
       data_key: "shop_urls"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the shop URL
+            type:
+              - "null"
+              - integer
+          id_shop:
+            description: The shop ID associated with the URL
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the shop URL is active or not
+            type:
+              - "null"
+              - string
+          main:
+            description: Indicates if this is the main shop URL
+            type:
+              - "null"
+              - string
+          domain:
+            description: The domain name of the shop
+            type:
+              - "null"
+              - string
+          domain_ssl:
+            description: The SSL domain name of the shop
+            type:
+              - "null"
+              - string
+          physical_uri:
+            description: The physical URI path of the shop
+            type:
+              - "null"
+              - string
+          virtual_uri:
+            description: The virtual URI path of the shop
+            type:
+              - "null"
+              - string
   specific_price_rules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -367,6 +4164,81 @@ definitions:
       path: "/specific_price_rules"
       data_key: "specific_price_rules"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the specific price rule
+            type:
+              - "null"
+              - integer
+          id_shop:
+            description: ID of the shop to which the specific price rule is associated
+            type:
+              - "null"
+              - string
+          id_country:
+            description: ID of the country to which the specific price rule is applicable
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: ID of the currency in which the prices are defined
+            type:
+              - "null"
+              - string
+          id_group:
+            description:
+              ID of the customer group to which the specific price rule
+              applies
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the specific price rule
+            type:
+              - "null"
+              - string
+          from_quantity:
+            description:
+              Minimum quantity required for the specific price rule to
+              apply
+            type:
+              - "null"
+              - string
+          price:
+            description: Original price before the reduction is applied
+            type:
+              - "null"
+              - string
+          reduction:
+            description: Amount or percentage of reduction in price
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            description: Indicates if the reduction is inclusive or exclusive of taxes
+            type:
+              - "null"
+              - string
+          reduction_type:
+            description: Type of reduction applied (amount or percentage)
+            type:
+              - "null"
+              - string
+          from:
+            description: Start date/time of the specific price rule
+            type:
+              - "null"
+              - string
+          to:
+            description: End date/time of the specific price rule
+            type:
+              - "null"
+              - string
   specific_prices_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -374,6 +4246,106 @@ definitions:
       path: "/specific_prices"
       data_key: "specific_prices"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the specific price entry.
+            type:
+              - "null"
+              - integer
+          id_shop_group:
+            description:
+              The shop group ID if specific price is applied at a shop
+              group level.
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: The shop ID in which the specific price is configured.
+            type:
+              - "null"
+              - string
+          id_cart:
+            description: The cart ID to which the specific price applies.
+            type:
+              - "null"
+              - string
+          id_product:
+            description: The product ID to which the specific price applies.
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            description: The product attribute ID to further specify the product.
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: The currency ID in which the price is defined.
+            type:
+              - "null"
+              - string
+          id_country:
+            description: The country ID for which the specific price is applicable.
+            type:
+              - "null"
+              - string
+          id_group:
+            description: The customer group ID for which the specific price is set.
+            type:
+              - "null"
+              - string
+          id_customer:
+            description: The customer ID for whom the specific price is valid.
+            type:
+              - "null"
+              - string
+          id_specific_price_rule:
+            description: The specific price rule ID governing this pricing.
+            type:
+              - "null"
+              - string
+          price:
+            description: The specific price set for the product.
+            type:
+              - "null"
+              - string
+          from_quantity:
+            description:
+              The minimum quantity of the product for the specific price
+              to be applied.
+            type:
+              - "null"
+              - string
+          reduction:
+            description: The reduction amount or percentage applied to the base price.
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            description: Indicates whether the reduction is tax included or excluded.
+            type:
+              - "null"
+              - string
+          reduction_type:
+            description: Type of reduction applied, like amount or percentage.
+            type:
+              - "null"
+              - string
+          from:
+            description: The start date and time for the specific price to be applied.
+            type:
+              - "null"
+              - string
+          to:
+            description: The end date and time for the specific price validity.
+            type:
+              - "null"
+              - string
   states_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -381,6 +4353,42 @@ definitions:
       path: "/states"
       data_key: "states"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the state
+            type:
+              - "null"
+              - integer
+          id_zone:
+            description: The ID of the geographic zone to which the state belongs
+            type:
+              - "null"
+              - string
+          id_country:
+            description: The ID of the country to which the state belongs
+            type:
+              - "null"
+              - string
+          iso_code:
+            description: The ISO code representing the state
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the state
+            type:
+              - "null"
+              - string
+          active:
+            description: Specifies if the state is active (true) or inactive (false)
+            type:
+              - "null"
+              - string
   stock_availables_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -388,6 +4396,61 @@ definitions:
       path: "/stock_availables"
       data_key: "stock_availables"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the stock availability record
+            type:
+              - "null"
+              - integer
+          id_product:
+            description: Identifier of the product associated with the stock availability
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            description:
+              Identifier of the product attribute associated with the stock
+              availability
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: Identifier of the shop where the stock availability applies
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description:
+              Identifier of the shop group where the stock availability
+              applies
+            type:
+              - "null"
+              - string
+          quantity:
+            description: The quantity of the product available in stock
+            type:
+              - "null"
+              - string
+          depends_on_stock:
+            description: Indicates if the stock is dependent on the main product stock
+            type:
+              - "null"
+              - string
+          out_of_stock:
+            description: Indicates if the product is currently out of stock
+            type:
+              - "null"
+              - string
+          location:
+            description: Location of the stock within the store or warehouse
+            type:
+              - "null"
+              - string
   stock_movement_reasons_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -396,6 +4459,48 @@ definitions:
       data_key: "stock_movement_reasons"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the stock movement reason
+            type:
+              - "null"
+              - integer
+          sign:
+            description:
+              The sign associated with the stock movement reason (e.g.,
+              positive or negative)
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates if the stock movement reason has been deleted
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the stock movement reason was added
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description:
+              The date and time when the stock movement reason was last
+              updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: The name of the stock movement reason
+            type:
+              - "null"
+              - string
   stock_movements_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -404,6 +4509,123 @@ definitions:
       data_key: "stock_mvts"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the stock movement record
+            type:
+              - "null"
+              - integer
+          id_product:
+            description: Product ID related to the stock movement
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            description: Product attribute ID if any
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            description: Warehouse ID where the movement occurred
+            type:
+              - "null"
+              - string
+          id_currency:
+            description: Currency ID used for the transaction
+            type:
+              - "null"
+              - string
+          management_type:
+            description: Type of stock management (e.g., FIFO, LIFO)
+            type:
+              - "null"
+              - string
+          id_employee:
+            description: Employee ID responsible for the stock movement
+            type:
+              - "null"
+              - string
+          id_stock:
+            description: Stock ID corresponding to the movement
+            type:
+              - "null"
+              - string
+          id_stock_mvt_reason:
+            description: Stock movement reason ID
+            type:
+              - "null"
+              - string
+          id_order:
+            description: Order ID associated with the stock movement
+            type:
+              - "null"
+              - string
+          id_supply_order:
+            description: Supply order ID linked to the movement
+            type:
+              - "null"
+              - string
+          product_name:
+            description: Name of the product involved in the stock movement
+            type:
+              - "null"
+              - boolean
+          ean13:
+            description: EAN-13 barcode for the product
+            type:
+              - "null"
+              - string
+          upc:
+            description: UPC barcode for the product
+            type:
+              - "null"
+              - string
+          reference:
+            description: Product reference code
+            type:
+              - "null"
+              - string
+          mpn:
+            description: Manufacturer part number of the product
+            type:
+              - "null"
+              - string
+          physical_quantity:
+            description: Actual quantity of the product in the stock movement
+            type:
+              - "null"
+              - string
+          sign:
+            description: Sign of the quantity movement (positive or negative)
+            type:
+              - "null"
+              - string
+          last_wa:
+            description: Previous weighted average cost of the product
+            type:
+              - "null"
+              - string
+          current_wa:
+            description: Current weighted average cost of the product
+            type:
+              - "null"
+              - string
+          price_te:
+            description: Total price excluding taxes for the stock movement
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time of the stock movement
+            type:
+              - "null"
+              - string
+            format: date-time
   stores_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -412,6 +4634,104 @@ definitions:
       data_key: "stores"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the store.
+            type:
+              - "null"
+              - integer
+          id_country:
+            description: ID of the country where the store is located.
+            type:
+              - "null"
+              - string
+          id_state:
+            description: ID of the state/province where the store is located.
+            type:
+              - "null"
+              - string
+          hours:
+            description: Operating hours of the store.
+            type:
+              - "null"
+              - string
+          postcode:
+            description: Postal code of the store location.
+            type:
+              - "null"
+              - string
+          city:
+            description: City where the store is located.
+            type:
+              - "null"
+              - string
+          latitude:
+            description: Latitude coordinate of the store location.
+            type:
+              - "null"
+              - string
+          longitude:
+            description: Longitude coordinate of the store location.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number of the store contact.
+            type:
+              - "null"
+              - string
+          fax:
+            description: Fax number of the store.
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the store contact.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the store is currently active or not.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: Date and time when the store was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: Date and time when the store was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: Name of the store.
+            type:
+              - "null"
+              - string
+          address1:
+            description: First line of the store's address.
+            type:
+              - "null"
+              - string
+          address2:
+            description: Second line of the store's address.
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes or comments about the store.
+            type:
+              - "null"
+              - string
   suppliers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -420,6 +4740,66 @@ definitions:
       data_key: "suppliers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the supplier
+            type:
+              - "null"
+              - integer
+          link_rewrite:
+            description: The SEO-friendly URL of the supplier
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the supplier
+            type:
+              - "null"
+              - string
+          active:
+            description: Whether the supplier is currently active or not
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the supplier was added
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description:
+              The date and time when the supplier's information was last
+              updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            description: A brief description of the supplier
+            type:
+              - "null"
+              - string
+          meta_title:
+            description: The meta title for the supplier
+            type:
+              - "null"
+              - string
+          meta_description:
+            description: The meta description for the supplier
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            description: The meta keywords associated with the supplier
+            type:
+              - "null"
+              - string
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -427,6 +4807,27 @@ definitions:
       path: "/tags"
       data_key: "tags"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the tag
+            type:
+              - "null"
+              - integer
+          id_lang:
+            description: The identifier for the language associated with the tag
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the tag
+            type:
+              - "null"
+              - string
   taxes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -434,6 +4835,37 @@ definitions:
       path: "/taxes"
       data_key: "taxes"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the tax.
+            type:
+              - "null"
+              - integer
+          rate:
+            description: Tax rate percentage for calculations.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the tax is currently active or not.
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Indicates if the tax has been soft-deleted or not.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the tax.
+            type:
+              - "null"
+              - string
   tax_rule_groups_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -442,6 +4874,46 @@ definitions:
       data_key: "tax_rule_groups"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the tax rule group.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the tax rule group.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the tax rule group is currently active or not.
+            type:
+              - "null"
+              - string
+          deleted:
+            description:
+              Indicates if the tax rule group has been marked as deleted
+              or not.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the tax rule group was added.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the tax rule group was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
   tax_rules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -449,6 +4921,59 @@ definitions:
       path: "/tax_rules"
       data_key: "tax_rules"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the tax rule.
+            type:
+              - "null"
+              - integer
+          id_tax_rules_group:
+            description: The ID of the tax rule group to which the tax rule belongs.
+            type:
+              - "null"
+              - string
+          id_state:
+            description: The ID of the state or region to which the tax rule applies.
+            type:
+              - "null"
+              - string
+          id_country:
+            description: The ID of the country to which the tax rule applies.
+            type:
+              - "null"
+              - string
+          zipcode_from:
+            description: The starting ZIP code range for the tax rule.
+            type:
+              - "null"
+              - string
+          zipcode_to:
+            description: The ending ZIP code range for the tax rule.
+            type:
+              - "null"
+              - string
+          id_tax:
+            description: The ID of the tax rate applied by the tax rule.
+            type:
+              - "null"
+              - string
+          behavior:
+            description:
+              The behavior of the tax rule, indicating how it is applied
+              (e.g., 'order' or 'shipping').
+            type:
+              - "null"
+              - string
+          description:
+            description: A description of the tax rule for reference.
+            type:
+              - "null"
+              - string
   translated_configurations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -456,6 +4981,51 @@ definitions:
       path: "/translated_configurations"
       data_key: "translated_configurations"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the translated configuration entry.
+            type:
+              - "null"
+              - integer
+          value:
+            description: The value assigned to the configuration entry.
+            type:
+              - "null"
+              - string
+          date_add:
+            description: The date and time when the configuration was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            description: The date and time when the configuration was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: The name of the configuration entry.
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            description:
+              The ID of the shop group to which the translated configuration
+              belongs.
+            type:
+              - "null"
+              - string
+          id_shop:
+            description: The ID of the shop associated with this translated configuration.
+            type:
+              - "null"
+              - string
   weight_ranges_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -463,6 +5033,32 @@ definitions:
       path: "/weight_ranges"
       data_key: "weight_ranges"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the weight range.
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            description: The ID of the carrier associated with this weight range.
+            type:
+              - "null"
+              - string
+          delimiter1:
+            description: The lower weight limit in this weight range.
+            type:
+              - "null"
+              - string
+          delimiter2:
+            description: The upper weight limit in this weight range.
+            type:
+              - "null"
+              - string
   zones_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -471,6 +5067,27 @@ definitions:
       data_key: "zones"
       primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the zone.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the zone.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the zone is currently active or not.
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/addresses_stream"
   - "#/definitions/carriers_stream"

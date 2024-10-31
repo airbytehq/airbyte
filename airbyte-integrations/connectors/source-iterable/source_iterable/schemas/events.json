@@ -1,32 +1,40 @@
 {
   "properties": {
     "itblInternal": {
+      "description": "Internal details related to the event",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "Timestamp when the related document was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "Timestamp when the related document was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "_type": {
+      "description": "Type of the event data",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp when the event was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "email": {
+      "description": "Email address related to the event",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "User ID associated with the event",
       "type": ["null", "string"]
     },
     "data": {
+      "description": "Event-specific data associated with the event",
       "type": ["null", "object"]
     }
   },

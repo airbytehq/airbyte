@@ -38,13 +38,13 @@ jobs:
           # Note: expressions within a filter are OR'ed
           filters: |
             connectors:
-              - '*'
+              - 'docs/integrations/**/*'
               - 'airbyte-ci/**/*'
               - 'airbyte-integrations/connectors/**/*'
               - 'airbyte-cdk/java/**/*'
               - 'buildSrc/**/*'
-      # The Connector CI Tests is a status check emitted by airbyte-ci
-      # We make it pass once we have determined that there are no changes to the connectors
+      # The Connector CI Tests & Regression Test Results Reviewed and Approved are status checks emitted by airbyte-ci
+      # We make them pass once we have determined that there are no changes to the connectors
       - name: "Skip Connectors CI tests"
         if: steps.changes.outputs.connectors != 'true' && github.event_name == 'pull_request'
         run: |
@@ -57,13 +57,26 @@ jobs:
             "context": "Connectors CI tests",
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
+      - name: "Skip Regression Test Results Reviewed and Approved"
+        if: steps.changes.outputs.connectors != 'true' && github.event_name == 'pull_request'
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "success",
+            "description": "[Skipped]",
+            "context": "Regression Test Results Reviewed and Approved",
+            "target_url": "${{ github.event.workflow_run.html_url }}"
+            }' \
 
   connectors_ci:
     needs: changes
     # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
     # Forked PRs are handled by the community_ci.yml workflow
     # If the condition is not met the job will be skipped (it will not fail)
-    if: needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true
+    if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
     runs-on: connector-test-large
     timeout-minutes: 360 # 6 hours
@@ -73,8 +86,7 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+            ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
@@ -83,7 +95,7 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
@@ -93,13 +105,13 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          git_revision: ${{ steps.fetch_last_commit_id_wd.outputs.commit_id }}
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -109,10 +121,11 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}

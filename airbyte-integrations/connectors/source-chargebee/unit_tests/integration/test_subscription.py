@@ -5,9 +5,10 @@ from typing import Any, Dict, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -18,7 +19,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from source_chargebee import SourceChargebee
 
 from .config import ConfigBuilder

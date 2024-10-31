@@ -2,9 +2,11 @@
   "type": ["null", "object"],
   "properties": {
     "nickname": {
+      "description": "A short phrase used to identify the plan.",
       "type": ["null", "string"]
     },
     "tiers": {
+      "description": "Details of the pricing tiers if the plan uses tiered pricing.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string", "object"],
@@ -28,73 +30,96 @@
       }
     },
     "object": {
+      "description": "Type of object. Value is 'plan'.",
       "type": ["null", "string"]
     },
     "aggregate_usage": {
+      "description": "Determines how usage is calculated for the subscription.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp representing the creation date of the plan.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp representing the last update of the plan.",
       "type": ["null", "integer"]
     },
     "statement_description": {
+      "description": "Description to be shown on customer statements.",
       "type": ["null", "string"]
     },
     "product": {
+      "description": "The product associated with the plan.",
       "type": ["null", "string"]
     },
     "statement_descriptor": {
+      "description": "The statement descriptor to be shown on credit card statements.",
       "type": ["null", "string"]
     },
     "interval_count": {
+      "description": "Number of intervals between each subscription billing.",
       "type": ["null", "integer"]
     },
     "transform_usage": {
+      "description": "Specifies billing behavior for subscription within a few hours of cycle-end.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the plan.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount in the smallest currency unit representing the price of the plan.",
       "type": ["null", "integer"]
     },
     "interval": {
+      "description": "Specifies the duration between billing periods.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the plan.",
       "type": ["null", "string"]
     },
     "trial_period_days": {
+      "description": "Number of days in the trial period for new subscribers.",
       "type": ["null", "integer"]
     },
     "usage_type": {
+      "description": "Specifies metered billing or licensed billing.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates if the plan is currently active or not.",
       "type": ["null", "boolean"]
     },
     "tiers_mode": {
+      "description": "Determines how to interpret the pricing tiers.",
       "type": ["null", "string"]
     },
     "billing_scheme": {
+      "description": "Specifies how the subscription interacts with proration.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the plan is in livemode or testmode.",
       "type": ["null", "boolean"]
     },
     "currency": {
+      "description": "The currency in which the plan amount is specified.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Set of key-value pairs associated with the plan.",
       "type": ["null", "object"],
       "properties": {}
     },
     "amount_decimal": {
+      "description": "The decimal equivalent of the amount field.",
       "type": ["null", "string"]
     },
     "is_deleted": {
+      "description": "Indicates if the plan has been marked as deleted.",
       "type": ["null", "boolean"]
     }
   }

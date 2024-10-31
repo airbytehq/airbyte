@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Optional, Union
 
-from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.gcs_upload import get_metadata_remote_file_path
+import pandas as pd
+from dagster import OpExecutionContext
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 
@@ -14,10 +15,10 @@ PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorReg
 
 def _get_version_specific_registry_entry_file_path(registry_entry, registry_name):
     """Get the file path for the version specific registry entry file."""
-    docker_reposiory = registry_entry.dockerRepository
+    docker_repository = registry_entry.dockerRepository
     docker_version = registry_entry.dockerImageTag
 
-    assumed_metadata_file_path = get_metadata_remote_file_path(docker_reposiory, docker_version)
+    assumed_metadata_file_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_version}/{METADATA_FILE_NAME}"
     registry_entry_file_path = assumed_metadata_file_path.replace(METADATA_FILE_NAME, registry_name)
     return registry_entry_file_path
 
@@ -84,3 +85,54 @@ def construct_registry_entry_write_path(
     overrode_registry_entry_version_write_path = _get_version_specific_registry_entry_file_path(registry_entry, registry_name)
     _check_for_invalid_write_path(overrode_registry_entry_version_write_path)
     return overrode_registry_entry_version_write_path
+
+
+def sanitize_docker_repo_name_for_dependency_file(docker_repo_name: str) -> str:
+    """
+    Remove the "airbyte/" prefix from the docker repository name.
+
+    e.g. airbyte/source-postgres -> source-postgres
+
+    Problem:
+        The dependency file paths are based on the docker repository name without the "airbyte/" prefix where as all other
+        paths are based on the full docker repository name.
+
+        e.g. https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/connector_dependencies/source-pokeapi/0.2.0/dependencies.json
+
+    Long term solution:
+        Move the dependency file paths to be based on the full docker repository name.
+
+    Args:
+        docker_repo_name (str): The docker repository name
+
+    Returns:
+        str: The docker repository name without the "airbyte/" prefix
+    """
+
+    return docker_repo_name.replace("airbyte/", "")
+
+
+def get_airbyte_slack_users_from_graph(context: OpExecutionContext) -> Optional[pd.DataFrame]:
+    """
+    Get the airbyte slack users from the graph.
+
+    Important: Directly relates to the airbyte_slack_users asset. Requires the asset to be materialized in the graph.
+
+    Problem:
+        I guess having dynamic partitioned assets that automatically materialize depending on another asset is a bit too much to ask for.
+
+    Solution:
+        Just get the asset from the graph, but dont declare it as a dependency.
+
+    Context:
+        https://airbytehq-team.slack.com/archives/C048P9GADFW/p1715276222825929
+    """
+    try:
+        from orchestrator import defn
+
+        airbyte_slack_users = defn.load_asset_value("airbyte_slack_users", instance=context.instance)
+        context.log.info(f"Got airbyte slack users from graph: {airbyte_slack_users}")
+        return airbyte_slack_users
+    except Exception as e:
+        context.log.error(f"Failed to get airbyte slack users from graph: {e}")
+        return None

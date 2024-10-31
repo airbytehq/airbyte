@@ -19,9 +19,9 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 ## Kubernetes Deployments
 
-The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
+The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/deploying-airbyte.md) is via the `Helm Charts`.
 
-To configure the  Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+To configure the Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/deploying-airbyte.md).
 Each application will consume the appropriate values from that file.
 
 If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
@@ -80,7 +80,7 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. *Legacy - this is superseded by the values below*
+1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. _Legacy - this is superseded by the values below_
 2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
 3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
 4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
@@ -114,10 +114,12 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Worker
 
-1. `MAX_SPEC_WORKERS` - Defines the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
-2. `MAX_CHECK_WORKERS` - Defines the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
-3. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
-4. `MAX_DISCOVER_WORKERS` - Defines the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
+1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
+2. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 10.
+
+#### Launcher
+
+1. `WORKLOAD_LAUNCHER_PARALLELISM` - Defines the number of jobs that can be started at once. Defaults to 10.
 
 #### Data Retention
 

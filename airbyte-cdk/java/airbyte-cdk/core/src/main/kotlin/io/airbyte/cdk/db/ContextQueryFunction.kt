@@ -7,5 +7,5 @@ import java.sql.SQLException
 import org.jooq.DSLContext
 
 fun interface ContextQueryFunction<T> {
-    @Throws(SQLException::class) fun query(context: DSLContext?): T
+    @Throws(SQLException::class) fun query(context: DSLContext): T
 }

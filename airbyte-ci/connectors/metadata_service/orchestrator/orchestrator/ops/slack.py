@@ -29,7 +29,7 @@ def send_slack_message(context: OpExecutionContext, channel: str, message: str, 
         channel (str): The channel to send the message to.
         message (str): The message to send.
     """
-    if os.getenv("SLACK_TOKEN"):
+    if os.getenv("SLACK_TOKEN") and os.getenv("SLACK_NOTIFICATIONS_DISABLED") != "true":
         # Ensure that a failure to send a slack message does not cause the pipeline to fail
         try:
             for message_chunk in chunk_messages(message):

@@ -4,63 +4,83 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the address record",
       "type": "integer"
     },
     "customer_id": {
+      "description": "The unique identifier of the customer associated with the address",
       "type": ["integer", "null"]
     },
     "address_line_1": {
+      "description": "The address line 1 of the customer",
       "type": ["string", "null"]
     },
     "address_type": {
+      "description": "The type of address, e.g., residential or commercial",
       "type": ["string", "null"]
     },
     "address_line_2": {
+      "description": "The address line 2 of the customer, if applicable",
       "type": ["string", "null"]
     },
     "city": {
+      "description": "The city where the address is located",
       "type": ["string", "null"]
     },
     "state": {
+      "description": "The state or region where the address is located",
       "type": ["string", "null"]
     },
     "postal_code": {
+      "description": "The postal or ZIP code of the address",
       "type": ["string", "null"]
     },
     "country": {
+      "description": "The country where the address is located",
       "type": ["string", "null"]
     },
     "is_default_shipping_address": {
+      "description": "Indicates if this is the default shipping address for the customer",
       "type": ["boolean", "null"]
     },
     "phone": {
+      "description": "The primary phone number associated with the address",
       "type": ["string", "null"]
     },
     "company": {
+      "description": "The name of the company associated with the address",
       "type": ["string", "null"]
     },
     "alternate_phone": {
+      "description": "An alternate phone number associated with the address",
       "type": ["string", "null"]
     },
     "fax": {
+      "description": "The fax number associated with the address",
       "type": ["string", "null"]
     },
     "comments": {
+      "description": "Any additional comments or notes related to the address",
       "type": ["string", "null"]
     },
     "is_default_billing_address": {
+      "description": "Indicates if this is the default billing address for the customer",
       "type": ["boolean", "null"]
     },
     "created_at": {
+      "description": "The date and time when the address was created",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the address was last updated",
       "type": ["string", "null"]
     },
     "first_name": {
+      "description": "The first name of the customer",
       "type": ["string", "null"]
     },
     "last_name": {
+      "description": "The last name of the customer",
       "type": ["string", "null"]
     }
   }

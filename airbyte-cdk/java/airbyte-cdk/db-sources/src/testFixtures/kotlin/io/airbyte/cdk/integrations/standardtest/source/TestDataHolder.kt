@@ -17,7 +17,7 @@ internal constructor(
     private val fullSourceDataType: String?
 ) {
     var nameSpace: String? = null
-    private var testNumber: Long = 0
+    private var testNumber: Int = 0
     private var idColumnName: String? = null
     private var testColumnName: String? = null
 
@@ -125,8 +125,8 @@ internal constructor(
          * @param expectedValue value which should be provided by a streamer
          * @return builder
          */
-        fun addExpectedValues(vararg expectedValue: String?): TestDataHolderBuilder {
-            expectedValues.addAll(Arrays.asList(*expectedValue))
+        fun addExpectedValues(vararg expectedValue: String): TestDataHolderBuilder {
+            expectedValues.addAll(expectedValue)
             return this
         }
 
@@ -154,7 +154,7 @@ internal constructor(
         }
     }
 
-    fun setTestNumber(testNumber: Long) {
+    fun setTestNumber(testNumber: Int) {
         this.testNumber = testNumber
     }
 
@@ -184,9 +184,9 @@ internal constructor(
         this.declarationLocation = Arrays.asList(*declarationLocation).subList(2, 3).toString()
     }
 
-    val insertSqlQueries: List<String?>
+    val insertSqlQueries: List<String>
         get() {
-            val insertSqls: MutableList<String?> = ArrayList()
+            val insertSqls: MutableList<String> = ArrayList()
             var rowId = 1
             for (value in values) {
                 insertSqls.add(

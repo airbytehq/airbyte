@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from typing import List, Optional
+from pathlib import Path
+from typing import Dict, List, Optional
 
 import dagger
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.models.contexts.pipeline_context import PipelineContext
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import MountPath, Step, StepResult
 
 
@@ -16,9 +17,9 @@ class SimpleDockerStep(Step):
         self,
         title: str,
         context: PipelineContext,
-        paths_to_mount: List[MountPath] = [],
-        internal_tools: List[MountPath] = [],
-        secrets: dict[str, dagger.Secret] = {},
+        paths_to_mount: Optional[List[MountPath]] = None,
+        internal_tools: Optional[List[MountPath]] = None,
+        secret_env_variables: Optional[Dict[str, Secret]] = None,
         env_variables: dict[str, str] = {},
         working_directory: str = "/",
         command: Optional[List[str]] = None,
@@ -30,7 +31,7 @@ class SimpleDockerStep(Step):
             context (PipelineContext): context of the step
             paths_to_mount (List[MountPath], optional): directory paths to mount. Defaults to [].
             internal_tools (List[MountPath], optional): internal tools to install. Defaults to [].
-            secrets (dict[str, dagger.Secret], optional): secrets to add to container. Defaults to {}.
+            secret_env_variables (List[Tuple[str, Secret]], optional): secrets to add to container as environment variables, a tuple of env var name > Secret object . Defaults to [].
             env_variables (dict[str, str], optional): env variables to set in container. Defaults to {}.
             working_directory (str, optional): working directory to run the command in. Defaults to "/".
             command (Optional[List[str]], optional): The default command to run. Defaults to None.
@@ -38,10 +39,10 @@ class SimpleDockerStep(Step):
         self._title = title
         super().__init__(context)
 
-        self.paths_to_mount = paths_to_mount
+        self.paths_to_mount = paths_to_mount if paths_to_mount else []
         self.working_directory = working_directory
-        self.internal_tools = internal_tools
-        self.secrets = secrets
+        self.internal_tools = internal_tools if internal_tools else []
+        self.secret_env_variables = secret_env_variables if secret_env_variables else {}
         self.env_variables = env_variables
         self.command = command
 
@@ -54,13 +55,21 @@ class SimpleDockerStep(Step):
             if path_to_mount.optional and not path_to_mount.get_path().exists():
                 continue
 
-            path_string = str(path_to_mount)
-            destination_path = f"/{path_string}"
-            if path_to_mount.is_file:
-                file_to_load = self.context.get_repo_file(path_string)
-                container = container.with_mounted_file(destination_path, file_to_load)
-            else:
-                container = container.with_mounted_directory(destination_path, self.context.get_repo_dir(path_string))
+            if path_to_mount.get_path().is_symlink():
+                container = self._mount_path(container, path_to_mount.get_path().readlink())
+
+            container = self._mount_path(container, path_to_mount.get_path())
+        return container
+
+    def _mount_path(self, container: dagger.Container, path: Path) -> dagger.Container:
+        path_string = str(path)
+        destination_path = f"/{path_string}"
+        if path.is_file():
+            file_to_load = self.context.get_repo_file(path_string)
+            container = container.with_mounted_file(destination_path, file_to_load)
+        else:
+            dir_to_load = self.context.get_repo_dir(path_string)
+            container = container.with_mounted_directory(destination_path, dir_to_load)
         return container
 
     async def _install_internal_tools(self, container: dagger.Container) -> dagger.Container:
@@ -76,9 +85,9 @@ class SimpleDockerStep(Step):
             container = container.with_env_variable(key, value)
         return container
 
-    def _set_secrets(self, container: dagger.Container) -> dagger.Container:
-        for key, value in self.secrets.items():
-            container = container.with_secret_variable(key, value)
+    def _set_secret_env_variables(self, container: dagger.Container) -> dagger.Container:
+        for env_var_name, secret in self.secret_env_variables.items():
+            container = container.with_secret_variable(env_var_name, secret.as_dagger_secret(self.context.dagger_client))
         return container
 
     async def init_container(self) -> dagger.Container:
@@ -87,7 +96,7 @@ class SimpleDockerStep(Step):
 
         container = self._mount_paths(container)
         container = self._set_env_variables(container)
-        container = self._set_secrets(container)
+        container = self._set_secret_env_variables(container)
         container = await self._install_internal_tools(container)
         container = self._set_workdir(container)
 

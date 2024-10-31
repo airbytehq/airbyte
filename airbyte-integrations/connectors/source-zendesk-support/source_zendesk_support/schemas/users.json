@@ -4,92 +4,121 @@
   "type": ["null", "object"],
   "properties": {
     "verified": {
+      "description": "Indicates if the user's account is verified.",
       "type": ["null", "boolean"]
     },
     "role": {
+      "description": "The role or position of the user.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the user.",
       "items": {
+        "description": "A tag associated with the user.",
         "type": ["null", "string"]
       },
       "type": ["null", "array"]
     },
     "chat_only": {
+      "description": "Specifies if the user can only participate in chat interactions.",
       "type": ["null", "boolean"]
     },
     "role_type": {
+      "description": "The type of role assigned to the user.",
       "type": ["null", "integer"]
     },
     "phone": {
+      "description": "The phone number associated with the user.",
       "type": ["null", "string"]
     },
     "organization_id": {
+      "description": "The ID of the organization the user belongs to.",
       "type": ["null", "integer"]
     },
     "details": {
+      "description": "Additional details or information about the user.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address associated with the user.",
       "type": ["null", "string"]
     },
     "only_private_comments": {
+      "description": "Indicates if the user can only create private comments.",
       "type": ["null", "boolean"]
     },
     "signature": {
+      "description": "The user's email signature.",
       "type": ["null", "string"]
     },
     "restricted_agent": {
+      "description": "Specifies if the user is a restricted agent.",
       "type": ["null", "boolean"]
     },
     "moderator": {
+      "description": "Specifies if the user has moderator privileges.",
       "type": ["null", "boolean"]
     },
     "updated_at": {
+      "description": "The datetime when the user account was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "external_id": {
+      "description": "An external identifier for the user.",
       "type": ["null", "string"]
     },
     "time_zone": {
+      "description": "The time zone of the user.",
       "type": ["null", "string"]
     },
     "photo": {
+      "description": "Information about the user's profile photo.",
       "type": ["null", "object"],
       "properties": {
         "thumbnails": {
+          "description": "Thumbnails of the user's profile photo.",
           "items": {
             "type": ["null", "object"],
             "properties": {
               "width": {
+                "description": "The width of the thumbnail.",
                 "type": ["null", "integer"]
               },
               "url": {
+                "description": "The URL of the thumbnail.",
                 "type": ["null", "string"]
               },
               "inline": {
+                "description": "Specifies if the thumbnail should be displayed inline.",
                 "type": ["null", "boolean"]
               },
               "content_url": {
+                "description": "The URL to access the thumbnail content.",
                 "type": ["null", "string"]
               },
               "content_type": {
+                "description": "The content type of the thumbnail.",
                 "type": ["null", "string"]
               },
               "file_name": {
+                "description": "The file name of the thumbnail.",
                 "type": ["null", "string"]
               },
               "size": {
+                "description": "The size of the thumbnail.",
                 "type": ["null", "integer"]
               },
               "mapped_content_url": {
+                "description": "The mapped URL to access the thumbnail content.",
                 "type": ["null", "string"]
               },
               "id": {
+                "description": "The ID of the thumbnail.",
                 "type": ["null", "integer"]
               },
               "height": {
+                "description": "The height of the thumbnail.",
                 "type": ["null", "integer"]
               }
             }
@@ -97,105 +126,137 @@
           "type": ["null", "array"]
         },
         "width": {
+          "description": "The width of the photo.",
           "type": ["null", "integer"]
         },
         "url": {
+          "description": "The URL of the user's profile photo.",
           "type": ["null", "string"]
         },
         "inline": {
+          "description": "Specifies if the photo should be displayed inline.",
           "type": ["null", "boolean"]
         },
         "content_url": {
+          "description": "The URL to access the photo content.",
           "type": ["null", "string"]
         },
         "content_type": {
+          "description": "The content type of the photo.",
           "type": ["null", "string"]
         },
         "file_name": {
+          "description": "The file name of the photo.",
           "type": ["null", "string"]
         },
         "size": {
+          "description": "The size of the photo.",
           "type": ["null", "integer"]
         },
         "mapped_content_url": {
+          "description": "The mapped URL to access the photo content.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The ID of the photo.",
           "type": ["null", "integer"]
         },
         "height": {
+          "description": "The height of the photo.",
           "type": ["null", "integer"]
         }
       }
     },
     "name": {
+      "description": "The name of the user.",
       "type": ["null", "string"]
     },
     "shared": {
+      "description": "Indicates if the user's account is shared.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the user.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The datetime when the user account was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "suspended": {
+      "description": "Indicates if the user's account is suspended.",
       "type": ["null", "boolean"]
     },
     "shared_agent": {
+      "description": "Specifies if the user is a shared agent.",
       "type": ["null", "boolean"]
     },
     "shared_phone_number": {
+      "description": "Specifies if the user has a shared phone number.",
       "type": ["null", "boolean"]
     },
     "user_fields": {
+      "description": "Custom fields associated with the user.",
       "type": ["null", "object"],
       "properties": {},
       "additionalProperties": true
     },
     "last_login_at": {
+      "description": "The datetime of the user's last login.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "alias": {
+      "description": "An alternative name or identifier for the user.",
       "type": ["null", "string"]
     },
     "two_factor_auth_enabled": {
+      "description": "Specifies if two-factor authentication is enabled for the user.",
       "type": ["null", "boolean"]
     },
     "notes": {
+      "description": "Any notes or comments related to the user.",
       "type": ["null", "string"]
     },
     "default_group_id": {
+      "description": "The default group ID for the user.",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "The URL of the user's details.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates if the user is currently active.",
       "type": ["null", "boolean"]
     },
     "permanently_deleted": {
+      "description": "Specifies if the user has been permanently deleted.",
       "type": ["null", "boolean"]
     },
     "locale_id": {
+      "description": "The locale ID of the user.",
       "type": ["null", "integer"]
     },
     "custom_role_id": {
+      "description": "The custom role ID assigned to the user.",
       "type": ["null", "integer"]
     },
     "ticket_restriction": {
+      "description": "Specifies the user's ticket restriction.",
       "type": ["null", "string"]
     },
     "locale": {
+      "description": "The preferred locale of the user.",
       "type": ["null", "string"]
     },
     "report_csv": {
+      "description": "The report in CSV format associated with the user.",
       "type": ["null", "boolean"]
     },
     "iana_time_zone": {
+      "description": "The IANA time zone of the user.",
       "type": ["null", "string"]
     }
   }

@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
@@ -68,8 +69,9 @@ class TestManifestDeclarativeSource:
 
     def test_valid_manifest(self):
         manifest = {
-            "version": "0.29.3",
+            "version": "3.8.2",
             "definitions": {},
+            "description": "This is a sample source connector that is very valid.",
             "streams": [
                 {
                     "type": "DeclarativeStream",
@@ -138,6 +140,7 @@ class TestManifestDeclarativeSource:
         assert len(streams) == 2
         assert isinstance(streams[0], DeclarativeStream)
         assert isinstance(streams[1], DeclarativeStream)
+        assert source.resolved_manifest["description"] == "This is a sample source connector that is very valid."
 
     def test_manifest_with_spec(self):
         manifest = {
@@ -837,7 +840,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_manifest_with_added_fields",
@@ -906,7 +909,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_with_pagination_no_partitions",
@@ -980,7 +983,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
-            [call({}, {}, None), call({}, {}, {"next_page_token": "next"})],
+            [call({}, {}), call({"next_page_token": "next"}, {"next_page_token": "next"})],
         ),
         (
             "test_no_pagination_with_partition_router",
@@ -1040,7 +1043,14 @@ def _create_page(response_body):
                 _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}}),
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
-            [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)],
+            [
+                call({"states": []}, {"partition": "0"}, None),
+                call(
+                    {"states": [{"partition": {"partition": "0"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]},
+                    {"partition": "1"},
+                    None,
+                ),
+            ],
         ),
         (
             "test_with_pagination_and_partition_router",
@@ -1112,9 +1122,13 @@ def _create_page(response_body):
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
             [
-                call({}, {"partition": "0"}, None),
-                call({}, {"partition": "0"}, {"next_page_token": "next"}),
-                call({}, {"partition": "1"}, None),
+                call({"states": []}, {"partition": "0"}, None),
+                call({"states": []}, {"partition": "0"}, {"next_page_token": "next"}),
+                call(
+                    {"states": [{"partition": {"partition": "0"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]},
+                    {"partition": "1"},
+                    None,
+                ),
             ],
         ),
     ],
@@ -1238,8 +1252,8 @@ def test_only_parent_streams_use_cache():
     assert not streams[1].retriever.requester.use_cache
 
     # Parent stream created for substream
-    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.name == "applications"
-    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.retriever.requester.use_cache
+    assert streams[1].retriever.stream_slicer._partition_router.parent_stream_configs[0].stream.name == "applications"
+    assert streams[1].retriever.stream_slicer._partition_router.parent_stream_configs[0].stream.retriever.requester.use_cache
 
     # Main stream without caching
     assert streams[2].name == "jobs"
@@ -1258,3 +1272,45 @@ def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMess
         ]
     )
     return list(source.read(logger, {}, catalog, {}))
+
+
+def test_declarative_component_schema_valid_ref_links():
+    def load_yaml(file_path) -> Mapping[str, Any]:
+        with open(file_path, "r") as file:
+            return yaml.safe_load(file)
+
+    def extract_refs(data, base_path="#") -> List[str]:
+        refs = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key == "$ref" and isinstance(value, str) and value.startswith("#"):
+                    ref_path = value
+                    refs.append(ref_path)
+                else:
+                    refs.extend(extract_refs(value, base_path))
+        elif isinstance(data, list):
+            for item in data:
+                refs.extend(extract_refs(item, base_path))
+        return refs
+
+    def resolve_pointer(data: Mapping[str, Any], pointer: str) -> bool:
+        parts = pointer.split("/")[1:]  # Skip the first empty part due to leading '#/'
+        current = data
+        try:
+            for part in parts:
+                part = part.replace("~1", "/").replace("~0", "~")  # Unescape JSON Pointer
+                current = current[part]
+            return True
+        except (KeyError, TypeError):
+            return False
+
+    def validate_refs(yaml_file: str) -> List[str]:
+        data = load_yaml(yaml_file)
+        refs = extract_refs(data)
+        invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace("#", ""))]
+        return invalid_refs
+
+    yaml_file_path = (
+        Path(__file__).resolve().parent.parent.parent.parent / "airbyte_cdk/sources/declarative/declarative_component_schema.yaml"
+    )
+    assert not validate_refs(yaml_file_path)

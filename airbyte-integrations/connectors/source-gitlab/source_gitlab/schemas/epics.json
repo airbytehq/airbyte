@@ -3,129 +3,168 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique ID of the epic",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal ID of the epic",
       "type": ["null", "integer"]
     },
     "group_id": {
+      "description": "ID of the group to which the epic belongs",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "ID of the parent epic, if any",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the epic",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the epic",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "Current state of the epic",
       "type": ["null", "string"]
     },
     "confidential": {
+      "description": "Flag indicating if the epic is confidential",
       "type": ["null", "boolean"]
     },
     "web_url": {
+      "description": "URL for viewing the epic in a web browser",
       "type": ["null", "string"]
     },
     "reference": {
+      "description": "Reference for the epic",
       "type": ["null", "string"]
     },
     "references": {
+      "description": "References associated with the epic",
       "type": ["null", "object"]
     },
     "author": {
+      "description": "Author of the epic",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "author_id": {
+      "description": "ID of the author",
       "type": ["null", "integer"]
     },
     "start_date": {
+      "description": "Start date of the epic",
       "type": ["null", "string"]
     },
     "start_date_is_fixed": {
+      "description": "Flag indicating if the start date is fixed",
       "type": ["null", "boolean"]
     },
     "start_date_fixed": {
+      "description": "Fixed start date of the epic",
       "type": ["null", "string"],
       "format": "date"
     },
     "start_date_from_inherited_source": {
+      "description": "Start date inherited from another source",
       "type": ["null", "string", "boolean"]
     },
     "end_date": {
+      "description": "End date of the epic",
       "type": ["null", "string"]
     },
     "due_date": {
+      "description": "Due date of the epic",
       "type": ["null", "string"]
     },
     "due_date_is_fixed": {
+      "description": "Flag indicating if the due date is fixed",
       "type": ["null", "boolean"]
     },
     "due_date_fixed": {
+      "description": "Fixed due date of the epic",
       "type": ["null", "string"],
       "format": "date"
     },
     "due_date_from_inherited_source": {
+      "description": "Due date inherited from another source",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the epic was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the epic was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "closed_at": {
+      "description": "Date and time when the epic was closed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "labels": {
+      "description": "Labels associated with the epic",
       "type": ["null", "array"]
     },
     "upvotes": {
+      "description": "Number of upvotes received by the epic",
       "type": ["null", "integer"]
     },
     "downvotes": {
+      "description": "Number of downvotes received by the epic",
       "type": ["null", "integer"]
     },
     "parent_iid": {
+      "description": "Internal ID of the parent epic",
       "type": ["null", "integer"]
     },
     "color": {
+      "description": "Color associated with the epic",
       "type": ["null", "string"]
     },
     "text_color": {
+      "description": "Text color associated with the epic",
       "type": ["null", "string"]
     },
     "web_edit_url": {
+      "description": "URL for editing the epic in a web browser",
       "type": ["null", "string"]
     },
     "due_date_from_milestones": {
+      "description": "Due date linked to milestone",
       "type": ["null", "string"],
       "format": "date"
     },
     "_links": {
+      "description": "Contains links to related resources for the epic",
       "type": ["null", "object"],
       "properties": {
         "self": {
+          "description": "Link to the epic resource itself",
           "type": ["null", "string"]
         },
         "epic_issues": {
+          "description": "Link to the list of issues associated with the epic",
           "type": ["null", "string"]
         },
         "group": {
+          "description": "Link to the group to which the epic belongs",
           "type": ["null", "string"]
         },
         "parent": {
+          "description": "Link to the parent epic, if any",
           "type": ["null", "string"]
         }
       }
     },
     "start_date_from_milestones": {
+      "description": "Start date linked to milestone",
       "type": ["null", "string"],
       "format": "date"
     }

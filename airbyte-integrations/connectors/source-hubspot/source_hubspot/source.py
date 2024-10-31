@@ -3,14 +3,16 @@
 #
 
 import logging
+import traceback
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, Generator, List, Mapping, Optional, Tuple
+from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
 
-import requests
-from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
@@ -30,6 +32,7 @@ from source_hubspot.streams import (
     DealPipelines,
     Deals,
     DealsArchived,
+    DealSplits,
     DealsPropertyHistory,
     DealsWebAnalytics,
     EmailEvents,
@@ -73,7 +76,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 
 
 class SourceHubspot(AbstractSource):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
@@ -98,7 +101,16 @@ class SourceHubspot(AbstractSource):
         try:
             access_token = authenticator.get_access_token()
             url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
-            response = requests.get(url=url)
+            error_resolution = ErrorResolution(
+                ResponseAction.RETRY, FailureType.transient_error, "Internal error attempting to get scopes."
+            )
+            error_mapping = {500: error_resolution, 502: error_resolution, 504: error_resolution}
+            http_client = HttpClient(
+                name="get hubspot granted scopes client",
+                logger=self.logger,
+                error_handler=HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping),
+            )
+            request, response = http_client.send_request("get", url, request_kwargs={})
             response.raise_for_status()
             response_json = response.json()
             granted_scopes = response_json["scopes"]
@@ -131,6 +143,7 @@ class SourceHubspot(AbstractSource):
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
+            DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),

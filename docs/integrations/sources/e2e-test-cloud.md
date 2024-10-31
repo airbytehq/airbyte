@@ -26,11 +26,16 @@ Here is its configuration:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+  
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
 | Version | Date       | Pull request                                             | Subject                                             |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------|
+| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------- |
 | 2.2.1   | 2024-02-13 | [35231](https://github.com/airbytehq/airbyte/pull/35231) | Adopt JDK 0.20.4.                                   |
 | 2.1.5   | 2023-10-06 | [31092](https://github.com/airbytehq/airbyte/pull/31092) | Bring in changes from oss                           |
 | 2.1.4   | 2023-03-01 | [23656](https://github.com/airbytehq/airbyte/pull/23656) | Fix inheritance between e2e-test and e2e-test-cloud |
 | 0.1.0   | 2021-07-23 | [9720](https://github.com/airbytehq/airbyte/pull/9720)   | Initial release.                                    |
+
+</details>

@@ -1,53 +1,70 @@
 {
   "properties": {
     "friendly_name": {
+      "description": "A user-friendly name associated with the phone number for easy identification.",
       "type": ["null", "string"]
     },
     "phone_number": {
+      "description": "The toll-free phone number that can be used for communication.",
       "type": ["null", "string"]
     },
     "lata": {
+      "description": "The Local Access and Transport Area code of the phone number's location.",
       "type": ["null", "string"]
     },
     "rate_center": {
+      "description": "The rate center associated with the phone number.",
       "type": ["null", "string"]
     },
     "latitude": {
+      "description": "The latitude coordinate of the phone number's location.",
       "type": ["null", "string"]
     },
     "longitude": {
+      "description": "The longitude coordinate of the phone number's location.",
       "type": ["null", "string"]
     },
     "locality": {
+      "description": "The locality (city/town) where the phone number is located.",
       "type": ["null", "string"]
     },
     "region": {
+      "description": "The region (state/province) where the phone number is located.",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "The postal code of the phone number's location.",
       "type": ["null", "string"]
     },
     "iso_country": {
+      "description": "The ISO country code of the phone number's location.",
       "type": ["null", "string"]
     },
     "address_requirements": {
+      "description": "Specifies the requirements related to the address associated with the phone number.",
       "type": ["null", "string"]
     },
     "beta": {
+      "description": "Indicates if the phone number is in beta testing phase.",
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Represents the capabilities of the toll-free phone numbers available",
       "properties": {
         "voice": {
+          "description": "Indicates if the phone number supports voice calls.",
           "type": ["null", "boolean"]
         },
         "SMS": {
+          "description": "Indicates if the phone number supports Short Message Service (text messaging).",
           "type": ["null", "boolean"]
         },
         "MMS": {
+          "description": "Indicates if the phone number supports Multimedia Messaging Service.",
           "type": ["null", "boolean"]
         },
         "fax": {
+          "description": "Indicates if the phone number supports fax communication.",
           "type": ["null", "boolean"]
         }
       },

@@ -4,118 +4,30 @@
 
 import json
 import os
+from pathlib import Path
 
 import responses
 from pytest import fixture
 from responses import matchers
-from source_jira.streams import (
-    ApplicationRoles,
-    Avatars,
-    BoardIssues,
-    Boards,
-    Dashboards,
-    Filters,
-    FilterSharing,
-    Groups,
-    IssueComments,
-    IssueCustomFieldContexts,
-    IssueFieldConfigurations,
-    IssueFields,
-    IssueLinkTypes,
-    IssueNavigatorSettings,
-    IssueNotificationSchemes,
-    IssuePriorities,
-    IssuePropertyKeys,
-    IssueRemoteLinks,
-    IssueResolutions,
-    Issues,
-    IssueSecuritySchemes,
-    IssueTypeSchemes,
-    IssueVotes,
-    IssueWatchers,
-    IssueWorklogs,
-    JiraSettings,
-    Labels,
-    Permissions,
-    ProjectAvatars,
-    ProjectCategories,
-    ProjectComponents,
-    ProjectEmail,
-    ProjectPermissionSchemes,
-    Projects,
-    ProjectVersions,
-    Screens,
-    ScreenTabs,
-    SprintIssues,
-    Sprints,
-    TimeTracking,
-    Users,
-    UsersGroupsDetailed,
-    Workflows,
-    WorkflowSchemes,
-    WorkflowStatusCategories,
-    WorkflowStatuses,
-)
+from source_jira.source import SourceJira
+
+ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
+os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 
 
-@fixture(scope="session", autouse=True)
-def disable_cache():
-    classes = [
-        ApplicationRoles,
-        Avatars,
-        BoardIssues,
-        Boards,
-        Dashboards,
-        Filters,
-        FilterSharing,
-        Groups,
-        IssueComments,
-        IssueCustomFieldContexts,
-        IssueFieldConfigurations,
-        IssueFields,
-        IssueLinkTypes,
-        IssueNavigatorSettings,
-        IssueNotificationSchemes,
-        IssuePriorities,
-        IssuePropertyKeys,
-        IssueRemoteLinks,
-        IssueResolutions,
-        Issues,
-        IssueSecuritySchemes,
-        IssueTypeSchemes,
-        IssueVotes,
-        IssueWatchers,
-        IssueWorklogs,
-        JiraSettings,
-        Labels,
-        Permissions,
-        ProjectAvatars,
-        ProjectCategories,
-        ProjectComponents,
-        ProjectEmail,
-        ProjectPermissionSchemes,
-        Projects,
-        ProjectVersions,
-        Screens,
-        ScreenTabs,
-        SprintIssues,
-        Sprints,
-        TimeTracking,
-        Users,
-        UsersGroupsDetailed,
-        Workflows,
-        WorkflowSchemes,
-        WorkflowStatusCategories,
-        WorkflowStatuses,
-    ]
-    for cls in classes:
-        # Disabling cache for all streams to assess the number of calls made for each stream.
-        # Additionally, this is necessary as the responses library has been returning unexpected call counts
-        # following the recent update to HttpStream
-        cls.use_cache = False
+def delete_cache_files(cache_directory):
+    directory_path = Path(cache_directory)
+    if directory_path.exists() and directory_path.is_dir():
+        for file_path in directory_path.glob("*.sqlite"):
+            file_path.unlink()
 
 
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    # The problem: Once the first request is cached, we will keep getting the cached result no matter what setup we prepared for a particular test.
+    # Solution: We must delete the cache before each test because for the same URL, we want to define multiple responses and status codes.
+    delete_cache_files(os.getenv(ENV_REQUEST_CACHE_PATH))
+    yield
 
 
 @fixture
@@ -126,6 +38,7 @@ def config():
         "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
+        "enable_experimental_streams": True,
     }
 
 
@@ -375,7 +288,6 @@ def projects_versions_response():
 
 @fixture
 def mock_projects_responses(config, projects_response):
-    Projects.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
@@ -384,8 +296,16 @@ def mock_projects_responses(config, projects_response):
 
 
 @fixture
+def mock_non_deleted_projects_responses(config, projects_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived",
+        json=projects_response,
+    )
+
+
+@fixture
 def mock_projects_responses_additional_project(config, projects_response):
-    Projects.use_cache = False
     projects_response["values"] += [{"id": "3", "key": "Project3"}, {"id": "4", "key": "Project4"}]
     responses.add(
         responses.GET,
@@ -395,7 +315,7 @@ def mock_projects_responses_additional_project(config, projects_response):
 
 
 @fixture
-def mock_issues_responses(config, issues_response):
+def mock_issues_responses_with_date_filter(config, issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
@@ -404,7 +324,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (1) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (1) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -419,7 +339,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (2) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (2) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -434,7 +354,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (3) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (3) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -450,7 +370,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (4) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (4) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -477,23 +397,23 @@ def mock_issues_responses(config, issues_response):
 def mock_project_emails(config, project_email_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/1/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/1/email",
         json=project_email_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/2/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/2/email",
         json=project_email_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/3/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/3/email",
         json={"errorMessages": ["No access to emails for project 3"]},
         status=403,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/4/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/4/email",
         json=project_email_response,
     )
 
@@ -502,12 +422,12 @@ def mock_project_emails(config, project_email_response):
 def mock_issue_watchers_responses(config, issue_watchers_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers",
         json=issue_watchers_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-2/watchers?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-2/watchers",
         json={"errorMessages": ["Not found watchers for issue TESTKEY13-2"]},
         status=404,
     )
@@ -567,7 +487,7 @@ def mock_issue_custom_field_options_response(config, issue_custom_field_options_
 def mock_fields_response(config, issue_fields_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/field",
         json=issue_fields_response,
     )
 
@@ -625,3 +545,10 @@ def mock_sprints_response(config, sprints_response):
         f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
         json=sprints_response,
     )
+
+
+def find_stream(stream_name, config):
+    for stream in SourceJira().streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")

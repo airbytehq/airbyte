@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pytest
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import FieldPointer
+from airbyte_cdk.sources.types import FieldPointer
 
 
 @pytest.mark.parametrize(
@@ -132,4 +132,5 @@ def test_add_fields(
     expected: Mapping[str, Any],
 ):
     inputs = [AddedFieldDefinition(path=v[0], value=v[1], value_type=field_type, parameters={}) for v in field]
-    assert AddFields(fields=inputs, parameters={"alas": "i live"}).transform(input_record, **kwargs) == expected
+    AddFields(fields=inputs, parameters={"alas": "i live"}).transform(input_record, **kwargs)
+    assert input_record == expected

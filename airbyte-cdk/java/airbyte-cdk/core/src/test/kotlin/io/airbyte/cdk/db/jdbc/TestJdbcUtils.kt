@@ -20,7 +20,6 @@ import io.airbyte.commons.string.Strings
 import io.airbyte.protocol.models.JsonSchemaType
 import java.math.BigDecimal
 import java.sql.*
-import java.util.stream.Collectors
 import javax.sql.DataSource
 import org.bouncycastle.util.encoders.Base64
 import org.junit.jupiter.api.Assertions
@@ -75,7 +74,7 @@ internal class TestJdbcUtils {
 
     private fun getConfig(psqlDb: PostgreSQLContainer<*>?, dbName: String?): JsonNode {
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any, Any?>()
+            ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.HOST_KEY, psqlDb!!.host)
                 .put(JdbcUtils.PORT_KEY, psqlDb.firstMappedPort)
                 .put(JdbcUtils.DATABASE_KEY, dbName)
@@ -92,7 +91,7 @@ internal class TestJdbcUtils {
         sslValue: T
     ): JsonNode {
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any, Any?>()
+            ImmutableMap.builder<Any, Any>()
                 .put("host", psqlDb!!.host)
                 .put("port", psqlDb.firstMappedPort)
                 .put("database", dbName)
@@ -106,7 +105,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testRowToJson() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             rs.next()
             Assertions.assertEquals(RECORDS_AS_JSON[0], sourceOperations.rowToJson(rs))
@@ -116,14 +115,14 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testToStream() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             val actual =
                 JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet ->
-                        sourceOperations.rowToJson(queryContext)
-                    }
-                    .collect(Collectors.toList())
-            Assertions.assertEquals(RECORDS_AS_JSON, actual)
+                    sourceOperations.rowToJson(queryContext)
+                }
+
+            Assertions.assertEquals(RECORDS_AS_JSON, actual.toList())
         }
     }
 
@@ -131,7 +130,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testSetJsonField() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             insertRecordOfEachType(connection)
             assertExpectedOutputValues(connection, jsonFieldExpectedValues())
@@ -143,7 +142,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testSetStatementField() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             val ps =
                 connection.prepareStatement(
@@ -215,7 +214,7 @@ internal class TestJdbcUtils {
     fun testUseSslWithEmptySslKeyAndSslModeVerifyFull() {
         val config =
             Jsons.jsonNode(
-                ImmutableMap.builder<Any, Any?>()
+                ImmutableMap.builder<Any, Any>()
                     .put("host", PSQL_DB.host)
                     .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
@@ -241,7 +240,7 @@ internal class TestJdbcUtils {
     fun testUseSslWithEmptySslKeyAndSslModeDisable() {
         val config =
             Jsons.jsonNode(
-                ImmutableMap.builder<Any, Any?>()
+                ImmutableMap.builder<Any, Any>()
                     .put("host", PSQL_DB.host)
                     .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
@@ -307,7 +306,7 @@ internal class TestJdbcUtils {
     )
     @Throws(SQLException::class)
     fun testSetStatementSpecialValues(colValue: String, value: Long) {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             val ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);")
 
@@ -431,7 +430,7 @@ internal class TestJdbcUtils {
             val actual = sourceOperations.rowToJson(resultSet)
 
             // field-wise comparison to make debugging easier.
-            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode?> ->
+            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode> ->
                 Assertions.assertEquals(e.value, actual[e.key], "key: " + e.key)
             }
             Assertions.assertEquals(expected, actual)

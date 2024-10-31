@@ -1,0 +1,12 @@
+{
+  "error": {
+    "message": "Invalid parameter",
+    "type": "OAuthException",
+    "code": 100,
+    "error_data": {},
+    "error_subcode": 33,
+    "is_transient": false,
+    "error_user_msg": "Unsupported get request. Object with ID 'test_id_3' does not exist, cannot be loaded due to missing permissions, or does not support this operation.",
+    "fbtrace_id": "fake_trace_id"
+  }
+}

@@ -5,64 +5,83 @@
   "type": "object",
   "properties": {
     "purchaseOrderNumber": {
+      "description": "Unique identifier of the purchase order.",
       "type": ["null", "string"]
     },
     "sellingParty": {
+      "description": "Details of the party responsible for selling the goods.",
       "type": ["null", "object"],
       "properties": {
         "partyId": {
+          "description": "Identifier of the selling party.",
           "type": ["null", "string"]
         },
         "address": {
+          "description": "Address details of the selling party.",
           "type": ["null", "object"],
           "properties": {
             "name": {
+              "description": "Name of the selling party.",
               "type": ["null", "string"]
             },
             "addressLine1": {
+              "description": "First line of the address.",
               "type": ["null", "string"]
             },
             "addressLine2": {
+              "description": "Second line of the address.",
               "type": ["null", "string"]
             },
             "addressLine3": {
+              "description": "Third line of the address.",
               "type": ["null", "string"]
             },
             "city": {
+              "description": "City of the address.",
               "type": ["null", "string"]
             },
             "county": {
+              "description": "County of the address.",
               "type": ["null", "string"]
             },
             "district": {
+              "description": "District of the address.",
               "type": ["null", "string"]
             },
             "stateOrRegion": {
+              "description": "State or region of the address.",
               "type": ["null", "string"]
             },
             "postalCode": {
+              "description": "Postal code of the address.",
               "type": ["null", "string"]
             },
             "countryCode": {
+              "description": "Country code of the address.",
               "type": ["null", "string"]
             },
             "phone": {
+              "description": "Contact phone number of the selling party.",
               "type": ["null", "string"]
             }
           }
         },
         "taxRegistrationDetails": {
+          "description": "Details of tax registration for the selling party.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "taxRegistrationType": {
+                "description": "Type of tax registration.",
                 "type": ["null", "string"]
               },
               "taxRegistrationNumber": {
+                "description": "Tax registration number of the selling party.",
                 "type": ["null", "string"]
               },
               "taxRegistrationAddress": {
+                "description": "Address details for tax registration.",
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
@@ -101,6 +120,7 @@
                 }
               },
               "taxRegistrationMessages": {
+                "description": "Messages related to tax registration.",
                 "type": ["null", "string"]
               }
             }
@@ -109,61 +129,79 @@
       }
     },
     "shipFromParty": {
+      "description": "Details of the party from which the goods are shipped.",
       "type": ["null", "object"],
       "properties": {
         "partyId": {
+          "description": "Identifier of the shipping party.",
           "type": ["null", "string"]
         },
         "address": {
+          "description": "Address details of the shipping party.",
           "type": ["null", "object"],
           "properties": {
             "name": {
+              "description": "Name of the shipping party.",
               "type": ["null", "string"]
             },
             "addressLine1": {
+              "description": "First line of the address.",
               "type": ["null", "string"]
             },
             "addressLine2": {
+              "description": "Second line of the address.",
               "type": ["null", "string"]
             },
             "addressLine3": {
+              "description": "Third line of the address.",
               "type": ["null", "string"]
             },
             "city": {
+              "description": "City of the address.",
               "type": ["null", "string"]
             },
             "county": {
+              "description": "County of the address.",
               "type": ["null", "string"]
             },
             "district": {
+              "description": "District of the address.",
               "type": ["null", "string"]
             },
             "stateOrRegion": {
+              "description": "State or region of the address.",
               "type": ["null", "string"]
             },
             "postalCode": {
+              "description": "Postal code of the address.",
               "type": ["null", "string"]
             },
             "countryCode": {
+              "description": "Country code of the address.",
               "type": ["null", "string"]
             },
             "phone": {
+              "description": "Contact phone number of the shipping party.",
               "type": ["null", "string"]
             }
           }
         },
         "taxRegistrationDetails": {
+          "description": "Details of tax registration for the shipping party.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "taxRegistrationType": {
+                "description": "Type of tax registration.",
                 "type": ["null", "string"]
               },
               "taxRegistrationNumber": {
+                "description": "Tax registration number of the shipping party.",
                 "type": ["null", "string"]
               },
               "taxRegistrationAddress": {
+                "description": "Address details for tax registration.",
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
@@ -202,6 +240,7 @@
                 }
               },
               "taxRegistrationMessages": {
+                "description": "Messages related to tax registration.",
                 "type": ["null", "string"]
               }
             }
@@ -210,32 +249,40 @@
       }
     },
     "labelFormat": {
+      "description": "Format of the shipping label.",
       "type": ["null", "string"]
     },
     "labelData": {
+      "description": "Details of the label data associated with the shipment.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "packageIdentifier": {
+            "description": "Identifier of the shipped package.",
             "type": ["null", "string"]
           },
           "trackingNumber": {
+            "description": "Tracking number for the shipment.",
             "type": ["null", "string"]
           },
           "shipMethod": {
+            "description": "Shipping method used for the shipment.",
             "type": ["null", "string"]
           },
           "shipMethodName": {
+            "description": "Name of the shipping method.",
             "type": ["null", "string"]
           },
           "content": {
+            "description": "Description of the shipped content.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "createdBefore": {
+      "description": "The timestamp indicating the maximum creation date of the shipping data to be fetched.",
       "type": ["null", "string"],
       "format": "date-time"
     }

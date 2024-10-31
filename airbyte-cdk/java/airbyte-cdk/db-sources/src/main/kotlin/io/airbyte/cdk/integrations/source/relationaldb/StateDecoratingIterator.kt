@@ -10,9 +10,11 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import kotlin.jvm.optionals.getOrNull
+
+private val LOGGER = KotlinLogging.logger {}
 
 @Deprecated("")
 class StateDecoratingIterator(
@@ -23,7 +25,7 @@ class StateDecoratingIterator(
     private val initialCursor: String,
     private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
     stateEmissionFrequency: Int
-) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
+) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var currentMaxCursor: String?
     private var currentMaxCursorRecordCount = 0L
     private var hasEmittedFinalState = false
@@ -141,10 +143,10 @@ class StateDecoratingIterator(
                     } else if (cursorComparison == 0) {
                         currentMaxCursorRecordCount++
                     } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
-                        LOGGER.warn(
+                        LOGGER.warn {
                             "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
                                 "data loss can occur."
-                        )
+                        }
                     }
                 }
 
@@ -156,7 +158,7 @@ class StateDecoratingIterator(
             } catch (e: Exception) {
                 emitIntermediateState = true
                 hasCaughtException = true
-                LOGGER.error("Message iterator failed to read next record.", e)
+                LOGGER.error(e) { "Message iterator failed to read next record." }
                 optionalIntermediateMessage = intermediateMessage
                 return optionalIntermediateMessage.orElse(endOfData())
             }
@@ -205,38 +207,27 @@ class StateDecoratingIterator(
     fun createStateMessage(isFinalState: Boolean, recordCount: Int): AirbyteMessage {
         val stateMessage =
             stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount)
-        val cursorInfo = stateManager.getCursorInfo(pair)
+        val cursorInfo = stateManager.getCursorInfo(pair).getOrNull()
 
         // logging once every 100 messages to reduce log verbosity
         if (recordCount % 100 == 0) {
-            LOGGER.info(
-                "State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-                pair,
-                cursorInfo.map { obj: CursorInfo -> obj.originalCursorField }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.originalCursor }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.originalCursorRecordCount }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.cursorField }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.cursor }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.cursorRecordCount }.orElse(null)
-            )
+            LOGGER.info {
+                "State report for stream $pair - original: ${cursorInfo?.originalCursorField} = ${cursorInfo?.originalCursor}" +
+                    " (count ${cursorInfo?.originalCursorRecordCount}) -> latest: ${cursorInfo?.cursorField} = " +
+                    "${cursorInfo?.cursor} (count ${cursorInfo?.cursorRecordCount})"
+            }
         }
 
         stateMessage?.withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
         if (isFinalState) {
             hasEmittedFinalState = true
             if (stateManager.getCursor(pair).isEmpty) {
-                LOGGER.warn(
-                    "Cursor for stream {} was null. This stream will replicate all records on the next run",
-                    pair
-                )
+                LOGGER.warn {
+                    "Cursor for stream $pair was null. This stream will replicate all records on the next run"
+                }
             }
         }
 
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
-    }
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(@Suppress("deprecation") StateDecoratingIterator::class.java)
     }
 }

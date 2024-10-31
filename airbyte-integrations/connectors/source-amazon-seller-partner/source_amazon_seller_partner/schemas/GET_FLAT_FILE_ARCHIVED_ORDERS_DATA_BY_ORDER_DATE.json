@@ -4,37 +4,136 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "amazon-order-id": { "type": ["null", "string"] },
-    "merchant-order-id": { "type": ["null", "string"] },
-    "purchase-date": { "type": ["null", "string"], "format": "date-time" },
-    "last-updated-date": { "type": ["null", "string"], "format": "date-time" },
-    "order-status": { "type": ["null", "string"] },
-    "fulfillment-channel": { "type": ["null", "string"] },
-    "sales-channel": { "type": ["null", "string"] },
-    "order-channel": { "type": ["null", "string"] },
-    "url": { "type": ["null", "string"] },
-    "ship-service-level": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "sku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "item-status": { "type": ["null", "string"] },
-    "quantity": { "type": ["null", "string"] },
-    "currency": { "type": ["null", "string"] },
-    "item-price": { "type": ["null", "string"] },
-    "item-tax": { "type": ["null", "string"] },
-    "shipping-price": { "type": ["null", "string"] },
-    "shipping-tax": { "type": ["null", "string"] },
-    "gift-wrap-price": { "type": ["null", "string"] },
-    "gift-wrap-tax": { "type": ["null", "string"] },
-    "item-promotion-discount": { "type": ["null", "string"] },
-    "ship-promotion-discount": { "type": ["null", "string"] },
-    "ship-country": { "type": ["null", "string"] },
-    "ship-promotion-id": { "type": ["null", "string"] },
-    "promotion-ids": { "type": ["null", "string"] },
-    "is-business-order": { "type": ["null", "string"] },
-    "purchase-order-number": { "type": ["null", "string"] },
-    "price-designation": { "type": ["null", "string"] },
-    "is-replacement-order": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "amazon-order-id": {
+      "description": "The unique identifier for the Amazon order",
+      "type": ["null", "string"]
+    },
+    "merchant-order-id": {
+      "description": "The merchant's unique identifier for the order",
+      "type": ["null", "string"]
+    },
+    "purchase-date": {
+      "description": "The date and time when the order was purchased",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "last-updated-date": {
+      "description": "The date and time when the order was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "order-status": {
+      "description": "The status of the order",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel": {
+      "description": "The type of fulfillment channel",
+      "type": ["null", "string"]
+    },
+    "sales-channel": {
+      "description": "The sales channel where the order was made",
+      "type": ["null", "string"]
+    },
+    "order-channel": {
+      "description": "The channel through which the order was placed",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL of the product",
+      "type": ["null", "string"]
+    },
+    "ship-service-level": {
+      "description": "The service level for shipping",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "The name of the product",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "The stock keeping unit of the product",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "The Amazon Standard Identification Number for the product",
+      "type": ["null", "string"]
+    },
+    "item-status": {
+      "description": "The status of the item",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "The quantity of the product",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "The currency used for the transaction",
+      "type": ["null", "string"]
+    },
+    "item-price": {
+      "description": "The price of the item",
+      "type": ["null", "string"]
+    },
+    "item-tax": {
+      "description": "Tax applied to the item",
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "description": "The price of shipping",
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "description": "Tax applied to shipping",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-price": {
+      "description": "The price of gift wrapping",
+      "type": ["null", "string"]
+    },
+    "gift-wrap-tax": {
+      "description": "The tax applied to gift wrapping",
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "description": "Discount applied to the item",
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "description": "Discount applied to shipping",
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "description": "The country where the item is to be shipped",
+      "type": ["null", "string"]
+    },
+    "ship-promotion-id": {
+      "description": "ID of the shipping promotion",
+      "type": ["null", "string"]
+    },
+    "promotion-ids": {
+      "description": "IDs of promotions applied",
+      "type": ["null", "string"]
+    },
+    "is-business-order": {
+      "description": "Indicates if the order is a business order",
+      "type": ["null", "string"]
+    },
+    "purchase-order-number": {
+      "description": "The purchase order number",
+      "type": ["null", "string"]
+    },
+    "price-designation": {
+      "description": "The designation of the price",
+      "type": ["null", "string"]
+    },
+    "is-replacement-order": {
+      "description": "Indicates if the order is a replacement order",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

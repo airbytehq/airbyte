@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.destination import DestinationPinecone
@@ -23,7 +23,7 @@ class TestDestinationPinecone(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_pinecone.destination.PineconeIndexer")
     @patch("destination_pinecone.destination.create_from_config")
@@ -65,6 +65,26 @@ class TestDestinationPinecone(unittest.TestCase):
 
         mock_embedder.check.assert_called_once()
         mock_indexer.check.assert_called_once()
+
+    def test_check_with_config_errors(self):
+        bad_config = {
+            "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
+            "embedding_2": {"mode": "openai", "openai_key": "mykey"},
+            "indexing": {
+                "pinecone_key": "mykey",
+                "pinecone_environment": "myenv",
+                "index": "myindex",
+            },
+        }
+        destination = DestinationPinecone()
+        result = destination.check(self.logger, bad_config)
+        self.assertEqual(result.status, Status.FAILED)
+
+    def test_check_with_init_indexer_errors(self):
+        destination = DestinationPinecone()
+        with patch("destination_pinecone.destination.PineconeIndexer", side_effect=Exception("Indexer Error")):
+            result = destination.check(self.logger, self.config)
+        self.assertEqual(result.status, Status.FAILED)
 
     @patch("destination_pinecone.destination.Writer")
     @patch("destination_pinecone.destination.PineconeIndexer")

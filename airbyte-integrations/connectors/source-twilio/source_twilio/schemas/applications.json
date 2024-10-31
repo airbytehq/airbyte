@@ -1,68 +1,89 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the Twilio account associated with the application.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API being used for the application.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the application was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the application was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name assigned to the application for identification.",
       "type": ["null", "string"]
     },
     "message_status_callback": {
+      "description": "The URL where status updates for outgoing messages will be sent.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "A unique identifier for the application.",
       "type": ["null", "string"]
     },
     "sms_fallback_method": {
+      "description": "The HTTP method used to send a fallback URL if an error occurs during SMS delivery.",
       "type": ["null", "string"]
     },
     "sms_fallback_url": {
+      "description": "The URL that Twilio will request if an error occurs during SMS delivery.",
       "type": ["null", "string"]
     },
     "sms_method": {
+      "description": "The HTTP method used to send SMS messages for the application.",
       "type": ["null", "string"]
     },
     "public_application_connect_enabled": {
+      "description": "Indicates whether public application connect is enabled for the application.",
       "type": ["null", "boolean"]
     },
     "sms_status_callback": {
+      "description": "The URL where status updates for incoming SMS messages will be sent.",
       "type": ["null", "string"]
     },
     "sms_url": {
+      "description": "The URL that Twilio will request when receiving an incoming SMS message.",
       "type": ["null", "string"]
     },
     "status_callback": {
+      "description": "The URL where status updates for calls will be sent.",
       "type": ["null", "string"]
     },
     "status_callback_method": {
+      "description": "The HTTP method used to send status updates for calls.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI of the application resource.",
       "type": ["null", "string"]
     },
     "voice_caller_id_lookup": {
+      "description": "Indicates whether or not caller ID information will be looked up for incoming calls.",
       "type": ["null", "boolean"]
     },
     "voice_fallback_method": {
+      "description": "The HTTP method used to send a fallback URL if an error occurs during voice call handling.",
       "type": ["null", "string"]
     },
     "voice_fallback_url": {
+      "description": "The URL that Twilio will request if an error occurs during voice call handling.",
       "type": ["null", "string"]
     },
     "voice_method": {
+      "description": "The HTTP method used for voice call handling.",
       "type": ["null", "string"]
     },
     "voice_url": {
+      "description": "The URL that Twilio will request for voice call handling.",
       "type": ["null", "string"]
     }
   },

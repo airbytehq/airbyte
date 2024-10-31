@@ -10,7 +10,7 @@ We'll now add a `start_date` property to the connector.
 First we'll update the spec block in `source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -81,6 +81,7 @@ poetry run source-exchange-rates-tutorial read --config secrets/config.json --ca
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
 For example:
+
 > "historical": true, "base": "USD", "date": "2022-07-18"
 
 The connector will now always read data for the start date, which is not exactly what we want.
@@ -156,7 +157,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: [ ]
+      field_path: []
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -202,7 +203,7 @@ streams:
 check:
   stream_names:
     - "rates"
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -261,10 +262,7 @@ This can be achieved by updating the catalog to run in incremental mode (`integr
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"

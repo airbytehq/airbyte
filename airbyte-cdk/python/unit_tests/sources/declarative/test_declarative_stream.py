@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 
 SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
@@ -58,6 +58,39 @@ def test_declarative_stream():
     assert stream.primary_key == _primary_key
     assert stream.cursor_field == _cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=_cursor_field, stream_state=None) == stream_slices
+
+
+def test_declarative_stream_using_empty_slice():
+    """
+    Tests that a declarative_stream
+    """
+    schema_loader = _schema_loader()
+
+    records = [
+        {"pk": 1234, "field": "value"},
+        {"pk": 4567, "field": "different_value"},
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
+    ]
+
+    retriever = MagicMock()
+    retriever.read_records.return_value = records
+
+    config = {"api_key": "open_sesame"}
+
+    stream = DeclarativeStream(
+        name=_name,
+        primary_key=_primary_key,
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=schema_loader,
+        retriever=retriever,
+        config=config,
+        parameters={"cursor_field": "created_at"},
+    )
+
+    assert stream.name == _name
+    assert stream.get_json_schema() == _json_schema
+    assert list(stream.read_records(SyncMode.full_refresh, _cursor_field, {})) == records
 
 
 def test_read_records_raises_exception_if_stream_slice_is_not_per_partition_stream_slice():
@@ -149,6 +182,37 @@ def test_no_state_migration_is_applied_if_the_state_should_not_be_migrated():
     assert stream.state == input_state
     state_migration.should_migrate.assert_called_once_with(input_state)
     assert not state_migration.migrate.called
+
+
+@pytest.mark.parametrize(
+    "use_cursor, expected_supports_checkpointing",
+    [
+        pytest.param(True, True, id="test_retriever_has_cursor"),
+        pytest.param(False, False, id="test_retriever_has_cursor"),
+    ],
+)
+def test_is_resumable(use_cursor, expected_supports_checkpointing):
+    schema_loader = _schema_loader()
+
+    state = MagicMock()
+
+    retriever = MagicMock()
+    retriever.state = state
+    retriever.cursor = MagicMock() if use_cursor else None
+
+    config = {"api_key": "open_sesame"}
+
+    stream = DeclarativeStream(
+        name=_name,
+        primary_key=_primary_key,
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=schema_loader,
+        retriever=retriever,
+        config=config,
+        parameters={"cursor_field": "created_at"},
+    )
+
+    assert stream.is_resumable == expected_supports_checkpointing
 
 
 def _schema_loader():

@@ -3,123 +3,161 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "The repository associated with the release.",
       "type": "string"
     },
     "url": {
+      "description": "The URL for the release.",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "The HTML URL for the release.",
       "type": ["null", "string"]
     },
     "assets_url": {
+      "description": "The URL to fetch information about the assets linked to this release.",
       "type": ["null", "string"]
     },
     "upload_url": {
+      "description": "The URL for uploading assets to the release.",
       "type": ["null", "string"]
     },
     "tarball_url": {
+      "description": "The URL for the tarball file of the release.",
       "type": ["null", "string"]
     },
     "zipball_url": {
+      "description": "The URL for the zipball file of the release.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the release",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The node ID of the release.",
       "type": ["null", "string"]
     },
     "tag_name": {
+      "description": "The tag name of the release.",
       "type": ["null", "string"]
     },
     "target_commitish": {
+      "description": "The commit SHA or branch name for the release.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the release.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The body of the release.",
       "type": ["null", "string"]
     },
     "draft": {
+      "description": "Indicates if the release is a draft.",
       "type": ["null", "boolean"]
     },
     "prerelease": {
+      "description": "Indicates if the release is a prerelease.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The timestamp of when the release was created.",
       "type": "string",
       "format": "date-time"
     },
     "published_at": {
+      "description": "The timestamp of when the release was published.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "author": {
+      "description": "The author of the release.",
       "$ref": "user.json"
     },
     "assets": {
+      "description": "List of assets (e.g., downloadable files) associated with the release",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of an individual asset",
         "type": ["null", "object"],
         "properties": {
           "url": {
+            "description": "The URL of the asset.",
             "type": ["null", "string"]
           },
           "browser_download_url": {
+            "description": "The URL for downloading the asset linked to this release.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "The unique identifier for the asset.",
             "type": ["null", "integer"]
           },
           "node_id": {
+            "description": "The node ID of the asset.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the asset.",
             "type": ["null", "string"]
           },
           "label": {
+            "description": "The label assigned to the asset.",
             "type": ["null", "string"]
           },
           "state": {
+            "description": "The state of the asset.",
             "type": ["null", "string"]
           },
           "content_type": {
+            "description": "The content type of the asset.",
             "type": ["null", "string"]
           },
           "size": {
+            "description": "The size of the asset in bytes.",
             "type": ["null", "integer"]
           },
           "download_count": {
+            "description": "The number of times the asset has been downloaded.",
             "type": ["null", "integer"]
           },
           "created_at": {
+            "description": "The timestamp of when the asset was created.",
             "type": "string",
             "format": "date-time"
           },
           "updated_at": {
+            "description": "The timestamp of when the asset was last updated.",
             "type": "string",
             "format": "date-time"
           },
           "uploader_id": {
+            "description": "The ID of the user who uploaded the asset.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "body_html": {
+      "description": "The HTML body of the release.",
       "type": ["null", "string"]
     },
     "body_text": {
+      "description": "The text body of the release.",
       "type": ["null", "string"]
     },
     "mentions_count": {
+      "description": "The count of mentions in the release.",
       "type": ["null", "integer"]
     },
     "discussion_url": {
+      "description": "The URL for the discussion related to the release.",
       "type": ["null", "string"]
     },
     "reactions": {
+      "description": "The reactions associated with the release.",
       "$ref": "reactions.json"
     }
   }

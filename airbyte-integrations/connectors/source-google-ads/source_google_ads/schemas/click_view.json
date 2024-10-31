@@ -3,52 +3,68 @@
   "type": "object",
   "properties": {
     "ad_group.name": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "click_view.gclid": {
+      "description": "The Google Click Identifier for tracking purposes.",
       "type": ["null", "string"]
     },
     "click_view.ad_group_ad": {
+      "description": "Details of the ad in the ad group that was clicked.",
       "type": ["null", "string"]
     },
     "click_view.keyword": {
+      "description": "The keyword that triggered the ad click.",
       "type": ["null", "string"]
     },
     "click_view.keyword_info.match_type": {
+      "description": "The match type of the keyword triggering the ad click.",
       "type": ["null", "string"]
     },
     "click_view.keyword_info.text": {
+      "description": "The text of the keyword that triggered the ad click.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The unique identifier for the campaign.",
       "type": ["null", "integer"]
     },
     "ad_group.id": {
+      "description": "The unique identifier for the ad group.",
       "type": ["null", "integer"]
     },
     "segments.date": {
+      "description": "The date when the click occurred.",
       "type": ["null", "string"],
       "format": "date"
     },
     "customer.id": {
+      "description": "The unique identifier for the customer account.",
       "type": ["null", "integer"]
     },
     "campaign.name": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
+      "description": "Type of ad network where the click originated.",
       "type": ["null", "string"]
     },
     "campaign.network_settings.target_content_network": {
+      "description": "Boolean indicating if the campaign is targeting the content network.",
       "type": ["null", "boolean"]
     },
     "campaign.network_settings.target_google_search": {
+      "description": "Boolean indicating if the campaign is targeting Google search.",
       "type": ["null", "boolean"]
     },
     "campaign.network_settings.target_partner_search_network": {
+      "description": "Boolean indicating if the campaign is targeting partner search network.",
       "type": ["null", "boolean"]
     },
     "campaign.network_settings.target_search_network": {
+      "description": "Boolean indicating if the campaign is targeting search network.",
       "type": ["null", "boolean"]
     }
   }

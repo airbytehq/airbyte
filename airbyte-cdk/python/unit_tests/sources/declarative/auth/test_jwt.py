@@ -19,11 +19,18 @@ class TestJwtAuthenticator:
     """
 
     @pytest.mark.parametrize(
-            "algorithm, kid, typ, cty, additional_jwt_headers, expected",
-            [
-                ("ALGORITHM", "test_kid", "test_typ", "test_cty", {"test": "test"}, {"kid": "test_kid", "typ": "test_typ", "cty": "test_cty", "test": "test", "alg": "ALGORITHM"}),
-                ("ALGORITHM", None, None, None, None, {"alg": "ALGORITHM"})
-            ]
+        "algorithm, kid, typ, cty, additional_jwt_headers, expected",
+        [
+            (
+                "ALGORITHM",
+                "test_kid",
+                "test_typ",
+                "test_cty",
+                {"test": "test"},
+                {"kid": "test_kid", "typ": "test_typ", "cty": "test_cty", "test": "test", "alg": "ALGORITHM"},
+            ),
+            ("ALGORITHM", None, None, None, None, {"alg": "ALGORITHM"}),
+        ],
     )
     def test_get_jwt_headers(self, algorithm, kid, typ, cty, additional_jwt_headers, expected):
         authenticator = JwtAuthenticator(
@@ -61,14 +68,8 @@ class TestJwtAuthenticator:
                 {"test": "test"},
                 {"iss": "test_iss", "sub": "test_sub", "aud": "test_aud", "test": "test"},
             ),
-            (
-                None,
-                None,
-                None,
-                None,
-                {}
-            ),
-        ]
+            (None, None, None, None, {}),
+        ],
     )
     def test_get_jwt_payload(self, iss, sub, aud, additional_jwt_payload, expected):
         authenticator = JwtAuthenticator(
@@ -105,7 +106,7 @@ class TestJwtAuthenticator:
         [
             (True, "test", base64.b64encode("test".encode()).decode()),
             (False, "test", "test"),
-        ]
+        ],
     )
     def test_get_secret_key(self, base64_encode_secret_key, secret_key, expected):
         authenticator = JwtAuthenticator(
@@ -152,13 +153,7 @@ class TestJwtAuthenticator:
         with pytest.raises(ValueError):
             authenticator._get_signed_token()
 
-    @pytest.mark.parametrize(
-        "header_prefix, expected",
-        [
-            ("test", "test"),
-            (None, None)
-        ]
-    )
+    @pytest.mark.parametrize("header_prefix, expected", [("test", "test"), (None, None)])
     def test_get_header_prefix(self, header_prefix, expected):
         authenticator = JwtAuthenticator(
             config={},

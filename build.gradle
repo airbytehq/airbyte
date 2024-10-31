@@ -6,8 +6,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7' apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
+    id 'com.github.spotbugs' version '6.0.7'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
 }
 
 allprojects {
@@ -16,6 +17,7 @@ allprojects {
     apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.google.devtools.ksp'
     apply plugin: 'idea'
 
 
@@ -104,6 +106,12 @@ allprojects {
         }
     }
 
+    configurations.all {
+        resolutionStrategy {
+            preferProjectModules()
+        }
+    }
+
     idea {
         module {
             downloadJavadoc = true
@@ -139,6 +147,8 @@ allprojects {
         // This is also required, to prevent stderr spam starting with
         //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
         jvmArgs "-Xshare:off"
+        // needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
+        jvmArgs "--add-opens=java.base/java.lang=ALL-UNNAMED"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
@@ -204,6 +214,7 @@ allprojects {
         testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testImplementation "org.assertj:assertj-core:${vAssertJ}"
+        testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"

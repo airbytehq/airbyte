@@ -29,18 +29,25 @@ class StagingDatabaseCsvSheetGenerator
 @JvmOverloads
 constructor(
     private val destinationColumns: JavaBaseConstants.DestinationColumns =
-        JavaBaseConstants.DestinationColumns.LEGACY
+        JavaBaseConstants.DestinationColumns.LEGACY,
 ) : CsvSheetGenerator {
     override fun getHeaderRow(): List<String> {
         return destinationColumns.rawColumns
     }
 
-    override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
+    override fun getDataRow(
+        id: UUID,
+        recordMessage: AirbyteRecordMessage,
+        generationId: Long,
+        syncId: Long
+    ): List<Any> {
         return getDataRow(
             id,
             Jsons.serialize(recordMessage.data),
             recordMessage.emittedAt,
-            Jsons.serialize(recordMessage.meta)
+            Jsons.serialize(recordMessage.meta),
+            // Legacy code. Default to generation 0.
+            0,
         )
     }
 
@@ -52,7 +59,8 @@ constructor(
         id: UUID,
         formattedString: String,
         emittedAt: Long,
-        formattedAirbyteMetaString: String
+        formattedAirbyteMetaString: String,
+        generationId: Long,
     ): List<Any> {
         return when (destinationColumns) {
             JavaBaseConstants.DestinationColumns.LEGACY ->
@@ -67,6 +75,15 @@ constructor(
                 )
             JavaBaseConstants.DestinationColumns.V2_WITHOUT_META ->
                 listOf(id, Instant.ofEpochMilli(emittedAt), "", formattedString)
+            JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION ->
+                listOf(
+                    id,
+                    Instant.ofEpochMilli(emittedAt),
+                    "",
+                    formattedString,
+                    formattedAirbyteMetaString,
+                    generationId
+                )
         }
     }
 }

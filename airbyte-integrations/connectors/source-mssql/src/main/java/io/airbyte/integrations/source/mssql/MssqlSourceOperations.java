@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.db.DataTypeUtils.OFFSETDATETIME_FORMATTER;
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -75,7 +75,6 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
         .getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
-    final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
     // Attempt to access the column. this allows us to know if it is null before we do
     // type-specific parsing. If the column is null, we will populate the null value and skip attempting
@@ -90,33 +89,11 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       putGeometry(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
       putGeography(json, columnName, resultSet, colIndex);
+    } else if (columnTypeName.equalsIgnoreCase("datetimeoffset")) {
+      // JDBC will recognize such columns as VARCHAR. Thus we have to have special handling on it.
+      putTimestampWithTimezone(json, columnName, resultSet, colIndex);
     } else {
-      putValue(columnType, resultSet, columnName, colIndex, json);
-    }
-  }
-
-  private void putValue(final JDBCType columnType,
-                        final ResultSet resultSet,
-                        final String columnName,
-                        final int colIndex,
-                        final ObjectNode json)
-      throws SQLException {
-    switch (columnType) {
-      case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putFloat(json, columnName, resultSet, colIndex);
-      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-      case CHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-      case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
-          colIndex);
-      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-      default -> putDefault(json, columnName, resultSet, colIndex);
+      super.copyToJsonField(resultSet, colIndex, json);
     }
   }
 
@@ -206,7 +183,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
       throws SQLException {
     try {
-      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
+      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, TIMESTAMPTZ_FORMATTER);
       final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(offsetDateTime.getOffset()).toLocalDateTime());
       // Final step of conversion from
       // OffsetDateTime (a Java construct) object -> Timestamp (a Java construct) ->

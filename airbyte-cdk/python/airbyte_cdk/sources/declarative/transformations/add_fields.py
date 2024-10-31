@@ -3,12 +3,12 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass(frozen=True)
@@ -111,20 +111,18 @@ class AddFields(RecordTransformation):
 
     def transform(
         self,
-        record: Record,
+        record: Dict[str, Any],
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Record:
+    ) -> None:
         if config is None:
             config = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
             valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
             value = parsed_field.value.eval(config, valid_types=valid_types, **kwargs)
-            dpath.util.new(record, parsed_field.path, value)
-
-        return record
+            dpath.new(record, parsed_field.path, value)
 
     def __eq__(self, other: Any) -> bool:
         return bool(self.__dict__ == other.__dict__)

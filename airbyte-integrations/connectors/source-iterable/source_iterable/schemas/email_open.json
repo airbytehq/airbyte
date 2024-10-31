@@ -1,53 +1,68 @@
 {
   "properties": {
     "country": {
+      "description": "The country from which the email was opened.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The timestamp when the email_open event occurred.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "city": {
+      "description": "The city from which the email was opened.",
       "type": ["null", "string"]
     },
     "campaignId": {
+      "description": "The unique identifier of the campaign to which the email_open event belongs.",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Internal data related to the email open event.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "The timestamp when the ITBL internal document was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "The timestamp when the ITBL internal document was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "ip": {
+      "description": "The IP address from which the email was opened.",
       "type": ["null", "string"]
     },
     "userAgentDevice": {
+      "description": "The device information from which the email was opened.",
       "type": ["null", "string"]
     },
     "messageId": {
+      "description": "The unique identifier of the email message.",
       "type": ["null", "string"]
     },
     "userAgent": {
+      "description": "The user agent string of the browser used to open the email.",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "The unique identifier of the email template used.",
       "type": ["null", "integer"]
     },
     "region": {
+      "description": "The region from which the email was opened.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the user who opened the email.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "The unique identifier of the user who opened the email.",
       "type": ["null", "string"]
     }
   },

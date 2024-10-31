@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import Surveys
 
@@ -42,7 +42,7 @@ class SourceSurveymonkey(YamlDeclarativeSource):
             token = config["access_token"]
         return TokenAuthenticator(token=token)
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         # Check scopes
         try:
             authenticator = self.get_authenticator(config)

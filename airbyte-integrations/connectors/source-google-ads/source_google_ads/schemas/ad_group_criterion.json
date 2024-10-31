@@ -3,228 +3,295 @@
   "type": "object",
   "properties": {
     "deleted_at": {
+      "description": "The date when the ad group criterion was deleted.",
       "type": ["null", "string"]
     },
     "change_status.last_change_date_time": {
+      "description": "The date and time of the last change made to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group associated with the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.ad_group": {
+      "description": "The ad group to which the ad group criterion belongs.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.age_range.type": {
+      "description": "The age range targeting type for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.app_payment_model.type": {
+      "description": "The app payment model type for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.approval_status": {
+      "description": "The approval status of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.audience.audience": {
+      "description": "The audience targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.bid_modifier": {
+      "description": "The bid modifier for the ad group criterion.",
       "type": ["null", "number"]
     },
     "ad_group_criterion.combined_audience.combined_audience": {
+      "description": "The combined audience targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.cpc_bid_micros": {
+      "description": "The CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.cpm_bid_micros": {
+      "description": "The CPM bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.cpv_bid_micros": {
+      "description": "The CPV bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.criterion_id": {
+      "description": "The ID of the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.custom_affinity.custom_affinity": {
+      "description": "The custom affinity targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.custom_audience.custom_audience": {
+      "description": "The custom audience targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.custom_intent.custom_intent": {
+      "description": "The custom intent targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.disapproval_reasons": {
+      "description": "The reasons for disapproval of the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.display_name": {
+      "description": "The display name of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_cpc_bid_micros": {
+      "description": "The effective CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpc_bid_source": {
+      "description": "The source of the effective CPC bid for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_cpm_bid_micros": {
+      "description": "The effective CPM bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
+      "description": "The source of the effective CPM bid for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_cpv_bid_micros": {
+      "description": "The effective CPV bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpv_bid_source": {
+      "description": "The source of the effective CPV bid for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_percent_cpc_bid_micros": {
+      "description": "The effective percent CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_percent_cpc_bid_source": {
+      "description": "The source of the effective percent CPC bid for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.final_mobile_urls": {
+      "description": "The final mobile URLs for the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.final_url_suffix": {
+      "description": "The final URL suffix for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.final_urls": {
+      "description": "The final URLs for the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.gender.type": {
+      "description": "The gender targeting type for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.income_range.type": {
+      "description": "The income range targeting type for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.match_type": {
+      "description": "The match type of the keyword for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.text": {
+      "description": "The text of the keyword for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.labels": {
+      "description": "The labels associated with the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.mobile_app_category.mobile_app_category_constant": {
+      "description": "The mobile app category constant for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.mobile_application.app_id": {
+      "description": "The application ID for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.mobile_application.name": {
+      "description": "The name of the mobile application for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.negative": {
+      "description": "Indicates if the ad group criterion is negative or not.",
       "type": ["null", "boolean"]
     },
     "ad_group_criterion.parental_status.type": {
+      "description": "The parental status targeting type for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.percent_cpc_bid_micros": {
+      "description": "The percent CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.placement.url": {
+      "description": "The URL placement for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.position_estimates.estimated_add_clicks_at_first_position_cpc": {
+      "description": "The estimated additional clicks at the first position CPC for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.position_estimates.estimated_add_cost_at_first_position_cpc": {
+      "description": "The estimated additional cost at the first position CPC for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.position_estimates.first_page_cpc_micros": {
+      "description": "The first page CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.position_estimates.first_position_cpc_micros": {
+      "description": "The first position CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.position_estimates.top_of_page_cpc_micros": {
+      "description": "The top of page CPC bid amount in micros for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.quality_info.creative_quality_score": {
+      "description": "The creative quality score for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.quality_info.post_click_quality_score": {
+      "description": "The post-click quality score for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.quality_info.quality_score": {
+      "description": "The quality score for the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.quality_info.search_predicted_ctr": {
+      "description": "The predicted click-through rate for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.resource_name": {
+      "description": "The resource name of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.status": {
+      "description": "The status of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.system_serving_status": {
+      "description": "The serving status of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.topic.path": {
+      "description": "The path of the topic targeting for the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.topic.topic_constant": {
+      "description": "The topic constant for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.tracking_url_template": {
+      "description": "The tracking URL template for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.type": {
+      "description": "The type of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.url_custom_parameters": {
+      "description": "The custom parameters for the URLs of the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.user_interest.user_interest_category": {
+      "description": "The user interest category for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.user_list.user_list": {
+      "description": "The user list targeting for the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.webpage.conditions": {
+      "description": "The conditions set for webpage targeting of the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.webpage.coverage_percentage": {
+      "description": "The coverage percentage for the webpage targeting of the ad group criterion.",
       "type": ["null", "number"]
     },
     "ad_group_criterion.webpage.criterion_name": {
+      "description": "The criterion name for the webpage targeting of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.webpage.sample.sample_urls": {
+      "description": "The sample URLs for webpage targeting of the ad group criterion.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.youtube_channel.channel_id": {
+      "description": "The channel ID for YouTube channel targeting of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.youtube_video.video_id": {
+      "description": "The video ID for YouTube video targeting of the ad group criterion.",
       "type": ["null", "string"]
     }
   }

@@ -12,8 +12,6 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator
 import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,8 +28,6 @@ internal class AsyncFlush(
     private val stagingOperations: StagingOperations?,
     private val database: JdbcDatabase?,
     private val catalog: ConfiguredAirbyteCatalog?,
-    private val typerDeduperValve: TypeAndDedupeOperationValve,
-    private val typerDeduper: TyperDeduper,
     // In general, this size is chosen to improve the performance of lower memory
     // connectors. With 1 Gi
     // of
@@ -55,7 +51,7 @@ internal class AsyncFlush(
                 )
 
             // reassign as lambdas require references to be final.
-            stream.forEach { record: PartialAirbyteMessage? ->
+            stream.forEach { record: PartialAirbyteMessage ->
                 try {
                     // todo (cgardens) - most writers just go ahead and re-serialize the contents of
                     // the record message.
@@ -63,8 +59,11 @@ internal class AsyncFlush(
                     // and create a default
                     // impl that maintains backwards compatible behavior.
                     writer.accept(
-                        record!!.serialized!!,
+                        record.serialized!!,
                         Jsons.serialize(record.record!!.meta),
+                        // Destinations that want to use generations should switch to the new
+                        // structure (e.g. StagingStreamOperations)
+                        0,
                         record.record!!.emittedAt
                     )
                 } catch (e: Exception) {
@@ -87,14 +86,14 @@ internal class AsyncFlush(
         }
 
         val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(streamDescriptor)
-        val schemaName: String = writeConfig.outputSchemaName
-        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
+        val schemaName: String = writeConfig.rawNamespace
+        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.rawTableName)
         val stagingPath =
             stagingOperations.getStagingPath(
                 GeneralStagingFunctions.RANDOM_CONNECTION_ID,
                 schemaName,
                 writeConfig.streamName,
-                writeConfig.outputTableName,
+                writeConfig.rawTableName,
                 writeConfig.writeDatetime
             )
         try {
@@ -111,13 +110,9 @@ internal class AsyncFlush(
                 stageName,
                 stagingPath,
                 listOf(stagedFile),
-                writeConfig.outputTableName,
+                writeConfig.rawTableName,
                 schemaName,
                 stagingOperations,
-                writeConfig.namespace,
-                writeConfig.streamName,
-                typerDeduperValve,
-                typerDeduper
             )
         } catch (e: Exception) {
             logger.error(e) {

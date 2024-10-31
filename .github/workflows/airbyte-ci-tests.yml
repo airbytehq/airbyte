@@ -35,37 +35,26 @@ jobs:
             - airbyte-ci/connectors/pipelines/**
             - airbyte-ci/connectors/base_images/**
             - airbyte-ci/connectors/common_utils/**
+            - airbyte-ci/connectors/connectors_insights/**
             - airbyte-ci/connectors/connector_ops/**
             - airbyte-ci/connectors/connectors_qa/**
             - airbyte-ci/connectors/ci_credentials/**
+            - airbyte-ci/connectors/erd/**
             - airbyte-ci/connectors/metadata_service/lib/**
             - airbyte-ci/connectors/metadata_service/orchestrator/**
+            - airbyte-cdk/python/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
     needs: changes
-    # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
-    if: needs.changes.outputs.internal_poetry_packages == 'true'
-    #name: Internal Poetry packages CI
-    # To rename in a follow up PR
-    name: Run Airbyte CI tests
+    # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
+    if: needs.changes.outputs.internal_poetry_packages == 'true' && github.event.pull_request.head.repo.fork != true
+    name: Internal Poetry packages CI
     runs-on: tooling-test-large
     permissions:
       pull-requests: read
       statuses: write
     steps:
-      # The run-tests job will be triggered if a fork made changes to the internal poetry packages.
-      # We don't want forks to make changes to the internal poetry packages.
-      # So we fail the job if the PR is from a fork, it will make the required CI check fail.
-      - name: Check if PR is from a fork
-        id: check-if-pr-is-from-fork
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-            echo "PR is from a fork. Exiting workflow..."
-            exit 78
-          fi
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
@@ -80,7 +69,7 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
@@ -92,7 +81,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -109,7 +98,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

@@ -197,7 +197,13 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
-    primary_key: ["shop", "store"]
+    primary_key: ["id"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["id"]
+            value_type: integer
+            value: "{{ record.shop.get('id') or record.store.get('id') }}"
     $parameters:
       name: "shop"
 

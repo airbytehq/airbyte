@@ -11,11 +11,16 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import io.airbyte.commons.text.Names
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import javax.sql.DataSource
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.name
 
 /**
  * This class is largely the same as
@@ -23,16 +28,22 @@ import org.jooq.impl.DSL
  * . But (a) it uses jooq to construct the sql statements, and (b) it doesn't need to upcase
  * anything. At some point we might (?) want to do a refactor to combine them.
  */
-abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
+abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) :
+    BaseTypingDedupingTest() {
     protected var database: JdbcDatabase? = null
     private var dataSource: DataSource? = null
+    protected val dslContext: DSLContext = DSL.using(dialect)
+    protected open val nameTransformer: NamingConventionTransformer = StandardNameTransformer()
 
-    protected abstract val baseConfig: ObjectNode
-        /**
-         * Get the config as declared in GSM (or directly from the testcontainer). This class will
-         * do further modification to the config to ensure test isolation.i
-         */
-        get
+    /**
+     * Get the config as declared in GSM (or directly from the testcontainer). This class will do
+     * further modification to the config to ensure test isolation.
+     *
+     * This getter MUST return a new instance on every invocation. Subclasses MAY modify the config
+     * object, so we want to prevent them from modifying the base config. The easiest way to achieve
+     * this is by returning `yourBaseConfig.deepCopy()`.
+     */
+    protected abstract fun getBaseConfig(): ObjectNode
 
     protected abstract fun getDataSource(config: JsonNode?): DataSource?
 
@@ -55,7 +66,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
      * Subclasses using a config where the default schema is not in the `schema` key should override
      * this method and [.setDefaultSchema].
      */
-    protected fun getDefaultSchema(config: JsonNode): String {
+    protected open fun getDefaultSchema(config: JsonNode): String {
         return config["schema"].asText()
     }
 
@@ -63,12 +74,12 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
      * Subclasses using a config where the default schema is not in the `schema` key should override
      * this method and [.getDefaultSchema].
      */
-    protected fun setDefaultSchema(config: JsonNode, schema: String?) {
+    protected open fun setDefaultSchema(config: JsonNode, schema: String?) {
         (config as ObjectNode).put("schema", schema)
     }
 
     override fun generateConfig(): JsonNode? {
-        val config: JsonNode = baseConfig
+        val config: JsonNode = getBaseConfig()
         setDefaultSchema(config, "typing_deduping_default_schema$uniqueSuffix")
         dataSource = getDataSource(config)
         database = DefaultJdbcDatabase(dataSource!!, sourceOperations)
@@ -82,9 +93,14 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
             streamNamespace = getDefaultSchema(config!!)
         }
         val tableName =
-            concatenateRawTableName(streamNamespace, Names.toAlphanumericAndUnderscore(streamName))
+            nameTransformer.convertStreamName(
+                concatenateRawTableName(
+                    streamNamespace,
+                    Names.toAlphanumericAndUnderscore(streamName),
+                ),
+            )
         val schema = rawSchema
-        return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
+        return database!!.queryJsons(dslContext.selectFrom(name(schema, tableName)).sql)
     }
 
     @Throws(Exception::class)
@@ -97,7 +113,8 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
             streamNamespace = getDefaultSchema(config!!)
         }
         return database!!.queryJsons(
-            DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
+            dslContext
+                .selectFrom(name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
                 .sql
         )
     }
@@ -109,12 +126,22 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
             streamNamespace = getDefaultSchema(config!!)
         }
         database!!.execute(
-            DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName))
+            dslContext
+                .dropTableIfExists(
+                    name(
+                        rawSchema,
+                        nameTransformer.convertStreamName(
+                            concatenateRawTableName(
+                                streamNamespace,
+                                streamName,
+                            ),
+                        ),
+                    ),
                 )
-                .sql
+                .cascade()
+                .sql,
         )
-        database!!.execute(DSL.dropSchemaIfExists(DSL.name(streamNamespace)).cascade().sql)
+        database!!.execute(dslContext.dropSchemaIfExists(name(streamNamespace)).cascade().sql)
     }
 
     @Throws(Exception::class)

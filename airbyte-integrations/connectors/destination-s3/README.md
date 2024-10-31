@@ -19,6 +19,7 @@ As a community contributor, you will need access to AWS to run the integration t
 - Rename the directory from `sample_secrets` to `secrets`.
 
 ## Add New Output Format
+
 - Add a new enum in `S3Format`.
 - Modify `spec.json` to specify the configuration of this new format.
 - Update `S3FormatConfigs` to be able to construct a config for this new format.

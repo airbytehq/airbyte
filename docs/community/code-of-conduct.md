@@ -12,19 +12,19 @@ In the interest of fostering an open and welcoming environment, we as contributo
 
 Examples of behavior that contributes to creating a positive environment include:
 
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community
+- Showing empathy towards other community members
 
 Examples of unacceptable behavior by participants include:
 
-* The use of sexualized language or imagery and unwelcome sexual attention or advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others’ private information, such as a physical or electronic address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a professional setting
+- The use of sexualized language or imagery and unwelcome sexual attention or advances
+- Trolling, insulting/derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others’ private information, such as a physical or electronic address, without explicit permission
+- Other conduct which could reasonably be considered inappropriate in a professional setting
 
 ## Our Responsibilities
 
@@ -53,7 +53,7 @@ Airbyte's Slack community is growing incredibly fast. We're home to over 1500 da
 ### Rule 1: Be respectful.
 
 Our desire is for everyone to have a positive, fulfilling experience in Airbyte Slack, and we sincerely appreciate your help in making this happen.
-All of the guidelines we provide below are important, but there’s a reason respect is the first rule. We take it seriously, and while the occasional breach of etiquette around Slack is forgivable, we cannot condone disrespectful behavior. 
+All of the guidelines we provide below are important, but there’s a reason respect is the first rule. We take it seriously, and while the occasional breach of etiquette around Slack is forgivable, we cannot condone disrespectful behavior.
 
 ### Rule 2: Use the most relevant channels.
 
@@ -61,7 +61,7 @@ We deliberately use topic-specific Slack channels so members of the community ca
 
 ### Rule 3: Don’t double-post.
 
-Please be considerate of our community members’ time. We know your question is important, but please keep in mind that Airbyte Slack is not a customer service platform but a community of volunteers who will help you as they are able around their own work schedule. You have access to all the history, so it’s easy to check if your question has already been asked. 
+Please be considerate of our community members’ time. We know your question is important, but please keep in mind that Airbyte Slack is not a customer service platform but a community of volunteers who will help you as they are able around their own work schedule. You have access to all the history, so it’s easy to check if your question has already been asked.
 
 ### Rule 4: Check question for clarity and thoughtfulness.
 
@@ -69,23 +69,22 @@ Airbyte Slack is a community of volunteers. Our members enjoy helping others; th
 
 ### Rule 5: Keep it public.
 
-This is a public forum; please do not contact individual members of this community without their express permission, regardless of whether you are trying to recruit someone, sell a product, or solicit help. 
+This is a public forum; please do not contact individual members of this community without their express permission, regardless of whether you are trying to recruit someone, sell a product, or solicit help.
 
 ### Rule 6: No soliciting!
 
 The purpose of the Airbyte Slack community is to provide a forum for data practitioners to discuss their work and share their ideas and learnings. It is not intended as a place to generate leads for vendors or recruiters, and may not be used as such.
 
-If you’re a vendor, you may advertise your product in #shameless-plugs. Advertising your product anywhere else is strictly against the rules. 
+If you’re a vendor, you may advertise your product in #shameless-plugs. Advertising your product anywhere else is strictly against the rules.
 
 ### Rule 7: Don't spam tags, or use @here or @channel.
 
-Using the @here and @channel keywords in a post will not help, as they are disabled in Slack for everyone excluding admins. Nonetheless, if you use them we will remind you with a link to this rule, to help you better understand the way Airbyte Slack operates. 
+Using the @here and @channel keywords in a post will not help, as they are disabled in Slack for everyone excluding admins. Nonetheless, if you use them we will remind you with a link to this rule, to help you better understand the way Airbyte Slack operates.
 
-Do not tag specific individuals for help on your questions. If someone chooses to respond to your question, they will do so. You will find that our community of volunteers is generally very responsive and amazingly helpful! 
+Do not tag specific individuals for help on your questions. If someone chooses to respond to your question, they will do so. You will find that our community of volunteers is generally very responsive and amazingly helpful!
 
 ### Rule 8: Use threads for discussion.
 
-The simplest way to keep conversations on track in Slack is to use threads. The Airbyte Slack community relies heavily on threads, and if you break from this convention, rest assured one of our community members will respectfully inform you quickly! 
+The simplest way to keep conversations on track in Slack is to use threads. The Airbyte Slack community relies heavily on threads, and if you break from this convention, rest assured one of our community members will respectfully inform you quickly!
 
 _If you see a message or receive a direct message that violates any of these rules, please contact an Airbyte team member and we will take the appropriate moderation action immediately. We have zero tolerance for intentional rule-breaking and hate speech._
-

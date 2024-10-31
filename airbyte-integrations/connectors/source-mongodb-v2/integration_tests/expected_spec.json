@@ -176,6 +176,25 @@
         "default": "Fail sync",
         "order": 11,
         "group": "advanced"
+      },
+      "update_capture_mode": {
+        "type": "string",
+        "title": "Capture mode (Advanced)",
+        "description": "Determines how Airbyte looks up the value of an updated document. If 'Lookup' is chosen, the current value of the document will be read. If 'Post Image' is chosen, then the version of the document immediately after an update will be read. WARNING : Severe data loss will occur if this option is chosen and the appropriate settings are not set on your Mongo instance : https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images.",
+        "enum": ["Lookup", "Post Image"],
+        "default": "Lookup",
+        "order": 12,
+        "group": "advanced"
+      },
+      "initial_load_timeout_hours": {
+        "type": "integer",
+        "title": "Initial Load Timeout in Hours (Advanced)",
+        "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+        "default": 8,
+        "min": 4,
+        "max": 24,
+        "order": 13,
+        "group": "advanced"
       }
     },
     "groups": [

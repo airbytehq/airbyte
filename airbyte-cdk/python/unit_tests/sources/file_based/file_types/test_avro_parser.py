@@ -195,6 +195,13 @@ _uuid_value = uuid.uuid4()
             None,
             id="test_local_timestamp_micros",
         ),
+        pytest.param(
+            _default_avro_format,
+            {"type": "string", "logicalType": "invalid-logical-type"},
+            None,
+            ValueError,
+            id="test_invalid_logical_type",
+        ),
     ],
 )
 def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_json_type, expected_error):
@@ -215,7 +222,7 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
         pytest.param(_default_avro_format, "float", 123.456, 123.456, id="test_float"),
         pytest.param(_default_avro_format, "double", 123.456, 123.456, id="test_double_default_config"),
         pytest.param(_double_as_string_avro_format, "double", 123.456, "123.456", id="test_double_as_string"),
-        pytest.param(_default_avro_format, "bytes", b"hello world", b"hello world", id="test_bytes"),
+        pytest.param(_default_avro_format, "bytes", b"hello world", "hello world", id="test_bytes"),
         pytest.param(_default_avro_format, "string", "hello world", "hello world", id="test_string"),
         pytest.param(_default_avro_format, {"logicalType": "decimal"}, 3.1415, "3.1415", id="test_decimal"),
         pytest.param(_default_avro_format, {"logicalType": "uuid"}, _uuid_value, str(_uuid_value), id="test_uuid"),

@@ -1,44 +1,57 @@
 {
   "properties": {
     "id": {
+      "description": "A unique identifier for the metafield.",
       "type": ["null", "integer"]
     },
     "namespace": {
+      "description": "The namespace for the metafield, helping to group related metafields together.",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "The key or name that identifies the metafield.",
       "type": ["null", "string"]
     },
     "value": {
+      "description": "The actual value of the metafield based on its type.",
       "type": ["null", "string"]
     },
     "value_type": {
+      "description": "A representation of the type of the value (for example, 'string' or 'integer').",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the metafield, providing additional information.",
       "type": ["null", "string"]
     },
     "owner_id": {
+      "description": "The unique identifier of the resource that owns the metafield.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time the metafield was created in ISO 8601 format.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time the metafield was last updated in ISO 8601 format.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "owner_resource": {
+      "description": "The type of resource that owns the metafield, such as 'product' or 'collection'.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of the metafield value, such as 'string', 'integer', 'json_string', etc.",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "A unique identifier for the metafield used in the Shopify Admin GraphQL API.",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "The shop URL where the metafield is associated with.",
       "type": ["null", "string"]
     }
   },

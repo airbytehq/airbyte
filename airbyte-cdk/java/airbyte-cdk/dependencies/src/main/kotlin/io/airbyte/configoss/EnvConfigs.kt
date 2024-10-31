@@ -3,14 +3,15 @@
  */
 package io.airbyte.configoss
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = System.getenv()) :
     Configs {
-    private val getEnv = Function { key: String? -> envMap[key] }
+    private val getEnv = Function { key: String -> envMap[key] }
 
     /**
      * Constructs [EnvConfigs] from a provided map. This can be used for testing or getting
@@ -35,14 +36,12 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
         isSecret: Boolean
     ): T {
         val value = getEnv.apply(key)
-        if (value != null && !value.isEmpty()) {
+        if (!value.isNullOrEmpty()) {
             return parser.apply(value)
         } else {
-            LOGGER.info(
-                "Using default value for environment variable {}: '{}'",
-                key,
-                if (isSecret) "*****" else defaultValue
-            )
+            LOGGER.info {
+                "Using default value for environment variable $key: '${if (isSecret) "*****" else defaultValue.toString()}'"
+            }
             return defaultValue
         }
     }
@@ -52,7 +51,6 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(EnvConfigs::class.java)
 
         // env variable names
         const val SPEC_CACHE_BUCKET: String = "SPEC_CACHE_BUCKET"

@@ -79,7 +79,7 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> dagger.Client:
+    async def get_dagger_client(self) -> dagger.Client:
         """
         Get (or initialize) the Dagger Client instance.
         """
@@ -95,10 +95,10 @@ class ClickPipelineContext(BaseModel, Singleton):
                         Avoid using this client across multiple thread pools, as it can lead to errors.
                         Cross-thread pool calls are generally considered an anti-pattern.
                     """
-                    self._dagger_client = await self._og_click_context.with_async_resource(connection)  # type: ignore
+                    self._dagger_client = await self._og_click_context.with_async_resource(connection)
 
         assert self._dagger_client, "Error initializing Dagger client"
-        return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
+        return self._dagger_client
 
     def get_log_output(self) -> TextIO:
         # This `show_dagger_logs` flag is likely going to be removed in the future.

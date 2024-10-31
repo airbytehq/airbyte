@@ -1,6 +1,7 @@
 {
   "properties": {
     "name": {
+      "description": "The name of the metadata",
       "type": ["null", "string"]
     }
   },

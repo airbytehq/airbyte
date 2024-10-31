@@ -68,9 +68,29 @@ This guide will walk through how to create the credentials you need to run this 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
-| 0.4.0   | 2023-08-17 | [29127](https://github.com/airbytehq/airbyte/pull/29127) | Rewrote connector to no-code SDK                              |
-| 0.3.2   | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
-| 0.3.1   | 2022-03-31 | [11104](https://github.com/airbytehq/airbyte/pull/11104) | Fix 100 record limit and added start_date                     |
-| 0.3.0   | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977)   | Migrate to Python CDK + add transaction stream                |
+| 0.5.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.5.0 | 2024-08-14 | [44086](https://github.com/airbytehq/airbyte/pull/44086) | Refactor connector to manifest-only format |
+| 0.4.13 | 2024-08-12 | [43861](https://github.com/airbytehq/airbyte/pull/43861) | Update dependencies |
+| 0.4.12 | 2024-08-10 | [43663](https://github.com/airbytehq/airbyte/pull/43663) | Update dependencies |
+| 0.4.11 | 2024-08-03 | [43239](https://github.com/airbytehq/airbyte/pull/43239) | Update dependencies |
+| 0.4.10 | 2024-07-27 | [42686](https://github.com/airbytehq/airbyte/pull/42686) | Update dependencies |
+| 0.4.9 | 2024-07-20 | [42230](https://github.com/airbytehq/airbyte/pull/42230) | Update dependencies |
+| 0.4.8 | 2024-07-13 | [41730](https://github.com/airbytehq/airbyte/pull/41730) | Update dependencies |
+| 0.4.7 | 2024-07-10 | [41412](https://github.com/airbytehq/airbyte/pull/41412) | Update dependencies |
+| 0.4.6 | 2024-07-09 | [41235](https://github.com/airbytehq/airbyte/pull/41235) | Update dependencies |
+| 0.4.5 | 2024-07-06 | [41007](https://github.com/airbytehq/airbyte/pull/41007) | Update dependencies |
+| 0.4.4 | 2024-06-25 | [40379](https://github.com/airbytehq/airbyte/pull/40379) | Update dependencies |
+| 0.4.3 | 2024-06-22 | [40147](https://github.com/airbytehq/airbyte/pull/40147) | Update dependencies |
+| 0.4.2 | 2024-06-04 | [38963](https://github.com/airbytehq/airbyte/pull/38963) | [autopull] Upgrade base image to v1.2.1 |
+| 0.4.1 | 2024-05-31 | [38810](https://github.com/airbytehq/airbyte/pull/38810) | [autopull] Migrate to base image and poetry |
+| 0.4.0 | 2023-08-17 | [29127](https://github.com/airbytehq/airbyte/pull/29127) | Rewrote connector to no-code SDK |
+| 0.3.2 | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
+| 0.3.1 | 2022-03-31 | [11104](https://github.com/airbytehq/airbyte/pull/11104) | Fix 100 record limit and added start_date |
+| 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |
+
+</details>

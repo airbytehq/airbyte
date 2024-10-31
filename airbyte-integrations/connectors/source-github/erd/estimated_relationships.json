@@ -1,0 +1,242 @@
+{
+  "streams": [
+    {
+      "name": "issue_timeline_events",
+      "relations": {
+        "actor_id": "users.id",
+        "performed_via_github_app_id": "issue_timeline_events.id"
+      }
+    },
+    {
+      "name": "assignees",
+      "relations": {
+        "id": "users.id"
+      }
+    },
+    {
+      "name": "branches",
+      "relations": {}
+    },
+    {
+      "name": "collaborators",
+      "relations": {
+        "id": "users.id"
+      }
+    },
+    {
+      "name": "comments",
+      "relations": {
+        "user_id": "users.id"
+      }
+    },
+    {
+      "name": "commit_comment_reactions",
+      "relations": {
+        "comment_id": "commit_comments.id"
+      }
+    },
+    {
+      "name": "commit_comments",
+      "relations": {}
+    },
+    {
+      "name": "commits",
+      "relations": {}
+    },
+    {
+      "name": "contributor_activity",
+      "relations": {
+        "id": "users.id",
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "deployments",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "events",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "issue_comment_reactions",
+      "relations": {
+        "comment_id": "comments.id"
+      }
+    },
+    {
+      "name": "issue_events",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "issue_labels",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "issue_milestones",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "issue_reactions",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "issues",
+      "relations": {
+        "user_id": "users.id",
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "organizations",
+      "relations": {}
+    },
+    {
+      "name": "project_cards",
+      "relations": {
+        "repository": "repositories.full_name",
+        "project_id": "projects.id",
+        "column_id": "project_columns.id"
+      }
+    },
+    {
+      "name": "project_columns",
+      "relations": {
+        "repository": "repositories.full_name",
+        "project_id": "projects.id"
+      }
+    },
+    {
+      "name": "projects",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "pull_request_comment_reactions",
+      "relations": {
+        "comment_id": "review_comments.id"
+      }
+    },
+    {
+      "name": "pull_request_commits",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "pull_request_stats",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "projects_v2",
+      "relations": {
+        "owner_id": "organizations.id",
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "pull_requests",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "releases",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "repositories",
+      "relations": {
+        "organization": "organizations.login"
+      }
+    },
+    {
+      "name": "review_comments",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "reviews",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "stargazers",
+      "relations": {
+        "user_id": "users.id",
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "tags",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "teams",
+      "relations": {
+        "organization": "organizations.login"
+      }
+    },
+    {
+      "name": "team_members",
+      "relations": {
+        "id": "users.id",
+        "organization": "organizations.login"
+      }
+    },
+    {
+      "name": "users",
+      "relations": {
+        "organization": "organizations.login"
+      }
+    },
+    {
+      "name": "workflows",
+      "relations": {
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "workflow_runs",
+      "relations": {
+        "workflow_id": "workflows.id",
+        "repository": "repositories.full_name"
+      }
+    },
+    {
+      "name": "workflow_jobs",
+      "relations": {
+        "repository": "repositories.full_name",
+        "run_id": "workflow_runs.id"
+      }
+    },
+    {
+      "name": "team_memberships",
+      "relations": {
+        "organization": "organizations.login",
+        "username": "users.login"
+      }
+    }
+  ]
+}

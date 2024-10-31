@@ -3,80 +3,101 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "The repository to which the pull request belongs.",
       "type": "string"
     },
     "id": {
+      "description": "The unique identifier of the pull request.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The node ID of the pull request.",
       "type": ["null", "string"]
     },
     "number": {
+      "description": "The number of the pull request.",
       "type": ["null", "integer"]
     },
     "merged": {
+      "description": "Indicates if the pull request has been merged.",
       "type": ["null", "boolean"]
     },
     "mergeable": {
+      "description": "Indicates if the pull request is mergeable.",
       "type": ["null", "string"]
     },
     "can_be_rebased": {
+      "description": "Indicates whether the pull request can be rebased onto the base branch.",
       "type": ["null", "boolean"]
     },
     "merge_state_status": {
+      "description": "The status of the merge state for the pull request.",
       "type": ["null", "string"]
     },
     "merged_by": {
-      "$ref": "user_graphql.json"
-    },
-    "merged_by": {
+      "description": "The user who merged the pull request.",
       "type": ["null", "object"],
       "properties": {
         "login": {
+          "description": "The username of the user who merged the pull request.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The unique identifier of the user who merged the pull request.",
           "type": ["null", "integer"]
         },
         "node_id": {
+          "description": "The node ID of the user who merged the pull request.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "The URL of the avatar of the user who merged the pull request.",
           "type": ["null", "string"]
         },
         "html_url": {
+          "description": "The HTML URL of the user who merged the pull request.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type of user who merged the pull request.",
           "type": ["null", "string"]
         },
         "site_admin": {
+          "description": "Indicates if the user who merged the pull request is a site admin.",
           "type": ["null", "boolean"]
         }
       }
     },
     "comments": {
+      "description": "The total number of comments on the pull request.",
       "type": ["null", "integer"]
     },
     "review_comments": {
+      "description": "The total number of review comments on the pull request.",
       "type": ["null", "integer"]
     },
     "maintainer_can_modify": {
+      "description": "Indicates if maintainers can modify the pull request.",
       "type": ["null", "boolean"]
     },
     "commits": {
+      "description": "The total number of commits in the pull request.",
       "type": ["null", "integer"]
     },
     "additions": {
+      "description": "The total number of lines added in the pull request.",
       "type": ["null", "integer"]
     },
     "deletions": {
+      "description": "The total number of lines deleted in the pull request.",
       "type": ["null", "integer"]
     },
     "changed_files": {
+      "description": "The number of files changed in the pull request.",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "The date and time when the pull request was last updated.",
       "type": "string",
       "format": "date-time"
     }

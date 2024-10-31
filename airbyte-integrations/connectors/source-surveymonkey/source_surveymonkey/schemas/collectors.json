@@ -4,83 +4,108 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the collector.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Current status of the collector (ex: open, closed).",
       "type": ["string", "null"]
     },
     "survey_id": {
+      "description": "The unique identifier of the survey associated with the collector.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of collector.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name or title of the collector.",
       "type": ["string", "null"]
     },
     "thank_you_message": {
+      "description": "Message displayed after respondent completes the survey.",
       "type": ["string", "null"]
     },
     "thank_you_page": {
+      "description": "Settings for the thank you page displayed post-survey submission.",
       "type": ["object", "null"],
       "additionalProperties": true,
       "properties": {
         "is_enabled": {
+          "description": "Indicates if the thank you page is enabled.",
           "type": ["boolean", "null"]
         },
         "message": {
+          "description": "Custom message to be displayed on the thank you page.",
           "type": ["string", "null"]
         }
       }
     },
     "disqualification_message": {
+      "description": "Message displayed if respondent is disqualified from survey.",
       "type": ["string", "null"]
     },
     "disqualification_url": {
+      "description": "URL to redirect disqualified respondent to another page.",
       "type": ["string", "null"]
     },
     "close_date": {
+      "description": "The date and time when the collector is set to close.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "closed_page_message": {
+      "description": "Message displayed on the closed page of the collector.",
       "type": ["string", "null"]
     },
     "redirect_url": {
+      "description": "URL for redirection after survey completion.",
       "type": ["string", "null"]
     },
     "display_survey_results": {
+      "description": "Indicates whether respondents can view survey results.",
       "type": ["boolean", "null"]
     },
     "edit_response_type": {
+      "description": "Type of editing available for responses.",
       "type": ["string", "null"]
     },
     "anonymous_type": {
+      "description": "Specifies the anonymity type of the respondent (ex: ",
       "type": ["string", "null"]
     },
     "allow_multiple_responses": {
+      "description": "Indicates whether multiple responses are allowed for this collector.",
       "type": ["boolean", "null"]
     },
     "date_modified": {
+      "description": "The date and time when the collector was last modified.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "sender_email": {
+      "description": "Email address used as the sender of collector notifications.",
       "type": ["string", "null"]
     },
     "password_enabled": {
+      "description": "Indicates whether password protection is enabled for the collector.",
       "type": ["boolean", "null"]
     },
     "response_limit": {
+      "description": "Limit on the number of responses allowed for the collector.",
       "type": ["number", "null"]
     },
     "redirect_type": {
+      "description": "Type of redirect behavior after respondent submits the survey.",
       "type": ["string", "null"]
     },
     "respondent_authentication": {
+      "description": "Authentication method required for respondents.",
       "type": ["boolean", "null"]
     },
     "href": {
+      "description": "The unique URL of the collector.",
       "type": ["string", "null"]
     }
   }

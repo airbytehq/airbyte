@@ -12,7 +12,6 @@ from airbyte_cdk.sources.message import (
     MessageRepository,
     NoopMessageRepository,
 )
-from pydantic.error_wrappers import ValidationError
 
 A_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
@@ -89,14 +88,6 @@ class TestInMemoryMessageRepository:
         repo = InMemoryMessageRepository(UNKNOWN_LEVEL)
         repo.log_message(Level.DEBUG, lambda: {"message": "this is a log message"})
         assert list(repo.consume_queue())
-
-    def test_given_unknown_log_level_for_log_when_log_message_then_raise_error(self):
-        """
-        Pydantic will fail if the log level is unknown but on our side, we should try to log at least
-        """
-        repo = InMemoryMessageRepository(Level.ERROR)
-        with pytest.raises(ValidationError):
-            repo.log_message(UNKNOWN_LEVEL, lambda: {"message": "this is a log message"})
 
 
 class TestNoopMessageRepository:

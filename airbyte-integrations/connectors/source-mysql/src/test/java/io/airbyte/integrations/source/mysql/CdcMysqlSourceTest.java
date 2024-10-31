@@ -74,12 +74,14 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 @Order(1)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestDatabase> {
 
   private static final String INVALID_TIMEZONE_CEST = "CEST";
@@ -90,6 +92,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   private static final String COL_DATE_TIME = "CAR_DATE";
   private static final List<JsonNode> DATE_TIME_RECORDS = ImmutableList.of(
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_DATE_TIME, "'2023-00-00 20:37:47'")));
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(
+        stateMessage -> count.addAndGet(stateMessage.getSourceStats() != null ? stateMessage.getSourceStats().getRecordCount().longValue() : 0L));
+    assertEquals(totalCount, count.get());
+  }
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
@@ -230,6 +240,16 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         modelCol, modelVal, COL_ID, 11);
   }
 
+  @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
+  }
+
+  @Override
+  protected void addIsResumableFlagForNonPkTable(final AirbyteStream stream) {
+    stream.setIsResumable(false);
+  }
+
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());
@@ -348,7 +368,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   @Override
   protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
-    assertStateTypes(stateMessages, 4);
+    assertStateTypes(stateMessages, 4, supportResumableFullRefresh());
+  }
+
+  @Override
+  protected void assertExpectedStateMessagesForFullRefresh(final List<? extends AirbyteStateMessage> stateMessages) {
+    // Full refresh will only send 6 state messages - one for each record (including the final one).
+    assertEquals(6, stateMessages.size());
   }
 
   protected void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount) {
@@ -395,8 +421,23 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(2, stateMessages.size());
   }
 
+  @Override
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    // Pk should be pointing to the last element from MODEL_RECORDS table.
+    assertEquals("16", streamStateToBeTested.get("pk_val").asText());
+    assertEquals("id", streamStateToBeTested.get("pk_name").asText());
+    assertEquals("primary_key", streamStateToBeTested.get("state_type").asText());
+  }
+
   private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
+    assertStateTypes(stateMessages, indexTillWhichExpectPkState, false);
+  }
+
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages,
+                                final int indexTillWhichExpectPkState,
+                                boolean expectSharedStateChange) {
     JsonNode sharedState = null;
+
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
@@ -404,7 +445,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       assertNotNull(global.getSharedState());
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
-      } else {
+      } else if (expectSharedStateChange && i == indexTillWhichExpectPkState) {
+        sharedState = global.getSharedState();
+      } else if (i != stateMessages.size() - 1) {
         assertEquals(sharedState, global.getSharedState());
       }
       assertEquals(1, global.getStreamStates().size());
@@ -421,13 +464,28 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+
+    // First message emitted in the WASS case is a CDC state message. This should have a different
+    // global state (LSN) as compared to the previous
+    // finishing state. The streams in snapshot phase should be the one that is completed at that point.
     assertEquals(7, stateMessages.size());
-    for (int i = 0; i <= 4; i++) {
+    final AirbyteStateMessage cdcStateMessage = stateMessages.get(0);
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), cdcStateMessage.getGlobal().getSharedState());
+    Set<StreamDescriptor> streamsInSnapshotState = cdcStateMessage.getGlobal().getStreamStates()
+        .stream()
+        .map(AirbyteStreamState::getStreamDescriptor)
+        .collect(Collectors.toSet());
+    assertEquals(1, streamsInSnapshotState.size());
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
+
+    for (int i = 1; i <= 5; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
-      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-          stateMessage.getGlobal().getSharedState());
-      final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
+      // Shared state should not be the same as the first (CDC) state message as it should not change in
+      // initial sync.
+      assertEquals(cdcStateMessage.getGlobal().getSharedState(), stateMessage.getGlobal().getSharedState());
+      streamsInSnapshotState.clear();
+      streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
           .stream()
           .map(AirbyteStreamState::getStreamDescriptor)
           .collect(Collectors.toSet());
@@ -448,11 +506,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       });
     }
 
-    final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
-    assertEquals(AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        secondLastSateMessage.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
+    // The last message emitted should indicate that initial PK load has finished for both streams.
+    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
+    assertEquals(AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertEquals(cdcStateMessage.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    streamsInSnapshotState.clear();
+    streamsInSnapshotState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
         .collect(Collectors.toSet());
@@ -460,26 +520,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
     assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
-    secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
+    stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
     });
-
-    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
-    assertEquals(AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
-    assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-    assertTrue(
-        streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
-    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
   @Test
@@ -541,7 +585,43 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS.subList(4, 6)), recordMessages2);
     assertEquals(3, stateMessages2.size());
-    assertStateTypes(stateMessages2, 0);
+    // In the second sync (WASS case), the first state message is emitted via debezium use case, which
+    // should still have the pk state encoded within. The second state message emitted will contain
+    // state from the initial
+    // sync and the last (3rd) state message will not have any pk state as the initial sync can now be
+    // considered complete.
+    assertStateTypes(stateMessages2, 1);
+  }
+
+  // Remove all timestamp related fields in shared state. We want to make sure other information will
+  // not change.
+  private void pruneSharedStateTimestamp(final JsonNode rootNode) throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+
+    // Navigate to the specific node
+    JsonNode historyNode = rootNode.path("state").path("mysql_db_history");
+    if (historyNode.isMissingNode()) {
+      return; // Node not found, nothing to do
+    }
+    String historyJson = historyNode.asText();
+    JsonNode historyJsonNode = mapper.readTree(historyJson);
+
+    ObjectNode objectNode = (ObjectNode) historyJsonNode;
+    objectNode.remove("ts_ms");
+
+    if (objectNode.has("position") && objectNode.get("position").has("ts_sec")) {
+      ((ObjectNode) objectNode.get("position")).remove("ts_sec");
+    }
+
+    JsonNode offsetNode = rootNode.path("state").path("mysql_cdc_offset");
+    JsonNode offsetJsonNode = mapper.readTree(offsetNode.asText());
+    if (offsetJsonNode.has("ts_sec")) {
+      ((ObjectNode) offsetJsonNode).remove("ts_sec");
+    }
+
+    // Replace the original string with the modified one
+    ((ObjectNode) rootNode.path("state")).put("mysql_db_history", mapper.writeValueAsString(historyJsonNode));
+    ((ObjectNode) rootNode.path("state")).put("mysql_cdc_offset", mapper.writeValueAsString(offsetJsonNode));
   }
 
   @Test
@@ -598,9 +678,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       final AirbyteGlobalState global = stateMessage.getGlobal();
       assertNotNull(global.getSharedState());
       if (Objects.isNull(sharedState)) {
-        sharedState = global.getSharedState();
+        ObjectMapper mapper = new ObjectMapper();
+        sharedState = mapper.valueToTree(global.getSharedState());
+        pruneSharedStateTimestamp(sharedState);
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        ObjectMapper mapper = new ObjectMapper();
+        var newSharedState = mapper.valueToTree(global.getSharedState());
+        pruneSharedStateTimestamp(newSharedState);
+        assertEquals(sharedState, newSharedState);
       }
 
       if (Objects.isNull(firstStreamInState)) {
@@ -667,10 +752,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       assertNotNull(global.getSharedState());
       assertEquals(2, global.getStreamStates().size());
 
-      if (i <= 3) {
+      if (i <= 4) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are primary_key state for the stream that didn't complete primary_key sync
+          // First 5 state messages are primary_key state for the stream that didn't complete primary_key sync
           // the first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
@@ -680,7 +765,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
           }
         });
       } else {
-        // last 2 state messages don't contain primary_key info cause primary_key sync should be complete
+        // last state messages doesn't contain primary_key info cause primary_key sync should be complete
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }
@@ -695,13 +780,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   /**
-   * This test creates lots of tables increasing the schema history size above the limit of
-   * {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB} forcing the
-   * {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of
-   * the state message which allows us to test that the next sync is able to work fine when provided
-   * with a compressed blob in the state.
+   * This test creates lots of tables increasing the schema history size above the limit of forcing
+   * the {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part
+   * of the state message which allows us to test that the next sync is able to work fine when
+   * provided with a compressed blob in the state.
    */
   @Test
+  @Timeout(value = 120)
   public void testCompressedSchemaHistory() throws Exception {
     createTablesToIncreaseSchemaHistorySize();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()

@@ -6,20 +6,20 @@ This source can sync data from the [Statuspage.io API](https://developer.statusp
 
 ## This Source Supports the Following Streams
 
- * pages
- * subscribers
- * subscribers_histogram_by_state
- * incident_templates
- * incidents
- * components
- * metrics
+- pages
+- subscribers
+- subscribers_histogram_by_state
+- incident_templates
+- incidents
+- components
+- metrics
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -29,10 +29,30 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Statuspage.io API KEY
+- Statuspage.io API KEY
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                         |
+|:--------|:-----------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-14 | [44061](https://github.com/airbytehq/airbyte/pull/44061) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-12 | [43866](https://github.com/airbytehq/airbyte/pull/43866) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43525](https://github.com/airbytehq/airbyte/pull/43525) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43208](https://github.com/airbytehq/airbyte/pull/43208) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42596](https://github.com/airbytehq/airbyte/pull/42596) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42324](https://github.com/airbytehq/airbyte/pull/42324) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41828](https://github.com/airbytehq/airbyte/pull/41828) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41413](https://github.com/airbytehq/airbyte/pull/41413) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41290](https://github.com/airbytehq/airbyte/pull/41290) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40902](https://github.com/airbytehq/airbyte/pull/40902) | Update dependencies |
+| 0.1.4 | 2024-06-26 | [40182](https://github.com/airbytehq/airbyte/pull/40182) | Update dependencies |
+| 0.1.3   | 2024-06-20 | [#38662](https://github.com/airbytehq/airbyte/pull/38662) | Make connector compatible with Builder          |
+| 0.1.2   | 2024-06-04 | [39064](https://github.com/airbytehq/airbyte/pull/39064) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1   | 2024-05-20 | [38451](https://github.com/airbytehq/airbyte/pull/38451) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-30 | [#18664](https://github.com/airbytehq/airbyte/pull/18664) | 🎉 New Source: Statuspage.io API [low-code CDK] |
+
+</details>

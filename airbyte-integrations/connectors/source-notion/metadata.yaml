@@ -6,11 +6,11 @@ data:
     hosts:
       - api.notion.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.0.6
   dockerRepository: airbyte/source-notion
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   githubIssueLabel: source-notion
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-notion
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -31,23 +31,13 @@ data:
   releases:
     breakingChanges:
       3.0.0:
-        message:
-          The source Notion connector is being migrated from the Python CDK to our declarative low-code CDK.
-          Due to changes in the handling of state format between these CDKs, this migration constitutes a breaking change
-          for users syncing the `Comments` stream.
-          To ensure a smooth migration, please reset your data for this stream upon updating. This will facilitate a fresh first sync.
-          If you are not syncing the `Comments` stream, you can upgrade without any further action.
-          For more information, see our migration documentation for source Notion.
+        message: The source Notion connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes in the handling of state format between these CDKs, this migration constitutes a breaking change for users syncing the `Comments` stream. To ensure a smooth migration, please reset your data for this stream upon updating. This will facilitate a fresh first sync. If you are not syncing the `Comments` stream, you can upgrade without any further action. For more information, see our migration documentation for source Notion.
         upgradeDeadline: "2024-04-29"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["comments"]
       2.0.0:
-        message:
-          Version 2.0.0 introduces schema changes to multiple properties shared
-          by the blocks, databases and pages streams. These changes were introduced
-          to reflect updates to the Notion API. A full schema refresh and data reset
-          are required to upgrade to this version.
+        message: Version 2.0.0 introduces schema changes to multiple properties shared by the blocks, databases and pages streams. These changes were introduced to reflect updates to the Notion API. A full schema refresh and data reset are required to upgrade to this version.
         upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
@@ -59,4 +49,24 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: notion_config_oauth_dev_null
+          id: 58842b61-7557-4971-829a-5a1cc43d7614
+        - name: notion_config_dev_null
+          id: 8af67fe8-a20e-4eae-816a-2a3c893c0360
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-NOTION__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-NOTION__CREDS_OAUTH
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

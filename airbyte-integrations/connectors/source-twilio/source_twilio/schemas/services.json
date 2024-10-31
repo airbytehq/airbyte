@@ -5,110 +5,142 @@
   "type": ["null", "object"],
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the account related to the service.",
       "type": ["null", "string"]
     },
     "consumption_report_interval": {
+      "description": "The interval at which consumption reports are generated.",
       "type": ["null", "number"]
     },
     "date_created": {
+      "description": "The date and time when the service was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_updated": {
+      "description": "The date and time when the service was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "default_channel_creator_role_sid": {
+      "description": "The default role assigned to the creator of a channel.",
       "type": ["null", "string"]
     },
     "default_channel_role_sid": {
+      "description": "The default role assigned to all users in a channel.",
       "type": ["null", "string"]
     },
     "default_service_role_sid": {
+      "description": "The default role assigned to users of the service.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name given to the service.",
       "type": ["null", "string"]
     },
     "limits": {
+      "description": "Limits applied to the service.",
       "type": ["null", "object"],
       "properties": {
         "channel_members": {
+          "description": "Maximum number of members allowed in a channel.",
           "type": ["null", "number"]
         },
         "user_channels": {
+          "description": "Maximum number of channels a user can belong to.",
           "type": ["null", "number"]
         }
       }
     },
     "links": {
+      "description": "Links to different resources related to the service.",
       "type": ["null", "object"],
       "properties": {
         "channels": {
+          "description": "Links related to channels.",
           "type": ["null", "string"]
         },
         "users": {
+          "description": "Links related to users.",
           "type": ["null", "string"]
         },
         "roles": {
+          "description": "Links related to roles.",
           "type": ["null", "string"]
         },
         "bindings": {
+          "description": "Links related to bindings.",
           "type": ["null", "string"]
         }
       }
     },
     "notifications": {
+      "description": "Notification settings for users.",
       "type": ["null", "object"],
       "properties": {
         "users": {
+          "description": "Users to receive notifications.",
           "type": ["null", "string"]
         }
       }
     },
     "post_webhook_url": {
+      "description": "URL for the post webhook.",
       "type": ["null", "string"]
     },
     "pre_webhook_url": {
+      "description": "URL for the pre webhook.",
       "type": ["null", "string"]
     },
     "pre_webhook_retry_count": {
+      "description": "Number of retries for the pre webhook.",
       "type": ["null", "number"]
     },
     "post_webhook_retry_count": {
+      "description": "Number of retries for the post webhook.",
       "type": ["null", "number"]
     },
     "reachability_enabled": {
+      "description": "Flag indicating if reachability is enabled.",
       "type": ["null", "boolean"]
     },
     "read_status_enabled": {
+      "description": "Flag indicating if read status is enabled.",
       "type": ["null", "boolean"]
     },
     "sid": {
+      "description": "The unique identifier of the service.",
       "type": ["null", "string"]
     },
     "typing_indicator_timeout": {
+      "description": "Timeout duration for typing indicators.",
       "type": ["null", "number"]
     },
     "url": {
+      "description": "URL of the service.",
       "type": ["null", "string"]
     },
     "webhook_filters": {
+      "description": "Filters for webhooks.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "webhook_method": {
+      "description": "HTTP method used for webhooks.",
       "type": ["null", "string"]
     },
     "media": {
+      "description": "Media settings for the service.",
       "type": ["null", "object"],
       "properties": {
         "size_limit_mb": {
+          "description": "Maximum size limit for media in megabytes.",
           "type": ["null", "number"]
         },
         "compatibility_message": {
+          "description": "Message to display for incompatible media.",
           "type": ["null", "string"]
         }
       }

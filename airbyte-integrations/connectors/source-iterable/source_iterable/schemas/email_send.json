@@ -1,131 +1,169 @@
 {
   "properties": {
     "createdAt": {
+      "description": "The timestamp when the email was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "campaignId": {
+      "description": "The identifier of the campaign associated with the email_send data.",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Internal information related to ITBL (Iterable).",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "The timestamp when the document was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "The timestamp when the document was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "messageTypeId": {
+      "description": "The identifier of the message type associated with the email_send data.",
       "type": ["null", "integer"]
     },
     "transactionalData": {
+      "description": "Transactional data related to the email_send.",
       "type": ["null", "object"],
       "properties": {
         "inventory": {
+          "description": "The quantity of the product in stock.",
           "type": ["null", "integer"]
         },
         "eventName": {
+          "description": "The name of the event associated with the transaction.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the product.",
           "type": ["null", "string"]
         },
         "sku": {
+          "description": "The stock keeping unit (SKU) of the product.",
           "type": ["null", "string"]
         },
         "email": {
+          "description": "The email address associated with the transaction.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "The URL related to the transaction or product.",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "Description of the product or transaction.",
           "type": ["null", "string"]
         },
         "price": {
+          "description": "The price of the product.",
           "type": ["null", "integer"]
         },
         "product_type": {
+          "description": "The type or category of the product.",
           "type": ["null", "string"]
         },
         "compare_at_price": {
+          "description": "The original price of the product being transacted.",
           "type": ["null", "number"]
         },
         "id": {
+          "description": "The unique identifier of the transactional data.",
           "type": ["null", "string"]
         },
         "templateId": {
+          "description": "The identifier of the template used for the transactional data.",
           "type": ["null", "integer"]
         },
         "product_id": {
+          "description": "The identifier of the product.",
           "type": ["null", "string"]
         },
         "categories": {
+          "description": "Categories related to the transactional data.",
           "type": ["null", "array"],
           "items": {}
         },
         "createdAt": {
+          "description": "The timestamp when the transactional data was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "campaignId": {
+          "description": "The identifier of the campaign associated with the transactional data.",
           "type": ["null", "integer"]
         },
         "vendor": {
+          "description": "The vendor or seller of the product.",
           "type": ["null", "string"]
         },
         "eventUpdatedAt": {
+          "description": "The timestamp when the event was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "discount": {
+          "description": "The discount applied to the product.",
           "type": ["null", "integer"]
         },
         "imageUrl": {
+          "description": "The URL of the image related to the product.",
           "type": ["null", "string"]
         },
         "itblInternal": {
+          "description": "Internal information related to ITBL (Iterable) for transactional data.",
           "type": ["null", "object"],
           "properties": {
             "documentCreatedAt": {
+              "description": "The timestamp when the document related to transactional data was created.",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "documentUpdatedAt": {
+              "description": "The timestamp when the document related to transactional data was last updated.",
               "type": ["null", "string"],
               "format": "date-time"
             }
           }
         },
         "handle": {
+          "description": "A unique identifier for the transaction or product.",
           "type": ["null", "string"]
         }
       }
     },
     "contentId": {
+      "description": "The identifier of the content related to the email being sent.",
       "type": ["null", "integer"]
     },
     "messageId": {
+      "description": "The unique identifier of the message.",
       "type": ["null", "string"]
     },
     "messageBusId": {
+      "description": "The identifier of the message bus associated with the email_send data.",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "The identifier of the template used for the email content.",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "The email address of the recipient.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "The identifier of the user to whom the email is being sent.",
       "type": ["null", "string"]
     },
     "channelId": {
+      "description": "The identifier of the channel through which the email was sent.",
       "type": ["null", "integer"]
     }
   },

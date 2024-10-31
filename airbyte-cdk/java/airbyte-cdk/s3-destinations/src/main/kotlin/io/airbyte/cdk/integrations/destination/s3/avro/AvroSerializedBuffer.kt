@@ -4,9 +4,12 @@
 
 package io.airbyte.cdk.integrations.destination.s3.avro
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
+import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -26,7 +29,9 @@ import org.apache.commons.lang3.StringUtils
 class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
-    schema: Schema
+    schema: Schema,
+    recordPreprocessor: ((JsonNode) -> JsonNode?) = { it },
+    private val useV2FieldNames: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
     private val schema: Schema
@@ -38,7 +43,10 @@ class AvroSerializedBuffer(
         withCompression(false)
         this.codecFactory = codecFactory
         this.schema = schema
-        avroRecordFactory = AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER)
+        val converter =
+            if (useV2FieldNames) AvroRecordFactory.createV2JsonToAvroConverter()
+            else AvroRecordFactory.createV1JsonToAvroConverter()
+        avroRecordFactory = AvroRecordFactory(schema, converter, recordPreprocessor)
         dataFileWriter = null
     }
 
@@ -52,13 +60,24 @@ class AvroSerializedBuffer(
 
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
-    override fun writeRecord(record: AirbyteRecordMessage) {
-        dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
+        if (this.useV2FieldNames) {
+            dataFileWriter!!.append(
+                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, syncId, record)
+            )
+        } else {
+            dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+        }
     }
 
     @Throws(IOException::class)
     @Suppress("DEPRECATION")
-    override fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long) {
+    override fun writeRecord(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(
@@ -66,6 +85,7 @@ class AvroSerializedBuffer(
                     AirbyteRecordMessage::class.java,
                 )
                 .withEmittedAt(emittedAt),
+            generationId
         )
     }
 
@@ -84,36 +104,61 @@ class AvroSerializedBuffer(
 
         fun createFunction(
             config: UploadAvroFormatConfig,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            useV2FeatureSet: Boolean = false
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
+                // Build avro schema
                 stream: AirbyteStreamNameNamespacePair,
                 catalog: ConfiguredAirbyteCatalog ->
-                val schemaConverter = JsonToAvroSchemaConverter()
-                val schema =
-                    schemaConverter.getAvroSchema(
-                        catalog.streams
-                            .stream()
-                            .filter { s: ConfiguredAirbyteStream ->
-                                s.stream.name == stream.name &&
-                                    StringUtils.equals(
-                                        s.stream.namespace,
-                                        stream.namespace,
-                                    )
-                            }
-                            .findFirst()
-                            .orElseThrow {
-                                RuntimeException(
-                                    "No such stream ${stream.namespace}.${stream.name}"
+                val jsonSchema =
+                    catalog.streams
+                        .filter { s: ConfiguredAirbyteStream ->
+                            s.stream.name == stream.name &&
+                                StringUtils.equals(
+                                    s.stream.namespace,
+                                    stream.namespace,
                                 )
-                            }
-                            .stream
-                            .jsonSchema,
-                        stream.name,
-                        stream.namespace,
-                    )
-                AvroSerializedBuffer(createStorageFunction.call(), codecFactory, schema)
+                        }
+                        .firstOrNull()
+                        ?.stream
+                        ?.jsonSchema
+                        ?: throw RuntimeException(
+                            "No such stream ${stream.namespace}.${stream.name}"
+                        )
+                val mergedSchema = JsonSchemaUnionMerger().mapSchema(jsonSchema as ObjectNode)
+                val preprocessedJsonSchema =
+                    if (useV2FeatureSet) {
+                        JsonSchemaAvroPreprocessor().mapSchema(mergedSchema)
+                    } else jsonSchema
+                val avroSchema =
+                    JsonToAvroSchemaConverter()
+                        .getAvroSchema(
+                            preprocessedJsonSchema,
+                            stream.name,
+                            stream.namespace,
+                            useV2FieldNames = useV2FeatureSet,
+                            addStringToLogicalTypes = !useV2FeatureSet,
+                            appendExtraProps = !useV2FeatureSet
+                        )
+
+                // Build record processor
+                val recordPreprocessor =
+                    if (useV2FeatureSet)
+                        { record: JsonNode ->
+                            JsonRecordAvroPreprocessor().mapRecordWithSchema(record, mergedSchema)
+                        }
+                    else { record: JsonNode -> record }
+
+                // Assemble writable buffer
+                AvroSerializedBuffer(
+                    createStorageFunction.call(),
+                    codecFactory,
+                    avroSchema,
+                    recordPreprocessor = recordPreprocessor,
+                    useV2FieldNames = useV2FeatureSet,
+                )
             }
         }
     }

@@ -2,178 +2,233 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier for the invoice line item.",
       "type": ["null", "string"]
     },
     "invoice": {
+      "description": "The ID of the invoice associated with the line item.",
       "type": ["null", "string"]
     },
     "invoice_id": {
+      "description": "The ID of the invoice associated with the line item.",
       "type": ["null", "string"]
     },
     "subscription_item": {
+      "description": "The item details associated with the subscription.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information or custom data related to the invoice line items.",
       "type": ["null", "object"],
       "properties": {}
     },
     "description": {
+      "description": "A brief description of the invoice line item.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The object type, which is 'invoiceitem'.",
       "type": ["null", "string"]
     },
     "discountable": {
+      "description": "Indicates whether the item is eligible for discounts.",
       "type": ["null", "boolean"]
     },
     "quantity": {
+      "description": "The quantity of the item being billed.",
       "type": ["null", "integer"]
     },
     "amount": {
+      "description": "The total amount of the invoice line item, including any taxes and discounts.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type of the invoice line item.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the data is from a live mode.",
       "type": ["null", "boolean"]
     },
     "margins": {
+      "description": "Information about the margins for each item.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details about margins.",
         "type": ["null", "string"]
       }
     },
     "proration": {
+      "description": "Indicates if the amount is prorated.",
       "type": ["null", "boolean"]
     },
     "period": {
+      "description": "The time period for which the invoice line items are applicable.",
       "type": ["null", "object"],
       "properties": {
         "start": {
+          "description": "The start date of the period.",
           "type": ["null", "integer"]
         },
         "end": {
+          "description": "The end date of the period.",
           "type": ["null", "integer"]
         }
       }
     },
     "subscription": {
+      "description": "The ID of the subscription associated with the line item.",
       "type": ["null", "string"]
     },
     "plan": {
+      "description": "Details about the plan associated with the invoice line items.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
+          "description": "The nickname of the plan.",
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Information about the tiers of the plan.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "The flat amount for tiered pricing.",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "The unit amount for tiered pricing.",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "The upper limit for the tier.",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "object": {
+          "description": "The object type, which is 'plan'.",
           "type": ["null", "string"]
         },
         "aggregate_usage": {
+          "description": "The usage aggregation type for the plan.",
           "type": ["null", "string"]
         },
         "created": {
+          "description": "The creation date of the plan.",
           "type": ["null", "integer"]
         },
         "statement_description": {
+          "description": "The statement description for the plan.",
           "type": ["null", "string"]
         },
         "product": {
+          "description": "The product associated with the plan.",
           "type": ["null", "string"]
         },
         "statement_descriptor": {
+          "description": "The statement descriptor for the plan.",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "The number of intervals between plan billings.",
           "type": ["null", "integer"]
         },
         "transform_usage": {
+          "description": "Indicates if usage is transformed for the plan.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the plan.",
           "type": ["null", "string"]
         },
         "amount": {
+          "description": "The amount of the plan.",
           "type": ["null", "integer"]
         },
         "interval": {
+          "description": "The interval for the plan billing.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The unique identifier for the plan.",
           "type": ["null", "string"]
         },
         "trial_period_days": {
+          "description": "The number of trial days for the plan.",
           "type": ["null", "integer"]
         },
         "usage_type": {
+          "description": "The usage type for the plan.",
           "type": ["null", "string"]
         },
         "active": {
+          "description": "Indicates if the plan is active.",
           "type": ["null", "boolean"]
         },
         "tiers_mode": {
+          "description": "The mode for applying tiered pricing.",
           "type": ["null", "string"]
         },
         "billing_scheme": {
+          "description": "The billing scheme for the plan.",
           "type": ["null", "string"]
         },
         "livemode": {
+          "description": "Indicates if the plan is in live mode.",
           "type": ["null", "boolean"]
         },
         "currency": {
+          "description": "The currency of the plan amount.",
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Metadata specific to the plan.",
           "type": ["null", "object"],
           "properties": {}
         },
         "updated": {
+          "description": "The last updated date of the plan.",
           "type": ["null", "number"]
         }
       }
     },
     "invoice_item": {
+      "description": "The item details on the invoice.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency in which the amount is denominated.",
       "type": ["null", "string"]
     },
     "amount_excluding_tax": {
+      "description": "The amount of the invoice line item excluding any taxes.",
       "type": ["null", "integer"]
     },
     "unit_amount_excluding_tax": {
+      "description": "The unit amount of the item excluding tax.",
       "type": ["null", "string"]
     },
     "proration_details": {
+      "description": "Details related to proration on the invoice line items.",
       "type": ["null", "object"],
       "properties": {
         "credited_items": {
+          "description": "Items that were credited in relation to the invoice line items.",
           "type": ["null", "object"],
           "properties": {
             "invoice": {
+              "description": "The invoice related to the credited item.",
               "type": ["null", "string"]
             },
             "invoice_line_items": {
+              "description": "Details of the specific invoice line items that were credited.",
               "type": ["null", "array"],
               "items": {
+                "description": "Details of the credited items on the invoice.",
                 "type": ["null", "string"]
               }
             }
@@ -182,49 +237,62 @@
       }
     },
     "price": {
+      "description": "The price per unit for the invoice line item.",
       "$ref": "price.json"
     },
     "discount_amounts": {
+      "description": "The amount of discount applied to each item in the invoice line items.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "amount": {
+            "description": "The amount of discount applied to the item.",
             "type": ["null", "integer"]
           },
           "discount": {
+            "description": "The discount information.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "discounts": {
+      "description": "Any discounts applied to the invoice line items.",
       "type": ["null", "array"],
       "items": {
+        "description": "Discount information for the invoice line item.",
         "type": ["null", "string"]
       }
     },
     "tax_rates": {
+      "description": "A list of tax rates applied to the invoice line item.",
       "$ref": "tax_rates.json"
     },
     "tax_amounts": {
+      "description": "The amounts of tax applied to each item in the invoice line items.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "amount": {
+            "description": "The amount of tax applied.",
             "type": ["null", "integer"]
           },
           "inclusive": {
+            "description": "Indicates if the tax is inclusive of the item price.",
             "type": ["null", "boolean"]
           },
           "tax_rate": {
+            "description": "The tax rate applied.",
             "type": ["null", "string"]
           },
           "taxability_reason": {
+            "description": "The reason for taxability.",
             "type": ["null", "string"]
           },
           "taxable_amount": {
+            "description": "The taxable amount.",
             "type": ["null", "integer"]
           }
         }

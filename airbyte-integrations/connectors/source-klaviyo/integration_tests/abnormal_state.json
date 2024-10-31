@@ -14,6 +14,17 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "datetime": "2120-10-10 00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "events_detailed"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "updated": "2120-10-10T00:00:00+00:00"
       },
       "stream_descriptor": {

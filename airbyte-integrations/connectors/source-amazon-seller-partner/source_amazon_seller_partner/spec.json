@@ -90,7 +90,7 @@
       },
       "replication_start_date": {
         "title": "Start Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. If start date is not provided, the date 2 years ago from today will be used.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. If start date is not provided or older than 2 years ago from today, the date 2 years ago from today will be used.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
         "order": 7,
@@ -122,19 +122,16 @@
         "items": {
           "type": "object",
           "title": "Report Options",
-          "required": ["stream_name", "options_list"],
+          "required": ["report_name", "stream_name", "options_list"],
           "properties": {
-            "stream_name": {
-              "title": "Stream Name",
+            "report_name": {
+              "title": "Report Name",
               "type": "string",
               "order": 0,
               "enum": [
                 "GET_AFN_INVENTORY_DATA",
                 "GET_AFN_INVENTORY_DATA_BY_COUNTRY",
                 "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-                "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
-                "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
-                "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
                 "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA",
                 "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
                 "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA",
@@ -163,22 +160,24 @@
                 "GET_MERCHANTS_LISTINGS_FYP_REPORT",
                 "GET_ORDER_REPORT_DATA_SHIPPING",
                 "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT",
-                "GET_SALES_AND_TRAFFIC_REPORT",
                 "GET_SELLER_FEEDBACK_DATA",
                 "GET_STRANDED_INVENTORY_UI_DATA",
                 "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
-                "GET_VENDOR_INVENTORY_REPORT",
-                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                "GET_VENDOR_TRAFFIC_REPORT",
-                "GET_VENDOR_SALES_REPORT",
                 "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-                "GET_XML_BROWSE_TREE_DATA"
+                "GET_XML_BROWSE_TREE_DATA",
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
               ]
+            },
+            "stream_name": {
+              "title": "Stream Name",
+              "type": "string",
+              "order": 1
             },
             "options_list": {
               "title": "List of options",
               "description": "List of options",
               "type": "array",
+              "order": 2,
               "items": {
                 "type": "object",
                 "required": ["option_name", "option_value"],
@@ -198,6 +197,13 @@
             }
           }
         }
+      },
+      "wait_to_avoid_fatal_errors": {
+        "title": "Wait between requests to avoid fatal statuses in reports",
+        "type": "boolean",
+        "description": "For report based streams with known amount of requests per time period, this option will use waiting time between requests to avoid fatal statuses in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting\" target=\"_blank\">Troubleshooting</a> section for more details",
+        "default": false,
+        "order": 11
       }
     }
   },

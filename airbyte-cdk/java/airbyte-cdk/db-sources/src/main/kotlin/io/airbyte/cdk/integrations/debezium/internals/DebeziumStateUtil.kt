@@ -89,7 +89,7 @@ interface DebeziumStateUtil {
         const val CONNECTOR_NAME_PROPERTY: String = "name"
 
         /** Configuration for offset state key/value converters. */
-        val INTERNAL_CONVERTER_CONFIG: Map<String, String?> =
+        val INTERNAL_CONVERTER_CONFIG: Map<String, String> =
             java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, false.toString())
     }
 }

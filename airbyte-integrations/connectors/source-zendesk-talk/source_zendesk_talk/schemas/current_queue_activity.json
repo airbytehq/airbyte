@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "current_timestamp": {
+      "description": "The timestamp indicating the current time when the data was retrieved.",
       "type": "integer"
     },
     "agents_online": {
+      "description": "The number of agents who are currently available and online in the queue.",
       "type": ["null", "integer"]
     },
     "average_wait_time": {
+      "description": "The average amount of time callers are waiting in the queue before being connected to an agent.",
       "type": ["null", "integer"]
     },
     "callbacks_waiting": {
+      "description": "The number of callback requests that are currently in the queue, waiting for agents to be available.",
       "type": ["null", "integer"]
     },
     "calls_waiting": {
+      "description": "The number of incoming calls that are currently waiting to be answered by agents.",
       "type": ["null", "integer"]
     },
     "embeddable_callbacks_waiting": {
+      "description": "The number of callback requests that are specifically designated for embedding in a webpage or application and are waiting in the queue.",
       "type": ["null", "integer"]
     },
     "longest_wait_time": {
+      "description": "The longest amount of time a caller has been waiting in the queue before being connected to an agent.",
       "type": ["null", "integer"]
     }
   }

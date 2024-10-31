@@ -12,7 +12,7 @@ data:
   icon: redshift.svg
   license: ELv2
   name: Redshift
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,13 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-REDSHIFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

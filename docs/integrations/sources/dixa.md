@@ -49,11 +49,31 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
-| 0.3.0   | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework  |
-| 0.2.0   | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream                            |
-| 0.1.3   | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3                                    |
-| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                       |
-| 0.1.1   | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367)   | Migrated to CI Sandbox, refactorred code structure for future support |
-| 0.1.0   | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358)   | New source                                                            |
+| 0.4.0 | 2024-08-27 | [44818](https://github.com/airbytehq/airbyte/pull/44818) | Refactor connector to manifest-only format |
+| 0.3.14 | 2024-08-24 | [44666](https://github.com/airbytehq/airbyte/pull/44666) | Update dependencies |
+| 0.3.13 | 2024-08-17 | [44328](https://github.com/airbytehq/airbyte/pull/44328) | Update dependencies |
+| 0.3.12 | 2024-08-12 | [43871](https://github.com/airbytehq/airbyte/pull/43871) | Update dependencies |
+| 0.3.11 | 2024-08-10 | [43474](https://github.com/airbytehq/airbyte/pull/43474) | Update dependencies |
+| 0.3.10 | 2024-08-03 | [43088](https://github.com/airbytehq/airbyte/pull/43088) | Update dependencies |
+| 0.3.9 | 2024-07-27 | [42679](https://github.com/airbytehq/airbyte/pull/42679) | Update dependencies |
+| 0.3.8 | 2024-07-20 | [42156](https://github.com/airbytehq/airbyte/pull/42156) | Update dependencies |
+| 0.3.7 | 2024-07-13 | [41805](https://github.com/airbytehq/airbyte/pull/41805) | Update dependencies |
+| 0.3.6 | 2024-07-10 | [41484](https://github.com/airbytehq/airbyte/pull/41484) | Update dependencies |
+| 0.3.5 | 2024-07-09 | [41198](https://github.com/airbytehq/airbyte/pull/41198) | Update dependencies |
+| 0.3.4 | 2024-07-06 | [40776](https://github.com/airbytehq/airbyte/pull/40776) | Update dependencies |
+| 0.3.3 | 2024-06-26 | [40371](https://github.com/airbytehq/airbyte/pull/40371) | Update dependencies |
+| 0.3.2 | 2024-06-22 | [40119](https://github.com/airbytehq/airbyte/pull/40119) | Update dependencies |
+| 0.3.1 | 2024-05-21 | [38481](https://github.com/airbytehq/airbyte/pull/38481) | [autopull] base image + poetry + up_to_date |
+| 0.3.0 | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework |
+| 0.2.0 | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream |
+| 0.1.3 | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3 |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1 | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367) | Migrated to CI Sandbox, refactorred code structure for future support |
+| 0.1.0 | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358) | New source |
+  
+</details>

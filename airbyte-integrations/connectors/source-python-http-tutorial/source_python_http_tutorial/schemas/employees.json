@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the employee.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the employee.",
       "type": ["null", "string"]
     },
     "years_of_service": {
+      "description": "Number of years the employee has been in service.",
       "type": ["null", "integer"]
     },
     "start_date": {
+      "description": "Date when the employee started their employment.",
       "type": ["null", "string"],
       "format": "date-time"
     }

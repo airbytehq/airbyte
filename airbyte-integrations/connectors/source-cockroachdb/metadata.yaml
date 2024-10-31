@@ -11,7 +11,7 @@ data:
   icon: cockroachdb.svg
   license: MIT
   name: Cockroachdb
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # Can not be in cloud until security is handled via DEPLOYMENT_MODE=cloud.
     oss:
@@ -24,4 +24,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

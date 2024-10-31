@@ -1,0 +1,202 @@
+{
+  "data": [
+    {
+      "name": "follower_demographics",
+      "period": "lifetime",
+      "title": "Follower demographics",
+      "description": "description.",
+      "total_value": {
+        "breakdowns": [
+          {
+            "dimension_keys": ["city"],
+            "results": [
+              {
+                "dimension_values": ["London, England"],
+                "value": 7
+              },
+              {
+                "dimension_values": ["Sydney, New South Wales"],
+                "value": 18
+              },
+              {
+                "dimension_values": ["Caracas, Capital District"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["São Paulo, São Paulo (state)"],
+                "value": 10
+              },
+              {
+                "dimension_values": ["Amsterdam, Noord-Holland"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Rio de Janeiro, Rio de Janeiro (state)"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Kuwait City, Capital Governorate"],
+                "value": 3
+              },
+              {
+                "dimension_values": ["Montreal, Quebec"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Kolkata, West Bengal"],
+                "value": 5
+              },
+              {
+                "dimension_values": ["Tulsa, Oklahoma"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Lagos, Lagos State"],
+                "value": 15
+              },
+              {
+                "dimension_values": ["Ahmedabad, Gujarat"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Skopje, Municipality of Centar (Skopje)"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Chicago, Illinois"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Bogotá, Distrito Especial"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Dar es Salaam, Dar es Salaam"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Jakarta, Jakarta"],
+                "value": 9
+              },
+              {
+                "dimension_values": ["Accra, Greater Accra Region"],
+                "value": 4
+              },
+              {
+                "dimension_values": [
+                  "Buenos Aires, Ciudad Autónoma de Buenos Aires"
+                ],
+                "value": 10
+              },
+              {
+                "dimension_values": ["Melbourne, Victoria"],
+                "value": 9
+              },
+              {
+                "dimension_values": ["Gurugram, Haryana"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Delhi, Delhi"],
+                "value": 5
+              },
+              {
+                "dimension_values": ["Los Angeles, California"],
+                "value": 7
+              },
+              {
+                "dimension_values": ["Wien, Vienna"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Denver, Colorado"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Istanbul, Istanbul Province"],
+                "value": 9
+              },
+              {
+                "dimension_values": ["Toronto, Ontario"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Abuja, Federal Capital Territory"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Chennai, Tamil Nadu"],
+                "value": 7
+              },
+              {
+                "dimension_values": ["Bangkok, Bangkok"],
+                "value": 5
+              },
+              {
+                "dimension_values": ["Houston, Texas"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Mexico City, Distrito Federal"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Cape Town, Western Cape"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["San Francisco, California"],
+                "value": 7
+              },
+              {
+                "dimension_values": ["Greater Noida, Uttar Pradesh"],
+                "value": 5
+              },
+              {
+                "dimension_values": ["Tehran, Tehran Province"],
+                "value": 5
+              },
+              {
+                "dimension_values": ["New York, New York"],
+                "value": 12
+              },
+              {
+                "dimension_values": ["Cairo, Cairo Governorate"],
+                "value": 4
+              },
+              {
+                "dimension_values": ["Santiago, Santiago Metropolitan Region"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Dubai, Dubai"],
+                "value": 8
+              },
+              {
+                "dimension_values": ["Mumbai, Maharashtra"],
+                "value": 8
+              },
+              {
+                "dimension_values": ["Bangalore, Karnataka"],
+                "value": 17
+              },
+              {
+                "dimension_values": ["Singapore, Singapore"],
+                "value": 6
+              },
+              {
+                "dimension_values": ["Hyderabad, Telangana"],
+                "value": 7
+              },
+              {
+                "dimension_values": ["San Diego, California"],
+                "value": 5
+              }
+            ]
+          }
+        ]
+      },
+      "id": "id/insights/follower_demographics/lifetime"
+    }
+  ]
+}

@@ -3,6 +3,8 @@
  */
 package io.airbyte.commons.features
 
+import java.nio.file.Path
+
 /**
  * Interface that describe which features are activated in airbyte. Currently, the only
  * implementation relies on env. Ideally it should be on some DB.
@@ -27,7 +29,7 @@ interface FeatureFlags {
      *
      * @return a comma-separated list of workspace ids where field selection should be enabled.
      */
-    fun fieldSelectionWorkspaces(): String?
+    fun fieldSelectionWorkspaces(): String
 
     /**
      * Get the workspaces allow-listed for strict incremental comparison in normalization. This
@@ -51,4 +53,8 @@ interface FeatureFlags {
      * @return empty string for the default deployment mode, "CLOUD" for cloud deployment mode.
      */
     fun deploymentMode(): String?
+
+    fun airbyteStagingDirectory(): Path?
+
+    fun useFileTransfer(): Boolean
 }

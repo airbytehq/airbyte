@@ -6,11 +6,11 @@ data:
     hosts:
       - slack.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.3.1
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-slack
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -31,11 +31,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          The source Slack connector is being migrated from the Python CDK to our declarative low-code CDK.
-          Due to changes in the handling of state format for incremental substreams, this migration constitutes a breaking change for the channel_messages stream.
-          Users will need to reset source configuration, refresh the source schema and reset the channel_messages stream after upgrading.
-          For more information, see our migration documentation for source Slack.
+        message: The source Slack connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes in the handling of state format for incremental substreams, this migration constitutes a breaking change for the channel_messages stream. Users will need to reset source configuration, refresh the source schema and reset the channel_messages stream after upgrading. For more information, see our migration documentation for source Slack.
         upgradeDeadline: "2024-04-29"
         scopedImpact:
           - scopeType: stream
@@ -52,4 +48,24 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: slack_config_oauth_dev_null
+          id: 4219c9e8-af56-4eaf-bf7d-b5578d446a74
+        - name: slack_config_dev_null
+          id: b6e9e649-2899-4589-81c4-79df81a7a210
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SLACK_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SLACK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

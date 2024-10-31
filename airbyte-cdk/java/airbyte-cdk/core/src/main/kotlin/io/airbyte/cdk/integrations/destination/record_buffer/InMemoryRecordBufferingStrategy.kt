@@ -9,11 +9,11 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWr
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This is the default implementation of a [BufferStorage] to be backward compatible. Data is being
  * buffered in a [<] as they are being consumed.
@@ -41,7 +41,9 @@ class InMemoryRecordBufferingStrategy(
     @Throws(Exception::class)
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
+        message: AirbyteMessage,
+        generationId: Long,
+        syncId: Long
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
@@ -52,7 +54,7 @@ class InMemoryRecordBufferingStrategy(
         }
 
         val bufferedRecords =
-            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair? ->
+            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair ->
                 ArrayList()
             }
         bufferedRecords.add(message.record)
@@ -62,33 +64,25 @@ class InMemoryRecordBufferingStrategy(
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(
-        stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
-    ) {
-        LOGGER.info(
-            "Flushing single stream {}: {} records",
-            stream.name,
-            streamBuffer[stream]!!.size
-        )
-        recordWriter.accept(stream, streamBuffer[stream]!!.toList())
-        LOGGER.info("Flushing completed for {}", stream.name)
+    override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
+        LOGGER.info {
+            "Flushing single stream ${stream.name}: ${streamBuffer[stream]!!.size} records"
+        }
+        recordWriter.accept(stream, streamBuffer[stream]!!)
+        LOGGER.info { "Flushing completed for ${stream.name}" }
     }
 
     @Throws(Exception::class)
     override fun flushAllBuffers() {
         for ((key, value) in streamBuffer) {
-            LOGGER.info(
-                "Flushing {}: {} records ({})",
-                key.name,
-                value.size,
-                FileUtils.byteCountToDisplaySize(bufferSizeInBytes)
-            )
+            LOGGER.info {
+                "Flushing ${key.name}: ${value.size} records (${FileUtils.byteCountToDisplaySize(bufferSizeInBytes)})"
+            }
             recordWriter.accept(key, value)
             if (checkAndRemoveRecordWriter != null) {
                 fileName = checkAndRemoveRecordWriter.apply(key, fileName)
             }
-            LOGGER.info("Flushing completed for {}", key.name)
+            LOGGER.info { "Flushing completed for ${key.name}" }
         }
         close()
         clear()
@@ -100,9 +94,4 @@ class InMemoryRecordBufferingStrategy(
     }
 
     @Throws(Exception::class) override fun close() {}
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(InMemoryRecordBufferingStrategy::class.java)
-    }
 }

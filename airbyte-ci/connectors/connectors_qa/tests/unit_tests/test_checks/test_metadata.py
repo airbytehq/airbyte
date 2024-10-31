@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import os
 
@@ -9,47 +10,6 @@ from connectors_qa.models import CheckStatus
 
 
 class TestValidateMetadata:
-    def test_fail_init_when_required_env_vars_are_not_set(self, random_string, mocker):
-        # Arrange
-        mocker.patch.object(metadata.ValidateMetadata, "required_env_vars", new={random_string})
-
-        # Act
-        with pytest.raises(ValueError):
-            metadata.ValidateMetadata()
-
-    def test_init_when_required_env_vars_are_set(self, random_string, mocker):
-        # Arrange
-        os.environ[random_string] = "test"
-        mocker.patch.object(metadata.ValidateMetadata, "required_env_vars", new={random_string})
-
-        # Act
-        metadata.ValidateMetadata()
-
-        os.environ.pop(random_string)
-
-    def test_fail_when_documentation_file_path_is_none(self, mocker):
-        # Arrange
-        connector = mocker.MagicMock(documentation_file_path=None)
-
-        # Act
-        result = metadata.ValidateMetadata()._run(connector)
-
-        # Assert
-        assert result.status == CheckStatus.FAILED
-        assert result.message == "User facing documentation file is missing. Please create it"
-
-    def test_fail_when_documentation_file_path_does_not_exist(self, mocker, tmp_path):
-        # Arrange
-
-        connector = mocker.MagicMock(documentation_file_path=tmp_path / "doc.md")
-
-        # Act
-        result = metadata.ValidateMetadata()._run(connector)
-
-        # Assert
-        assert result.status == CheckStatus.FAILED
-        assert result.message == "User facing documentation file is missing. Please create it"
-
     def test_fail_when_deserialization_fails(self, mocker, tmp_path):
         # Arrange
         mocker.patch.object(metadata, "validate_and_load", return_value=(None, "error"))
@@ -77,6 +37,19 @@ class TestValidateMetadata:
         # Assert
         assert result.status == CheckStatus.PASSED
         assert result.message == "Metadata file valid."
+
+    def test_checks_apply_to_manifest_only_connectors(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"tags": ["language:manifest-only"]}, code_directory=tmp_path)
+        code_directory = tmp_path
+        (code_directory / consts.MANIFEST_FILE_NAME).touch()
+
+        # Act
+        result = metadata.CheckConnectorLanguageTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert result.message == "Language tag language:manifest-only is present in the metadata file"
 
 
 class TestCheckConnectorLanguageTag:
@@ -158,7 +131,6 @@ class TestCheckConnectorLanguageTag:
 
 
 class TestCheckConnectorCDKTag:
-
     def test_fail_when_no_cdk_tags(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"tags": []})
@@ -200,7 +172,7 @@ class TestCheckConnectorCDKTag:
         connector = mocker.MagicMock(technical_name="source-test", metadata={"tags": ["cdk:python"]}, code_directory=tmp_path)
         code_directory = tmp_path
         (code_directory / "source_test").mkdir()
-        (code_directory / "source_test"/ consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
+        (code_directory / "source_test" / consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
 
         # Act
         result = metadata.CheckConnectorCDKTag()._run(connector)
@@ -226,7 +198,7 @@ class TestCheckConnectorMaxSecondsBetweenMessagesValue:
     def test_pass_when_field_present(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"supportLevel": "certified", "maxSecondsBetweenMessages": 1})
-        
+
         # Act
         result = metadata.CheckConnectorMaxSecondsBetweenMessagesValue()._run(connector)
 

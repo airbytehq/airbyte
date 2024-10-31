@@ -126,7 +126,7 @@ class ParquetParser(FileTypeParser):
 
         if pa.types.is_decimal(parquet_value.type):
             if parquet_format.decimal_as_float:
-                return parquet_value.as_py()
+                return float(parquet_value.as_py())
             else:
                 return str(parquet_value.as_py())
 

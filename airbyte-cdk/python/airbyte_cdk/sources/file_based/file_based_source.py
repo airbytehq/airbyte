@@ -6,7 +6,7 @@ import logging
 import traceback
 from abc import ABC
 from collections import Counter
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import (
@@ -44,7 +44,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
+from pydantic.v1.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
 MAX_CONCURRENCY = 100
@@ -61,7 +61,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         spec_class: Type[AbstractFileBasedSpec],
         catalog: Optional[ConfiguredAirbyteCatalog],
         config: Optional[Mapping[str, Any]],
-        state: Optional[MutableMapping[str, Any]],
+        state: Optional[List[AirbyteStateMessage]],
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
@@ -122,19 +122,48 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             )
 
         errors = []
+        tracebacks = []
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
             try:
+                parsed_config = self._get_parsed_config(config)
+                availability_method = (
+                    stream.availability_strategy.check_availability
+                    if self._use_file_transfer(parsed_config)
+                    else stream.availability_strategy.check_availability_and_parsability
+                )
                 (
                     stream_is_available,
                     reason,
-                ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
+                ) = availability_method(stream, logger, self)
+            except AirbyteTracedException as ate:
+                errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
+                tracebacks.append(traceback.format_exc())
             except Exception:
-                errors.append(f"Unable to connect to stream {stream.name} - {''.join(traceback.format_exc())}")
+                errors.append(f"Unable to connect to stream {stream.name}")
+                tracebacks.append(traceback.format_exc())
             else:
                 if not stream_is_available and reason:
                     errors.append(reason)
+
+        if len(errors) == 1 and len(tracebacks) == 1:
+            raise AirbyteTracedException(
+                internal_message=tracebacks[0],
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
+        if len(errors) == 1 and len(tracebacks) == 0:
+            raise AirbyteTracedException(
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
+        elif len(errors) > 1:
+            raise AirbyteTracedException(
+                internal_message="\n".join(tracebacks),
+                message=f"{len(errors)} streams with errors: {', '.join(error for error in errors)}",
+                failure_type=FailureType.config_error,
+            )
 
         return not bool(errors), (errors or None)
 
@@ -144,10 +173,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
 
         if self.catalog:
-            state_manager = ConnectorStateManager(
-                stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
-                state=self.state,
-            )
+            state_manager = ConnectorStateManager(state=self.state)
         else:
             # During `check` operations we don't have a catalog so cannot create a state manager.
             # Since the state manager is only required for incremental syncs, this is fine.
@@ -197,11 +223,19 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         CursorField(DefaultFileBasedStream.ab_last_mod_col),
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        stream=self._make_default_stream(
+                            stream_config=stream_config, cursor=cursor, use_file_transfer=self._use_file_transfer(parsed_config)
+                        ),
+                        source=self,
+                        logger=self.logger,
+                        state=stream_state,
+                        cursor=cursor,
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor)
+                    stream = self._make_default_stream(
+                        stream_config=stream_config, cursor=cursor, use_file_transfer=self._use_file_transfer(parsed_config)
+                    )
 
                 streams.append(stream)
             return streams
@@ -210,7 +244,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor], use_file_transfer: bool = False
     ) -> AbstractFileBasedStream:
         return DefaultFileBasedStream(
             config=stream_config,
@@ -222,6 +256,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
+            use_file_transfer=use_file_transfer,
         )
 
     def _get_stream_from_catalog(self, stream_config: FileBasedStreamConfig) -> Optional[AirbyteStream]:
@@ -244,7 +279,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
         # emit all the errors collected
@@ -278,3 +313,10 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
     def _validate_input_schema(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.schemaless and stream_config.input_schema:
             raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
+
+    @staticmethod
+    def _use_file_transfer(parsed_config: AbstractFileBasedSpec) -> bool:
+        use_file_transfer = (
+            hasattr(parsed_config.delivery_method, "delivery_type") and parsed_config.delivery_method.delivery_type == "use_file_transfer"
+        )
+        return use_file_transfer

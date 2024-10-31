@@ -77,29 +77,14 @@ class MondayGraphqlRequester(HttpRequester):
 
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
-        fields = ",".join(fields)
 
-        # Essentially, we construct a query based on schema properties; however, some fields in the schema are conditional.
-        # These conditional fields can be obtained by defining them as inline fragments (The docs: https://spec.graphql.org/October2021/#sec-Inline-Fragments).
-        # This is an example of a query built for the Items stream, with a `display_value` property defined as an `MirrorValue` inline fragment:
-        # query {
-        #   boards (limit:1) {
-        #     items_page (limit:20) {
-        #       <a field>,
-        #       ...,
-        #       column_values {
-        #         id,
-        #         text,
-        #         type,
-        #         value,
-        #         ... on MirrorValue {display_value}
-        #       }
-        #     }
-        #   }
-        # }
-        # When constructing a query, we replace the `display_value` field with the `... on MirrorValue {display_value}` inline fragment.
-        if object_name == "column_values" and "display_value" in fields:
-            fields = fields.replace("display_value", "... on MirrorValue{display_value}")
+        if object_name == "column_values":
+            fields.remove("display_value")
+            fields.extend(
+                ["... on MirrorValue{display_value}", "... on BoardRelationValue{display_value}", "... on DependencyValue{display_value}"]
+            )
+
+        fields = ",".join(fields)
 
         if object_name in ["items_page", "next_items_page"]:
             query = f"{object_name}{arguments}{{cursor,items{{{fields}}}}}"

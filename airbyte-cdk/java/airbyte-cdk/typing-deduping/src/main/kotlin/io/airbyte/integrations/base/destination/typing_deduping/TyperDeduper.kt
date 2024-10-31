@@ -5,7 +5,6 @@ package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import java.util.concurrent.locks.Lock
 
 /*
  * This class wants to do three separate things, but not all of them actually happen here right now:
@@ -55,36 +54,13 @@ interface TyperDeduper {
     @Throws(Exception::class) fun prepareFinalTables()
 
     /**
-     * Suggest that we execute typing and deduping for a single stream (i.e. fetch new raw records
-     * into the final table, etc.).
-     *
-     * This method is thread-safe; multiple threads can call it concurrently. If T+D is already
-     * running for the given stream, this method may choose to do nothing. If a caller wishes to
-     * force T+D to run (for example, at the end of a sync), they may set `mustRun` to true.
-     *
-     * This method relies on callers to prevent concurrent modification to the underlying raw
-     * tables. This is most easily accomplished using [.getRawTableInsertLock], if the caller guards
-     * all raw table writes using `getRawTableInsertLock().lock()` and
-     * `getRawTableInsertLock().unlock()`. While `typeAndDedupe` is executing, that lock will be
-     * unavailable. However, callers are free to enforce this in other ways (for example, single-
-     * threaded callers do not need to use the lock).
+     * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final
+     * table, etc.).
      *
      * @param originalNamespace The stream's namespace, as declared in the configured catalog
      * @param originalName The stream's name, as declared in the configured catalog
      */
-    @Throws(Exception::class)
-    fun typeAndDedupe(originalNamespace: String, originalName: String, mustRun: Boolean)
-
-    /**
-     * Get the lock that should be used to synchronize inserts to the raw table for a given stream.
-     * This lock permits any number of threads to hold the lock, but [.typeAndDedupe] will not
-     * proceed while this lock is held.
-     *
-     * This lock provides fairness guarantees, i.e. typeAndDedupe will not starve while waiting for
-     * the lock (and similarly, raw table writers will not starve if many typeAndDedupe calls are
-     * queued).
-     */
-    fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock
+    @Throws(Exception::class) fun typeAndDedupe(originalNamespace: String, originalName: String)
 
     /**
      * Does any "end of sync" work. For most streams, this is a noop.
@@ -94,14 +70,13 @@ interface TyperDeduper {
      *
      * @param streamSyncSummaries Information about what happened during the sync. Implementations
      * SHOULD use this information to skip T+D when possible (this is not a requirement for
-     * correctness, but does allow us to save time/money). This parameter MUST NOT be null. Streams
-     * MAY be omitted, which will be treated as though they were mapped to
-     * [StreamSyncSummary.DEFAULT].
+     * correctness, but does allow us to save time/money). This parameter MUST NOT be null.
      */
     @Throws(Exception::class)
     fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
-    @Throws(Exception::class) fun commitFinalTables()
+    @Throws(Exception::class)
+    fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
     fun cleanup()
 }

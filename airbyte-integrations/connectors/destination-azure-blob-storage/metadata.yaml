@@ -2,13 +2,13 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/destination-azure-blob-storage
   githubIssueLabel: destination-azure-blob-storage
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -27,4 +27,23 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
+          fileName: config_gcs_staging.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
+          fileName: config_s3_staging.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

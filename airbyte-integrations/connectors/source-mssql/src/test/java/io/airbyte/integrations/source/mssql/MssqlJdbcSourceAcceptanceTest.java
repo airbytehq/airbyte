@@ -51,6 +51,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MssqlSource, MsSQLTestDatabase> {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
@@ -384,7 +385,8 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))
+            .withIsResumable(true),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
@@ -392,7 +394,8 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
             Field.of(COL_NAME, JsonSchemaType.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+            .withSourceDefinedPrimaryKey(Collections.emptyList())
+            .withIsResumable(false),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
@@ -401,7 +404,8 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
             Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
-                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))
+            .withIsResumable(true)));
   }
 
   @Override
@@ -463,6 +467,16 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
 
     expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2L));
     return expectedMessages;
+  }
+
+  @Override
+  protected void validateFullRefreshStateMessageReadSuccess(final List<? extends AirbyteStateMessage> stateMessages) {
+    var finalStateMessage = stateMessages.get(stateMessages.size() - 1);
+    assertEquals(
+        finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
+        "ordered_column");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col").textValue(), "id");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col_val").textValue(), "3");
   }
 
 }

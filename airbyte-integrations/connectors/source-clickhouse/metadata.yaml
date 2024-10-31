@@ -16,7 +16,7 @@ data:
   icon: clickhouse.svg
   license: MIT
   name: ClickHouse
-  registries:
+  registryOverrides:
     cloud:
       dockerImageTag: 0.2.2
       dockerRepository: airbyte/source-clickhouse-strict-encrypt
@@ -27,4 +27,6 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

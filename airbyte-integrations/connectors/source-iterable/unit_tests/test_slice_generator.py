@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import freezegun
 import pendulum
@@ -41,42 +41,42 @@ def test_slice_gen_no_range_adjust():
     "start_day,end_day,days,range",
     [
         (
-                "2020-01-01",
-                "2020-01-10",
-                5,
-                [
-                    (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
-                    (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10")),
-                ],
+            "2020-01-01",
+            "2020-01-10",
+            5,
+            [
+                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
+                (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10")),
+            ],
         ),
         (
-                "2020-01-01",
-                "2020-01-10 20:00:12",
-                5,
-                [
-                    (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
-                    (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10 20:00:12")),
-                ],
+            "2020-01-01",
+            "2020-01-10 20:00:12",
+            5,
+            [
+                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-06")),
+                (pendulum.parse("2020-01-06"), pendulum.parse("2020-01-10 20:00:12")),
+            ],
         ),
         (
-                "2020-01-01",
-                "2020-01-01 20:00:12",
-                5,
-                [
-                    (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-01 20:00:12")),
-                ],
+            "2020-01-01",
+            "2020-01-01 20:00:12",
+            5,
+            [
+                (pendulum.parse("2020-01-01"), pendulum.parse("2020-01-01 20:00:12")),
+            ],
         ),
         (
-                "2020-01-01",
-                "2020-01-10",
-                50,
-                [(pendulum.parse("2020-01-01"), pendulum.parse("2020-01-10"))],
+            "2020-01-01",
+            "2020-01-10",
+            50,
+            [(pendulum.parse("2020-01-01"), pendulum.parse("2020-01-10"))],
         ),
         (
-                "2020-01-01",
-                "2020-01-01",
-                50,
-                [],
+            "2020-01-01",
+            "2020-01-01",
+            50,
+            [],
         ),
     ],
 )

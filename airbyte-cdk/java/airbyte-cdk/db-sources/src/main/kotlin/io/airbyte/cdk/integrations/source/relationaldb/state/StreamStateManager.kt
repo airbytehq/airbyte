@@ -9,12 +9,11 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Supplier
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Per-stream implementation of the [StateManager] interface.
  *
@@ -35,9 +34,7 @@ open class StreamStateManager
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
-        Supplier {
-            rawAirbyteStateMessages.stream().map { it.stream }.collect(Collectors.toList())
-        },
+        Supplier { rawAirbyteStateMessages.map { it.stream } },
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
@@ -50,7 +47,7 @@ open class StreamStateManager
             )
         }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() = rawAirbyteStateMessages
 
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {
@@ -59,7 +56,7 @@ open class StreamStateManager
             val cursorInfo = Optional.ofNullable(pairToCursorInfoMap[pair.get()])
 
             if (cursorInfo.isPresent) {
-                LOGGER.debug("Generating state message for {}...", pair)
+                LOGGER.debug { "Generating state message for $pair..." }
                 return AirbyteStateMessage()
                     .withType(
                         AirbyteStateMessage.AirbyteStateType.STREAM
@@ -72,23 +69,20 @@ open class StreamStateManager
                         StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get())
                     )
             } else {
-                LOGGER.warn(
-                    "Cursor information could not be located in state for stream {}.  Returning a new, empty state message...",
-                    pair
-                )
+                LOGGER.warn {
+                    "Cursor information could not be located in state for stream $pair.  Returning a new, empty state message..."
+                }
                 return AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                     .withStream(AirbyteStreamState())
             }
         } else {
-            LOGGER.warn("Stream not provided.  Returning a new, empty state message...")
+            LOGGER.warn { "Stream not provided.  Returning a new, empty state message..." }
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(AirbyteStreamState())
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StreamStateManager::class.java)
-    }
+    companion object {}
 }

@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import com.google.common.collect.Lists
+import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.map.MoreMaps
@@ -15,6 +16,7 @@ import io.airbyte.configoss.AllowedHosts
 import io.airbyte.configoss.ResourceRequirements
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.exception.TestHarnessException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,13 +24,14 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DockerProcessFactory(
     private val workspaceRoot: Path,
     private val workspaceMountSource: String?,
     private val localMountSource: String?,
+    private val fileTransferMountSource: Path?,
     private val networkName: String?,
     private val envMap: Map<String, String>
 ) : ProcessFactory {
@@ -64,7 +67,7 @@ class DockerProcessFactory(
         jobMetadata: Map<String, String>,
         internalToExternalPorts: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String?
+        vararg args: String
     ): Process {
         try {
             if (!checkImageExists(imageName)) {
@@ -79,7 +82,7 @@ class DockerProcessFactory(
                 IOs.writeFile(jobRoot, key, value)
             }
 
-            val cmd: MutableList<String?> =
+            val cmd: MutableList<String> =
                 Lists.newArrayList(
                     "docker",
                     "run",
@@ -124,13 +127,27 @@ class DockerProcessFactory(
                 cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION))
             }
 
+            if (fileTransferMountSource != null) {
+                cmd.add("-v")
+                cmd.add(
+                    "$fileTransferMountSource:${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY}"
+                )
+                cmd.add("-e")
+                cmd.add(
+                    "${EnvVariableFeatureFlags.AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME}=${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY}"
+                )
+
+                cmd.add("-e")
+                cmd.add("${EnvVariableFeatureFlags.USE_FILE_TRANSFER}=true")
+            }
+
             val allEnvMap = MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables)
             for ((key, value) in allEnvMap) {
                 cmd.add("-e")
                 cmd.add("$key=$value")
             }
 
-            if (!Strings.isNullOrEmpty(entrypoint)) {
+            if (!entrypoint.isNullOrEmpty()) {
                 cmd.add("--entrypoint")
                 cmd.add(entrypoint)
             }
@@ -149,7 +166,7 @@ class DockerProcessFactory(
             }
 
             cmd.add(imageName)
-            cmd.addAll(Arrays.asList(*args))
+            cmd.addAll(args)
 
             LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd))
 
@@ -169,8 +186,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -185,7 +202,7 @@ class DockerProcessFactory(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DockerProcessFactory::class.java)
+
         private const val DOCKER_NAME_LEN_LIMIT = 128
 
         private val DATA_MOUNT_DESTINATION: Path = Path.of("/data")
@@ -226,12 +243,12 @@ class DockerProcessFactory(
          * @return A list with debugging arguments or an empty list
          * ```
          */
-        fun localDebuggingOptions(containerName: String): List<String?> {
+        fun localDebuggingOptions(containerName: String): List<String> {
             val shouldAddDebuggerOptions =
                 (Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE"))
-                    .filter { cs: String? -> StringUtils.isNotEmpty(cs) }
+                    .filter { cs: String -> StringUtils.isNotEmpty(cs) }
                     .map<Boolean>(
-                        Function<String, Boolean> { imageName: String? ->
+                        Function<String, Boolean> { imageName: String ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
                                 .startsWith(imageName!!)
                         }

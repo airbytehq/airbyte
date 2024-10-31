@@ -8,10 +8,10 @@ import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Defines a manager that manages connector state. Connector state is used to keep track of the data
  * synced by the connector.
@@ -37,7 +37,7 @@ interface StateManager {
      * @throws UnsupportedOperationException if the state manager does not support retrieving raw
      * state.
      */
-    val rawStateMessages: List<AirbyteStateMessage?>?
+    val rawStateMessages: List<AirbyteStateMessage>?
 
     /**
      * Retrieves the map of stream name/namespace tuple to the current cursor information for that
@@ -67,7 +67,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the cursor value tracked in the state associated
      * with the provided stream name/namespace tuple.
      */
-    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String?> {
+    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursor }
     }
 
@@ -79,7 +79,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the cursor field name associated with the cursor
      * tracked in the state associated with the provided stream name/namespace tuple.
      */
-    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursorField }
     }
 
@@ -91,7 +91,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the original cursor value tracked in the state
      * associated with the provided stream name/namespace tuple.
      */
-    fun getOriginalCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getOriginalCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.originalCursor }
     }
 
@@ -103,7 +103,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the original cursor field name associated with the
      * cursor tracked in the state associated with the provided stream name/namespace tuple.
      */
-    fun getOriginalCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getOriginalCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.originalCursorField }
     }
 
@@ -161,16 +161,9 @@ interface StateManager {
         if (cursorRecordCount > 0L) {
             cursorInfo.get().setCursorRecordCount(cursorRecordCount)
         }
-        LOGGER.debug(
-            "Updating cursor value for {} to {} (count {})...",
-            pair,
-            cursor,
-            cursorRecordCount
-        )
+        LOGGER.debug { "Updating cursor value for $pair to $cursor (count $cursorRecordCount)..." }
         return emit(Optional.ofNullable(pair))
     }
 
-    companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(StateManager::class.java)
-    }
+    companion object {}
 }

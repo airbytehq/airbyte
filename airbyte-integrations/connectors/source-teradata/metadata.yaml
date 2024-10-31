@@ -11,7 +11,7 @@ data:
   icon: teradata.svg
   license: MIT
   name: Teradata
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -24,4 +24,13 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-TERADATA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

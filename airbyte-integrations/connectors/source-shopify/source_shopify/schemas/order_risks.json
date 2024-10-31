@@ -3,36 +3,259 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the order risk entry.",
       "type": ["null", "integer"]
     },
     "order_id": {
+      "description": "The identifier of the order to which the risk is related.",
       "type": ["null", "integer"]
     },
     "checkout_id": {
+      "description": "The unique identifier of the checkout associated with the order.",
       "type": ["null", "integer"]
     },
     "source": {
+      "description": "Source of the risk notification.",
       "type": ["null", "string"]
     },
     "score": {
+      "description": "Numerical score indicating the level of risk.",
       "type": ["null", "number"]
     },
     "recommendation": {
+      "description": "Suggested action to mitigate the risk.",
       "type": ["null", "string"]
     },
     "display": {
+      "description": "Flag to determine if the risk should be displayed to the merchant.",
       "type": ["null", "boolean"]
     },
     "cause_cancel": {
+      "description": "Reason indicating why the order is at risk of cancellation.",
       "type": ["null", "boolean"]
     },
     "message": {
+      "description": "Description of the risk associated with the order.",
       "type": ["null", "string"]
     },
     "merchant_message": {
+      "description": "Message shown to the merchant regarding the risk.",
       "type": ["null", "string"]
     },
+    "admin_graphql_api_id": {
+      "description": "The original id reference for the shopify api",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the order and the risk was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "assessments": {
+      "description": "The risk assessments for an order.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "risk_level": {
+            "description": "The likelihood that the order is fraudulent, based on this risk assessment",
+            "type": ["null", "string"]
+          },
+          "facts": {
+            "description": "Optional facts used to describe the risk assessment",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "description": {
+                  "description": "A description of the risk fact",
+                  "type": ["null", "string"]
+                },
+                "sentiment": {
+                  "description": "Indicates whether the fact is a negative, neutral or positive contributor with regards to risk",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "provider": {
+            "description": "The app that provided the assessment, null if the assessment was provided by Shopify",
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "features": {
+                "description": "A list of app features that are shown in the Shopify App Store listing.",
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "description": {
+                "description": "Description of the app",
+                "type": ["null", "string"]
+              },
+              "handle": {
+                "description": "Handle of the app",
+                "type": ["null", "string"]
+              },
+              "embedded": {
+                "description": "Whether the app uses the Embedded App SDK",
+                "type": ["null", "boolean"]
+              },
+              "title": {
+                "description": "Name of the app",
+                "type": ["null", "string"]
+              },
+              "published": {
+                "description": "Whether the app is published to the Shopify App Store",
+                "type": ["null", "boolean"]
+              },
+              "developer_name": {
+                "description": "The name of the app developer",
+                "type": ["null", "string"]
+              },
+              "developer_type": {
+                "description": "The type of app developer",
+                "type": ["null", "string"]
+              },
+              "app_store_app_url": {
+                "description": "App store page URL of the app",
+                "type": ["null", "string"]
+              },
+              "install_url": {
+                "description": "Webpage where you can install the app",
+                "type": ["null", "string"]
+              },
+              "app_store_developer_url": {
+                "description": "App store page URL of the developer who created the app",
+                "type": ["null", "string"]
+              },
+              "is_post_purchase_app_in_use": {
+                "description": "Whether the app is the post purchase app in use",
+                "type": ["null", "boolean"]
+              },
+              "previously_installed": {
+                "description": "Whether the app was previously installed on the current shop",
+                "type": ["null", "boolean"]
+              },
+              "pricing_details_summary": {
+                "description": "Summary of the app pricing details",
+                "type": ["null", "string"]
+              },
+              "pricing_details": {
+                "description": "Detailed information about the app pricing",
+                "type": ["null", "string"]
+              },
+              "privacy_policy_url": {
+                "description": "Link to app privacy policy",
+                "type": ["null", "string"]
+              },
+              "public_category": {
+                "description": "The public category for the app",
+                "type": ["null", "string"]
+              },
+              "uninstall_message": {
+                "description": "Message that appears when the app is uninstalled",
+                "type": ["null", "string"]
+              },
+              "webhook_api_version": {
+                "description": "The webhook API version for the app",
+                "type": ["null", "string"]
+              },
+              "shopify_developed": {
+                "description": "Whether the app was developed by Shopify",
+                "type": ["null", "boolean"]
+              },
+              "provider_id": {
+                "description": "A globally-unique provider ID, represented as integer",
+                "type": ["null", "integer"]
+              },
+              "failed_requirements": {
+                "description": "Requirements that must be met before the app can be installed",
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "action": {
+                      "description": "Action to be taken to resolve a failed requirement, including URL link",
+                      "type": ["null", "object"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "action_id": {
+                          "description": "The unique identifier of the navigation item",
+                          "type": ["null", "string"]
+                        },
+                        "title": {
+                          "description": "The name of the navigation item",
+                          "type": ["null", "string"]
+                        },
+                        "url": {
+                          "description": "The URL of the page that the navigation item links to",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "message": {
+                      "description": "A concise set of copy strings to be displayed to merchants, to guide them in resolving problems your app encounters when trying to make use of their Shop and its resources",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              },
+              "feedback": {
+                "description": "Feedback from this app about the store",
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "link": {
+                    "description": "A link to where merchants can resolve errors",
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "label": {
+                        "description": "A context-sensitive label for the link",
+                        "type": ["null", "string"]
+                      },
+                      "url": {
+                        "description": "The URL that the link visits",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "messages": {
+                    "description": "The feedback message presented to the merchant",
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "field": {
+                          "description": "The path to the input field that caused the error",
+                          "type": ["null", "string"]
+                        },
+                        "message": {
+                          "description": "The error message",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "admin_graphql_api_id": {
+                "description": "A globally-unique provider ID",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
     "shop_url": {
+      "description": "URL of the shop where the order was placed.",
       "type": ["null", "string"]
     }
   }

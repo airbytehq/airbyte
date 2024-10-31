@@ -8,7 +8,7 @@ data:
   icon: s3-glue.svg
   license: MIT
   name: S3 Glue
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,12 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-S3-GLUE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

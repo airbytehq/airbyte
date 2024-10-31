@@ -15,7 +15,8 @@ class Subscription(CatalogModel):
     add_ons: List[AddOn]
     balance: Decimal
     billing_day_of_month: Decimal
-    billing_period_start_date: datetime
+    billing_period_start_date: date
+    billing_period_end_date: date
     created_at: datetime
     current_billing_cycle: Decimal
     days_past_due: Decimal
@@ -30,7 +31,7 @@ class Subscription(CatalogModel):
     next_billing_date: date
     next_billing_period_amount: Decimal
     number_of_billing_cycles: Decimal
-    paid_through_date: datetime
+    paid_through_date: date
     payment_method_token: str
     plan_id: str
     price: Decimal

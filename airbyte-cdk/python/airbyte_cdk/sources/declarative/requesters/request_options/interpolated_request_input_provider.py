@@ -7,7 +7,7 @@ from typing import Any, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -19,24 +19,24 @@ class InterpolatedRequestInputProvider:
     parameters: InitVar[Mapping[str, Any]]
     request_inputs: Optional[Union[str, Mapping[str, str]]] = field(default=None)
     config: Config = field(default_factory=dict)
-    _interpolator: Union[InterpolatedString, InterpolatedMapping] = field(init=False, repr=False, default=None)
-    _request_inputs: Union[str, Mapping[str, str]] = field(init=False, repr=False, default=None)
+    _interpolator: Optional[Union[InterpolatedString, InterpolatedMapping]] = field(init=False, repr=False, default=None)
+    _request_inputs: Optional[Union[str, Mapping[str, str]]] = field(init=False, repr=False, default=None)
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 
         self._request_inputs = self.request_inputs or {}
-        if isinstance(self.request_inputs, str):
-            self._interpolator = InterpolatedString(self.request_inputs, default="", parameters=parameters)
+        if isinstance(self._request_inputs, str):
+            self._interpolator = InterpolatedString(self._request_inputs, default="", parameters=parameters)
         else:
             self._interpolator = InterpolatedMapping(self._request_inputs, parameters=parameters)
 
     def eval_request_inputs(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Mapping[str, Any] = None,
-        valid_key_types: Tuple[Type[Any]] = None,
-        valid_value_types: Tuple[Type[Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        valid_key_types: Optional[Tuple[Type[Any]]] = None,
+        valid_value_types: Optional[Tuple[Type[Any], ...]] = None,
     ) -> Mapping[str, Any]:
         """
         Returns the request inputs to set on an outgoing HTTP request
@@ -49,11 +49,11 @@ class InterpolatedRequestInputProvider:
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        interpolated_value = self._interpolator.eval(
+        interpolated_value = self._interpolator.eval(  # type: ignore # self._interpolator is always initialized with a value and will not be None
             self.config, valid_key_types=valid_key_types, valid_value_types=valid_value_types, **kwargs
         )
 
         if isinstance(interpolated_value, dict):
             non_null_tokens = {k: v for k, v in interpolated_value.items() if v is not None}
             return non_null_tokens
-        return interpolated_value
+        return interpolated_value  # type: ignore[no-any-return]

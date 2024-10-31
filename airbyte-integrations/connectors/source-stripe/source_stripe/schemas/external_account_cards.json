@@ -3,81 +3,107 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the card.",
       "type": "string"
     },
     "object": {
+      "description": "Indicates the object type such as 'card'.",
       "type": ["string", "null"]
     },
     "address_city": {
+      "description": "The city part of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_country": {
+      "description": "The country part of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_line1": {
+      "description": "The first line of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_line1_check": {
+      "description": "If `address_line1` was provided, indicates if it has been checked for address_line1 true/false.",
       "type": ["string", "null"]
     },
     "address_line2": {
+      "description": "The second line of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_state": {
+      "description": "The state part of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_zip": {
+      "description": "The ZIP or postal code of the cardholder's billing address.",
       "type": ["string", "null"]
     },
     "address_zip_check": {
+      "description": "If `address_zip` was provided, indicates if it has been checked for address_zip true/false.",
       "type": ["string", "null"]
     },
     "brand": {
+      "description": "The card brand such as Visa, Mastercard, etc.",
       "type": ["string", "null"]
     },
     "country": {
+      "description": "The country where the card was issued.",
       "type": ["string", "null"]
     },
     "cvc_check": {
+      "description": "If `cvc` was provided, indicates if it has been checked for cvc_check true/false.",
       "type": ["string", "null"]
     },
     "dynamic_last4": {
+      "description": "The last 4 digits of the card number.",
       "type": ["string", "null"]
     },
     "exp_month": {
+      "description": "The expiration month of the card.",
       "type": ["integer", "null"]
     },
     "exp_year": {
+      "description": "The expiration year of the card.",
       "type": ["integer", "null"]
     },
     "fingerprint": {
+      "description": "A unique identifier for the card created by Stripe.",
       "type": ["string", "null"]
     },
     "funding": {
+      "description": "The funding source such as credit, debit, etc.",
       "type": ["string", "null"]
     },
     "last4": {
+      "description": "The last 4 digits of the card number.",
       "type": ["string", "null"]
     },
     "metadata": {
+      "description": "Additional information about the card.",
       "type": ["object", "null"]
     },
     "name": {
+      "description": "The cardholder's name as it appears on the card.",
       "type": ["string", "null"]
     },
     "redaction": {
+      "description": "Indicates if the card has been redacted for security purposes true/false.",
       "type": ["string", "null"]
     },
     "tokenization_method": {
+      "description": "The method used to tokenize the card such as apple_pay, google_pay, etc.",
       "type": ["string", "null"]
     },
     "account": {
+      "description": "The ID of the Stripe account the card belongs to.",
       "type": ["string", "null"]
     },
     "updated": {
+      "description": "Timestamp indicating when the card details were last updated.",
       "type": ["null", "integer"]
     },
     "is_deleted": {
+      "description": "Indicates if the card has been deleted true/false.",
       "type": ["null", "boolean"]
     }
   }

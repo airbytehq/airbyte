@@ -2,16 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import io
+import json
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, Optional
 
 import pytest
 import requests
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from requests import HTTPError
 
 logger = logging.getLogger("airbyte")
 
@@ -49,8 +48,8 @@ class MockHttpStream(HttpStream):
             {"error": "Something went wrong"},
             False,
             [
-                "This is most likely due to insufficient permissions on the credentials in use.",
-                "Something went wrong",
+                "Forbidden. You don't have permission to access this resource.",
+                "Forbidden. You don't have permission to access this resource.",
             ],
         ),
         (200, {}, True, []),
@@ -59,8 +58,8 @@ class MockHttpStream(HttpStream):
 @pytest.mark.parametrize(
     ("include_source", "expected_docs_url_messages"),
     [
-        (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
-        (False, ["Please visit the connector's documentation to learn more."]),
+        (True, ["Forbidden. You don't have permission to access this resource."]),
+        (False, ["Forbidden. You don't have permission to access this resource."]),
     ],
 )
 @pytest.mark.parametrize("records_as_list", [True, False])
@@ -82,36 +81,12 @@ def test_default_http_availability_strategy(
                 return super().read_records(*args, **kvargs)
 
     http_stream = MockListHttpStream()
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
-
-    class MockResponseWithJsonContents(requests.Response, mocker.MagicMock):
-        def __init__(self, *args, **kvargs):
-            mocker.MagicMock.__init__(self)
-            requests.Response.__init__(self, **kvargs)
-            self.json = mocker.MagicMock()
-
-    class MockSource(AbstractSource):
-        def __init__(self, streams: List[Stream] = None):
-            self._streams = streams
-
-        def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-            return True, ""
-
-        def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-            if not self._streams:
-                raise Exception("Stream is not set")
-            return self._streams
-
-    response = MockResponseWithJsonContents()
+    response = requests.Response()
     response.status_code = status_code
-    response.json.return_value = json_contents
+    response.raw = io.BytesIO(json.dumps(json_contents).encode("utf-8"))
     mocker.patch.object(requests.Session, "send", return_value=response)
 
-    if include_source:
-        source = MockSource(streams=[http_stream])
-        actual_is_available, reason = http_stream.check_availability(logger, source)
-    else:
-        actual_is_available, reason = http_stream.check_availability(logger)
+    actual_is_available, reason = HttpAvailabilityStrategy().check_availability(http_stream, logger)
 
     assert actual_is_available == expected_is_available
     if expected_is_available:
@@ -124,19 +99,19 @@ def test_default_http_availability_strategy(
 
 def test_http_availability_raises_unhandled_error(mocker):
     http_stream = MockHttpStream()
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 404
     mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(HTTPError):
-        http_stream.check_availability(logger)
+    assert (False, "Not found. The requested resource was not found on the server.") == HttpAvailabilityStrategy().check_availability(
+        http_stream, logger
+    )
 
 
 def test_send_handles_retries_when_checking_availability(mocker, caplog):
+    mocker.patch("time.sleep", lambda x: None)
     http_stream = MockHttpStream()
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     req_1 = requests.Response()
     req_1.status_code = 429
@@ -147,11 +122,11 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
     mock_send = mocker.patch.object(requests.Session, "send", side_effect=[req_1, req_2, req_3])
 
     with caplog.at_level(logging.INFO):
-        stream_is_available, _ = http_stream.check_availability(logger)
+        stream_is_available, _ = HttpAvailabilityStrategy().check_availability(stream=http_stream, logger=logger)
 
     assert stream_is_available
     assert mock_send.call_count == 3
-    for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
+    for message in ["Caught retryable error", "Service unavailable", "Service unavailable"]:
         assert message in caplog.text
 
 
@@ -165,8 +140,6 @@ def test_http_availability_strategy_on_empty_stream(mocker, records_as_list):
     empty_stream = MockEmptyHttpStream()
     assert isinstance(empty_stream, HttpStream)
 
-    assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
-
     # Generator should have no values to generate
     if records_as_list:
         empty_stream.read_records.return_value = []
@@ -174,7 +147,7 @@ def test_http_availability_strategy_on_empty_stream(mocker, records_as_list):
         empty_stream.read_records.return_value = iter([])
 
     logger = logging.getLogger("airbyte.test-source")
-    stream_is_available, _ = empty_stream.check_availability(logger)
+    stream_is_available, _ = HttpAvailabilityStrategy().check_availability(stream=empty_stream, logger=logger)
 
     assert stream_is_available
     assert empty_stream.read_records.called

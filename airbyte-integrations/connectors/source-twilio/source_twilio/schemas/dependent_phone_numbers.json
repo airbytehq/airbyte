@@ -1,64 +1,84 @@
 {
   "properties": {
     "sid": {
+      "description": "The unique identifier (SID) for the phone number resource.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account this phone number belongs to.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name for the phone number.",
       "type": ["null", "string"]
     },
     "phone_number": {
+      "description": "The phone number itself.",
       "type": ["null", "string"]
     },
     "voice_url": {
+      "description": "The URL to call when a call comes in to the phone number.",
       "type": ["null", "string"]
     },
     "voice_method": {
+      "description": "The HTTP method to use for the voice URL.",
       "type": ["null", "string"]
     },
     "voice_fallback_url": {
+      "description": "The URL to call if an error occurs while handling incoming voice calls.",
       "type": ["null", "string"]
     },
     "voice_fallback_method": {
+      "description": "The HTTP method to use for the voice fallback URL.",
       "type": ["null", "string"]
     },
     "voice_caller_id_lookup": {
+      "description": "Indicates whether the phone number performs caller ID lookup on incoming calls.",
       "type": ["null", "boolean"]
     },
     "date_created": {
+      "description": "The date and time when the phone number was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the phone number was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "sms_url": {
+      "description": "The URL to call when a message comes in to the phone number.",
       "type": ["null", "string"]
     },
     "sms_method": {
+      "description": "The HTTP method to use for the SMS URL.",
       "type": ["null", "string"]
     },
     "sms_fallback_url": {
+      "description": "The URL to call if an error occurs while handling incoming SMS messages.",
       "type": ["null", "string"]
     },
     "sms_fallback_method": {
+      "description": "The HTTP method to use for the SMS fallback URL.",
       "type": ["null", "string"]
     },
     "address_requirements": {
+      "description": "Requirements for the address associated with the phone number.",
       "type": ["null", "string"]
     },
     "capabilities": {
+      "description": "List of capabilities supported by the phone number.",
       "properties": {
         "Voice": {
+          "description": "Support for voice calling.",
           "type": ["null", "boolean"]
         },
         "SMS": {
+          "description": "Support for text messaging (SMS).",
           "type": ["null", "boolean"]
         },
         "MMS": {
+          "description": "Support for multimedia messaging (MMS).",
           "type": ["null", "boolean"]
         }
       },
@@ -66,30 +86,39 @@
       "additionalProperties": true
     },
     "status_callback": {
+      "description": "The URL to send status callbacks to for events related to the phone number.",
       "type": ["null", "string"]
     },
     "status_callback_method": {
+      "description": "The HTTP method to use for status callback requests.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API being used.",
       "type": ["null", "string"]
     },
     "voice_application_sid": {
+      "description": "The SID of the voice application to handle incoming calls.",
       "type": ["null", "string"]
     },
     "sms_application_sid": {
+      "description": "The SID of the SMS application to handle incoming messages.",
       "type": ["null", "string"]
     },
     "trunk_sid": {
+      "description": "The SID of the Trunk containing this phone number.",
       "type": ["null", "string"]
     },
     "emergency_status": {
+      "description": "The emergency status of the phone number.",
       "type": ["null", "string"]
     },
     "emergency_address_sid": {
+      "description": "The SID of the emergency address associated with the phone number.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI of the phone number resource.",
       "type": ["null", "string"]
     }
   },

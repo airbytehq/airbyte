@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,6 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
-
         if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
           /*
            * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
@@ -182,7 +182,11 @@ public class MongoDbSource extends BaseConnector implements Source {
         streams,
         stateManager,
         mongoClient.getDatabase(sourceConfig.getDatabaseName()),
-        sourceConfig);
+        sourceConfig,
+        true,
+        true,
+        emmitedAt,
+        Optional.empty());
 
     return fullRefreshIterators;
   }

@@ -140,7 +140,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
-    modified_connectors = get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    modified_connectors = get_modified_connectors(set(modified_files), all_connectors, enable_dependency_scanning)
     if enable_dependency_scanning:
         assert not_modified_java_connector in modified_connectors
     else:
@@ -183,8 +183,7 @@ async def test_check_path_in_workdir(dagger_client):
         .with_workdir(str(connector.code_directory))
     )
     assert await utils.check_path_in_workdir(container, "metadata.yaml")
-    assert await utils.check_path_in_workdir(container, "pyproject.toml")
-    assert await utils.check_path_in_workdir(container, "poetry.lock")
+    assert await utils.check_path_in_workdir(container, "manifest.yaml")
     assert await utils.check_path_in_workdir(container, "not_existing_file") is False
 
 
@@ -208,6 +207,8 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,
         git_revision="my_git_revision",
+        diffed_branch="my_diffed_branch",
+        git_repo_url="my_git_repo_url",
     )
     container = dagger_client.container().from_("bash:latest")
     platform = consts.LOCAL_BUILD_PLATFORM
@@ -246,7 +247,15 @@ async def test_export_container_to_tarball_failure(mocker, tmp_path):
 
 # @pytest.mark.anyio
 async def test_get_repo_dir(dagger_client):
-    test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+    test_context = PipelineContext(
+        pipeline_name="test",
+        is_local=True,
+        git_branch="test",
+        git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
+        report_output_prefix="test",
+    )
     test_context.dagger_client = dagger_client
     # we know airbyte-ci/connectors/pipelines/ is excluded
     filtered_entries = await test_context.get_repo_dir("airbyte-ci/connectors/pipelines/").entries()

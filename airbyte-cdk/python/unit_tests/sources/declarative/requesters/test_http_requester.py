@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from typing import Any, Mapping, Optional
 from unittest import mock
 from unittest.mock import MagicMock
@@ -10,20 +9,17 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest as pytest
 import requests
-import requests_cache
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
-from requests_cache import CachedResponse
 
 
 @pytest.fixture
@@ -83,7 +79,6 @@ def test_http_requester():
     response_status = MagicMock()
     response_status.retry_in.return_value = 10
     error_handler.max_retries = max_retries
-    error_handler.interpret_response.return_value = response_status
     error_handler.backoff_time.return_value = backoff_time
 
     config = {"url": "https://airbyte.io"}
@@ -110,7 +105,6 @@ def test_http_requester():
     assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
-    assert requester.interpret_response_status(requests.Response()) == response_status
 
 
 @pytest.mark.parametrize(
@@ -181,10 +175,10 @@ def create_requester(
         config=config or {},
         parameters=parameters or {},
     )
-    requester._session.send = MagicMock()
+    requester._http_client._session.send = MagicMock()
     req = requests.Response()
     req.status_code = 200
-    requester._session.send.return_value = req
+    requester._http_client._session.send.return_value = req
     return requester
 
 
@@ -194,7 +188,7 @@ def test_basic_send_request():
     requester = create_requester()
     requester._request_options_provider = options_provider
     requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.method == "GET"
     assert sent_request.url == "https://example.com/deals"
     assert sent_request.headers["my_header"] == "my_value"
@@ -250,7 +244,7 @@ def test_send_request_data_json(
             requester.send_request(request_body_data=param_data, request_body_json=param_json)
     else:
         requester.send_request(request_body_data=param_data, request_body_json=param_json)
-        sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+        sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
         if expected_body is not None:
             assert sent_request.body == expected_body.decode("UTF-8") if not isinstance(expected_body, str) else expected_body
 
@@ -285,7 +279,7 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
             requester.send_request(request_body_data=param_data)
     else:
         requester.send_request(request_body_data=param_data)
-        sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+        sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
         if expected_body is not None:
             assert sent_request.body == expected_body
 
@@ -323,7 +317,7 @@ def test_send_request_headers(provider_headers, param_headers, authenticator_hea
             requester.send_request(request_headers=param_headers)
     else:
         requester.send_request(request_headers=param_headers)
-        sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+        sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
         assert sent_request.headers == {**default_headers, **expected_headers}
 
 
@@ -352,7 +346,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             requester.send_request(request_params=param_params)
     else:
         requester.send_request(request_params=param_params)
-        sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+        sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
         parsed_url = urlparse(sent_request.url)
         query_params = {key: value[0] for key, value in parse_qs(parsed_url.query).items()}
         assert query_params == expected_params
@@ -421,7 +415,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             {"k": [1, 2]},
             "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
             id="test-key-with-list-to-be-interpolated",
-        )
+        ),
     ],
 )
 def test_request_param_interpolation(request_parameters, config, expected_query_params):
@@ -432,10 +426,10 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
         request_headers={},
         parameters={},
     )
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.url.split("?", 1)[-1] == expected_query_params
 
 
@@ -470,8 +464,7 @@ def test_request_param_interpolation_with_incorrect_values(request_parameters, c
         requester.send_request()
 
     assert (
-        error.value.args[0]
-        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
+        error.value.args[0] == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
     )
 
 
@@ -557,10 +550,10 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
         request_headers={},
         parameters={},
     )
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.body == expected_request_body_data
 
 
@@ -580,7 +573,7 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
 def test_send_request_path(requester_path, param_path, expected_path):
     requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"})
     requester.send_request(stream_slice={"start": "2012"}, next_page_token={"next_page_token": "pagetoken"}, path=param_path)
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     parsed_url = urlparse(sent_request.url)
     assert parsed_url.path == expected_path
 
@@ -590,15 +583,16 @@ def test_send_request_url_base():
         url_base="https://example.org/{{ config.config_key }}/{{ parameters.param_key }}",
         config={"config_key": "config_value"},
         parameters={"param_key": "param_value"},
+        error_handler=DefaultErrorHandler(parameters={}, config={}),
     )
     requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.url == "https://example.org/config_value/param_value/deals"
 
 
 def test_send_request_stream_slice_next_page_token():
     options_provider = MagicMock()
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     stream_slice = {"id": "1234"}
     next_page_token = {"next_page_token": "next_page_token"}
@@ -615,183 +609,6 @@ def test_send_request_stream_slice_next_page_token():
     options_provider.get_request_headers.assert_called_once_with(
         stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token
     )
-
-
-def test_default_authenticator():
-    requester = create_requester()
-    assert isinstance(requester._authenticator, NoAuth)
-    assert isinstance(requester._session.auth, NoAuth)
-
-
-def test_token_authenticator():
-    requester = create_requester(authenticator=BearerAuthenticator(token_provider=MagicMock(), config={}, parameters={}))
-    assert isinstance(requester.authenticator, BearerAuthenticator)
-    assert isinstance(requester._session.auth, BearerAuthenticator)
-
-
-def test_stub_custom_backoff_http_stream(mocker):
-    mocker.patch("time.sleep", lambda x: None)
-    req = requests.Response()
-    req.status_code = 429
-
-    requester = create_requester()
-    requester._backoff_time = lambda _: 0.5
-
-    requester._session.send.return_value = req
-
-    with pytest.raises(UserDefinedBackoffException):
-        requester.send_request()
-    assert requester._session.send.call_count == requester.max_retries + 1
-
-
-@pytest.mark.parametrize("retries", [-20, -1, 0, 1, 2, 10])
-def test_stub_custom_backoff_http_stream_retries(mocker, retries):
-    mocker.patch("time.sleep", lambda x: None)
-    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=retries)
-    requester = create_requester(error_handler=error_handler)
-    req = requests.Response()
-    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
-    requester._session.send.return_value = req
-
-    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://example.com/deals, Response Code: 429") as excinfo:
-        requester.send_request()
-    assert isinstance(excinfo.value.request, requests.PreparedRequest)
-    assert isinstance(excinfo.value.response, requests.Response)
-    if retries <= 0:
-        assert requester._session.send.call_count == 1
-    else:
-        assert requester._session.send.call_count == requester.max_retries + 1
-
-
-def test_stub_custom_backoff_http_stream_endless_retries(mocker):
-    mocker.patch("time.sleep", lambda x: None)
-    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=None)
-    requester = create_requester(error_handler=error_handler)
-    req = requests.Response()
-    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
-    infinite_number = 20
-
-    req = requests.Response()
-    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
-    send_mock = mocker.patch.object(requester._session, "send", side_effect=[req] * infinite_number)
-
-    # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
-    with pytest.raises(StopIteration):
-        requester.send_request()
-    assert send_mock.call_count == infinite_number + 1
-
-
-@pytest.mark.parametrize("http_code", [400, 401, 403])
-def test_4xx_error_codes_http_stream(mocker, http_code):
-    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}, max_retries=0))
-    requester._DEFAULT_RETRY_FACTOR = 0.01
-    req = requests.Response()
-    req.request = requests.Request()
-    req.status_code = http_code
-    requester._session.send.return_value = req
-
-    with pytest.raises(ReadException):
-        requester.send_request()
-
-
-def test_raise_on_http_errors_off_429(mocker):
-    requester = create_requester()
-    requester._DEFAULT_RETRY_FACTOR = 0.01
-    req = requests.Response()
-    req.status_code = 429
-    requester._session.send.return_value = req
-
-    with pytest.raises(DefaultBackoffException, match="Request URL: https://example.com/deals, Response Code: 429"):
-        requester.send_request()
-
-
-@pytest.mark.parametrize("status_code", [500, 501, 503, 504])
-def test_raise_on_http_errors_off_5xx(mocker, status_code):
-    requester = create_requester()
-    req = requests.Response()
-    req.status_code = status_code
-    requester._session.send.return_value = req
-    requester._DEFAULT_RETRY_FACTOR = 0.01
-
-    with pytest.raises(DefaultBackoffException):
-        requester.send_request()
-    assert requester._session.send.call_count == requester.max_retries + 1
-
-
-@pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
-def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
-    requester = create_requester()
-    req = requests.Response()
-    req.status_code = status_code
-    requester._session.send.return_value = req
-    requester._DEFAULT_RETRY_FACTOR = 0.01
-
-    response = requester.send_request()
-    assert response.status_code == status_code
-
-
-@pytest.mark.parametrize(
-    "error",
-    (
-        requests.exceptions.ConnectTimeout,
-        requests.exceptions.ConnectionError,
-        requests.exceptions.ChunkedEncodingError,
-        requests.exceptions.ReadTimeout,
-    ),
-)
-def test_raise_on_http_errors(mocker, error):
-    requester = create_requester()
-    req = requests.Response()
-    req.status_code = 200
-    requester._session.send.return_value = req
-    requester._DEFAULT_RETRY_FACTOR = 0.01
-    mocker.patch.object(requester._session, "send", side_effect=error())
-
-    with pytest.raises(error):
-        requester.send_request()
-    assert requester._session.send.call_count == requester.max_retries + 1
-
-
-@pytest.mark.parametrize(
-    "api_response, expected_message",
-    [
-        ({"error": "something broke"}, "something broke"),
-        ({"error": {"message": "something broke"}}, "something broke"),
-        ({"error": "err-001", "message": "something broke"}, "something broke"),
-        ({"failure": {"message": "something broke"}}, "something broke"),
-        ({"detail": {"message": "something broke"}}, "something broke"),
-        ({"error": {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}}, "one, two, three"),
-        ({"errors": ["one", "two", "three"]}, "one, two, three"),
-        ({"errors": [None, {}, "third error", 9002.09]}, "third error"),
-        ({"messages": ["one", "two", "three"]}, "one, two, three"),
-        ({"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]}, "one, two, three"),
-        ({"failures": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"details": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
-        ({"details": ["one", 10087, True]}, "one"),
-        (["one", "two", "three"], "one, two, three"),
-        ({"detail": False}, None),
-        ([{"error": "one"}, {"error": "two"}, {"error": "three"}], "one, two, three"),
-        ({"error": True}, None),
-        ({"something_else": "hi"}, None),
-        ({}, None),
-    ],
-)
-def test_default_parse_response_error_message(api_response: dict, expected_message: Optional[str]):
-    response = MagicMock()
-    response.json.return_value = api_response
-
-    message = HttpRequester.parse_response_error_message(response)
-    assert message == expected_message
-
-
-def test_default_parse_response_error_message_not_json(requests_mock):
-    requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
-    response = requests.get("mock://test.com/not_json")
-
-    message = HttpRequester.parse_response_error_message(response)
-    assert message is None
 
 
 @pytest.mark.parametrize(
@@ -820,155 +637,54 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         request_options_provider=None,
         config={},
         parameters={},
+        error_handler=DefaultErrorHandler(parameters={}, config={}),
     )
-    requester._session.send = MagicMock()
+    requester._http_client._session.send = MagicMock()
     response = requests.Response()
     response.status_code = 200
-    requester._session.send.return_value = response
+    requester._http_client._session.send.return_value = response
     requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
+    sent_request: PreparedRequest = requester._http_client._session.send.call_args_list[0][0][0]
     assert sent_request.url == expected_full_url
 
 
-@pytest.mark.parametrize(
-    "path, params, expected_url",
-    [
-        pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
-        pytest.param(
-            "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
-        ),
-        pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param(
-            "v1/endpoint?param1=value1",
-            None,
-            "https://test_base_url.com/v1/endpoint?param1=value1",
-            id="test_params_is_none_and_no_params_in_path",
-        ),
-        pytest.param(
-            "v1/endpoint?param1=value1",
-            {"param2": "value2"},
-            "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2",
-            id="test_no_duplicate_params",
-        ),
-        pytest.param(
-            "v1/endpoint?param1=value1",
-            {"param1": "value1"},
-            "https://test_base_url.com/v1/endpoint?param1=value1",
-            id="test_duplicate_params_same_value",
-        ),
-        pytest.param(
-            "v1/endpoint?param1=1",
-            {"param1": 1},
-            "https://test_base_url.com/v1/endpoint?param1=1",
-            id="test_duplicate_params_same_value_not_string",
-        ),
-        pytest.param(
-            "v1/endpoint?param1=value1",
-            {"param1": "value2"},
-            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
-            id="test_duplicate_params_different_value",
-        ),
-    ],
-)
-def test_duplicate_request_params_are_deduped(path, params, expected_url):
-    requester = HttpRequester(
-        name="name",
-        url_base="https://test_base_url.com",
-        path=path,
-        http_method=HttpMethod.GET,
-        request_options_provider=None,
-        config={},
-        parameters={},
-    )
-
-    if expected_url is None:
-        with pytest.raises(ValueError):
-            requester._create_prepared_request(path=path, params=params)
-    else:
-        prepared_request = requester._create_prepared_request(path=path, params=params)
-        assert prepared_request.url == expected_url
-
-
-@pytest.mark.parametrize(
-    "should_log, status_code, should_throw",
-    [
-        (True, 200, False),
-        (True, 400, False),
-        (True, 500, True),
-        (False, 200, False),
-        (False, 400, False),
-        (False, 500, True),
-    ],
-)
-def test_log_requests(should_log, status_code, should_throw):
-    repository = MagicMock()
-    requester = HttpRequester(
-        name="name",
-        url_base="https://test_base_url.com",
-        path="/",
-        http_method=HttpMethod.GET,
-        request_options_provider=None,
-        config={},
-        parameters={},
-        message_repository=repository,
-        disable_retries=True,
-    )
-    requester._session.send = MagicMock()
+@pytest.mark.usefixtures("mock_sleep")
+def test_request_attempt_count_is_tracked_across_retries(http_requester_factory):
+    request_mock = MagicMock(spec=requests.PreparedRequest)
+    request_mock.headers = {}
+    request_mock.url = "https://example.com/deals"
+    request_mock.method = "GET"
+    request_mock.body = {}
+    backoff_strategy = ConstantBackoffStrategy(parameters={}, config={}, backoff_time_in_seconds=0.1)
+    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=1, backoff_strategies=[backoff_strategy])
+    http_requester = http_requester_factory(error_handler=error_handler)
+    http_requester._http_client._session.send = MagicMock()
     response = requests.Response()
-    response.status_code = status_code
-    requester._session.send.return_value = response
-    formatter = MagicMock()
-    formatter.return_value = "formatted_response"
-    if should_throw:
-        with pytest.raises(DefaultBackoffException):
-            requester.send_request(log_formatter=formatter if should_log else None)
-    else:
-        requester.send_request(log_formatter=formatter if should_log else None)
-    if should_log:
-        assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
-        formatter.assert_called_once_with(response)
+    response.status_code = 500
+    http_requester._http_client._session.send.return_value = response
+
+    with pytest.raises(UserDefinedBackoffException):
+        http_requester._http_client._send_with_retry(request=request_mock, request_kwargs={})
+
+    assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1
 
 
-def test_connection_pool():
-    requester = HttpRequester(
-        name="name",
-        url_base="https://test_base_url.com",
-        path="/",
-        http_method=HttpMethod.GET,
-        request_options_provider=None,
-        config={},
-        parameters={},
-        message_repository=MagicMock(),
-        disable_retries=True,
-    )
-    assert requester._session.adapters["https://"]._pool_connections == 20
+@pytest.mark.usefixtures("mock_sleep")
+def test_request_attempt_count_with_exponential_backoff_strategy(http_requester_factory):
+    request_mock = MagicMock(spec=requests.PreparedRequest)
+    request_mock.headers = {}
+    request_mock.url = "https://example.com/deals"
+    request_mock.method = "GET"
+    request_mock.body = {}
+    backoff_strategy = ExponentialBackoffStrategy(parameters={}, config={}, factor=0.01)
+    error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=2, backoff_strategies=[backoff_strategy])
+    http_requester = http_requester_factory(error_handler=error_handler)
+    http_requester._http_client._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = 500
+    http_requester._http_client._session.send.return_value = response
 
+    with pytest.raises(UserDefinedBackoffException):
+        http_requester._http_client._send_with_retry(request=request_mock, request_kwargs={})
 
-def test_caching_filename(http_requester_factory):
-    http_requester = http_requester_factory()
-    assert http_requester.cache_filename == f"{http_requester.name}.sqlite"
-
-
-def test_caching_session_with_enable_use_cache(http_requester_factory):
-    http_requester = http_requester_factory(use_cache=True)
-    assert isinstance(http_requester._session, requests_cache.CachedSession)
-
-
-def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
-    http_requester = http_requester_factory(use_cache=True)
-
-    requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
-    http_requester.clear_cache()
-
-    response = http_requester.send_request()
-
-    assert requests_mock.called
-    assert isinstance(response, requests.Response)
-
-    requests_mock.reset_mock()
-    new_response = http_requester.send_request()
-
-    assert not requests_mock.called
-    assert isinstance(new_response, CachedResponse)
-
-    assert len(response.json()) == len(new_response.json())
+    assert http_requester._http_client._request_attempt_count.get(request_mock) == http_requester._http_client._max_retries + 1

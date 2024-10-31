@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mysql.cdc;
 
-import io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter;
+import io.debezium.connector.binlog.converters.TinyIntOneToBooleanConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import org.apache.kafka.connect.data.SchemaBuilder;
 

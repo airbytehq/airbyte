@@ -2,23 +2,17 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 0.3.1
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/destination-mysql
   githubIssueLabel: destination-mysql
   icon: mysql.svg
   license: ELv2
   name: MySQL
-  normalizationConfig:
-    normalizationIntegrationType: mysql
-    normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.3
-  registries:
+  registryOverrides:
     cloud:
-      dockerImageTag: 0.2.0
       dockerRepository: airbyte/destination-mysql-strict-encrypt
       enabled: true
     oss:
-      dockerImageTag: 0.2.0
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mysql
@@ -29,4 +23,23 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.\nThis version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).\nSelecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early."
+        upgradeDeadline: "2024-06-05"
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MYSQL_SSH-KEY__CREDS
+          fileName: ssh-key-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-MYSQL_SSH-PWD__CREDS
+          fileName: ssh-pwd-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

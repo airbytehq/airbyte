@@ -3,60 +3,77 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Deprecated. Use 'repo' field instead.",
       "type": "string"
     },
     "type": {
+      "description": "Type of event that occurred.",
       "type": ["null", "string"]
     },
     "public": {
+      "description": "Indicates whether the event is public or not.",
       "type": ["null", "boolean"]
     },
     "payload": {
+      "description": "Additional event-specific data.",
       "type": ["null", "object"],
       "properties": {}
     },
     "repo": {
+      "description": "Information about the repository where the event occurred.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the repository.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the repository.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL of the repository.",
           "type": ["null", "string"]
         }
       }
     },
     "actor": {
+      "description": "Information about the user performing the event.",
       "$ref": "user.json"
     },
     "org": {
+      "description": "Information about the organization associated with the event.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the organization.",
           "type": ["null", "integer"]
         },
         "login": {
+          "description": "Login of the organization.",
           "type": ["null", "string"]
         },
         "gravatar_id": {
+          "description": "Gravatar ID of the organization.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL of the organization.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the organization's avatar.",
           "type": ["null", "string"]
         }
       }
     },
     "created_at": {
+      "description": "The timestamp when the event occurred.",
       "type": "string",
       "format": "date-time"
     },
     "id": {
+      "description": "Unique identifier for the event.",
       "type": ["null", "string"]
     }
   }

@@ -7,6 +7,7 @@ from pathlib import Path as FilePath
 from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.utils.data import get_unit_test_folder
 
 
 def _extract(path: List[str], response_template: Dict[str, Any]) -> Any:
@@ -138,10 +139,7 @@ class RecordBuilder:
 
 class HttpResponseBuilder:
     def __init__(
-        self,
-        template: Dict[str, Any],
-        records_path: Union[FieldPath, NestedPath],
-        pagination_strategy: Optional[PaginationStrategy]
+        self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy]
     ):
         self._response = template
         self._records: List[RecordBuilder] = []
@@ -172,16 +170,12 @@ class HttpResponseBuilder:
 
 
 def _get_unit_test_folder(execution_folder: str) -> FilePath:
-    path = FilePath(execution_folder)
-    while path.name != "unit_tests":
-        if path.name == path.root or path.name == path.drive:
-            raise ValueError(f"Could not find `unit_tests` folder as a parent of {execution_folder}")
-        path = path.parent
-    return path
+    # FIXME: This function should be removed after the next CDK release to avoid breaking amazon-seller-partner test code.
+    return get_unit_test_folder(execution_folder)  # type: ignore # get_unit_test_folder is known to return a FilePath
 
 
 def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
-    response_template_filepath = str(_get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
+    response_template_filepath = str(get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
     with open(response_template_filepath, "r") as template_file:
         return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
 
@@ -198,16 +192,16 @@ def create_record_builder(
     try:
         record_template = records_path.extract(response_template)[0]
         if not record_template:
-            raise ValueError(f"Could not extract any record from template at path `{records_path}`. "
-                             f"Please fix the template to provide a record sample or fix `records_path`.")
+            raise ValueError(
+                f"Could not extract any record from template at path `{records_path}`. "
+                f"Please fix the template to provide a record sample or fix `records_path`."
+            )
         return RecordBuilder(record_template, record_id_path, record_cursor_path)
     except (IndexError, KeyError):
         raise ValueError(f"Error while extracting records at path `{records_path}` from response template `{response_template}`")
 
 
 def create_response_builder(
-    response_template: Dict[str, Any],
-    records_path: Union[FieldPath, NestedPath],
-    pagination_strategy: Optional[PaginationStrategy] = None
+    response_template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy] = None
 ) -> HttpResponseBuilder:
     return HttpResponseBuilder(response_template, records_path, pagination_strategy)

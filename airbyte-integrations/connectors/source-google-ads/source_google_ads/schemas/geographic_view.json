@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The ID of the customer associated with the geographic view data",
       "type": ["null", "integer"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer associated with the geographic view data",
       "type": ["null", "string"]
     },
     "geographic_view.country_criterion_id": {
+      "description": "The criterion ID for the country in the geographic view data",
       "type": ["null", "integer"]
     },
     "geographic_view.location_type": {
+      "description": "The type of location (such as city or region) in the geographic view data",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group associated with the geographic view data",
       "type": ["null", "integer"]
     },
     "segments.date": {
+      "description": "The date segment within the geographic view data",
       "type": ["null", "string"],
       "format": "date"
     }

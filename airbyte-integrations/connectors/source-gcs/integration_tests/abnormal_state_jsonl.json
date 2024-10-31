@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "_ab_source_file_last_modified": "2094-03-21T16:13:20.571000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/test_data_1.jsonl",
+        "history": {
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/test_data_1.jsonl": "2094-03-21T16:13:20.571000Z"
+        }
+      },
+      "stream_descriptor": {
+        "name": "example_1_jsonl"
+      }
+    }
+  }
+]

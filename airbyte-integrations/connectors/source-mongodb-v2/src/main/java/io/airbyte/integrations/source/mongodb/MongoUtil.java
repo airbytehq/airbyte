@@ -54,6 +54,11 @@ public class MongoUtil {
    */
   private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
 
+  @VisibleForTesting
+  static final int DEFAULT_CHUNK_SIZE = 1_000_000;
+  @VisibleForTesting
+  static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
+
   /**
    * The minimum size of the Debezium event queue. This value will be selected if the provided
    * configuration value for the queue size is less than this value
@@ -135,6 +140,7 @@ public class MongoUtil {
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
         .filter(Optional::isPresent)
         .map(Optional::get)
+        .map(stream -> stream.withIsResumable(true))
         .collect(Collectors.toList());
   }
 
@@ -174,10 +180,9 @@ public class MongoUtil {
    * @return The {@link CollectionStatistics} of the collection or an empty {@link Optional} if the
    *         statistics cannot be retrieved.
    */
-  public static Optional<CollectionStatistics> getCollectionStatistics(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
+  public static Optional<CollectionStatistics> getCollectionStatistics(final MongoDatabase mongoDatabase, final ConfiguredAirbyteStream stream) {
     try {
       final Map<String, Object> collStats = Map.of(MongoConstants.STORAGE_STATS_KEY, Map.of(), MongoConstants.COUNT_KEY, Map.of());
-      final MongoDatabase mongoDatabase = mongoClient.getDatabase(stream.getStream().getNamespace());
       final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
       final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
 
@@ -204,6 +209,40 @@ public class MongoUtil {
     }
 
     return Optional.empty();
+  }
+
+  public static int getChunkSizeForCollection(final Optional<CollectionStatistics> collectionStatistics, final ConfiguredAirbyteStream stream) {
+    // If table size info could not be calculated, a default chunk size will be provided.
+    if (collectionStatistics.isEmpty() || shouldUseDefaultChunkSize(collectionStatistics.get())) {
+      LOGGER.info("Chunk size could not be determined for: {}.{}, defaulting to {} rows", stream.getStream().getNamespace(),
+          stream.getStream().getName(), DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    CollectionStatistics stats = collectionStatistics.get();
+    final long totalRows = stats.count().longValue();
+    final long totalBytes = stats.size().longValue();
+    final long bytesPerRow = totalBytes / totalRows;
+    if (bytesPerRow == 0) {
+      LOGGER.info("Chunk size could not be determined for: {}.{}, defaulting to {} rows", stream.getStream().getNamespace(),
+          stream.getStream().getName(), DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    // Otherwise the chunk size is essentially the limit - the number of rows to fetch per query. This
+    // number is the number of rows that would
+    // correspond to roughly ~1GB of data.
+    final int chunkSize = (int) (QUERY_TARGET_SIZE_GB / bytesPerRow);
+    if (chunkSize <= 0) {
+      LOGGER.info("Chunk size could not be determined for: {}.{}, defaulting to {} rows", stream.getStream().getNamespace(),
+          stream.getStream().getName(), DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    LOGGER.info("Chunk size determined for: {}.{}, to be {} rows", stream.getStream().getNamespace(),
+        stream.getStream().getName(), chunkSize);
+    return chunkSize;
+  }
+
+  private static boolean shouldUseDefaultChunkSize(CollectionStatistics stats) {
+    return stats.size().longValue() == 0 || stats.count().longValue() == 0;
   }
 
   /**

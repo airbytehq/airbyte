@@ -8,7 +8,7 @@ data:
   icon: mssql.svg
   license: ELv2
   name: MS SQL Server
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-mssql-strict-encrypt
       enabled: true
@@ -33,4 +33,7 @@ data:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

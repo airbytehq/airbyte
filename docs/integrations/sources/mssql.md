@@ -12,6 +12,8 @@ Airbyte's certified MSSQL connector offers the following features:
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
+> ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mssql 4.0.18 and above.**
+
 ## Features
 
 | Feature                       | Supported | Notes              |
@@ -415,9 +417,49 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------| :---------------------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.15  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)   | Adopt latest CDK. reduce excessive logs.                                                                                                        |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.15 | 2024-10-05 | [46515](https://github.com/airbytehq/airbyte/pull/46515) | Improving discovery of large SQL server database. |
+| 4.1.14 | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests. |
+| 4.1.13 | 2024-09-05 | [45181](https://github.com/airbytehq/airbyte/pull/45181) | Fix incorrect categorizing resumable/nonresumable full refresh streams. |
+| 4.1.12 | 2024-09-10 | [45368](https://github.com/airbytehq/airbyte/pull/45368) | Remove excessive debezium logging. |
+| 4.1.11 | 2024-09-04 | [45142](https://github.com/airbytehq/airbyte/pull/45142) | Fix incorrect datetimeoffset format in cursor state. |
+| 4.1.10 | 2024-08-27 | [44759](https://github.com/airbytehq/airbyte/pull/44759) | Improve null safety in parsing debezium change events. |
+| 4.1.9 | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841) | Adopt latest CDK. |
+| 4.1.8 | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410) | Adopt latest CDK. |
+| 4.1.7 | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869) | Adopt latest CDK. |
+| 4.1.6 | 2024-07-30 | [42550](https://github.com/airbytehq/airbyte/pull/42550) | Correctly report stream states. |
+| 4.1.5 | 2024-07-29 | [42852](https://github.com/airbytehq/airbyte/pull/42852) | Bump CDK version to latest to use new bug fixes on error translation. |
+| 4.1.4 | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421) | Remove final transient error emitter iterators. |
+| 4.1.3   |            | 2024-07-22                                                                                                        | [42411](https://github.com/airbytehq/airbyte/pull/42411)                                                                                        | Hide the "initial load timeout in hours" field by default in UI |
+| 4.1.2   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024)                                                          | Fix a NPE bug on resuming from a failed attempt.                                                                                                |
+| 4.1.1   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122)                                                          | Improve wass error message + logging.                                                                                                           |
+| 4.1.0   | 2024-07-17 | [42078](https://github.com/airbytehq/airbyte/pull/42078)                                                          | WASS analytics + bug fixes.                                                                                                                     |
+| 4.0.36  | 2024-07-17 | [41648](https://github.com/airbytehq/airbyte/pull/41648)                                                          | Implement WASS.                                                                                                                                 |
+| 4.0.35  | 2024-07-05 | [40570](https://github.com/airbytehq/airbyte/pull/40570)                                                          | Bump debezium-connector-sqlserver from 2.6.1.Final to 2.6.2.Final.                                                                              |
+| 4.0.34  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516)                                                          | Remove dbz hearbeat.                                                                                                                            |
+| 4.0.33  | 2024-06-30 | [40638](https://github.com/airbytehq/airbyte/pull/40638)                                                          | Fix a bug that could slow down an initial load of a large table using a different clustered index from the primary key.                         |
+| 4.0.32  | 2024-06-26 | [40558](https://github.com/airbytehq/airbyte/pull/40558)                                                          | Handle DatetimeOffset correctly.                                                                                                                |
+| 4.0.31  | 2024-06-14 | [39419](https://github.com/airbytehq/airbyte/pull/39419)                                                          | Handle DatetimeOffset correctly.                                                                                                                |
+| 4.0.30  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349)                                                          | Full refresh stream sending internal count metadata.                                                                                            |
+| 4.0.29  | 2024-06-14 | [39506](https://github.com/airbytehq/airbyte/pull/39506)                                                          | Adopt latest CDK.                                                                                                                               |
+| 4.0.28  | 2024-06-08 | [39342](https://github.com/airbytehq/airbyte/pull/39342)                                                          | Fix custom conversion in CDC for datetimeoffset type.                                                                                           |
+| 4.0.27  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584)                                                          | Set is_resumable flag in discover.                                                                                                              |
+| 4.0.26  | 2024-05-16 | [38292](https://github.com/airbytehq/airbyte/pull/38292)                                                          | Improve cursor value query to return only one row                                                                                               |
+| 4.0.25  | 2024-05-29 | [38775](https://github.com/airbytehq/airbyte/pull/38775)                                                          | Publish CDK                                                                                                                                     |
+| 4.0.24  | 2024-05-23 | [38640](https://github.com/airbytehq/airbyte/pull/38640)                                                          | Sync sending trace status messages indicating progress.                                                                                         |
+| 4.0.23  | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)                                                          | disable counts in full refresh stream in state message.                                                                                         |
+| 4.0.22  | 2024-05-14 | [38196](https://github.com/airbytehq/airbyte/pull/38196)                                                          | Bump jdbc driver version to 12.6.1.jre11                                                                                                        |
+| 4.0.21  | 2024-05-07 | [38054](https://github.com/airbytehq/airbyte/pull/38054)                                                          | Resumeable refresh should run only if there is source defined pk.                                                                               |
+| 4.0.20  | 2024-05-07 | [38042](https://github.com/airbytehq/airbyte/pull/38042)                                                          | Bump debezium version to latest.                                                                                                                |
+| 4.0.19  | 2024-05-07 | [38029](https://github.com/airbytehq/airbyte/pull/38029)                                                          | Fix previous release.                                                                                                                           |
+| 4.0.18  | 2024-04-30 | [37451](https://github.com/airbytehq/airbyte/pull/37451)                                                          | Resumable full refresh read of tables.                                                                                                          |
+| 4.0.17  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)                                                          | Adopt latest CDK.                                                                                                                               |
+| 4.0.16  | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)                                                          | Adopt latest CDK. Remove Debezium retries.                                                                                                      |
+| 4.0.15  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)                                                          | Adopt latest CDK. reduce excessive logs.                                                                                                        |
 | 4.0.14  | 2024-04-22 | [37476](https://github.com/airbytehq/airbyte/pull/37476)                                                          | Adopt latest CDK.                                                                                                                               |
 | 4.0.13  | 2024-04-16 | [37111](https://github.com/airbytehq/airbyte/pull/37111)                                                          | Populate null values in record message.                                                                                                         |
 | 4.0.12  | 2024-04-15 | [37326](https://github.com/airbytehq/airbyte/pull/37326)                                                          | Allow up to 60 minutes of wait for the an initial CDC record.                                                                                   |
@@ -544,3 +586,5 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)                                                            | Support incremental sync                                                                                                                        |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)                                                            | Change JDBC sources to discover more than standard schemas                                                                                      |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)                                                            | Add connectors using an index YAML file                                                                                                         |
+
+</details>

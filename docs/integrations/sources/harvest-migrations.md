@@ -3,6 +3,7 @@
 ## Upgrading to 1.0.0
 
 This update results in a change the following streams, requiring them to be cleared and completely synced again:
+
 - `expenses_clients`
 - `expenses_categories`
 - `expenses_projects`
@@ -24,8 +25,8 @@ We're continuously striving to enhance the quality and reliability of our connec
 To clear your data for the impacted streams, follow the steps below:
 
 1. Select **Connections** in the main nav bar.
-    1. Select the connection(s) affected by the update.
+   1. Select the connection(s) affected by the update.
 2. Select the **Status** tab.
-    1. In the **Enabled streams** list, click the three dots on the right side of the stream and select **Clear Data**. 
+   1. In the **Enabled streams** list, click the three dots on the right side of the stream and select **Clear Data**.
 
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).

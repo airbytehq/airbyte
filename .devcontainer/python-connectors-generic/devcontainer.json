@@ -2,7 +2,7 @@
 {
   "name": "Python Development DevContainer (Generic)",
 
-  "image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.10",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker": {},
     "ghcr.io/devcontainers/features/python:1": {

@@ -4,7 +4,7 @@ connector_image: airbyte/source-wrike:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_wrike/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,15 +18,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: comments
             bypass_reason: "Sandbox accounts dont have permission for accessing the stream"
-          - name: workflows
-            bypass_reason: "Sandbox accounts can't seed the stream"
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          exact_order: no
+          - name: customfields
+            bypass_reason: "Sandbox accounts dont have permission for accessing the stream"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

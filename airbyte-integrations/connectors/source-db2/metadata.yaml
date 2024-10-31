@@ -11,7 +11,7 @@ data:
   icon: db2.svg
   license: MIT
   name: IBM Db2
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # Would require DEPLOYMENT_MODE=cloud handling to release to cloud again
     oss:
@@ -24,4 +24,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

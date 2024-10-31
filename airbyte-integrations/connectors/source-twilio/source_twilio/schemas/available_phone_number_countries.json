@@ -1,28 +1,36 @@
 {
   "properties": {
     "country_code": {
+      "description": "The country code associated with the country.",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "The name of the country for which phone number data is provided.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI to fetch more details about phone numbers in the country.",
       "type": ["null", "string"]
     },
     "beta": {
+      "description": "Whether the phone number country data is in beta phase or not.",
       "type": ["null", "boolean"]
     },
     "subresource_uris": {
+      "description": "URIs for accessing different types of phone numbers in the country.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "local": {
+          "description": "URI for fetching local phone numbers in the country.",
           "type": ["null", "string"]
         },
         "mobile": {
+          "description": "URI for fetching mobile phone numbers in the country.",
           "type": ["null", "string"]
         },
         "toll_free": {
+          "description": "URI for fetching toll-free phone numbers in the country.",
           "type": ["null", "string"]
         }
       }

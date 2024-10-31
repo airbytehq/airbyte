@@ -4,28 +4,36 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the cohort data.",
       "type": ["null", "integer"]
     },
     "data_group_id": {
+      "description": "The identifier of the data group to which the cohort belongs.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the cohort data.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description or summary of the cohort data.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The date and time when the cohort data was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "count": {
+      "description": "The total count or number associated with the cohort data.",
       "type": ["null", "integer"]
     },
     "is_visible": {
+      "description": "A flag indicating the visibility status of the cohort data.",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "The identifier of the project to which the cohort data belongs.",
       "type": ["null", "integer"]
     }
   }

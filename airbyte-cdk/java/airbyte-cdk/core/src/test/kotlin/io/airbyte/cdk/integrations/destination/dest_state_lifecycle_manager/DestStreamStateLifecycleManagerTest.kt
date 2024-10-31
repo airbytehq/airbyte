@@ -30,8 +30,8 @@ internal class DestStreamStateLifecycleManagerTest {
     fun testBasicLifeCycle() {
         // starts with no state.
         Assertions.assertTrue(mgr!!.listPending().isEmpty())
-        Assertions.assertTrue(mgr!!.listFlushed()!!.isEmpty())
-        Assertions.assertTrue(mgr!!.listCommitted()!!.isEmpty())
+        Assertions.assertTrue(mgr!!.listFlushed().isEmpty())
+        Assertions.assertTrue(mgr!!.listCommitted().isEmpty())
 
         mgr!!.addState(STREAM1_MESSAGE1)
         // new state supersedes previous ones. we should only see MESSAGE2 for STREAM1 from here on

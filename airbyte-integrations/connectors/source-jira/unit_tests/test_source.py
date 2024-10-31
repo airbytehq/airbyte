@@ -14,7 +14,7 @@ from source_jira.source import SourceJira
 def test_streams(config):
     source = SourceJira()
     streams = source.streams(config)
-    expected_streams_number = 55
+    expected_streams_number = 56
     assert len(streams) == expected_streams_number
 
 
@@ -27,12 +27,12 @@ def test_check_connection_config_no_access_to_one_stream(config, caplog, project
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/applicationrole",
         status=401,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/avatar/issuetype/system?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/avatar/issuetype/system",
         json=avatars_response,
     )
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/label?maxResults=50", status=401)

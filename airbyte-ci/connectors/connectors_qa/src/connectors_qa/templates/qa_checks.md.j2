@@ -5,15 +5,17 @@ These checks are running in our CI/CD pipeline and are used to ensure a connecto
 Meeting these standards means that the connector will be able to be safely integrated into the Airbyte platform and released to registries (DockerHub, Pypi etc.).
 You can consider these checks as a set of guidelines to follow when developing a connector.
 They are by no mean replacing the need for a manual review of the connector codebase and the implementation of good test suites.
-
 {% for category, checks in checks_by_category.items() %}
 ## {{ category.value }}
 {% for check in checks %}
 ### {{ check.name }}
-*Applies to the following connector types: {{ ', '.join(check.applies_to_connector_types) }}*
-*Applies to the following connector languages: {{ ', '.join(check.applies_to_connector_languages) }}*
-*Applies to connector with {{ ', '.join(check.applies_to_connector_support_levels) if check.applies_to_connector_support_levels else 'any' }} support level*
+
+_Applies to the following connector types: {{ ', '.join(check.applies_to_connector_types) }}_
+_Applies to the following connector languages: {{ ', '.join(check.applies_to_connector_languages) }}_
+_Applies to connector with {{ ', '.join(check.applies_to_connector_support_levels) if check.applies_to_connector_support_levels else 'any' }} support level_
+_Applies to connector with {{ check.applies_to_connector_ab_internal_sl if check.applies_to_connector_ab_internal_sl else 'any' }} internal support level_
+_Applies to connector with {{ ', '.join(check.applies_to_connector_cloud_usage) if check.applies_to_connector_cloud_usage else 'any' }} Airbyte usage level_
 
 {{ check.description }}
-{%- endfor %}
 {% endfor %}
+{%- endfor %}
