@@ -132,6 +132,7 @@ sealed class MysqlJdbcResumablePartition(
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
                 where,
                 OrderBy(checkpointColumns),
+                Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }

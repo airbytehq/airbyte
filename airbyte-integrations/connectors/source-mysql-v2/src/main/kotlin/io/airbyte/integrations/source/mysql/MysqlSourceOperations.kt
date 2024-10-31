@@ -208,7 +208,14 @@ class MysqlSourceOperations :
         when (this) {
             NoFrom -> ""
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
-            is FromSample -> TODO("not implemented in mysql")
+            is FromSample -> {
+                val from: String = From(name, namespace).sql()
+                val greatestRate: String = 0.00005.toString()
+                val quickCount = "SELECT table_rows FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
+                val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
+                val where = "WHERE RAND() < $greatest "
+                "$from $where"
+            }
         }
 
     fun WhereNode.sql(): String =
