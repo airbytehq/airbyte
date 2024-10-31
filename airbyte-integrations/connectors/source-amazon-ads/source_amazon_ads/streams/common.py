@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic.v1 import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from abc import ABC
 from http import HTTPStatus
@@ -119,39 +118,13 @@ class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
         resp = response.json()
         if response.status_code == HTTPStatus.OK:
             yield resp
-        #
-        # if response.status_code == HTTPStatus.BAD_REQUEST:
-        #     # 400 error message for bids recommendation:
-        #     #   Bid recommendation for AD group in Manual Targeted Campaign is not supported.
-        #     # 400 error message for keywords recommendation:
-        #     #   Getting keyword recommendations for AD Group in Auto Targeted Campaign is not supported
-        #     self.logger.warning(
-        #         f"Skip current AdGroup because it does not support request {response.request.url} for "
-        #         f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
-        #     )
-        # elif response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
-        #     # 422 error message for bids recommendation:
-        #     # No recommendations can be provided as the input ad group does not have any asins.
-        #     self.logger.warning(
-        #         f"Skip current AdGroup because the ad group {json.loads(response.request.body)['adGroupId']} does not have any asins {response.request.url}"
-        #     )
-        # elif response.status_code == HTTPStatus.NOT_FOUND:
-        #     # 404 Either the specified ad group identifier was not found,
-        #     # or the specified ad group was found but no associated bid was found.
-        #     self.logger.warning(
-        #         f"Skip current AdGroup because the specified ad group has no associated bid {response.request.url} for "
-        #         f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
-        #     )
-
-        # else:
-        #     response.raise_for_status()
 
     def get_error_handler(self) -> ErrorHandler:
         error_mapping = DEFAULT_ERROR_MAPPING | {
             400: ErrorResolution(
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
-                error_message="Skip current AdGroup because it does not support request {response.request.url} for ",
+                error_message="Skip current AdGroup because it does not support request {response.request.url} for current profile",
             ),
             422: ErrorResolution(
                 response_action=ResponseAction.IGNORE,
@@ -162,11 +135,6 @@ class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
                 error_message="Skip current AdGroup because the specified ad group has no associated bid",
-            ),
-            504: ErrorResolution(
-                response_action=ResponseAction.FAIL,
-                failure_type=FailureType.config_error,
-                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export",
             ),
         }
         return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)
