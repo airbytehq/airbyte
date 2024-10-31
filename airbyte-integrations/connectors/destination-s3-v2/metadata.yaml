@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: d6116991-e809-4c7c-ae09-c64712df5b66
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/destination-s3-v2
   githubIssueLabel: destination-s3-v2
   icon: s3.svg

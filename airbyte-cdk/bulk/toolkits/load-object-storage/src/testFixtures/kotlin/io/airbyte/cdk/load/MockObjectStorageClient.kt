@@ -64,7 +64,7 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
 
     override suspend fun <V : OutputStream> streamingUpload(
         key: String,
-        streamProcessor: StreamProcessor<V>,
+        streamProcessor: StreamProcessor<V>?,
         block: suspend (OutputStream) -> Unit
     ): MockRemoteObject {
         TODO("Not yet implemented")

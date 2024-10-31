@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
-import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
 import java.io.InputStream
 import java.io.OutputStream
@@ -27,11 +26,9 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
      * files). Specifically, the method should guarantee that no operations will be performed on the
      * stream after [block] completes.
      */
-    suspend fun streamingUpload(key: String, block: suspend (OutputStream) -> Unit): T =
-        streamingUpload(key, NoopProcessor, block)
     suspend fun <V : OutputStream> streamingUpload(
         key: String,
-        streamProcessor: StreamProcessor<V>,
+        streamProcessor: StreamProcessor<V>? = null,
         block: suspend (OutputStream) -> Unit
     ): T
 }
