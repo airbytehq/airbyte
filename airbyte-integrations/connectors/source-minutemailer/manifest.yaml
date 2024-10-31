@@ -1,0 +1,276 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Minutemailer is an email marketing tool primarily used for creating
+  newsletters.
+
+  Using this connector we can extract data from contacts , fields and contact
+  lists streams.
+
+  Docs : https://documenter.getpostman.com/view/14583126/UyxqBi12#intro
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    fields:
+      type: DeclarativeStream
+      name: fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fields"
+    contact_lists:
+      type: DeclarativeStream
+      name: contact_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contact-lists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contact_lists"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api-gateway.minutemailer.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-Auth-Token
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/fields"
+  - $ref: "#/definitions/streams/contact_lists"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    fields: true
+    contact_lists: true
+  testedStreams:
+    contacts:
+      streamHash: fdc212b84cfc4aa3f433b6d1c5e7a902f4c031df
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    fields:
+      streamHash: 44abb3b7e15b15589e7b37e7f8805d9329630646
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contact_lists:
+      streamHash: 8ed7b2644bb41aea2b38ced3ca6f7ce18ac8857a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_visible:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contact_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      subscribe_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
