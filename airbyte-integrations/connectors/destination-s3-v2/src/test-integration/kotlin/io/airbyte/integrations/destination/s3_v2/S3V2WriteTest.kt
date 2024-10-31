@@ -18,10 +18,16 @@ abstract class S3V2WriteTest(path: String) :
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
+        supportsDedup = false,
     ) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 
     @Disabled
@@ -30,7 +36,6 @@ abstract class S3V2WriteTest(path: String) :
         super.testMidSyncCheckpointingStreamState()
     }
 
-    @Disabled("append mode doesn't yet work")
     @Test
     override fun testAppend() {
         super.testAppend()
@@ -40,6 +45,11 @@ abstract class S3V2WriteTest(path: String) :
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }
 

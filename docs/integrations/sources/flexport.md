@@ -49,6 +49,8 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.3.2 | 2024-10-29 | [47898](https://github.com/airbytehq/airbyte/pull/47898) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47580](https://github.com/airbytehq/airbyte/pull/47580) | Update dependencies |
 | 0.3.0 | 2024-10-05 | [46416](https://github.com/airbytehq/airbyte/pull/46416) | Migrate to Manifest-only CDK |
 | 0.2.20 | 2024-10-05 | [46455](https://github.com/airbytehq/airbyte/pull/46455) | Update dependencies |
 | 0.2.19 | 2024-09-28 | [46199](https://github.com/airbytehq/airbyte/pull/46199) | Update dependencies |
