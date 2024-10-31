@@ -48,7 +48,6 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         default="/",
         pattern_descriptor="/folder_to_sync",
     )
-    use_file_transfer: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
 
     delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
         title="Delivery Method",
