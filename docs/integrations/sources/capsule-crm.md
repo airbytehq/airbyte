@@ -1,6 +1,9 @@
 # Capsule CRM
 Capsule CRM connector  enables seamless data syncing from Capsule CRM to various data warehouses, helping businesses centralize and analyze customer data efficiently. It supports real-time data extraction of contacts, opportunities, and custom fields, making it ideal for comprehensive CRM analytics and reporting.
 
+## Authentication
+Please follow [these](https://developer.capsulecrm.com/v2/overview/authentication) steps to get the api key.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
