@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import SyncMode
 from source_amazon_ads import SourceAmazonAds
 from source_amazon_ads.declarative_source_adapter import DeclarativeSourceAdapter
 

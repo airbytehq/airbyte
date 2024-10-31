@@ -7,8 +7,6 @@ import re
 import uuid
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from dataclasses import dataclass
-from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
@@ -21,45 +19,11 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
-from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
-
-class RecordType(str, Enum):
-    CAMPAIGNS = "campaigns"
-    ADGROUPS = "adGroups"
-    PRODUCTADS = "productAds"
-    TARGETS = "targets"
-    ASINS = "asins"
-
-
-class Status(str, Enum):
-    IN_PROGRESS = "IN_PROGRESS"
-    SUCCESS = "SUCCESS"
-    COMPLETED = "COMPLETED"
-    FAILURE = "FAILURE"
-
-
-class ReportInitResponse(BaseModel):
-    reportId: str
-    status: str
-
-
-class ReportStatus(BaseModel):
-    status: str
-    location: Optional[str]
-    url: Optional[str]
-
-
-@dataclass
-class ReportInfo:
-    report_id: str
-    profile_id: int
-    record_type: str
-    status: Status
-    metric_objects: List[dict]
+from .report_stream_models import ReportInfo, ReportInitResponse, ReportStatus, Status
 
 
 class RetryableException(Exception):

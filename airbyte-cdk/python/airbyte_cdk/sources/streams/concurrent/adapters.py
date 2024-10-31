@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import DateTimeStreamStateConverter
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
@@ -203,6 +204,7 @@ class SliceEncoder(json.JSONEncoder):
     def default(self, obj: Any) -> Any:
         if hasattr(obj, "__json_serializable__"):
             return obj.__json_serializable__()
+
         # Let the base class default method raise the TypeError
         return super().default(obj)
 
@@ -341,12 +343,17 @@ class CursorPartitionGenerator(PartitionGenerator):
     across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
     """
 
+    _START_BOUNDARY = 0
+    _END_BOUNDARY = 1
+
     def __init__(
         self,
         stream: Stream,
         message_repository: MessageRepository,
         cursor: Cursor,
+        connector_state_converter: DateTimeStreamStateConverter,
         cursor_field: Optional[List[str]],
+        slice_boundary_fields: Optional[Tuple[str, str]],
     ):
         """
         Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
@@ -362,6 +369,8 @@ class CursorPartitionGenerator(PartitionGenerator):
         self._cursor = cursor
         self._cursor_field = cursor_field
         self._state = self._cursor.state
+        self._slice_boundary_fields = slice_boundary_fields
+        self._connector_state_converter = connector_state_converter
 
     def generate(self) -> Iterable[Partition]:
         """
@@ -372,8 +381,18 @@ class CursorPartitionGenerator(PartitionGenerator):
 
         :return: An iterable of StreamPartition objects.
         """
+
+        start_boundary = self._slice_boundary_fields[self._START_BOUNDARY] if self._slice_boundary_fields else "start"
+        end_boundary = self._slice_boundary_fields[self._END_BOUNDARY] if self._slice_boundary_fields else "end"
+
         for slice_start, slice_end in self._cursor.generate_slices():
-            stream_slice = StreamSlice(partition={}, cursor_slice={"start": slice_start, "end": slice_end})
+            stream_slice = StreamSlice(
+                partition={},
+                cursor_slice={
+                    start_boundary: self._connector_state_converter.output_format(slice_start),
+                    end_boundary: self._connector_state_converter.output_format(slice_end),
+                },
+            )
 
             yield StreamPartition(
                 self._stream,
@@ -386,7 +405,7 @@ class CursorPartitionGenerator(PartitionGenerator):
             )
 
 
-@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
+@deprecated("Availability strategy has been soft deprecated. Do not use. Class is subject to removal", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
