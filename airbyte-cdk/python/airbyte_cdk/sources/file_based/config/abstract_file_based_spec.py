@@ -15,8 +15,8 @@ from pydantic.v1 import AnyUrl, BaseModel, Field
 
 class DeliverRecords(BaseModel):
     class Config(OneOfOptionConfig):
-        title = "Deliver Records (RECOMMENDED DEFAULT)"
-        description = "Send records to the destination, which will be processed as incoming data."
+        title = "Replicate Records"
+        description = "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination."
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_records_transfer"] = Field("use_records_transfer", const=True)
@@ -24,8 +24,8 @@ class DeliverRecords(BaseModel):
 
 class DeliverRawFiles(BaseModel):
     class Config(OneOfOptionConfig):
-        title = "Deliver Raw Files (Experimental: supported destination only)"
-        description = "Send files to the destination, to be loaded to files storage destinations without parsing underlying data."
+        title = "Copy Raw Files"
+        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files."
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)

@@ -446,7 +446,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                         "group": "advanced",
                         "oneOf": [
                             {
-                                "title": "Deliver Records (RECOMMENDED DEFAULT)",
+                                "title": "Replicate Records",
                                 "type": "object",
                                 "properties": {
                                     "delivery_type": {
@@ -459,13 +459,13 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                         "type": "string"
                                     }
                                 },
-                                "description": "Send records to the destination, which will be processed as incoming data.",
+                                "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
                                 "required": [
                                     "delivery_type"
                                 ]
                             },
                             {
-                                "title": "Deliver Raw Files (Experimental: supported destination only)",
+                                "title": "Copy Raw Files",
                                 "type": "object",
                                 "properties": {
                                     "delivery_type": {
@@ -478,7 +478,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                         "type": "string"
                                     }
                                 },
-                                "description": "Send files to the destination, to be loaded to files storage destinations without parsing underlying data.",
+                                "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
                                 "required": [
                                     "delivery_type"
                                     ]
