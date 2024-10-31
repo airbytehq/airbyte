@@ -50,6 +50,8 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.4 | 2024-10-29 | [47801](https://github.com/airbytehq/airbyte/pull/47801) | Update dependencies |
+| 0.3.3 | 2024-10-28 | [47668](https://github.com/airbytehq/airbyte/pull/47668) | Update dependencies |
 | 0.3.2 | 2024-10-22 | [47234](https://github.com/airbytehq/airbyte/pull/47234) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-09 | [43449](https://github.com/airbytehq/airbyte/pull/43449) | Refactor connector to manifest-only format |

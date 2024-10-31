@@ -5,13 +5,13 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
+import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream

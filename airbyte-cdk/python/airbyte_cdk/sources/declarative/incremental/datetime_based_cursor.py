@@ -178,8 +178,13 @@ class DatetimeBasedCursor(DeclarativeCursor):
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
         earliest_possible_start_datetime = min(self._start_datetime.get_datetime(self.config), end_datetime)
-        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
-        return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
+        try:
+            cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state()) - lookback_delta
+        except OverflowError:
+            # cursor_datetime defers to the minimum date if it does not exist in the state. Trying to subtract
+            # a timedelta from the minimum datetime results in an OverflowError
+            cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
+        return max(earliest_possible_start_datetime, cursor_datetime)
 
     def select_best_end_datetime(self) -> datetime.datetime:
         """

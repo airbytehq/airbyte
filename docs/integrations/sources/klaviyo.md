@@ -95,6 +95,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.12 | 2024-10-29 | [47797](https://github.com/airbytehq/airbyte/pull/47797) | Update dependencies |
+| 2.10.11 | 2024-10-28 | [47043](https://github.com/airbytehq/airbyte/pull/47043) | Update dependencies |
 | 2.10.10 | 2024-10-14 | [46741](https://github.com/airbytehq/airbyte/pull/46741) | Add checkpointing to events stream to improve large syncs after clear data |
 | 2.10.9 | 2024-10-12 | [46787](https://github.com/airbytehq/airbyte/pull/46787) | Update dependencies |
 | 2.10.8 | 2024-10-05 | [46503](https://github.com/airbytehq/airbyte/pull/46503) | Update dependencies |
