@@ -154,6 +154,6 @@ class SourceAmazonAds(AbstractSource):
             return [
                 profile
                 for profile in available_profiles
-                if profile['profileId'] in requested_profiles or profile['accountInfo']['marketplaceStringId'] in requested_marketplace_ids
+                if profile["profileId"] in requested_profiles or profile["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids
             ]
         return available_profiles

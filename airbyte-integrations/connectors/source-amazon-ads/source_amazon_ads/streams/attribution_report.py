@@ -93,13 +93,13 @@ class AttributionReport(AmazonAdsStream):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for profile in self._profiles:
-            start_date = pendulum.now(tz=profile['timezone']).subtract(days=1).date()
-            end_date = pendulum.now(tz=profile['timezone']).date()
+            start_date = pendulum.now(tz=profile["timezone"]).subtract(days=1).date()
+            end_date = pendulum.now(tz=profile["timezone"]).date()
             if self._start_date:
                 start_date = max(self._start_date, end_date.subtract(days=self.REPORTING_PERIOD))
 
             yield {
-                "profileId": profile['profileId'],
+                "profileId": profile["profileId"],
                 "startDate": start_date.format(self.REPORT_DATE_FORMAT),
                 "endDate": end_date.format(self.REPORT_DATE_FORMAT),
             }
