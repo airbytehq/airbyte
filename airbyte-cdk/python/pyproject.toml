@@ -37,6 +37,7 @@ jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pandas = "2.2.2"
 pendulum = "<3.0.0"
+psutil = "6.1.0"
 pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
@@ -62,6 +63,9 @@ Sphinx = { version = "~4.2", optional = true }
 sphinx-rtd-theme = { version = "~1.0", optional = true }
 tiktoken = { version = "0.4.0", optional = true }
 nltk = { version = "3.8.1", optional = true }
+# This will ensure that even when you run poetry install or pip install, the compatible version of numpy will always be chosen.
+# airbyte-ci will try to install latest version when --use-local-cdk is used, resulting in the conflict.
+numpy = "<2"
 unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true }
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 pyjwt = "^2.8.0"

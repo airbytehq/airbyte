@@ -110,6 +110,9 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             globs,
         )
 
+    def file_size(self, file: RemoteFile) -> int:
+        return 0
+
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":
             return self._make_csv_file_contents(file.uri)
