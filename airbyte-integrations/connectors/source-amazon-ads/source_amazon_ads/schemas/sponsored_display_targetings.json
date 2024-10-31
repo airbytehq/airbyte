@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "targetId": { "type": "number" },
+    "adGroupId": { "type": "number" },
+    "state": { "type": "string" },
+    "expressionType": { "type": "string" },
+    "bid": { "type": "number" },
+    "campaignId": { "type": "number" },
+    "expression": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true }
+    },
+    "resolvedExpression": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true }
+    }
+  },
+  "title": "sponsored_display_targetings",
+  "type": "object"
+}

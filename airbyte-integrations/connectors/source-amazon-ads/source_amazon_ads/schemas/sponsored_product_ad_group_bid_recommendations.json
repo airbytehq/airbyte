@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "adGroupId": { "type": "string" },
+    "campaignId": { "type": "string" },
+    "theme": { "type": "string" },
+    "bidRecommendationsForTargetingExpressions": {
+      "type": "array",
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "bidValues": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "targetingExpression": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "title": "sponsored_product_ad_group_bid_recommendations",
+  "type": "object"
+}

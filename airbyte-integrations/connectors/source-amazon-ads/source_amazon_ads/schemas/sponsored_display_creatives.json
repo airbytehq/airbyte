@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "adGroupId": { "type": "number" },
+    "creativeId": { "type": "number" },
+    "creativeType": { "type": "string" },
+    "properties": { "type": "object" },
+    "moderationStatus": { "type": "string" }
+  },
+  "title": "sponsored_display_creatives",
+  "type": "object"
+}

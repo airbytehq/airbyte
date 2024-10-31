@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "portfolioId": { "type": "string" },
+    "campaignId": { "type": "string" },
+    "name": { "type": "string" },
+    "tags": { "type": "object", "additionalProperties": true },
+    "targetingType": { "type": "string" },
+    "state": { "type": "string" },
+    "dynamicBidding": { "type": "object" },
+    "startDate": { "type": "string" },
+    "endDate": { "type": "string" },
+    "budget": { "type": "object" },
+    "extendedData": { "type": ["null", "object"] }
+  },
+  "title": "sponsored_product_campaigns",
+  "type": "object"
+}
