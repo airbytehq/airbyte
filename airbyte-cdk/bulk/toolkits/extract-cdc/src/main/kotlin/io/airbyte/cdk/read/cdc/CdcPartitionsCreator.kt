@@ -20,6 +20,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
+    val lowerBoundReference: AtomicReference<T>,
     val upperBoundReference: AtomicReference<T>,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
@@ -72,20 +73,30 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 upperBound,
                 input
             )
+        val lowerBound: T = creatorOps.position(input.state.offset)
+        val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)
         if (input.isSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
             log.info { "Current offset is synthetic." }
             return listOf(partitionReader)
         }
-        val lowerBound: T = creatorOps.position(input.state.offset)
         if (upperBound <= lowerBound) {
             // Handle completion due to reaching the WAL position upper bound.
             log.info {
                 "Current position '$lowerBound' equals or exceeds target position '$upperBound'."
             }
             globalLockResource.markCdcAsComplete()
-            return listOf()
+            return emptyList()
+        }
+        if (lowerBoundInPreviousRound != null && lowerBound <= lowerBoundInPreviousRound) {
+            // Handle completion due to stalling.
+            log.info {
+                "Current position '$lowerBound' has not increased in the last round, " +
+                    "prior to which is was '$lowerBoundInPreviousRound'."
+            }
+            globalLockResource.markCdcAsComplete()
+            return emptyList()
         }
         // Handle common case.
         log.info { "Current position '$lowerBound' does not exceed target position '$upperBound'." }

@@ -21,6 +21,7 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
+import io.airbyte.cdk.read.NoWhere
 import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.SelectColumnMaxValue
@@ -130,8 +131,9 @@ sealed class MysqlJdbcResumablePartition(
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
-                where,
+                NoWhere,
                 OrderBy(checkpointColumns),
+                Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }

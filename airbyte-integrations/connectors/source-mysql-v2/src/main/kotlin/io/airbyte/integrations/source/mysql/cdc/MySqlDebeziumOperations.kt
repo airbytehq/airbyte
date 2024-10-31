@@ -34,7 +34,9 @@ import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mysql.MysqlCdcMetaFields
 import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLBooleanConverter
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
+import io.airbyte.integrations.source.mysql.cdc.converters.MySQLNumericConverter
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
@@ -134,7 +136,7 @@ class MySqlDebeziumOperations(
         val newGtidSet = availableGtidSet.subtract(savedGtidSet)
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
                 log.info {
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 }
@@ -339,42 +341,51 @@ class MySqlDebeziumOperations(
 
     val commonProperties: Map<String, String> by lazy {
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
-        DebeziumPropertiesBuilder()
-            .withDefault()
-            .withConnector(MySqlConnector::class.java)
-            .withDebeziumName(databaseName)
-            .withHeartbeats(configuration.debeziumHeartbeatInterval)
-            // This to make sure that binary data represented as a base64-encoded String.
-            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
-            .with("binary.handling.mode", "base64")
-            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-            .with("snapshot.mode", "when_needed")
-            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
-            // This is to make sure other database clients are allowed to write to a table while
-            // Airbyte is taking a snapshot. There is a risk involved that if any database client
-            // makes a schema change then the sync might break
-            .with("snapshot.locking.mode", "none")
-            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-include-schema-changes
-            .with("include.schema.changes", "false")
-            .with(
-                "connect.keep.alive.interval.ms",
-                configuration.debeziumKeepAliveInterval.toMillis().toString(),
-            )
-            .withDatabase(configuration.jdbcProperties)
-            .withDatabase("hostname", tunnelSession.address.hostName)
-            .withDatabase("port", tunnelSession.address.port.toString())
-            .withDatabase("dbname", databaseName)
-            .withDatabase("server.id", serverID.toString())
-            .withDatabase("include.list", databaseName)
-            .withOffset()
-            .withSchemaHistory()
-            .with("converters", "datetime")
-            .with(
-                "datetime.type",
-                MySQLDateTimeConverter::class.java.getName(),
-            )
-            // TODO: add missing properties, like MySQL converters, etc. Do a full audit.
-            .buildMap()
+        val dbzPropertiesBuilder =
+            DebeziumPropertiesBuilder()
+                .withDefault()
+                .withConnector(MySqlConnector::class.java)
+                .withDebeziumName(databaseName)
+                .withHeartbeats(configuration.debeziumHeartbeatInterval)
+                // This to make sure that binary data represented as a base64-encoded String.
+                // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
+                .with("binary.handling.mode", "base64")
+                // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
+                .with("snapshot.mode", "when_needed")
+                // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
+                // This is to make sure other database clients are allowed to write to a table while
+                // Airbyte is taking a snapshot. There is a risk involved that if any database
+                // client
+                // makes a schema change then the sync might break
+                .with("snapshot.locking.mode", "none")
+                // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-include-schema-changes
+                .with("include.schema.changes", "false")
+                .with(
+                    "connect.keep.alive.interval.ms",
+                    configuration.debeziumKeepAliveInterval.toMillis().toString(),
+                )
+                .withDatabase(configuration.jdbcProperties)
+                .withDatabase("hostname", tunnelSession.address.hostName)
+                .withDatabase("port", tunnelSession.address.port.toString())
+                .withDatabase("dbname", databaseName)
+                .withDatabase("server.id", serverID.toString())
+                .withDatabase("include.list", databaseName)
+                .withOffset()
+                .withSchemaHistory()
+                .with("converters", "datetime,numeric,boolean")
+                .with(
+                    "datetime.type",
+                    MySQLDateTimeConverter::class.java.getName(),
+                )
+                .with("numeric.type", MySQLNumericConverter::class.java.getName())
+                .with("boolean.type", MySQLBooleanConverter::class.java.getName())
+
+        val serverTimezone: String? =
+            (configuration.incrementalConfiguration as CdcIncrementalConfiguration).serverTimezone
+        if (!serverTimezone.isNullOrBlank()) {
+            dbzPropertiesBuilder.with("database.connectionTimezone", serverTimezone)
+        }
+        dbzPropertiesBuilder.buildMap()
     }
 
     val syntheticProperties: Map<String, String> by lazy {

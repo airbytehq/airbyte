@@ -64,6 +64,7 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.3 | 2024-10-29 | [47857](https://github.com/airbytehq/airbyte/pull/47857) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47451](https://github.com/airbytehq/airbyte/pull/47451) | Update dependencies |
 | 0.2.1 | 2024-10-21 | [47206](https://github.com/airbytehq/airbyte/pull/47206) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44416](https://github.com/airbytehq/airbyte/pull/44416) | Refactor connector to manifest-only format |

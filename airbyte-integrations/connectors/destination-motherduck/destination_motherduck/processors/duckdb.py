@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
 
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
@@ -22,6 +22,8 @@ from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
+
+BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,46 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     supports_merge_insert = False
     sql_config: DuckDBConfig
 
+    def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:
+        """Execute the given SQL statement."""
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+            return result.fetchall()
+
+    def _execute_sql_with_buffer(self, sql: str | TextClause | Executable, buffer_data: pa.Table | None) -> Sequence[Any]:
+        """
+        Execute the given SQL statement.
+
+        Explicitly register a buffer table to read from.
+        """
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                # This table will now be queryable from DuckDB under the name BUFFER_TABLE_NAME
+                conn.execute(text("register(:name, :df)"), {"name": BUFFER_TABLE_NAME, "df": buffer_data})
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+            return result.fetchall()
+
     @overrides
     def _setup(self) -> None:
         """Create the database parent folder if it doesn't yet exist."""
@@ -116,7 +158,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         primary_keys: list[str] | None = None,
     ) -> None:
         if primary_keys:
-            pk_str = ", ".join(primary_keys)
+            pk_str = ", ".join(map(self._quote_identifier, primary_keys))
             column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
@@ -164,12 +206,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str) -> None:
         column_names_list = list(buffer[stream_name].keys())
-        column_names = ", ".join(column_names_list)
+        column_names_str = ", ".join(map(self._quote_identifier, column_names_list))
         params = ", ".join(["?"] * len(column_names_list))
         sql = f"""
         -- Write with executemany
         INSERT INTO {self._fully_qualified(table_name)}
-            ({column_names})
+            ({column_names_str})
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]
@@ -182,12 +224,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         columns = list(self._get_sql_column_definitions(stream_name).keys())
         if len(columns) != len(pa_table.column_names):
             warnings.warn(f"Schema has colums: {columns}, buffer has columns: {pa_table.column_names}")
-        column_names = ", ".join(pa_table.column_names)
+        column_names = ", ".join(map(self._quote_identifier, pa_table.column_names))
         sql = f"""
         -- Write from PyArrow table
-        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM pa_table
+        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM {BUFFER_TABLE_NAME}
         """
-        self._execute_sql(sql)
+        self._execute_sql_with_buffer(sql, buffer_data=pa_table)
 
     def _write_temp_table_to_target_table(
         self,
