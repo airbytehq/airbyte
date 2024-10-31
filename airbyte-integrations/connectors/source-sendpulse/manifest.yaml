@@ -1,0 +1,832 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for [SendPulse](https://sendpulse.com/) allows you to
+  seamlessly sync data from SendPulse to your data warehouse. It retrieves
+  essential information from various SendPulse streams, including mailing lists,
+  campaigns, templates, senders, webhooks, balance details, and balance. This
+  enables you to analyze and manage your SendPulse email marketing and
+  communication efforts effectively in a centralized location.
+
+check:
+  type: CheckStream
+  stream_names:
+    - mailing_lists
+
+definitions:
+  streams:
+    balance:
+      type: DeclarativeStream
+      name: balance
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /balance
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - currency
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance"
+    senders:
+      type: DeclarativeStream
+      name: senders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /senders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - email
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/senders"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/email-service/webhook
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    mailing_lists:
+      type: DeclarativeStream
+      name: mailing_lists
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /addressbooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mailing_lists"
+    balance_details:
+      type: DeclarativeStream
+      name: balance_details
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/balance/detail
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance_details"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.sendpulse.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://api.sendpulse.com/oauth/access_token
+
+streams:
+  - $ref: "#/definitions/streams/mailing_lists"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/senders"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/balance_details"
+  - $ref: "#/definitions/streams/balance"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://sendpulse.com/tr/integrations/api
+  testedStreams:
+    balance:
+      hasRecords: true
+      streamHash: 26f34a8de43c3450dbe0453c5f51793d3745f5ce
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    senders:
+      hasRecords: true
+      streamHash: 9fa00e085af9f89d6fa8fea75cd2f7c99b7c36ff
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: 1bf46a2ea368a7057b227be76df1b0cf37411cfa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 3c703d09954bfcafd4a7d9a28279722dc702451b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    templates:
+      hasRecords: true
+      streamHash: 9e676bf5e32676d5d840d262506a693c5fe2d571
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    mailing_lists:
+      hasRecords: true
+      streamHash: c76d2d1e2dd39da00266a3e59ad56189eafaf3b2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    balance_details:
+      hasRecords: true
+      streamHash: c63d6679f2ae1ec3df0e5800427ef0f63b549458
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    balance: true
+    senders: true
+    webhooks: true
+    campaigns: true
+    templates: true
+    mailing_lists: true
+    balance_details: true
+
+schemas:
+  balance:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - currency
+    properties:
+      currency:
+        type: string
+      balance_currency:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  senders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - email
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      is_allowed_for_smtp:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      is_sms:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      message:
+        type:
+          - object
+          - "null"
+        properties:
+          list_id:
+            type:
+              - number
+              - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          attachments:
+            type:
+              - string
+              - "null"
+          sender_name:
+            type:
+              - string
+              - "null"
+          sender_email:
+            type:
+              - string
+              - "null"
+      is_viber:
+        type:
+          - boolean
+          - "null"
+      send_date:
+        type:
+          - string
+          - "null"
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          sent:
+            type:
+              - number
+              - "null"
+          error:
+            type:
+              - number
+              - "null"
+          opening:
+            type:
+              - number
+              - "null"
+          delivered:
+            type:
+              - number
+              - "null"
+          unsubscribe:
+            type:
+              - number
+              - "null"
+          link_redirected:
+            type:
+              - number
+              - "null"
+      all_email_qty:
+        type:
+          - number
+          - "null"
+      company_price:
+        type:
+          - string
+          - "null"
+      paid_email_qty:
+        type:
+          - number
+          - "null"
+      overdraft_price:
+        type:
+          - number
+          - "null"
+      tariff_email_qty:
+        type:
+          - number
+          - "null"
+      overdraft_currency:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      lang:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - object
+          - "null"
+        properties:
+          smm:
+            type:
+              - string
+              - "null"
+          blog:
+            type:
+              - string
+              - "null"
+          food:
+            type:
+              - string
+              - "null"
+          meat:
+            type:
+              - string
+              - "null"
+          sale:
+            type:
+              - string
+              - "null"
+          hotel:
+            type:
+              - string
+              - "null"
+          photo:
+            type:
+              - string
+              - "null"
+          promo:
+            type:
+              - string
+              - "null"
+          shoes:
+            type:
+              - string
+              - "null"
+          study:
+            type:
+              - string
+              - "null"
+          video:
+            type:
+              - string
+              - "null"
+          digest:
+            type:
+              - string
+              - "null"
+          invite:
+            type:
+              - string
+              - "null"
+          museum:
+            type:
+              - string
+              - "null"
+          travel:
+            type:
+              - string
+              - "null"
+          courses:
+            type:
+              - string
+              - "null"
+          newyear:
+            type:
+              - string
+              - "null"
+          product:
+            type:
+              - string
+              - "null"
+          tourist:
+            type:
+              - string
+              - "null"
+          webinar:
+            type:
+              - string
+              - "null"
+          discount:
+            type:
+              - string
+              - "null"
+          feedback:
+            type:
+              - string
+              - "null"
+          pizzeria:
+            type:
+              - string
+              - "null"
+          christmas:
+            type:
+              - string
+              - "null"
+          ecommerce:
+            type:
+              - string
+              - "null"
+          education:
+            type:
+              - string
+              - "null"
+          halloween:
+            type:
+              - string
+              - "null"
+          marketing:
+            type:
+              - string
+              - "null"
+          valentine:
+            type:
+              - string
+              - "null"
+          womensday:
+            type:
+              - string
+              - "null"
+          exhibition:
+            type:
+              - string
+              - "null"
+          leadmagnet:
+            type:
+              - string
+              - "null"
+          mothersday:
+            type:
+              - string
+              - "null"
+          onlineshop:
+            type:
+              - string
+              - "null"
+          realestate:
+            type:
+              - string
+              - "null"
+          blackfriday:
+            type:
+              - string
+              - "null"
+          businessman:
+            type:
+              - string
+              - "null"
+          subscribing:
+            type:
+              - string
+              - "null"
+          offlineevent:
+            type:
+              - string
+              - "null"
+          online-event:
+            type:
+              - string
+              - "null"
+          photographer:
+            type:
+              - string
+              - "null"
+          triggeremail:
+            type:
+              - string
+              - "null"
+          abandonedcart:
+            type:
+              - string
+              - "null"
+          offline-event:
+            type:
+              - string
+              - "null"
+          valentinesday:
+            type:
+              - string
+              - "null"
+          registrationfortheprocedure:
+            type:
+              - string
+              - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      preview:
+        type:
+          - string
+          - "null"
+      real_id:
+        type:
+          - number
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      name_slug:
+        type:
+          - string
+          - "null"
+      is_structure:
+        type:
+          - boolean
+          - "null"
+      category_info:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sort:
+            type:
+              - number
+              - "null"
+          full_description:
+            type:
+              - string
+              - "null"
+          meta_description:
+            type:
+              - string
+              - "null"
+      full_description:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  mailing_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      creationdate:
+        type:
+          - string
+          - "null"
+      all_email_qty:
+        type:
+          - number
+          - "null"
+      status_explain:
+        type:
+          - string
+          - "null"
+      active_email_qty:
+        type:
+          - number
+          - "null"
+      inactive_email_qty:
+        type:
+          - number
+          - "null"
+      exc_phones_quantity:
+        type:
+          - number
+          - "null"
+      new_phones_quantity:
+        type:
+          - number
+          - "null"
+      active_phones_quantity:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  balance_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      push:
+        type:
+          - object
+          - "null"
+        properties:
+          end_date:
+            type:
+              - string
+              - "null"
+          auto_renew:
+            type:
+              - number
+              - "null"
+          tariff_name:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - object
+          - "null"
+        properties:
+          tariff_name:
+            type:
+              - string
+              - "null"
+          finished_time:
+            type:
+              - string
+              - "null"
+          is_unique_type:
+            type:
+              - boolean
+              - "null"
+          current_subscribers:
+            type:
+              - number
+              - "null"
+          maximum_subscribers:
+            type:
+              - number
+              - "null"
+      balance:
+        type:
+          - object
+          - "null"
+        properties:
+          main:
+            type:
+              - string
+              - "null"
+          bonus:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
