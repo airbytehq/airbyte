@@ -15,7 +15,12 @@ class MockDestinationConfiguration : DestinationConfiguration() {
     override val recordBatchSizeBytes = 10 * 1024L
 }
 
-@Singleton class MockDestinationSpecification : ConfigurationSpecification()
+@Singleton
+class MockDestinationSpecification : ConfigurationSpecification() {
+    companion object {
+        const val CONFIG: String = "{}"
+    }
+}
 
 @Singleton
 class MockDestinationConfigurationFactory :
