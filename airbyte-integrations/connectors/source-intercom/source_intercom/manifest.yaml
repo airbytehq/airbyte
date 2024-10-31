@@ -1813,6 +1813,62 @@ definitions:
             type:
               - "null"
               - string
+          ticket:
+            description: Details related to the ticket.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the ticket
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the ticket
+                type:
+                  - "null"
+                  - integer
+              url:
+                description: URL link to the ticket in Intercom
+                type:
+                  - "null"
+                  - string
+              custom_attributes:
+                description: Custom attributes associated with the ticket
+                type:
+                  - "null"
+                  - object
+              state:
+                description: The current state of the ticket
+                type:
+                  - "null"
+                  - string
+              ticket_type:
+                description: The type of the ticket
+                type:
+                  - "null"
+                  - string
+              ticket_type_description:
+                description: Description of the ticket type
+                type:
+                  - "null"
+                  - string
+              ticket_type_emoji:
+                description: Emoji representing the ticket type
+                type:
+                  - "null"
+                  - string
+              ticket_custom_state_admin_label:
+                description: Custom state label for the ticket (admin view)
+                type:
+                  - "null"
+                  - string
+              ticket_custom_state_user_label:
+                description: Custom state label for the ticket (user view)
+                type:
+                  - "null"
+                  - string
           conversation_message:
             description: The main message content of the conversation.
             type:
