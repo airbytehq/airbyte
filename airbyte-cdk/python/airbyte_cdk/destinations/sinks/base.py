@@ -11,7 +11,6 @@ from typing_extensions import final
 
 from airbyte_cdk import AirbyteMessage
 from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalog,
     DestinationStats,
 )
 from airbyte_cdk.sources.message import MessageRepository
@@ -140,32 +139,29 @@ class StreamSinkBase(abc.ABC):
         self.records_buffered = 0
         self.last_flush_time = now()
 
+    def enrich_records(self, records: Iterable[Record]) -> Iterable[Record]:
+        """Enrich records before writing to the sink.
 
-class StreamSinkFactoryBase(abc.ABC):
-    """Base class for stream sink factories."""
+        This method can be overridden by subclasses to enrich records before writing them
+        to the sink.
 
-    default_stream_sink_class: type[StreamSinkBase] = StreamSinkBase
-
-    def create_sink(
-        self,
-        destination_config: dict,
-        stream_name: str,
-        stream_namespace: str,
-        catalog_provider: CatalogProvider | ConfiguredAirbyteCatalog,
-        message_repository: MessageRepository,
-    ) -> StreamSinkBase:
-        """Create a new stream sink instance.
-
-        By default, this method creates a new instance of the default stream sink class.
-
-        Subclasses can override this method to use a different stream sink class, for
-        instance if different stream names or catalog configurations require different
-        sink implementations.
+        The default implementation simply calls enrich_record() on each record
+        sequentially.
         """
-        return self.default_stream_sink_class(
-            stream_name=stream_name,
-            destination_config=destination_config,
-            stream_namespace=stream_namespace,
-            catalog_provider=catalog_provider,
-            message_repository=message_repository,
-        )
+        return (self.enrich_record(record) for record in records)
+
+    def enrich_record(self, record: Record) -> Record:
+        """Enrich a record before writing it to the sink.
+
+        This method can be overridden by subclasses to enrich records before writing them
+        to the sink.
+
+        The default implementation simply returns the record unchanged.
+
+        Subclasses can override this method to add additional fields to the record, for
+        instance to add metadata or to transform the record before writing it.
+
+        Alternatively, subclasses can override `enrich_records` to enrich records in
+        batches.
+        """
+        return record
