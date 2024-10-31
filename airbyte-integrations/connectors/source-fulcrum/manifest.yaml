@@ -17,134 +17,51 @@ check:
 
 definitions:
   streams:
-    audio:
-      type: DeclarativeStream
-      name: audio
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/audio.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - audio
-      primary_key:
-        - record_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/audio"
     forms:
       type: DeclarativeStream
       name: forms
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/forms.json
           http_method: GET
+          request_parameters:
+            type: all
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - forms
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/forms"
-    roles:
-      type: DeclarativeStream
-      name: roles
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: api/v2/roles.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - roles
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/roles"
     users:
       type: DeclarativeStream
       name: users
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/users.json
@@ -155,280 +72,30 @@ definitions:
             type: DpathExtractor
             field_path:
               - user
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
-    groups:
-      type: DeclarativeStream
-      name: groups
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/groups.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - groups
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/groups"
-    layers:
-      type: DeclarativeStream
-      name: layers
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/layers.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - layers
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/layers"
-    photos:
-      type: DeclarativeStream
-      name: photos
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: current_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/photos.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - photos
-      primary_key:
-        - record_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/photos"
-    videos:
-      type: DeclarativeStream
-      name: videos
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/videos.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - videos
-      primary_key:
-        - record_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/videos"
-    records:
-      type: DeclarativeStream
-      name: records
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/records.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - records
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/records"
-    projects:
-      type: DeclarativeStream
-      name: projects
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/projects.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - projects
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/projects"
-    webhooks:
-      type: DeclarativeStream
-      name: webhooks
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/webhooks.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - webhooks
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/webhooks"
     workflows:
       type: DeclarativeStream
       name: workflows
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/workflows.json
@@ -439,30 +106,68 @@ definitions:
             type: DpathExtractor
             field_path:
               - workflows
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/workflows"
-    changesets:
-      type: DeclarativeStream
-      name: changesets
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20000
             start_from_page: 1
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/webhooks.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    changesets:
+      type: DeclarativeStream
+      name: changesets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/changesets.json
@@ -473,32 +178,68 @@ definitions:
             type: DpathExtractor
             field_path:
               - changesets
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/changesets"
-    signatures:
-      type: DeclarativeStream
-      name: signatures
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20000
             start_from_page: 1
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/changesets"
+    records:
+      type: DeclarativeStream
+      name: records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/records.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/records"
+    signatures:
+      type: DeclarativeStream
+      name: signatures
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/signatures.json
@@ -509,140 +250,104 @@ definitions:
             type: DpathExtractor
             field_path:
               - signatures
-      primary_key:
-        - record_id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/signatures"
-    memberships:
+    projects:
       type: DeclarativeStream
-      name: memberships
+      name: projects
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v2/memberships.json
+          path: /api/v2/projects.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - memberships
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/memberships"
-    choice_lists:
-      type: DeclarativeStream
-      name: choice_lists
-      retriever:
-        type: SimpleRetriever
+              - projects
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20000
             start_from_page: 1
             inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    layers:
+      type: DeclarativeStream
+      name: layers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v2/choice_lists.json
+          path: /api/v2/layers.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - choice_lists
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/choice_lists"
-    authorizations:
-      type: DeclarativeStream
-      name: authorizations
-      retriever:
-        type: SimpleRetriever
+              - layers
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20000
             start_from_page: 1
             inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/authorizations.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - authorizations
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/authorizations"
+          $ref: "#/schemas/layers"
     classification_sets:
       type: DeclarativeStream
       name: classification_sets
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 20000
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /api/v2/classification_sets.json
@@ -653,12 +358,309 @@ definitions:
             type: DpathExtractor
             field_path:
               - classification_sets
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/classification_sets"
+    choice_lists:
+      type: DeclarativeStream
+      name: choice_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/choice_lists.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - choice_lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/choice_lists"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/groups.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - groups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    memberships:
+      type: DeclarativeStream
+      name: memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/memberships.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - memberships
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/memberships"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/roles.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    authorizations:
+      type: DeclarativeStream
+      name: authorizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/authorizations.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - authorizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/authorizations"
+    photos:
+      type: DeclarativeStream
+      name: photos
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/photos.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - photos
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: current_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/photos"
+    audio:
+      type: DeclarativeStream
+      name: audio
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/audio.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - audio
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio"
+    videos:
+      type: DeclarativeStream
+      name: videos
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/videos.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - videos
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos"
   base_requester:
     type: HttpRequester
     url_base: https://api.fulcrumapp.com
@@ -708,68 +710,71 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://docs.fulcrumapp.com/reference/rest-api-intro
+  autoImportSchema:
+    forms: true
+    users: false
+    workflows: false
+    webhooks: true
+    changesets: true
+    records: true
+    signatures: true
+    projects: true
+    layers: true
+    classification_sets: true
+    choice_lists: true
+    groups: true
+    memberships: true
+    roles: true
+    authorizations: true
+    photos: false
+    audio: false
+    videos: false
   testedStreams:
-    audio:
-      hasRecords: true
-      streamHash: ed2ecfacee335f637a6e47c275e2f8ce1cb900c1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     forms:
-      hasRecords: true
-      streamHash: a080b8928f23c009b9fc3008abcea91eca3c52fe
+      streamHash: d701e2df9f720df416aaa5c9b4e7a6a2a2a56252
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    roles:
       hasRecords: true
-      streamHash: 145c72d8a6e501b5ac905db993e5cf16a78eda3c
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
       streamHash: 524af7e9234688de6994edb27292be6ce7d82346
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    groups:
       hasRecords: true
-      streamHash: e65d5d2466ca21ebb78776ff87b202cd581cb2e4
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflows:
+      streamHash: ba12cc2917bf11449cd1af4cab03cfafc904e5ed
+      hasResponse: true
       responsesAreSuccessful: true
-    layers:
       hasRecords: true
-      streamHash: e40fcbb288e274b84d840f6ff737310323d0a008
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: 76b56a17ebf198ae81942372cea3f586b2baf0db
+      hasResponse: true
       responsesAreSuccessful: true
-    photos:
       hasRecords: true
-      streamHash: 49bb8ddaef2bec53a509a967f125f3df9e986a5f
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    changesets:
+      streamHash: 5fa140e231db93a5b1909ea11ab72381ce666299
+      hasResponse: true
       responsesAreSuccessful: true
-    videos:
       hasRecords: true
-      streamHash: 99c4355f6405e291b6de7d639ea017c33cafc1f1
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     records:
+      streamHash: 41331fe4c7953c6849064293d471a229278c1b09
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: true
-      streamHash: 2575359d370812ef019918fa3c64574dfe74fe63
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signatures:
+      hasRecords: true
+      streamHash: fb715c0bebb31f6c7e3147729bd9f78fb5884747
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -781,51 +786,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    webhooks:
+    layers:
       hasRecords: true
-      streamHash: 76b56a17ebf198ae81942372cea3f586b2baf0db
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    workflows:
-      hasRecords: true
-      streamHash: ba12cc2917bf11449cd1af4cab03cfafc904e5ed
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    changesets:
-      hasRecords: true
-      streamHash: 5fa140e231db93a5b1909ea11ab72381ce666299
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    signatures:
-      hasRecords: true
-      streamHash: fb715c0bebb31f6c7e3147729bd9f78fb5884747
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    memberships:
-      hasRecords: true
-      streamHash: 72381538d12e923b39c97b73b418b64aa2e07c74
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    choice_lists:
-      hasRecords: true
-      streamHash: 46bd64269bd9e61ee4942ab9d29f68b8bef17cc3
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    authorizations:
-      hasRecords: true
-      streamHash: 1771d3b9077668e60e9c1281b0485710aac0bf71
+      streamHash: e40fcbb288e274b84d840f6ff737310323d0a008
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -837,101 +800,70 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    audio: false
-    forms: true
-    roles: true
-    users: false
-    groups: true
-    layers: true
-    photos: false
-    videos: false
-    records: true
-    projects: true
-    webhooks: true
-    workflows: false
-    changesets: true
-    signatures: true
-    memberships: true
-    choice_lists: true
-    authorizations: true
-    classification_sets: true
+    choice_lists:
+      hasRecords: true
+      streamHash: 46bd64269bd9e61ee4942ab9d29f68b8bef17cc3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: e65d5d2466ca21ebb78776ff87b202cd581cb2e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    memberships:
+      hasRecords: true
+      streamHash: 72381538d12e923b39c97b73b418b64aa2e07c74
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    roles:
+      hasRecords: true
+      streamHash: 145c72d8a6e501b5ac905db993e5cf16a78eda3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    authorizations:
+      hasRecords: true
+      streamHash: 1771d3b9077668e60e9c1281b0485710aac0bf71
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    photos:
+      hasRecords: true
+      streamHash: 49bb8ddaef2bec53a509a967f125f3df9e986a5f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audio:
+      hasRecords: true
+      streamHash: ed2ecfacee335f637a6e47c275e2f8ce1cb900c1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    videos:
+      hasRecords: true
+      streamHash: 99c4355f6405e291b6de7d639ea017c33cafc1f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.fulcrumapp.com/reference/rest-api-intro
 
 schemas:
-  audio:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - record_id
-    properties:
-      url:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      stored:
-        type:
-          - boolean
-          - "null"
-      form_id:
-        type:
-          - string
-          - "null"
-      uploaded:
-        type:
-          - boolean
-          - "null"
-      file_size:
-        type:
-          - number
-          - "null"
-      processed:
-        type:
-          - boolean
-          - "null"
-      record_id:
-        type: string
-      access_key:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      content_type:
-        type:
-          - string
-          - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   forms:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       version:
         type:
@@ -941,13 +873,35 @@ schemas:
         type:
           - string
           - "null"
-      id:
-        type: string
-      name:
+      assignment_enabled:
+        type:
+          - boolean
+          - "null"
+      attachment_ids:
+        type:
+          - array
+          - "null"
+      auto_assign:
+        type:
+          - boolean
+          - "null"
+      bounding_box:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      created_at:
         type:
           - string
           - "null"
-      status:
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
         type:
           - string
           - "null"
@@ -964,27 +918,15 @@ schemas:
               type:
                 - string
                 - "null"
-            key:
+            agreement_text:
               type:
                 - string
                 - "null"
-            label:
-              type:
-                - string
-                - "null"
-            hidden:
+            annotations_enabled:
               type:
                 - boolean
                 - "null"
-            numeric:
-              type:
-                - boolean
-                - "null"
-            disabled:
-              type:
-                - boolean
-                - "null"
-            required:
+            audio_enabled:
               type:
                 - boolean
                 - "null"
@@ -996,41 +938,167 @@ schemas:
               type:
                 - boolean
                 - "null"
+            default_value:
+              type:
+                - string
+                - "null"
+            deidentification_enabled:
+              type:
+                - boolean
+                - "null"
+            disabled:
+              type:
+                - boolean
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            latlongstamp_enabled:
+              type:
+                - boolean
+                - "null"
+            negative:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            neutral:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            neutral_enabled:
+              type:
+                - boolean
+                - "null"
+            numeric:
+              type:
+                - boolean
+                - "null"
+            positive:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+            timestamp_enabled:
+              type:
+                - boolean
+                - "null"
+            track_enabled:
+              type:
+                - boolean
+                - "null"
             visible_conditions_behavior:
               type:
                 - string
                 - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      auto_assign:
+      fastfill_audio_enabled:
         type:
           - boolean
           - "null"
-      bounding_box:
+      field_effects:
+        type:
+          - object
+          - "null"
+      geometry_required:
+        type:
+          - boolean
+          - "null"
+      geometry_types:
         type:
           - array
           - "null"
         items:
           type:
-            - number
+            - string
             - "null"
+      hidden_on_dashboard:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      projects_enabled:
+        type:
+          - boolean
+          - "null"
+      record_changed_at:
+        type:
+          - string
+          - "null"
       record_count:
         type:
           - number
+          - "null"
+      record_title_key:
+        type:
+          - string
+          - "null"
+      report_templates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
           - "null"
       status_field:
         type:
@@ -1045,6 +1113,34 @@ schemas:
             type:
               - string
               - "null"
+          choices:
+            type:
+              - array
+              - "null"
+          data_name:
+            type:
+              - string
+              - "null"
+          default_previous_value:
+            type:
+              - boolean
+              - "null"
+          default_value:
+            type:
+              - string
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          hidden:
+            type:
+              - boolean
+              - "null"
           key:
             type:
               - string
@@ -1053,19 +1149,7 @@ schemas:
             type:
               - string
               - "null"
-          hidden:
-            type:
-              - boolean
-              - "null"
-          choices:
-            type:
-              - array
-              - "null"
-          enabled:
-            type:
-              - boolean
-              - "null"
-          disabled:
+          read_only:
             type:
               - boolean
               - "null"
@@ -1073,58 +1157,6 @@ schemas:
             type:
               - boolean
               - "null"
-          data_name:
-            type:
-              - string
-              - "null"
-          read_only:
-            type:
-              - boolean
-              - "null"
-          default_value:
-            type:
-              - string
-              - "null"
-          default_previous_value:
-            type:
-              - boolean
-              - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      field_effects:
-        type:
-          - object
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-      attachment_ids:
-        type:
-          - array
-          - "null"
-      geometry_types:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      projects_enabled:
-        type:
-          - boolean
-          - "null"
-      record_title_key:
-        type:
-          - string
-          - "null"
-      report_templates:
-        type:
-          - array
-          - "null"
       title_field_keys:
         type:
           - array
@@ -1133,51 +1165,6 @@ schemas:
           type:
             - string
             - "null"
-      geometry_required:
-        type:
-          - boolean
-          - "null"
-      assignment_enabled:
-        type:
-          - boolean
-          - "null"
-      hidden_on_dashboard:
-        type:
-          - boolean
-          - "null"
-      fastfill_audio_enabled:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  roles:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      name:
-        type:
-          - string
-          - "null"
-      is_system:
-        type:
-          - boolean
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      is_default:
-        type:
-          - boolean
-          - "null"
       updated_at:
         type:
           - string
@@ -1186,123 +1173,17 @@ schemas:
         type:
           - string
           - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
       updated_by_id:
         type:
           - string
           - "null"
-      can_manage_apps:
-        type:
-          - boolean
-          - "null"
-      can_run_reports:
-        type:
-          - boolean
-          - "null"
-      can_manage_roles:
-        type:
-          - boolean
-          - "null"
-      can_change_status:
-        type:
-          - boolean
-          - "null"
-      can_manage_groups:
-        type:
-          - boolean
-          - "null"
-      can_manage_layers:
-        type:
-          - boolean
-          - "null"
-      can_assign_records:
-        type:
-          - boolean
-          - "null"
-      can_change_project:
-        type:
-          - boolean
-          - "null"
-      can_create_records:
-        type:
-          - boolean
-          - "null"
-      can_delete_records:
-        type:
-          - boolean
-          - "null"
-      can_export_records:
-        type:
-          - boolean
-          - "null"
-      can_import_records:
-        type:
-          - boolean
-          - "null"
-      can_manage_members:
-        type:
-          - boolean
-          - "null"
-      can_update_records:
-        type:
-          - boolean
-          - "null"
-      can_manage_projects:
-        type:
-          - boolean
-          - "null"
-      can_bulk_delete_records:
-        type:
-          - boolean
-          - "null"
-      can_bulk_update_records:
-        type:
-          - boolean
-          - "null"
-      can_manage_choice_lists:
-        type:
-          - boolean
-          - "null"
-      can_manage_subscription:
-        type:
-          - boolean
-          - "null"
-      can_update_organization:
-        type:
-          - boolean
-          - "null"
-      can_manage_authorizations:
-        type:
-          - boolean
-          - "null"
-      can_access_issues_and_tasks:
-        type:
-          - boolean
-          - "null"
-      can_configure_issues_and_tasks:
-        type:
-          - boolean
-          - "null"
-      can_manage_classification_sets:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
+    required:
+      - id
   users:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      email:
-        type:
-          - string
-          - "null"
       access:
         type:
           - object
@@ -1312,7 +1193,7 @@ schemas:
             type:
               - boolean
               - "null"
-      managed:
+      completed_onboarding:
         type:
           - boolean
           - "null"
@@ -1328,6 +1209,14 @@ schemas:
             type:
               type:
                 - string
+                - "null"
+            api_token:
+              type:
+                - string
+                - "null"
+            has_ita_system_apps:
+              type:
+                - boolean
                 - "null"
             id:
               type:
@@ -1346,132 +1235,15 @@ schemas:
                   type:
                     - string
                     - "null"
-                id:
+                activity_feed_enabled:
                   type:
-                    - string
+                    - boolean
                     - "null"
-                name:
+                api_access_enabled:
                   type:
-                    - string
+                    - boolean
                     - "null"
-                slug:
-                  type:
-                    - string
-                    - "null"
-                flags:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    map_engine:
-                      type:
-                        - string
-                        - "null"
-                    import_limit:
-                      type:
-                        - number
-                        - "null"
-                    esri_enhanced:
-                      type:
-                        - boolean
-                        - "null"
-                    web_map_engine:
-                      type:
-                        - string
-                        - "null"
-                    web_sketch_editor:
-                      type:
-                        - boolean
-                        - "null"
-                    mobile_layer_picker:
-                      type:
-                        - boolean
-                        - "null"
-                    non_blocking_sync_ga:
-                      type:
-                        - boolean
-                        - "null"
-                    reporting_map_engine:
-                      type:
-                        - string
-                        - "null"
-                    tracking_ios_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    advanced_geometry_ios:
-                      type:
-                        - boolean
-                        - "null"
-                    offline_basemaps_beta:
-                      type:
-                        - boolean
-                        - "null"
-                    advanced_geometry_beta:
-                      type:
-                        - boolean
-                        - "null"
-                    mobile_layer_picker_ga:
-                      type:
-                        - boolean
-                        - "null"
-                    tracking_ios_enabled_ga:
-                      type:
-                        - boolean
-                        - "null"
-                    batch_pdf_export_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    tracking_android_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    advanced_geometry_android:
-                      type:
-                        - boolean
-                        - "null"
-                    advanced_geometry_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    bulk_records_delete_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    suppress_repeatable_geometry:
-                      type:
-                        - boolean
-                        - "null"
-                    feature_service_layers_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    mobile_offline_feature_services:
-                      type:
-                        - boolean
-                        - "null"
-                    suppress_repeatable_geometry_ga:
-                      type:
-                        - boolean
-                        - "null"
-                created_at:
-                  type:
-                    - string
-                    - "null"
-                updated_at:
-                  type:
-                    - string
-                    - "null"
-                public_slug:
-                  type:
-                    - string
-                    - "null"
-                public_color:
-                  type:
-                    - string
-                    - "null"
-                saml_enabled:
+                attachments_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1479,7 +1251,43 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                export_photos:
+                audit_logs_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                barcodes_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                base_price_in_cents:
+                  type:
+                    - number
+                    - "null"
+                calculations_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                communities_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                custom_roles_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_inference_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_loadfile_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_recognizetext_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1491,6 +1299,30 @@ schemas:
                   type:
                     - number
                     - "null"
+                data_shares_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_shares_limit:
+                  type:
+                    - number
+                    - "null"
+                developer_pack_cost:
+                  type:
+                    - number
+                    - "null"
+                developer_pack_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                esri_enterprise_connection_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                export_changesets_enabled:
+                  type:
+                    - boolean
+                    - "null"
                 export_formats:
                   type:
                     - array
@@ -1499,11 +1331,180 @@ schemas:
                     type:
                       - string
                       - "null"
+                export_full_history_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                export_photos:
+                  type:
+                    - boolean
+                    - "null"
+                export_reports_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                exports_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                external_contributions_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                flags:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    advanced_geometry_android:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_beta:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_ios:
+                      type:
+                        - boolean
+                        - "null"
+                    batch_pdf_export_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    bulk_records_delete_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    esri_enhanced:
+                      type:
+                        - boolean
+                        - "null"
+                    feature_service_layers_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    import_limit:
+                      type:
+                        - number
+                        - "null"
+                    map_engine:
+                      type:
+                        - string
+                        - "null"
+                    mobile_layer_picker:
+                      type:
+                        - boolean
+                        - "null"
+                    mobile_layer_picker_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    mobile_offline_feature_services:
+                      type:
+                        - boolean
+                        - "null"
+                    non_blocking_sync_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    offline_basemaps_beta:
+                      type:
+                        - boolean
+                        - "null"
+                    reporting_map_engine:
+                      type:
+                        - string
+                        - "null"
+                    suppress_repeatable_geometry:
+                      type:
+                        - boolean
+                        - "null"
+                    suppress_repeatable_geometry_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_android_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_ios_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_ios_enabled_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    web_map_engine:
+                      type:
+                        - string
+                        - "null"
+                    web_sketch_editor:
+                      type:
+                        - boolean
+                        - "null"
+                form_scripts_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                imports_enabled:
+                  type:
+                    - boolean
+                    - "null"
                 included_users:
                   type:
                     - number
                     - "null"
                 layers_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                maps_data_quota:
+                  type:
+                    - number
+                    - "null"
+                media_data_quota:
+                  type:
+                    - number
+                    - "null"
+                media_data_usage_includes_audio:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_photos:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_signatures:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_videos:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                photo_annotations_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                photo_deidentification_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                photo_recognition_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1515,119 +1516,19 @@ schemas:
                   type:
                     - number
                     - "null"
-                videos_enabled:
+                public_color:
                   type:
-                    - boolean
+                    - string
                     - "null"
-                exports_enabled:
+                public_slug:
                   type:
-                    - boolean
-                    - "null"
-                imports_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                maps_data_quota:
-                  type:
-                    - number
-                    - "null"
-                barcodes_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                media_data_quota:
-                  type:
-                    - number
-                    - "null"
-                webhooks_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                data_shares_limit:
-                  type:
-                    - number
+                    - string
                     - "null"
                 query_api_enabled:
                   type:
                     - boolean
                     - "null"
-                workflows_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                api_access_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                audit_logs_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                signatures_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                versioning_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                attachments_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                base_price_in_cents:
-                  type:
-                    - number
-                    - "null"
-                communities_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                data_shares_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                developer_pack_cost:
-                  type:
-                    - number
-                    - "null"
-                repeatables_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                calculations_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                custom_roles_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                form_scripts_enabled:
-                  type:
-                    - boolean
-                    - "null"
                 record_links_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                shared_views_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                view_history_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                activity_feed_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                developer_pack_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                export_reports_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1639,7 +1540,7 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                reporting_basic_enabled:
+                repeatables_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1647,59 +1548,51 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                export_changesets_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                photo_annotations_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                photo_recognition_enabled:
-                  type:
-                    - boolean
-                    - "null"
                 reporting_advanced_enabled:
                   type:
                     - boolean
+                    - "null"
+                reporting_basic_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                saml_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                shared_views_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                signatures_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                slug:
+                  type:
+                    - string
                     - "null"
                 sync_draft_records_enabled:
                   type:
                     - boolean
                     - "null"
-                data_event_loadfile_enabled:
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                versioning_enabled:
                   type:
                     - boolean
                     - "null"
-                export_full_history_enabled:
+                videos_enabled:
                   type:
                     - boolean
                     - "null"
-                data_event_inference_enabled:
+                view_history_enabled:
                   type:
                     - boolean
                     - "null"
-                external_contributions_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                photo_deidentification_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                media_data_usage_includes_audio:
-                  type:
-                    - boolean
-                    - "null"
-                data_event_recognizetext_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                media_data_usage_includes_photos:
-                  type:
-                    - boolean
-                    - "null"
-                media_data_usage_includes_videos:
+                webhooks_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1707,11 +1600,7 @@ schemas:
                   type:
                     - number
                     - "null"
-                esri_enterprise_connection_enabled:
-                  type:
-                    - boolean
-                    - "null"
-                media_data_usage_includes_signatures:
+                workflows_enabled:
                   type:
                     - boolean
                     - "null"
@@ -1720,67 +1609,7 @@ schemas:
                 - object
                 - "null"
               properties:
-                id:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                is_system:
-                  type:
-                    - boolean
-                    - "null"
-                created_at:
-                  type:
-                    - string
-                    - "null"
-                created_by:
-                  type:
-                    - string
-                    - "null"
-                is_default:
-                  type:
-                    - boolean
-                    - "null"
-                updated_at:
-                  type:
-                    - string
-                    - "null"
-                updated_by:
-                  type:
-                    - string
-                    - "null"
-                created_by_id:
-                  type:
-                    - string
-                    - "null"
-                updated_by_id:
-                  type:
-                    - string
-                    - "null"
-                can_manage_apps:
-                  type:
-                    - boolean
-                    - "null"
-                can_run_reports:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_roles:
-                  type:
-                    - boolean
-                    - "null"
-                can_change_status:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_groups:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_layers:
+                can_access_issues_and_tasks:
                   type:
                     - boolean
                     - "null"
@@ -1788,7 +1617,23 @@ schemas:
                   type:
                     - boolean
                     - "null"
+                can_bulk_delete_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_bulk_update_records:
+                  type:
+                    - boolean
+                    - "null"
                 can_change_project:
+                  type:
+                    - boolean
+                    - "null"
+                can_change_status:
+                  type:
+                    - boolean
+                    - "null"
+                can_configure_issues_and_tasks:
                   type:
                     - boolean
                     - "null"
@@ -1808,35 +1653,7 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                can_manage_members:
-                  type:
-                    - boolean
-                    - "null"
-                can_update_records:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_projects:
-                  type:
-                    - boolean
-                    - "null"
-                can_bulk_delete_records:
-                  type:
-                    - boolean
-                    - "null"
-                can_bulk_update_records:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_choice_lists:
-                  type:
-                    - boolean
-                    - "null"
-                can_manage_subscription:
-                  type:
-                    - boolean
-                    - "null"
-                can_update_organization:
+                can_manage_apps:
                   type:
                     - boolean
                     - "null"
@@ -1844,11 +1661,7 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                can_access_issues_and_tasks:
-                  type:
-                    - boolean
-                    - "null"
-                can_configure_issues_and_tasks:
+                can_manage_choice_lists:
                   type:
                     - boolean
                     - "null"
@@ -1856,38 +1669,82 @@ schemas:
                   type:
                     - boolean
                     - "null"
-            api_token:
-              type:
-                - string
-                - "null"
-            has_ita_system_apps:
-              type:
-                - boolean
-                - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-      image_large:
-        type:
-          - string
-          - "null"
-      image_small:
-        type:
-          - string
-          - "null"
-      phone_number:
-        type:
-          - string
-          - "null"
-      completed_onboarding:
-        type:
-          - boolean
-          - "null"
+                can_manage_groups:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_layers:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_members:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_projects:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_roles:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_subscription:
+                  type:
+                    - boolean
+                    - "null"
+                can_run_reports:
+                  type:
+                    - boolean
+                    - "null"
+                can_update_organization:
+                  type:
+                    - boolean
+                    - "null"
+                can_update_records:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                created_by:
+                  type:
+                    - string
+                    - "null"
+                created_by_id:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_default:
+                  type:
+                    - boolean
+                    - "null"
+                is_system:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                updated_by:
+                  type:
+                    - string
+                    - "null"
+                updated_by_id:
+                  type:
+                    - string
+                    - "null"
       current_organization:
         type:
           - object
@@ -1901,371 +1758,43 @@ schemas:
             type:
               - string
               - "null"
-    additionalProperties: true
-  groups:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      name:
+      email:
         type:
           - string
           - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      is_managed:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  layers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      description:
+      first_name:
         type:
           - string
           - "null"
       id:
         type: string
-      name:
+      image_large:
         type:
           - string
           - "null"
-      origin:
+      image_small:
         type:
           - string
           - "null"
-      source:
+      last_name:
         type:
           - string
           - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  photos:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - record_id
-    properties:
-      url:
-        type:
-          - string
-          - "null"
-      stored:
+      managed:
         type:
           - boolean
           - "null"
-      form_id:
+      phone_number:
         type:
           - string
           - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      uploaded:
-        type:
-          - boolean
-          - "null"
-      file_size:
-        type:
-          - number
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      processed:
-        type:
-          - boolean
-          - "null"
-      record_id:
-        type: string
-      access_key:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      content_type:
-        type:
-          - string
-          - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  videos:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - record_id
-    properties:
-      url:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      stored:
-        type:
-          - boolean
-          - "null"
-      form_id:
-        type:
-          - string
-          - "null"
-      uploaded:
-        type:
-          - boolean
-          - "null"
-      file_size:
-        type:
-          - number
-          - "null"
-      processed:
-        type:
-          - boolean
-          - "null"
-      record_id:
-        type: string
-      access_key:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      content_type:
-        type:
-          - string
-          - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  records:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - id
-    properties:
-      version:
-        type:
-          - number
-          - "null"
-      id:
-        type: string
-      form_id:
-        type:
-          - string
-          - "null"
-      geometry:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          coordinates:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - number
-                - "null"
-      latitude:
-        type:
-          - number
-          - "null"
-      longitude:
-        type:
-          - number
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      form_values:
-        type:
-          - object
-          - "null"
-        properties:
-          "0600":
-            type:
-              - string
-              - "null"
-          7da2:
-            type:
-              - string
-              - "null"
-          d630:
-            type:
-              - string
-              - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-      edited_duration:
-        type:
-          - number
-          - "null"
-      created_duration:
-        type:
-          - number
-          - "null"
-      updated_duration:
-        type:
-          - number
-          - "null"
-      client_created_at:
-        type:
-          - string
-          - "null"
-      client_updated_at:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  projects:
+  workflows:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      name:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      customer:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      form_count:
-        type:
-          - number
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      record_count:
-        type:
-          - number
-          - "null"
-      external_job_id:
-        type:
-          - string
-          - "null"
     additionalProperties: true
-  webhooks:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
     properties:
-      id:
-        type: string
-      url:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
       active:
         type:
           - boolean
@@ -2274,19 +1803,18 @@ schemas:
         type:
           - string
           - "null"
-      updated_at:
+      created_by:
         type:
           - string
           - "null"
-      run_for_bulk_actions:
+      created_by_id:
         type:
-          - boolean
+          - string
           - "null"
-    additionalProperties: true
-  workflows:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
+      event_type:
+        type:
+          - string
+          - "null"
       id:
         type:
           - string
@@ -2294,6 +1822,18 @@ schemas:
       name:
         type:
           - string
+          - "null"
+      object_resource_id:
+        type:
+          - string
+          - "null"
+      object_type:
+        type:
+          - string
+          - "null"
+      run_for_bulk_actions:
+        type:
+          - boolean
           - "null"
       steps:
         type:
@@ -2304,23 +1844,11 @@ schemas:
             - object
             - "null"
           properties:
-            id:
-              type:
-                - string
-                - "null"
-            initial:
-              type:
-                - boolean
-                - "null"
             arguments:
               type:
                 - object
                 - "null"
               properties:
-                url:
-                  type:
-                    - string
-                    - "null"
                 auth:
                   type:
                     - object
@@ -2334,11 +1862,45 @@ schemas:
                       type:
                         - string
                         - "null"
+                expression:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      combinator:
+                        type:
+                          - string
+                          - "null"
+                      field:
+                        type:
+                          - string
+                          - "null"
+                      operator:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                headers:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "":
+                      type:
+                        - string
+                        - "null"
                 method:
                   type:
                     - string
                     - "null"
-                headers:
+                parameters:
                   type:
                     - object
                     - "null"
@@ -2351,43 +1913,17 @@ schemas:
                   type:
                     - string
                     - "null"
-                expression:
+                url:
                   type:
-                    - array
+                    - string
                     - "null"
-                  items:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      field:
-                        type:
-                          - string
-                          - "null"
-                      value:
-                        type:
-                          - string
-                          - "null"
-                      operator:
-                        type:
-                          - string
-                          - "null"
-                      combinator:
-                        type:
-                          - string
-                          - "null"
-                parameters:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    "":
-                      type:
-                        - string
-                        - "null"
-            step_type:
+            id:
               type:
                 - string
+                - "null"
+            initial:
+              type:
+                - boolean
                 - "null"
             next_steps:
               type:
@@ -2397,9 +1933,100 @@ schemas:
                 type:
                   - string
                   - "null"
+            step_type:
+              type:
+                - string
+                - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       active:
         type:
           - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      run_for_bulk_actions:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  changesets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          application:
+            type:
+              - string
+              - "null"
+          browser:
+            type:
+              - string
+              - "null"
+          browser_version:
+            type:
+              - string
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          platform_version:
+            type:
+              - string
+              - "null"
+          user_agent:
+            type:
+              - string
+              - "null"
+      closed_at:
+        type:
+          - string
+          - "null"
+      closed_by:
+        type:
+          - string
+          - "null"
+      closed_by_id:
+        type:
+          - string
           - "null"
       created_at:
         type:
@@ -2409,77 +2036,25 @@ schemas:
         type:
           - string
           - "null"
-      event_type:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      object_type:
-        type:
-          - string
-          - "null"
       created_by_id:
         type:
           - string
           - "null"
-      updated_by_id:
+      form_id:
         type:
           - string
           - "null"
-      object_resource_id:
+      gravatar_image_url:
         type:
           - string
           - "null"
-      run_for_bulk_actions:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  changesets:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      metadata:
-        type:
-          - object
-          - "null"
-        properties:
-          browser:
-            type:
-              - string
-              - "null"
-          platform:
-            type:
-              - string
-              - "null"
-          user_agent:
-            type:
-              - string
-              - "null"
-          application:
-            type:
-              - string
-              - "null"
-          browser_version:
-            type:
-              - string
-              - "null"
-          platform_version:
-            type:
-              - string
-              - "null"
       id:
         type: string
-      form_id:
+      image_large:
+        type:
+          - string
+          - "null"
+      image_small:
         type:
           - string
           - "null"
@@ -2499,50 +2074,6 @@ schemas:
         type:
           - number
           - "null"
-      closed_at:
-        type:
-          - string
-          - "null"
-      closed_by:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
-      image_large:
-        type:
-          - string
-          - "null"
-      image_small:
-        type:
-          - string
-          - "null"
-      closed_by_id:
-        type:
-          - string
-          - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
       number_created:
         type:
           - number
@@ -2551,52 +2082,42 @@ schemas:
         type:
           - number
           - "null"
-      number_updated:
-        type:
-          - number
-          - "null"
       number_of_changes:
         type:
           - number
           - "null"
-      gravatar_image_url:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  signatures:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - record_id
-    properties:
-      url:
-        type:
-          - string
-          - "null"
-      stored:
-        type:
-          - boolean
-          - "null"
-      form_id:
-        type:
-          - string
-          - "null"
-      uploaded:
-        type:
-          - boolean
-          - "null"
-      file_size:
+      number_updated:
         type:
           - number
           - "null"
-      processed:
+      updated_at:
         type:
-          - boolean
+          - string
           - "null"
-      record_id:
-        type: string
-      access_key:
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      client_created_at:
+        type:
+          - string
+          - "null"
+      client_updated_at:
         type:
           - string
           - "null"
@@ -2608,6 +2129,135 @@ schemas:
         type:
           - string
           - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      created_duration:
+        type:
+          - number
+          - "null"
+      edited_duration:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      form_values:
+        type:
+          - object
+          - "null"
+        properties:
+          "6281":
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                audio_id:
+                  type:
+                    - string
+                    - "null"
+          "0600":
+            type:
+              - string
+              - "null"
+          2f60:
+            type:
+              - object
+              - "null"
+            properties:
+              signature_id:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+          2fcc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                video_id:
+                  type:
+                    - string
+                    - "null"
+          5d00:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                photo_id:
+                  type:
+                    - string
+                    - "null"
+          6c2f:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attachment_id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          7da2:
+            type:
+              - string
+              - "null"
+          d630:
+            type:
+              - string
+              - "null"
+      geometry:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          coordinates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      id:
+        type: string
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
       updated_at:
         type:
           - string
@@ -2616,52 +2266,26 @@ schemas:
         type:
           - string
           - "null"
-      content_type:
-        type:
-          - string
-          - "null"
-      created_by_id:
-        type:
-          - string
-          - "null"
       updated_by_id:
         type:
           - string
           - "null"
-    additionalProperties: true
-  memberships:
-    type: object
-    $schema: http://json-schema.org/schema#
+      updated_duration:
+        type:
+          - number
+          - "null"
     required:
       - id
+  signatures:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      user:
+      access_key:
         type:
           - string
           - "null"
-      email:
-        type:
-          - string
-          - "null"
-      role_id:
-        type:
-          - string
-          - "null"
-      user_id:
-        type:
-          - string
-          - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      role_name:
-        type:
-          - string
-          - "null"
-      user_type:
+      content_type:
         type:
           - string
           - "null"
@@ -2669,7 +2293,90 @@ schemas:
         type:
           - string
           - "null"
-      first_name:
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      external_job_id:
+        type:
+          - string
+          - "null"
+      form_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      record_count:
+        type:
+          - number
+          - "null"
+      status:
         type:
           - string
           - "null"
@@ -2677,28 +2384,49 @@ schemas:
         type:
           - string
           - "null"
-      image_large:
-        type:
-          - string
-          - "null"
-      image_small:
-        type:
-          - string
-          - "null"
-      last_sign_in_at:
-        type:
-          - string
-          - "null"
-      gravatar_image_url:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  choice_lists:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - id
+  layers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  classification_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       version:
         type:
@@ -2708,9 +2436,65 @@ schemas:
         type:
           - string
           - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
       id:
         type: string
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
       name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  choice_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
         type:
           - string
           - "null"
@@ -2739,75 +2523,7 @@ schemas:
         type:
           - string
           - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      updated_by:
-        type:
-          - string
-          - "null"
       created_by_id:
-        type:
-          - string
-          - "null"
-      updated_by_id:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  authorizations:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      note:
-        type:
-          - string
-          - "null"
-      user_id:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      last_used_at:
-        type:
-          - string
-          - "null"
-      token_last_8:
-        type:
-          - string
-          - "null"
-      last_ip_address:
-        type:
-          - string
-          - "null"
-      last_user_agent:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  classification_sets:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      version:
-        type:
-          - number
-          - "null"
-      description:
         type:
           - string
           - "null"
@@ -2817,28 +2533,230 @@ schemas:
         type:
           - string
           - "null"
-      items:
+      updated_at:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            label:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_managed:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      gravatar_image_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_large:
+        type:
+          - string
+          - "null"
+      image_small:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      last_sign_in_at:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      role_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      can_access_issues_and_tasks:
+        type:
+          - boolean
+          - "null"
+      can_assign_records:
+        type:
+          - boolean
+          - "null"
+      can_bulk_delete_records:
+        type:
+          - boolean
+          - "null"
+      can_bulk_update_records:
+        type:
+          - boolean
+          - "null"
+      can_change_project:
+        type:
+          - boolean
+          - "null"
+      can_change_status:
+        type:
+          - boolean
+          - "null"
+      can_configure_issues_and_tasks:
+        type:
+          - boolean
+          - "null"
+      can_create_records:
+        type:
+          - boolean
+          - "null"
+      can_delete_records:
+        type:
+          - boolean
+          - "null"
+      can_export_records:
+        type:
+          - boolean
+          - "null"
+      can_import_records:
+        type:
+          - boolean
+          - "null"
+      can_manage_apps:
+        type:
+          - boolean
+          - "null"
+      can_manage_authorizations:
+        type:
+          - boolean
+          - "null"
+      can_manage_choice_lists:
+        type:
+          - boolean
+          - "null"
+      can_manage_classification_sets:
+        type:
+          - boolean
+          - "null"
+      can_manage_groups:
+        type:
+          - boolean
+          - "null"
+      can_manage_layers:
+        type:
+          - boolean
+          - "null"
+      can_manage_members:
+        type:
+          - boolean
+          - "null"
+      can_manage_projects:
+        type:
+          - boolean
+          - "null"
+      can_manage_roles:
+        type:
+          - boolean
+          - "null"
+      can_manage_subscription:
+        type:
+          - boolean
+          - "null"
+      can_run_reports:
+        type:
+          - boolean
+          - "null"
+      can_update_organization:
+        type:
+          - boolean
+          - "null"
+      can_update_records:
+        type:
+          - boolean
+          - "null"
       created_at:
         type:
           - string
           - "null"
       created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_default:
+        type:
+          - boolean
+          - "null"
+      is_system:
+        type:
+          - boolean
+          - "null"
+      name:
         type:
           - string
           - "null"
@@ -2850,7 +2768,109 @@ schemas:
         type:
           - string
           - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  authorizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_ip_address:
+        type:
+          - string
+          - "null"
+      last_used_at:
+        type:
+          - string
+          - "null"
+      last_user_agent:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      token_last_8:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  photos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
       created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
         type:
           - string
           - "null"
@@ -2858,4 +2878,151 @@ schemas:
         type:
           - string
           - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  audio:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  videos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
