@@ -22,6 +22,7 @@
 | users | id | DefaultPaginator | ✅ |  ❌  |
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | DefaultPaginator | ✅ |  ❌  |
+| webhook_events | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
