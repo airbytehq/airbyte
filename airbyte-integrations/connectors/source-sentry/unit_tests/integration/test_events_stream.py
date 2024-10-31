@@ -3,12 +3,12 @@
 import json
 from unittest import TestCase
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
 from source_sentry.source import SourceSentry
 
@@ -36,7 +36,12 @@ class TestEvents(TestCase):
             HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200)
 
         )
-        output = read(SourceSentry(), self.config(), self.catalog())
+        config = self.config()
+        catalog = self.catalog()
+        source = SourceSentry(config=config, catalog=catalog, state=None)
+
+        output = read(source=source, config=config, catalog=catalog)
+
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -49,5 +54,11 @@ class TestEvents(TestCase):
             HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200)
 
         )
-        output = read(SourceSentry(), self.config(), self.catalog(SyncMode.incremental), self.state())
+        config = self.config()
+        catalog = self.catalog()
+        state = self.state()
+        source = SourceSentry(config=config, catalog=catalog, state=state)
+
+        output = read(source=source, config=config, catalog=catalog, state=state)
+
         assert len(output.records) == 2
