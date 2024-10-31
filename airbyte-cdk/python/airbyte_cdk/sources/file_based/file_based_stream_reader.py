@@ -117,8 +117,10 @@ class AbstractFileBasedStreamReader(ABC):
         return set(filter(lambda x: bool(x), prefixes))
 
     def use_file_transfer(self) -> bool:
-        use_file_transfer = (
-                hasattr(self.config.delivery_method,
-                        "delivery_type") and self.config.delivery_method.delivery_type == "use_file_transfer"
-        )
-        return use_file_transfer
+        if self.config:
+            use_file_transfer = (
+                    hasattr(self.config.delivery_method,
+                            "delivery_type") and self.config.delivery_method.delivery_type == "use_file_transfer"
+            )
+            return use_file_transfer
+        return False
