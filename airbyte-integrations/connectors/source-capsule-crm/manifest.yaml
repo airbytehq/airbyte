@@ -1,0 +1,1015 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Capsule CRM connector  enables seamless data syncing from Capsule CRM to
+  various data warehouses, helping businesses centralize and analyze customer
+  data efficiently. It supports real-time data extraction of contacts,
+  opportunities, and custom fields, making it ideal for comprehensive CRM
+  analytics and reporting.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    parties:
+      type: DeclarativeStream
+      name: parties
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/parties
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - parties
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/parties"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/kases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - kases
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    employees:
+      type: DeclarativeStream
+      name: employees
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/parties/{{ stream_partition.party }}/people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - parties
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/parties"
+              parent_key: id
+              partition_field: party
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/pipelines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - pipelines
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    milestones:
+      type: DeclarativeStream
+      name: milestones
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/milestones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - milestones
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones"
+    opportunities:
+      type: DeclarativeStream
+      name: opportunities
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/opportunities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - opportunities
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunities"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.capsulecrm.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"bearer_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/parties"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/milestones"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bearer_token
+    properties:
+      bearer_token:
+        type: string
+        description: >-
+          Bearer token to authenticate API requests. Generate it from the 'My
+          Preferences' > 'API Authentication Tokens' page in your Capsule
+          account.
+        name: bearer_token
+        order: 0
+        title: Bearer Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.capsulecrm.com/v2/overview/getting-started
+  testedStreams:
+    tasks:
+      hasRecords: true
+      streamHash: e14cee5ddc17eba65746c85fc64588f989062a88
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 89d0ab00deb355b5fdf0c73197c51a5579eccefb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    parties:
+      hasRecords: true
+      streamHash: 99218eb261a6f9f33751fb2a64fa43a4ffefff5c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 4bdd45354787d64fa7a7f9e93104be977868bf3d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employees:
+      hasRecords: true
+      streamHash: 12bc3d06ed8a7ac4cc3a3e64c134ed37dd70133f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pipelines:
+      hasRecords: true
+      streamHash: 30952cd78be5df72e3f0ff9675a0e8c0489ace6e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    milestones:
+      hasRecords: true
+      streamHash: f7d14fb1c63556adf53ab12b7116fb83a01c12c1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    opportunities:
+      hasRecords: true
+      streamHash: d2cbbd1e0b11118a432de5e551055291704d656c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    tasks: true
+    users: true
+    parties: true
+    projects: true
+    employees: true
+    pipelines: true
+    milestones: true
+    opportunities: true
+
+schemas:
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      dueOn:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      party:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      detail:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          colour:
+            type:
+              - string
+              - "null"
+      hasTrack:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      taskDayDelayRule:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      party:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      loggedIn:
+        type:
+          - boolean
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      pictureURL:
+        type:
+          - string
+          - "null"
+      lastLoginAt:
+        type:
+          - string
+          - "null"
+      taskReminder:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  parties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      websites:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            service:
+              type:
+                - string
+                - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      pictureURL:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      party:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      stage:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      lastName:
+        type:
+          - string
+          - "null"
+      websites:
+        type:
+          - array
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      pictureURL:
+        type:
+          - string
+          - "null"
+      organisation:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      complete:
+        type:
+          - boolean
+          - "null"
+      pipeline:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      daysUntilStale:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  opportunities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      party:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          pictureURL:
+            type:
+              - string
+              - "null"
+      value:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      milestone:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      durationBasis:
+        type:
+          - string
+          - "null"
+      lastOpenMilestone:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      lastStageChangedAt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.capsulecrm.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-capsule-crm
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 86ad93c7-2d7d-4eb3-a3af-8baff3357ba5
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-capsule-crm
+  githubIssueLabel: source-capsule-crm
+  icon: icon.svg
+  license: MIT
+  name: Capsule CRM
+  releaseDate: 2024-10-31
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/capsule-crm
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
