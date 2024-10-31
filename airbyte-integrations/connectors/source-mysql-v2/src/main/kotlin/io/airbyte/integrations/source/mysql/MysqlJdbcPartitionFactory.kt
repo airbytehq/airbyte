@@ -6,14 +6,20 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
+import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.JdbcPartitionFactory
+import io.airbyte.cdk.read.SelectColumnMaxValue
+import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.util.concurrent.ConcurrentHashMap
@@ -24,6 +30,7 @@ import javax.inject.Singleton
 class MysqlJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MysqlSourceOperations,
+    val config: MysqlSourceConfiguration,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
@@ -31,10 +38,33 @@ class MysqlJdbcPartitionFactory(
         MysqlJdbcPartition,
     > {
 
-    private val streamStates = ConcurrentHashMap<String, DefaultJdbcStreamState>()
+    private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
-    override fun streamState(stream: Stream): DefaultJdbcStreamState =
-        streamStates.getOrPut(stream.label) { DefaultJdbcStreamState(sharedState, stream) }
+    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
+        streamStates.getOrPut(streamFeedBootstrap.feed.id) {
+            DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
+        }
+
+    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+        // find upper bound using maxPk query
+        val jdbcConnectionFactory = JdbcConnectionFactory(config)
+        val from = From(stream.name, stream.namespace)
+        val maxPkQuery = SelectQuerySpec(SelectColumnMaxValue(pkChosenFromCatalog[0]), from)
+
+        jdbcConnectionFactory.get().use { connection ->
+            val stmt = connection.prepareStatement(selectQueryGenerator.generate(maxPkQuery).sql)
+            val rs = stmt.executeQuery()
+
+            if (rs.next()) {
+                val pkUpperBound: JsonNode =
+                    stateValueToJsonNode(pkChosenFromCatalog.first(), rs.getString(1))
+                return pkUpperBound
+            } else {
+                // Table might be empty thus there is no max PK value.
+                return Jsons.nullNode()
+            }
+        }
+    }
 
     private fun coldStart(streamState: DefaultJdbcStreamState): MysqlJdbcPartition {
         val stream: Stream = streamState.stream
@@ -47,13 +77,26 @@ class MysqlJdbcPartitionFactory(
                     streamState,
                 )
             }
-            return MysqlJdbcSnapshotPartition(
-                selectQueryGenerator,
-                streamState,
-                pkChosenFromCatalog,
-                lowerBound = null,
-                upperBound = null,
-            )
+
+            val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+
+            if (sharedState.configuration.global) {
+                return MysqlJdbcCdcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
+                    upperBound = listOf(upperBound)
+                )
+            } else {
+                return MysqlJdbcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
+                    upperBound = listOf(upperBound)
+                )
+            }
         }
 
         if (sharedState.configuration.global) {
@@ -103,22 +146,51 @@ class MysqlJdbcPartitionFactory(
      *      ii. In cursor read phase, use cursor incremental.
      * ```
      */
-    override fun create(
-        stream: Stream,
-        opaqueStateValue: OpaqueStateValue?,
-    ): MysqlJdbcPartition? {
-        val streamState: DefaultJdbcStreamState = streamState(stream)
-        if (opaqueStateValue == null) {
-            return coldStart(streamState)
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
+        val stream: Stream = streamFeedBootstrap.feed
+        val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
+        val opaqueStateValue: OpaqueStateValue =
+            streamFeedBootstrap.currentState ?: return coldStart(streamState)
+
+        val isCursorBased: Boolean = !sharedState.configuration.global
+
+        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+
+        if (
+            pkChosenFromCatalog.isEmpty() &&
+                stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH
+        ) {
+            if (
+                streamState.streamFeedBootstrap.currentState ==
+                    MysqlJdbcStreamStateValue.snapshotCompleted
+            ) {
+                return null
+            }
+            return MysqlJdbcNonResumableSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+            )
         }
 
-        val isCursorBasedIncremental: Boolean =
-            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&
-                !sharedState.configuration.global
-
-        if (!isCursorBasedIncremental) {
+        if (!isCursorBased) {
             val sv: MysqlCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlCdcInitialSnapshotStateValue::class.java)
+
+            if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+                if (sv.pkVal == upperBound.asText()) {
+                    return null
+                }
+                val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
+
+                return MysqlJdbcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
+                    upperBound = listOf(upperBound)
+                )
+            }
 
             if (sv.pkName == null) {
                 // This indicates initial snapshot has been completed. CDC snapshot will be handled
@@ -128,9 +200,22 @@ class MysqlJdbcPartitionFactory(
             } else {
                 // This branch indicates snapshot is incomplete. We need to resume based on previous
                 // snapshot state.
-                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey!!
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
+
+                if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+                    val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+                    if (sv.pkVal == upperBound.asText()) {
+                        return null
+                    }
+                    return MysqlJdbcCdcRfrSnapshotPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        pkChosenFromCatalog,
+                        lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
+                        upperBound = listOf(upperBound)
+                    )
+                }
                 return MysqlJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -141,11 +226,29 @@ class MysqlJdbcPartitionFactory(
         } else {
             val sv: MysqlJdbcStreamStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
+            println("sv: $sv")
+
+            if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+                println("pkval: ${sv.pkValue}, upperBound: ${upperBound.asText()}")
+                if (sv.pkValue == upperBound.asText()) {
+                    return null
+                }
+                val pkLowerBound: JsonNode =
+                    stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
+
+                return MysqlJdbcCdcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
+                    upperBound = listOf(upperBound)
+                )
+            }
 
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
-                val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
                 val pkLowerBound: JsonNode = Jsons.valueToTree(sv.pkValue)
                 val cursorChosenFromCatalog: Field =
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
