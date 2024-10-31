@@ -96,7 +96,7 @@ class MysqlCdcIntegrationTest {
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { stmt: Statement ->
-                stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
+                stmt.execute("INSERT INTO test.tbl (k, v) VALUES (4, 'baz')")
             }
         }
     }
