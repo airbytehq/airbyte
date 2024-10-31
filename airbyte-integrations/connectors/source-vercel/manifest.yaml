@@ -11,169 +11,13 @@ check:
 
 definitions:
   streams:
-    user:
-      type: DeclarativeStream
-      name: user
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v2/user
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/user"
-    teams:
-      type: DeclarativeStream
-      name: teams
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v2/teams
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - teams
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/teams"
-    checks:
-      type: DeclarativeStream
-      name: checks
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v1/deployments/{{ stream_partition.deployment }}/checks
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/deployments"
-              parent_key: uid
-              partition_field: deployment
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/checks"
-    aliases:
-      type: DeclarativeStream
-      name: aliases
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v4/aliases
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - aliases
-      primary_key:
-        - uid
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/aliases"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updatedAt
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%ms"
-        end_time_option:
-          type: RequestOption
-          field_name: until
-          inject_into: request_parameter
-        start_time_option:
-          type: RequestOption
-          field_name: from
-          inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%ms"
     projects:
       type: DeclarativeStream
       name: projects
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /v9/projects
@@ -184,58 +28,102 @@ definitions:
             type: DpathExtractor
             field_path:
               - projects
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/projects"
-    auth_tokens:
-      type: DeclarativeStream
-      name: auth_tokens
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: until
             inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('pagination', {}).get('next') }}"
             stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v5/user/tokens
+          path: /v2/teams
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - tokens
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/auth_tokens"
-    deployments:
-      type: DeclarativeStream
-      name: deployments
-      retriever:
-        type: SimpleRetriever
+              - teams
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: until
             inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('pagination', {}).get('next') }}"
             stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    user:
+      type: DeclarativeStream
+      name: user
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - user
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+    deployments:
+      type: DeclarativeStream
+      name: deployments
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /v6/deployments
@@ -246,49 +134,44 @@ definitions:
             type: DpathExtractor
             field_path:
               - deployments
-      primary_key:
-        - uid
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/deployments"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%ms"
-        end_time_option:
-          type: RequestOption
-          field_name: until
-          inject_into: request_parameter
         start_time_option:
           type: RequestOption
-          field_name: from
           inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%ms"
+          field_name: since
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deployments"
     environments:
       type: DeclarativeStream
       name: environments
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: until
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
-            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /v9/projects/{{ stream_partition.project }}/env
@@ -297,34 +180,123 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/projects"
-              parent_key: id
-              partition_field: project
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/environments"
-    deployment_events:
-      type: DeclarativeStream
-      name: deployment_events
-      retriever:
-        type: SimpleRetriever
+            field_path:
+              - envs
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: until
             inject_into: request_parameter
+            field_name: until
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('pagination', {}).get('next') }}"
             stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/environments"
+    auth_tokens:
+      type: DeclarativeStream
+      name: auth_tokens
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/user/tokens
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tokens
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/auth_tokens"
+    aliases:
+      type: DeclarativeStream
+      name: aliases
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/aliases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - aliases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/aliases"
+    deployment_events:
+      type: DeclarativeStream
+      name: deployment_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /v3/deployments/{{ stream_partition.deployment }}/events
@@ -334,20 +306,84 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/deployments"
               parent_key: uid
               partition_field: deployment
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/deployments"
+              incremental_dependency: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/deployment_events"
+    teams_member:
+      type: DeclarativeStream
+      name: teams_member
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/teams/{{stream_slice.team_id}}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: until
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - team_id
+              value: "{{ stream_slice.team_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams_member"
   base_requester:
     type: HttpRequester
     url_base: https://api.vercel.com
@@ -360,11 +396,11 @@ streams:
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/user"
   - $ref: "#/definitions/streams/deployments"
-  - $ref: "#/definitions/streams/checks"
   - $ref: "#/definitions/streams/environments"
   - $ref: "#/definitions/streams/auth_tokens"
   - $ref: "#/definitions/streams/aliases"
   - $ref: "#/definitions/streams/deployment_events"
+  - $ref: "#/definitions/streams/teams_member"
 
 spec:
   type: Spec
@@ -375,12 +411,6 @@ spec:
       - access_token
       - start_date
     properties:
-      start_date:
-        type: string
-        order: 1
-        title: Start date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       access_token:
         type: string
         description: >-
@@ -390,130 +420,420 @@ spec:
         order: 0
         title: Access Token
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://vercel.com/docs/rest-api
-  testedStreams:
-    user:
-      hasRecords: true
-      streamHash: 7785ddea87b952b03c8f95575bf109fcdaf83227
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    teams:
-      hasRecords: true
-      streamHash: 4cb88e3b0366e01c69f2773dccb8282c6ca66b72
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    checks:
-      hasRecords: true
-      streamHash: 9787a8f9a683785814c578cab48f21c8b4918b25
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    aliases:
-      hasRecords: true
-      streamHash: 1a00369a2464fa1f41206a986bededa6af137094
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    projects:
-      hasRecords: true
-      streamHash: 9d586fc9ad613d426efc3a52607dda8556ce3538
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    auth_tokens:
-      hasRecords: true
-      streamHash: 7cd907683d6216fa6f35ec87650aaabd10988046
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    deployments:
-      hasRecords: true
-      streamHash: 8442869f3ec80205c0500fc6e2f9b27437fdecb8
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    environments:
-      hasRecords: true
-      streamHash: 1bdb211a6c1c4b0a32cf8e175f6400e5cb35894c
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    deployment_events:
-      hasRecords: true
-      streamHash: 4bd1b4730c2b3f990942e1b7d086ff1831b69941
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
-    user: true
-    teams: true
-    checks: true
-    aliases: true
     projects: true
-    auth_tokens: true
+    teams: true
+    user: true
     deployments: true
     environments: true
+    auth_tokens: true
+    aliases: true
     deployment_events: true
+    teams_member: true
+  testedStreams:
+    projects:
+      streamHash: 08d4d0f635315501525b1c7d058f34870a134971
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: f6df1fdcb85c0e373936f42ee426fb398d4d3c52
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user:
+      streamHash: fe64729451ad60d075bea483cc3928f4aa28b78e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    deployments:
+      streamHash: a3e87fc94c169653383c09af49917e74853e8475
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    environments:
+      streamHash: c6f89da72bc1d7d4b6c75a6d4c7fe32b83477574
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    auth_tokens:
+      streamHash: 8aff4e26dd5e62214e25d42b7883b81e4396da8a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    aliases:
+      streamHash: a0c3ba26db1e77b73f5ca19163b0094560ea58b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    deployment_events:
+      streamHash: c98259fe5ba16f73291e8ed24022a5ceb9c42bd7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams_member:
+      streamHash: b674b20a696a1b8e71ae80a30373b3827a07e66e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://vercel.com/docs/rest-api
 
 schemas:
-  user:
+  projects:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      user:
+      accountId:
+        type:
+          - string
+          - "null"
+      autoAssignCustomDomains:
+        type:
+          - boolean
+          - "null"
+      autoAssignCustomDomainsUpdatedBy:
+        type:
+          - string
+          - "null"
+      autoExposeSystemEnvs:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      crons:
         type:
           - object
           - "null"
         properties:
-          version:
+          definitions:
+            type:
+              - array
+              - "null"
+          deploymentId:
             type:
               - string
               - "null"
-          id:
+          enabledAt:
             type:
-              - string
+              - number
               - "null"
-          email:
+          updatedAt:
             type:
-              - string
+              - number
               - "null"
-          billing:
+      directoryListing:
+        type:
+          - boolean
+          - "null"
+      env:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
             type:
-              - object
+              type:
+                - string
+                - "null"
+            comment:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - number
+                - "null"
+            createdBy:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            target:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            updatedAt:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      framework:
+        type:
+          - string
+          - "null"
+      gitComments:
+        type:
+          - object
+          - "null"
+        properties:
+          onCommit:
+            type:
+              - boolean
               - "null"
-            properties:
-              plan:
+          onPullRequest:
+            type:
+              - boolean
+              - "null"
+      gitForkProtection:
+        type:
+          - boolean
+          - "null"
+      gitLFS:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      latestDeployments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            alias:
+              type:
+                - array
+                - "null"
+              items:
                 type:
                   - string
                   - "null"
-              status:
+            aliasAssigned:
+              type:
+                - number
+                - "null"
+            automaticAliases:
+              type:
+                - array
+                - "null"
+              items:
                 type:
                   - string
                   - "null"
-              currency:
-                type:
-                  - string
-                  - "null"
-              platform:
-                type:
-                  - string
-                  - "null"
-          username:
+            buildingAt:
+              type:
+                - number
+                - "null"
+            builds:
+              type:
+                - array
+                - "null"
+            createdAt:
+              type:
+                - number
+                - "null"
+            createdIn:
+              type:
+                - string
+                - "null"
+            creator:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                githubLogin:
+                  type:
+                    - string
+                    - "null"
+                uid:
+                  type:
+                    - string
+                    - "null"
+                username:
+                  type:
+                    - string
+                    - "null"
+            deploymentHostname:
+              type:
+                - string
+                - "null"
+            forced:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            meta:
+              type:
+                - object
+                - "null"
+              properties:
+                branchAlias:
+                  type:
+                    - string
+                    - "null"
+                githubCommitAuthorLogin:
+                  type:
+                    - string
+                    - "null"
+                githubCommitAuthorName:
+                  type:
+                    - string
+                    - "null"
+                githubCommitMessage:
+                  type:
+                    - string
+                    - "null"
+                githubCommitOrg:
+                  type:
+                    - string
+                    - "null"
+                githubCommitRef:
+                  type:
+                    - string
+                    - "null"
+                githubCommitRepo:
+                  type:
+                    - string
+                    - "null"
+                githubCommitRepoId:
+                  type:
+                    - string
+                    - "null"
+                githubCommitSha:
+                  type:
+                    - string
+                    - "null"
+                githubDeployment:
+                  type:
+                    - string
+                    - "null"
+                githubOrg:
+                  type:
+                    - string
+                    - "null"
+                githubRepo:
+                  type:
+                    - string
+                    - "null"
+                githubRepoId:
+                  type:
+                    - string
+                    - "null"
+                githubRepoOwnerType:
+                  type:
+                    - string
+                    - "null"
+                githubRepoVisibility:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+            plan:
+              type:
+                - string
+                - "null"
+            previewCommentsEnabled:
+              type:
+                - boolean
+                - "null"
+            private:
+              type:
+                - boolean
+                - "null"
+            readyAt:
+              type:
+                - number
+                - "null"
+            readyState:
+              type:
+                - string
+                - "null"
+            readySubstate:
+              type:
+                - string
+                - "null"
+            target:
+              type:
+                - string
+                - "null"
+            teamId:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            userId:
+              type:
+                - string
+                - "null"
+            withCache:
+              type:
+                - boolean
+                - "null"
+      link:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
             type:
               - string
               - "null"
@@ -521,24 +841,368 @@ schemas:
             type:
               - number
               - "null"
-          dataCache:
+          deployHooks:
+            type:
+              - array
+              - "null"
+          gitCredentialId:
+            type:
+              - string
+              - "null"
+          org:
+            type:
+              - string
+              - "null"
+          productionBranch:
+            type:
+              - string
+              - "null"
+          repo:
+            type:
+              - string
+              - "null"
+          repoId:
+            type:
+              - number
+              - "null"
+          repoOwnerId:
+            type:
+              - number
+              - "null"
+          sourceless:
+            type:
+              - boolean
+              - "null"
+          updatedAt:
+            type:
+              - number
+              - "null"
+      live:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nodeVersion:
+        type:
+          - string
+          - "null"
+      resourceConfig:
+        type:
+          - object
+          - "null"
+        properties:
+          functionDefaultMemoryType:
+            type:
+              - string
+              - "null"
+      serverlessFunctionRegion:
+        type:
+          - string
+          - "null"
+      sourceFilesOutsideRootDirectory:
+        type:
+          - boolean
+          - "null"
+      speedInsights:
+        type:
+          - object
+          - "null"
+        properties:
+          hasData:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      ssoProtection:
+        type:
+          - object
+          - "null"
+        properties:
+          deploymentType:
+            type:
+              - string
+              - "null"
+      targets:
+        type:
+          - object
+          - "null"
+        properties:
+          production:
             type:
               - object
               - "null"
             properties:
-              excessBillingEnabled:
+              type:
+                type:
+                  - string
+                  - "null"
+              alias:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              aliasAssigned:
+                type:
+                  - number
+                  - "null"
+              automaticAliases:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              buildingAt:
+                type:
+                  - number
+                  - "null"
+              builds:
+                type:
+                  - array
+                  - "null"
+              createdAt:
+                type:
+                  - number
+                  - "null"
+              createdIn:
+                type:
+                  - string
+                  - "null"
+              creator:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  githubLogin:
+                    type:
+                      - string
+                      - "null"
+                  uid:
+                    type:
+                      - string
+                      - "null"
+                  username:
+                    type:
+                      - string
+                      - "null"
+              deploymentHostname:
+                type:
+                  - string
+                  - "null"
+              forced:
                 type:
                   - boolean
                   - "null"
-          defaultTeamId:
+              id:
+                type:
+                  - string
+                  - "null"
+              meta:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  branchAlias:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitAuthorLogin:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitAuthorName:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitMessage:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitOrg:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitRef:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitRepo:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitRepoId:
+                    type:
+                      - string
+                      - "null"
+                  githubCommitSha:
+                    type:
+                      - string
+                      - "null"
+                  githubDeployment:
+                    type:
+                      - string
+                      - "null"
+                  githubOrg:
+                    type:
+                      - string
+                      - "null"
+                  githubRepo:
+                    type:
+                      - string
+                      - "null"
+                  githubRepoId:
+                    type:
+                      - string
+                      - "null"
+                  githubRepoOwnerType:
+                    type:
+                      - string
+                      - "null"
+                  githubRepoVisibility:
+                    type:
+                      - string
+                      - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              plan:
+                type:
+                  - string
+                  - "null"
+              previewCommentsEnabled:
+                type:
+                  - boolean
+                  - "null"
+              private:
+                type:
+                  - boolean
+                  - "null"
+              readyAt:
+                type:
+                  - number
+                  - "null"
+              readyState:
+                type:
+                  - string
+                  - "null"
+              readySubstate:
+                type:
+                  - string
+                  - "null"
+              target:
+                type:
+                  - string
+                  - "null"
+              teamId:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              userId:
+                type:
+                  - string
+                  - "null"
+              withCache:
+                type:
+                  - boolean
+                  - "null"
+      updatedAt:
+        type:
+          - number
+          - "null"
+      webAnalytics:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
             type:
               - string
               - "null"
-          featureBlocks:
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing:
+        type:
+          - object
+          - "null"
+        properties:
+          billingVersion:
             type:
-              - object
+              - number
               - "null"
-          remoteCaching:
+          currency:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          plan:
+            type:
+              - string
+              - "null"
+          planIteration:
+            type:
+              - string
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      created:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      createdDirectToHobby:
+        type:
+          - boolean
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      enabledInvoiceItems:
+        type:
+          - object
+          - "null"
+        properties:
+          vercelMarketplace:
             type:
               - object
               - "null"
@@ -547,71 +1211,72 @@ schemas:
                 type:
                   - boolean
                   - "null"
-          stagingPrefix:
-            type:
-              - string
-              - "null"
-          resourceConfig:
-            type:
-              - object
-              - "null"
-            properties:
-              concurrentBuilds:
-                type:
-                  - number
-                  - "null"
-          dismissedToasts:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                name:
-                  type:
-                    - string
-                    - "null"
-                dismissals:
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      scopeId:
-                        type:
-                          - string
-                          - "null"
-                      createdAt:
-                        type:
-                          - number
-                          - "null"
-          hasTrialAvailable:
+      featureBlocks:
+        type:
+          - object
+          - "null"
+      id:
+        type: string
+      isMigratingToSensitiveEnvVars:
+        type:
+          - boolean
+          - "null"
+      membership:
+        type:
+          - object
+          - "null"
+        properties:
+          confirmed:
             type:
               - boolean
               - "null"
-          importFlowGitProvider:
-            type:
-              - string
-              - "null"
-          importFlowGitNamespaceId:
+          created:
             type:
               - number
               - "null"
-    additionalProperties: true
-  teams:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
+          createdAt:
+            type:
+              - number
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          teamId:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - number
+              - "null"
       name:
+        type:
+          - string
+          - "null"
+      profiles:
+        type:
+          - array
+          - "null"
+      remoteCaching:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+      resourceConfig:
+        type:
+          - object
+          - "null"
+        properties:
+          concurrentBuilds:
+            type:
+              - number
+              - "null"
+      sensitiveEnvironmentVariablePolicy:
         type:
           - string
           - "null"
@@ -628,56 +1293,7 @@ schemas:
             type:
               - boolean
               - "null"
-      billing:
-        type:
-          - object
-          - "null"
-        properties:
-          name:
-            type:
-              - string
-              - "null"
-          plan:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          currency:
-            type:
-              - string
-              - "null"
-          platform:
-            type:
-              - string
-              - "null"
-          planIteration:
-            type:
-              - string
-              - "null"
-          billingVersion:
-            type:
-              - number
-              - "null"
-      created:
-        type:
-          - string
-          - "null"
-      profiles:
-        type:
-          - array
-          - "null"
-      createdAt:
-        type:
-          - number
-          - "null"
-      creatorId:
+      stagingPrefix:
         type:
           - string
           - "null"
@@ -685,38 +1301,108 @@ schemas:
         type:
           - number
           - "null"
-      membership:
+    required:
+      - id
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      billing:
         type:
           - object
           - "null"
         properties:
-          role:
+          currency:
             type:
               - string
               - "null"
-          teamId:
+          plan:
             type:
               - string
               - "null"
-          created:
+          platform:
             type:
-              - number
+              - string
               - "null"
-          confirmed:
+          status:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      dataCache:
+        type:
+          - object
+          - "null"
+        properties:
+          excessBillingEnabled:
             type:
               - boolean
               - "null"
-          createdAt:
-            type:
-              - number
-              - "null"
-          updatedAt:
-            type:
-              - number
-              - "null"
+      defaultTeamId:
+        type:
+          - string
+          - "null"
+      dismissedToasts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            dismissals:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  createdAt:
+                    type:
+                      - number
+                      - "null"
+                  scopeId:
+                    type:
+                      - string
+                      - "null"
+            name:
+              type:
+                - string
+                - "null"
+      email:
+        type:
+          - string
+          - "null"
       featureBlocks:
         type:
           - object
+          - "null"
+      hasTrialAvailable:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      importFlowGitNamespaceId:
+        type:
+          - number
+          - "null"
+      importFlowGitProvider:
+        type:
+          - string
           - "null"
       remoteCaching:
         type:
@@ -727,10 +1413,6 @@ schemas:
             type:
               - boolean
               - "null"
-      stagingPrefix:
-        type:
-          - string
-          - "null"
       resourceConfig:
         type:
           - object
@@ -740,69 +1422,51 @@ schemas:
             type:
               - number
               - "null"
-      enabledInvoiceItems:
-        type:
-          - object
-          - "null"
-        properties:
-          vercelMarketplace:
-            type:
-              - object
-              - "null"
-            properties:
-              enabled:
-                type:
-                  - boolean
-                  - "null"
-      createdDirectToHobby:
-        type:
-          - boolean
-          - "null"
-      isMigratingToSensitiveEnvVars:
-        type:
-          - boolean
-          - "null"
-      sensitiveEnvironmentVariablePolicy:
+      stagingPrefix:
         type:
           - string
           - "null"
-    additionalProperties: true
-  checks:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      checks:
-        type:
-          - array
-          - "null"
-    additionalProperties: true
-  aliases:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - uid
-      - updatedAt
-    properties:
-      uid:
-        type: string
-      alias:
+      username:
         type:
           - string
+          - "null"
+  deployments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      aliasAssigned:
+        type:
+          - number
+          - "null"
+      buildingAt:
+        type:
+          - number
           - "null"
       created:
         type:
-          - string
+          - number
           - "null"
+      createdAt:
+        type: number
       creator:
         type:
           - object
           - "null"
         properties:
-          uid:
+          email:
             type:
               - string
               - "null"
-          email:
+          githubLogin:
+            type:
+              - string
+              - "null"
+          uid:
             type:
               - string
               - "null"
@@ -810,370 +1474,139 @@ schemas:
             type:
               - string
               - "null"
-      createdAt:
-        type:
-          - number
-          - "null"
-      projectId:
+      inspectorUrl:
         type:
           - string
           - "null"
-      updatedAt:
-        type: number
-      deployment:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-      deploymentId:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  projects:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      env:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            key:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-            target:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-            comment:
-              type:
-                - string
-                - "null"
-            createdAt:
-              type:
-                - number
-                - "null"
-            createdBy:
-              type:
-                - string
-                - "null"
-            updatedAt:
-              type:
-                - number
-                - "null"
-      link:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          org:
-            type:
-              - string
-              - "null"
-          repo:
-            type:
-              - string
-              - "null"
-          repoId:
-            type:
-              - number
-              - "null"
-          createdAt:
-            type:
-              - number
-              - "null"
-          updatedAt:
-            type:
-              - number
-              - "null"
-          sourceless:
-            type:
-              - boolean
-              - "null"
-          deployHooks:
-            type:
-              - array
-              - "null"
-          repoOwnerId:
-            type:
-              - number
-              - "null"
-          gitCredentialId:
-            type:
-              - string
-              - "null"
-          productionBranch:
-            type:
-              - string
-              - "null"
-      live:
+      isRollbackCandidate:
         type:
           - boolean
           - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          action:
+            type:
+              - string
+              - "null"
+          branchAlias:
+            type:
+              - string
+              - "null"
+          githubCommitAuthorLogin:
+            type:
+              - string
+              - "null"
+          githubCommitAuthorName:
+            type:
+              - string
+              - "null"
+          githubCommitMessage:
+            type:
+              - string
+              - "null"
+          githubCommitOrg:
+            type:
+              - string
+              - "null"
+          githubCommitRef:
+            type:
+              - string
+              - "null"
+          githubCommitRepo:
+            type:
+              - string
+              - "null"
+          githubCommitRepoId:
+            type:
+              - string
+              - "null"
+          githubCommitSha:
+            type:
+              - string
+              - "null"
+          githubDeployment:
+            type:
+              - string
+              - "null"
+          githubOrg:
+            type:
+              - string
+              - "null"
+          githubRepo:
+            type:
+              - string
+              - "null"
+          githubRepoId:
+            type:
+              - string
+              - "null"
+          githubRepoOwnerType:
+            type:
+              - string
+              - "null"
+          githubRepoVisibility:
+            type:
+              - string
+              - "null"
+          originalDeploymentId:
+            type:
+              - string
+              - "null"
       name:
         type:
           - string
           - "null"
-      crons:
+      projectSettings:
         type:
           - object
           - "null"
-        properties:
-          definitions:
-            type:
-              - array
-              - "null"
-          enabledAt:
-            type:
-              - number
-              - "null"
-          updatedAt:
-            type:
-              - number
-              - "null"
-          deploymentId:
-            type:
-              - string
-              - "null"
-      gitLFS:
+        properties: {}
+      ready:
         type:
-          - boolean
+          - number
           - "null"
-      targets:
+      readyState:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          production:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              meta:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  githubOrg:
-                    type:
-                      - string
-                      - "null"
-                  githubRepo:
-                    type:
-                      - string
-                      - "null"
-                  branchAlias:
-                    type:
-                      - string
-                      - "null"
-                  githubRepoId:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitOrg:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitRef:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitSha:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitRepo:
-                    type:
-                      - string
-                      - "null"
-                  githubDeployment:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitRepoId:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitMessage:
-                    type:
-                      - string
-                      - "null"
-                  githubRepoOwnerType:
-                    type:
-                      - string
-                      - "null"
-                  githubRepoVisibility:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitAuthorName:
-                    type:
-                      - string
-                      - "null"
-                  githubCommitAuthorLogin:
-                    type:
-                      - string
-                      - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              plan:
-                type:
-                  - string
-                  - "null"
-              alias:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-              builds:
-                type:
-                  - array
-                  - "null"
-              forced:
-                type:
-                  - boolean
-                  - "null"
-              target:
-                type:
-                  - string
-                  - "null"
-              teamId:
-                type:
-                  - string
-                  - "null"
-              userId:
-                type:
-                  - string
-                  - "null"
-              creator:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  uid:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  username:
-                    type:
-                      - string
-                      - "null"
-                  githubLogin:
-                    type:
-                      - string
-                      - "null"
-              private:
-                type:
-                  - boolean
-                  - "null"
-              readyAt:
-                type:
-                  - number
-                  - "null"
-              createdAt:
-                type:
-                  - number
-                  - "null"
-              createdIn:
-                type:
-                  - string
-                  - "null"
-              withCache:
-                type:
-                  - boolean
-                  - "null"
-              buildingAt:
-                type:
-                  - number
-                  - "null"
-              readyState:
-                type:
-                  - string
-                  - "null"
-              aliasAssigned:
-                type:
-                  - number
-                  - "null"
-              readySubstate:
-                type:
-                  - string
-                  - "null"
-              automaticAliases:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-              deploymentHostname:
-                type:
-                  - string
-                  - "null"
-              previewCommentsEnabled:
-                type:
-                  - boolean
-                  - "null"
-      accountId:
+      readySubstate:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      target:
+        type:
+          - string
+          - "null"
+      uid:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - uid
+      - createdAt
+  environments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      comment:
         type:
           - string
           - "null"
@@ -1181,304 +1614,66 @@ schemas:
         type:
           - number
           - "null"
-      framework:
+      createdBy:
         type:
           - string
           - "null"
-      updatedAt:
+      decrypted:
         type:
-          - number
+          - boolean
           - "null"
-      gitComments:
-        type:
-          - object
-          - "null"
-        properties:
-          onCommit:
-            type:
-              - boolean
-              - "null"
-          onPullRequest:
-            type:
-              - boolean
-              - "null"
-      nodeVersion:
+      id:
         type:
           - string
           - "null"
-      webAnalytics:
+      key:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-      speedInsights:
+      lastEditedByDisplayName:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          hasData:
-            type:
-              - boolean
-              - "null"
-      ssoProtection:
-        type:
-          - object
-          - "null"
-        properties:
-          deploymentType:
-            type:
-              - string
-              - "null"
-      resourceConfig:
-        type:
-          - object
-          - "null"
-        properties:
-          functionDefaultMemoryType:
-            type:
-              - string
-              - "null"
-      directoryListing:
-        type:
-          - boolean
-          - "null"
-      gitForkProtection:
-        type:
-          - boolean
-          - "null"
-      latestDeployments:
+      target:
         type:
           - array
           - "null"
         items:
           type:
-            - object
+            - string
             - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            url:
-              type:
-                - string
-                - "null"
-            meta:
-              type:
-                - object
-                - "null"
-              properties:
-                githubOrg:
-                  type:
-                    - string
-                    - "null"
-                githubRepo:
-                  type:
-                    - string
-                    - "null"
-                branchAlias:
-                  type:
-                    - string
-                    - "null"
-                githubRepoId:
-                  type:
-                    - string
-                    - "null"
-                githubCommitOrg:
-                  type:
-                    - string
-                    - "null"
-                githubCommitRef:
-                  type:
-                    - string
-                    - "null"
-                githubCommitSha:
-                  type:
-                    - string
-                    - "null"
-                githubCommitRepo:
-                  type:
-                    - string
-                    - "null"
-                githubDeployment:
-                  type:
-                    - string
-                    - "null"
-                githubCommitRepoId:
-                  type:
-                    - string
-                    - "null"
-                githubCommitMessage:
-                  type:
-                    - string
-                    - "null"
-                githubRepoOwnerType:
-                  type:
-                    - string
-                    - "null"
-                githubRepoVisibility:
-                  type:
-                    - string
-                    - "null"
-                githubCommitAuthorName:
-                  type:
-                    - string
-                    - "null"
-                githubCommitAuthorLogin:
-                  type:
-                    - string
-                    - "null"
-            name:
-              type:
-                - string
-                - "null"
-            plan:
-              type:
-                - string
-                - "null"
-            alias:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-            builds:
-              type:
-                - array
-                - "null"
-            forced:
-              type:
-                - boolean
-                - "null"
-            target:
-              type:
-                - string
-                - "null"
-            teamId:
-              type:
-                - string
-                - "null"
-            userId:
-              type:
-                - string
-                - "null"
-            creator:
-              type:
-                - object
-                - "null"
-              properties:
-                uid:
-                  type:
-                    - string
-                    - "null"
-                email:
-                  type:
-                    - string
-                    - "null"
-                username:
-                  type:
-                    - string
-                    - "null"
-                githubLogin:
-                  type:
-                    - string
-                    - "null"
-            private:
-              type:
-                - boolean
-                - "null"
-            readyAt:
-              type:
-                - number
-                - "null"
-            createdAt:
-              type:
-                - number
-                - "null"
-            createdIn:
-              type:
-                - string
-                - "null"
-            withCache:
-              type:
-                - boolean
-                - "null"
-            buildingAt:
-              type:
-                - number
-                - "null"
-            readyState:
-              type:
-                - string
-                - "null"
-            aliasAssigned:
-              type:
-                - number
-                - "null"
-            readySubstate:
-              type:
-                - string
-                - "null"
-            automaticAliases:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-            deploymentHostname:
-              type:
-                - string
-                - "null"
-            previewCommentsEnabled:
-              type:
-                - boolean
-                - "null"
-      autoExposeSystemEnvs:
+      updatedAt:
         type:
-          - boolean
+          - number
           - "null"
-      autoAssignCustomDomains:
-        type:
-          - boolean
-          - "null"
-      serverlessFunctionRegion:
+      value:
         type:
           - string
           - "null"
-      sourceFilesOutsideRootDirectory:
-        type:
-          - boolean
-          - "null"
-      autoAssignCustomDomainsUpdatedBy:
+      vsmValue:
         type:
           - string
           - "null"
-    additionalProperties: true
   auth_tokens:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       type:
         type:
           - string
+          - "null"
+      activeAt:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      expiresAt:
+        type:
+          - number
           - "null"
       id:
         type: string
@@ -1503,14 +1698,6 @@ schemas:
               type:
                 - string
                 - "null"
-            origin:
-              type:
-                - string
-                - "null"
-            teamId:
-              type:
-                - string
-                - "null"
             createdAt:
               type:
                 - number
@@ -1519,134 +1706,34 @@ schemas:
               type:
                 - number
                 - "null"
+            origin:
+              type:
+                - string
+                - "null"
+            teamId:
+              type:
+                - string
+                - "null"
       teamId:
         type:
           - string
           - "null"
-      activeAt:
-        type:
-          - number
-          - "null"
-      createdAt:
-        type:
-          - number
-          - "null"
-      expiresAt:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  deployments:
+    required:
+      - id
+  aliases:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - uid
-      - createdAt
+    additionalProperties: true
     properties:
-      type:
-        type:
-          - string
-          - "null"
-      uid:
-        type: string
-      url:
-        type:
-          - string
-          - "null"
-      meta:
-        type:
-          - object
-          - "null"
-        properties:
-          action:
-            type:
-              - string
-              - "null"
-          githubOrg:
-            type:
-              - string
-              - "null"
-          githubRepo:
-            type:
-              - string
-              - "null"
-          branchAlias:
-            type:
-              - string
-              - "null"
-          githubRepoId:
-            type:
-              - string
-              - "null"
-          githubCommitOrg:
-            type:
-              - string
-              - "null"
-          githubCommitRef:
-            type:
-              - string
-              - "null"
-          githubCommitSha:
-            type:
-              - string
-              - "null"
-          githubCommitRepo:
-            type:
-              - string
-              - "null"
-          githubDeployment:
-            type:
-              - string
-              - "null"
-          githubCommitRepoId:
-            type:
-              - string
-              - "null"
-          githubCommitMessage:
-            type:
-              - string
-              - "null"
-          githubRepoOwnerType:
-            type:
-              - string
-              - "null"
-          githubRepoVisibility:
-            type:
-              - string
-              - "null"
-          originalDeploymentId:
-            type:
-              - string
-              - "null"
-          githubCommitAuthorName:
-            type:
-              - string
-              - "null"
-          githubCommitAuthorLogin:
-            type:
-              - string
-              - "null"
-      name:
-        type:
-          - string
-          - "null"
-      ready:
-        type:
-          - number
-          - "null"
-      state:
-        type:
-          - string
-          - "null"
-      source:
-        type:
-          - string
-          - "null"
-      target:
+      alias:
         type:
           - string
           - "null"
       created:
+        type:
+          - string
+          - "null"
+      createdAt:
         type:
           - number
           - "null"
@@ -1655,11 +1742,11 @@ schemas:
           - object
           - "null"
         properties:
-          uid:
+          email:
             type:
               - string
               - "null"
-          email:
+          uid:
             type:
               - string
               - "null"
@@ -1667,124 +1754,57 @@ schemas:
             type:
               - string
               - "null"
-          githubLogin:
-            type:
-              - string
-              - "null"
-      createdAt:
-        type: number
-      buildingAt:
-        type:
-          - number
-          - "null"
-      readyState:
-        type:
-          - string
-          - "null"
-      inspectorUrl:
-        type:
-          - string
-          - "null"
-      aliasAssigned:
-        type:
-          - number
-          - "null"
-      readySubstate:
-        type:
-          - string
-          - "null"
-      projectSettings:
+      deployment:
         type:
           - object
           - "null"
-        properties: {}
-      isRollbackCandidate:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  environments:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      envs:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
+        properties:
+          id:
             type:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            key:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-            target:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-            comment:
-              type:
-                - string
-                - "null"
-            vsmValue:
-              type:
-                - string
-                - "null"
-            createdAt:
-              type:
-                - number
-                - "null"
-            createdBy:
-              type:
-                - string
-                - "null"
-            decrypted:
-              type:
-                - boolean
-                - "null"
-            updatedAt:
-              type:
-                - number
-                - "null"
-            lastEditedByDisplayName:
-              type:
-                - string
-                - "null"
-    additionalProperties: true
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      deploymentId:
+        type:
+          - string
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      uid:
+        type: string
+      updatedAt:
+        type: number
+    required:
+      - uid
+      - updatedAt
   deployment_events:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       type:
         type:
           - string
           - "null"
-      id:
-        type: string
+      created:
+        type:
+          - number
+          - "null"
       date:
         type:
           - number
           - "null"
+      deploymentId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
       info:
         type:
           - object
@@ -1794,15 +1814,15 @@ schemas:
             type:
               - string
               - "null"
-          name:
-            type:
-              - string
-              - "null"
           entrypoint:
             type:
               - string
               - "null"
-      text:
+          name:
+            type:
+              - string
+              - "null"
+      level:
         type:
           - string
           - "null"
@@ -1810,12 +1830,55 @@ schemas:
         type:
           - string
           - "null"
-      created:
-        type:
-          - number
-          - "null"
-      deploymentId:
+      text:
         type:
           - string
           - "null"
+    required:
+      - id
+  teams_member:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      accessGroups:
+        type:
+          - array
+          - "null"
+      confirmed:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      github:
+        type:
+          - object
+          - "null"
+        properties:
+          login:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      team_id:
+        type:
+          - string
+          - "null"
+      uid:
+        type: string
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - uid
