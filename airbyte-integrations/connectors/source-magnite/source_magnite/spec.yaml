@@ -37,7 +37,7 @@ connectionSpecification:
           operator:
             type: string
           value:
-            type: number
+            type: integer
     orderings:
       type: array
       items:
