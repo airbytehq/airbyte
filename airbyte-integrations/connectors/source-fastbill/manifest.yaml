@@ -22,7 +22,7 @@ definitions:
           http_method: POST
           request_body_json:
             LIMIT: 100
-            SERVICE: "invoice.get"
+            SERVICE: invoice.get
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -30,7 +30,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - RESPONSE
-              - "INVOICES"
+              - INVOICES
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -57,7 +57,7 @@ definitions:
           http_method: POST
           request_body_json:
             LIMIT: 100
-            SERVICE: "recurring.get"
+            SERVICE: recurring.get
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -65,7 +65,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - RESPONSE
-              - "INVOICES"
+              - INVOICES
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -92,7 +92,7 @@ definitions:
           http_method: POST
           request_body_json:
             LIMIT: 100
-            SERVICE: "article.get"
+            SERVICE: article.get
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -100,7 +100,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - RESPONSE
-              - "ARTICLES"
+              - ARTICLES
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -127,7 +127,7 @@ definitions:
           http_method: POST
           request_body_json:
             LIMIT: 100
-            SERVICE: "revenue.get"
+            SERVICE: revenue.get
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -135,7 +135,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - RESPONSE
-              - "REVENUES"
+              - REVENUES
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -162,7 +162,7 @@ definitions:
           http_method: POST
           request_body_json:
             LIMIT: 100
-            SERVICE: "customer.get"
+            SERVICE: customer.get
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -170,7 +170,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - RESPONSE
-              - "CUSTOMERS"
+              - CUSTOMERS
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -188,9 +188,9 @@ definitions:
     type: HttpRequester
     url_base: https://my.fastbill.com/api/1.0
     authenticator:
-      class_name: source_declarative_manifest.components.CustomAuthenticator
-      username: "{{config['username']}}"
-      password: "{{config['api_key']}}"
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_key\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/invoices"
