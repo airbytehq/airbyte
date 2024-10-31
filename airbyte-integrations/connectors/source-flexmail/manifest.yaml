@@ -1,0 +1,504 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for Flexmail enables seamless data integration from
+  Flexmail, a comprehensive email marketing platform, into various data
+  warehouses and analytics tools. With this connector, users can efficiently
+  synchronize Flexmail data—such as campaign details, subscriber information,
+  and engagement metrics—allowing for unified insights and advanced reporting
+  across platforms. Perfect for businesses aiming to centralize their marketing
+  data for enhanced visibility and decision-making.
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - item
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /custom-fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - item
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    interests:
+      type: DeclarativeStream
+      name: interests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /interests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - item
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interests"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - item
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    sources:
+      type: DeclarativeStream
+      name: sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - item
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sources"
+    webhook_events:
+      type: DeclarativeStream
+      name: webhook_events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhook-events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_events"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.flexmail.eu
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"personal_access_token\"] }}"
+      username: "{{ config[\"account_id\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/interests"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/sources"
+  - $ref: "#/definitions/streams/webhook_events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_id
+      - personal_access_token
+    properties:
+      account_id:
+        type: string
+        description: >-
+          Your Flexmail account ID. You can find it in your Flexmail account
+          settings.
+        name: account_id
+        order: 0
+        title: Account ID
+      personal_access_token:
+        type: string
+        description: >-
+          A personal access token for API authentication. Manage your tokens in
+          Flexmail under Settings > API > Personal access tokens.
+        name: personal_access_token
+        order: 1
+        title: Personal Access Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    custom_fields: true
+    interests: true
+    segments: true
+    sources: true
+    webhook_events: true
+  testedStreams:
+    contacts:
+      hasRecords: true
+      streamHash: 05073c0c8a3d44817e77afe390386927682f0262
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: 30670368fb34ce097d11d6496d8e34f270b7dbd3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    interests:
+      hasRecords: true
+      streamHash: 69e0700b43faacf930b664ef067450c742106037
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segments:
+      hasRecords: true
+      streamHash: 8026435264b62e1d7976e37dc86c8eb7f127b889
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sources:
+      hasRecords: true
+      streamHash: 4b573ba01e2716981f62cd20143904746408ebeb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhook_events:
+      hasRecords: true
+      streamHash: bb14e24d72f2be408ed7d5cdd4e5a34166d79199
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://api.flexmail.eu/documentation
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          sources:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      placeholder:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  interests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      number_of_contacts:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  webhook_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
