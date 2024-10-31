@@ -1,1803 +1,866 @@
-version: "4.3.2"
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-      - "{{ parameters['data_field'] }}"
-  requester:
-    type: HttpRequester
-    http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_token'] }}"
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-      page_token_option:
-        type: RequestPath
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-  incremental_base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-        request_parameters:
-          order_type: "desc"
-          order_by: "inserted_at"
-          date_shortcut: "custom"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "inserted_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      cursor_granularity: "PT0.000001S"
-      start_datetime:
-        datetime: "{{ config['date_from'] }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
-      end_time_option:
-        field_name: "date_to"
-        inject_into: "request_parameter"
-      start_time_option:
-        field_name: "date_from"
-        inject_into: "request_parameter"
-  surveys:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type:
-        - "null"
-        - object
-        properties:
-          title:
-            description: The title or name of the survey.
-            type:
-            - "null"
-            - string
-          status:
-            description: The status of the survey data (e.g., active, inactive, completed).
-            type:
-            - "null"
-            - string
-          public_hash_id:
-            description: The unique public hash identifier associated with the survey.
-            type:
-            - "null"
-            - string
-          inserted_at:
-            description: The date and time when the survey data was inserted.
-            type:
-            - "null"
-            - string
-            format: date-time
-  surveys_slicer:
-    class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-    parent_stream_configs:
-    - stream:
-        type: DeclarativeStream
-        retriever:
-          type: SimpleRetriever
-          record_selector:
-            type: RecordSelector
-            extractor:
-              type: DpathExtractor
-              field_path:
-              - "{{ parameters['data_field'] }}"
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: PageIncrement
-              page_size: 50
-              start_from_page: 1
-            page_size_option:
-              field_name: "per_page"
-              inject_into: "request_parameter"
-            page_token_option:
-              type: RequestPath
-          requester:
-            type: HttpRequester
-            http_method: "GET"
-            authenticator:
-              type: BearerAuthenticator
-              api_token: "{{ config['api_token'] }}"
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $schema: http://json-schema.org/draft-07/schema#
-            type:
-            - "null"
-            - object
-            properties:
-              title:
-                description: The title or name of the survey.
-                type:
-                - "null"
-                - string
-              status:
-                description: The status of the survey data (e.g., active, inactive,
-                  completed).
-                type:
-                - "null"
-                - string
-              public_hash_id:
-                description: The unique public hash identifier associated with the
-                  survey.
-                type:
-                - "null"
-                - string
-              inserted_at:
-                description: The date and time when the survey data was inserted.
-                type:
-                - "null"
-                - string
-                format: date-time
-      parent_key: public_hash_id
-      partition_field: id
-  survey_groups:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type:
-        - "null"
-        - object
-        properties:
-          surveys:
-            description: An array of surveys associated with the survey group.
-            type:
-            - "null"
-            - array
-            items:
-              properties:
-                title:
-                  description: The title of the survey.
-                  type:
-                  - "null"
-                  - string
-                status:
-                  description: The status of the survey.
-                  type:
-                  - "null"
-                  - string
-                public_hash_id:
-                  description: The public hash ID associated with the survey.
-                  type:
-                  - "null"
-                  - string
-                inserted_at:
-                  description: The date and time the survey was inserted into the
-                    system.
-                  type:
-                  - "null"
-                  - string
-                  format: date-time
-          name:
-            description: The name of the survey group.
-            type:
-            - "null"
-            - string
-          public_hash_id:
-            description: The public hash ID associated with the survey group.
-            type:
-            - "null"
-            - string
-          inserted_at:
-            description: The date and time the survey group was inserted into the
-              system.
-            type:
-            - "null"
-            - string
-            format: date-time
-  survey_groups_slicer:
-    class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-    parent_stream_configs:
-    - stream:
-        type: DeclarativeStream
-        retriever:
-          type: SimpleRetriever
-          record_selector:
-            type: RecordSelector
-            extractor:
-              type: DpathExtractor
-              field_path:
-              - "{{ parameters['data_field'] }}"
-          paginator:
-            type: DefaultPaginator
-            pagination_strategy:
-              type: PageIncrement
-              page_size: 50
-              start_from_page: 1
-            page_size_option:
-              field_name: "per_page"
-              inject_into: "request_parameter"
-            page_token_option:
-              type: RequestPath
-          requester:
-            type: HttpRequester
-            http_method: "GET"
-            authenticator:
-              type: BearerAuthenticator
-              api_token: "{{ config['api_token'] }}"
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $schema: http://json-schema.org/draft-07/schema#
-            type:
-            - "null"
-            - object
-            properties:
-              surveys:
-                description: An array of surveys associated with the survey group.
-                type:
-                - "null"
-                - array
-                items:
-                  properties:
-                    title:
-                      description: The title of the survey.
-                      type:
-                      - "null"
-                      - string
-                    status:
-                      description: The status of the survey.
-                      type:
-                      - "null"
-                      - string
-                    public_hash_id:
-                      description: The public hash ID associated with the survey.
-                      type:
-                      - "null"
-                      - string
-                    inserted_at:
-                      description: The date and time the survey was inserted into
-                        the system.
-                      type:
-                      - "null"
-                      - string
-                      format: date-time
-              name:
-                description: The name of the survey group.
-                type:
-                - "null"
-                - string
-              public_hash_id:
-                description: The public hash ID associated with the survey group.
-                type:
-                - "null"
-                - string
-              inserted_at:
-                description: The date and time the survey group was inserted into
-                  the system.
-                type:
-                - "null"
-                - string
-                format: date-time
-      parent_key: public_hash_id
-      partition_field: id
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "inserted_at"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    cursor_granularity: "PT0.000001S"
-    start_datetime:
-      datetime: "{{ config['date_from'] }}"
-      datetime_format: "%Y-%m-%d"
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-    step: "P1M"
-    end_time_option:
-      field_name: "date_to"
-      inject_into: "request_parameter"
-    start_time_option:
-      field_name: "date_from"
-      inject_into: "request_parameter"
-  properties:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-        path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id']
-          else 'surveys/' + stream_slice.id + '/properties' }}"
-      partition_router:
-        class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-        parent_stream_configs:
-        - stream:
-            type: DeclarativeStream
-            retriever:
-              type: SimpleRetriever
-              record_selector:
-                type: RecordSelector
-                extractor:
-                  type: DpathExtractor
-                  field_path:
-                  - "{{ parameters['data_field'] }}"
-              paginator:
-                type: DefaultPaginator
-                pagination_strategy:
-                  type: PageIncrement
-                  page_size: 50
-                  start_from_page: 1
-                page_size_option:
-                  field_name: "per_page"
-                  inject_into: "request_parameter"
-                page_token_option:
-                  type: RequestPath
-              requester:
-                type: HttpRequester
-                http_method: "GET"
-                authenticator:
-                  type: BearerAuthenticator
-                  api_token: "{{ config['api_token'] }}"
-            schema_loader:
-              type: InlineSchemaLoader
-              schema:
-                $schema: http://json-schema.org/draft-07/schema#
-                type:
-                - "null"
-                - object
-                properties:
-                  title:
-                    description: The title or name of the survey.
-                    type:
-                    - "null"
-                    - string
-                  status:
-                    description: The status of the survey data (e.g., active, inactive,
-                      completed).
-                    type:
-                    - "null"
-                    - string
-                  public_hash_id:
-                    description: The unique public hash identifier associated with
-                      the survey.
-                    type:
-                    - "null"
-                    - string
-                  inserted_at:
-                    description: The date and time when the survey data was inserted.
-                    type:
-                    - "null"
-                    - string
-                    format: date-time
-          parent_key: public_hash_id
-          partition_field: id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type:
-        - "null"
-        - object
-        properties:
-          id:
-            description: The unique identifier for the property.
-            type:
-            - "null"
-            - string
-          name:
-            description: The name or title of the property.
-            type:
-            - "null"
-            - string
-          value:
-            description: The value associated with the property.
-            type:
-            - "null"
-            - string
-  answers:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-        request_parameters:
-          order_type: "desc"
-          order_by: "inserted_at"
-          date_shortcut: "custom"
-        path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      partition_router:
-        class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-        parent_stream_configs:
-        - stream:
-            type: DeclarativeStream
-            retriever:
-              type: SimpleRetriever
-              record_selector:
-                type: RecordSelector
-                extractor:
-                  type: DpathExtractor
-                  field_path:
-                  - "{{ parameters['data_field'] }}"
-              paginator:
-                type: DefaultPaginator
-                pagination_strategy:
-                  type: PageIncrement
-                  page_size: 50
-                  start_from_page: 1
-                page_size_option:
-                  field_name: "per_page"
-                  inject_into: "request_parameter"
-                page_token_option:
-                  type: RequestPath
-              requester:
-                type: HttpRequester
-                http_method: "GET"
-                authenticator:
-                  type: BearerAuthenticator
-                  api_token: "{{ config['api_token'] }}"
-            schema_loader:
-              type: InlineSchemaLoader
-              schema:
-                $schema: http://json-schema.org/draft-07/schema#
-                type:
-                - "null"
-                - object
-                properties:
-                  title:
-                    description: The title or name of the survey.
-                    type:
-                    - "null"
-                    - string
-                  status:
-                    description: The status of the survey data (e.g., active, inactive,
-                      completed).
-                    type:
-                    - "null"
-                    - string
-                  public_hash_id:
-                    description: The unique public hash identifier associated with
-                      the survey.
-                    type:
-                    - "null"
-                    - string
-                  inserted_at:
-                    description: The date and time when the survey data was inserted.
-                    type:
-                    - "null"
-                    - string
-                    format: date-time
-          parent_key: public_hash_id
-          partition_field: id
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "inserted_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      cursor_granularity: "PT0.000001S"
-      start_datetime:
-        datetime: "{{ config['date_from'] }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
-      end_time_option:
-        field_name: "date_to"
-        inject_into: "request_parameter"
-      start_time_option:
-        field_name: "date_from"
-        inject_into: "request_parameter"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type:
-        - "null"
-        - object
-        properties:
-          id:
-            description: The unique identifier of the answer data.
-            type:
-            - "null"
-            - string
-          score_type:
-            description: The type of score assigned to the answer data.
-            type:
-            - "null"
-            - string
-          score:
-            description: The score associated with the answer data.
-            type:
-            - "null"
-            - number
-          sentiment:
-            description: The sentiment associated with the answer data.
-            type:
-            - "null"
-            - string
-          sentiment_per_label_name:
-            description: Sentiment per label name.
-            type:
-            - "null"
-            - object
-          name:
-            description: The name of the respondent.
-            type:
-            - "null"
-            - string
-          recipient_id:
-            description: The unique identifier of the recipient.
-            type:
-            - "null"
-            - string
-          property_ids:
-            description: IDs of the properties linked to the answer data.
-            type:
-            - "null"
-            - array
-          metatags:
-            description: Meta tags associated with the answer data.
-            type:
-            - "null"
-            - object
-          labels:
-            description: Any labels associated with the answer data.
-            type:
-            - "null"
-            - array
-          labels_with_keywords:
-            description: Labels associated with keywords.
-            type:
-            - "null"
-            - object
-          inserted_at:
-            description: The timestamp when the answer data was inserted.
-            type:
-            - "null"
-            - string
-            format: date-time
-          email:
-            description: The email address of the respondent.
-            type:
-            - "null"
-            - string
-          identity:
-            description: The identity of the respondent.
-            type:
-            - "null"
-            - string
-          identity_type:
-            description: The type of identity used by the respondent.
-            type:
-            - "null"
-            - string
-          comment:
-            description: Any comments provided by the respondent.
-            type:
-            - "null"
-            - string
-          translated_comment:
-            description: The translated comment provided by the respondent.
-            type:
-            - "null"
-            - string
-          additional_answers:
-            description: Additional answers provided by the respondent.
-            type:
-            - "null"
-            - array
-            items:
-              properties:
-                additional_question_id:
-                  description: The unique identifier of the additional question.
-                  type:
-                  - "null"
-                  - string
-                answer:
-                  description: The answer provided by the respondent.
-                  type:
-                  - "null"
-                  - string
-                inserted_at:
-                  description: The timestamp when the answer was inserted.
-                  type:
-                  - "null"
-                  - string
-                  format: date-time
-          additional_questions:
-            description: Any additional questions presented to the respondent.
-            type:
-            - "null"
-            - object
-  answers_survey_group:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters['data_field'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 50
-          start_from_page: 1
-        page_size_option:
-          field_name: "per_page"
-          inject_into: "request_parameter"
-        page_token_option:
-          type: RequestPath
-      requester:
-        type: HttpRequester
-        http_method: "GET"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-        request_parameters:
-          order_type: "desc"
-          order_by: "inserted_at"
-          date_shortcut: "custom"
-        path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      partition_router:
-        class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-        parent_stream_configs:
-        - stream:
-            type: DeclarativeStream
-            retriever:
-              type: SimpleRetriever
-              record_selector:
-                type: RecordSelector
-                extractor:
-                  type: DpathExtractor
-                  field_path:
-                  - "{{ parameters['data_field'] }}"
-              paginator:
-                type: DefaultPaginator
-                pagination_strategy:
-                  type: PageIncrement
-                  page_size: 50
-                  start_from_page: 1
-                page_size_option:
-                  field_name: "per_page"
-                  inject_into: "request_parameter"
-                page_token_option:
-                  type: RequestPath
-              requester:
-                type: HttpRequester
-                http_method: "GET"
-                authenticator:
-                  type: BearerAuthenticator
-                  api_token: "{{ config['api_token'] }}"
-            schema_loader:
-              type: InlineSchemaLoader
-              schema:
-                $schema: http://json-schema.org/draft-07/schema#
-                type:
-                - "null"
-                - object
-                properties:
-                  surveys:
-                    description: An array of surveys associated with the survey group.
-                    type:
-                    - "null"
-                    - array
-                    items:
-                      properties:
-                        title:
-                          description: The title of the survey.
-                          type:
-                          - "null"
-                          - string
-                        status:
-                          description: The status of the survey.
-                          type:
-                          - "null"
-                          - string
-                        public_hash_id:
-                          description: The public hash ID associated with the survey.
-                          type:
-                          - "null"
-                          - string
-                        inserted_at:
-                          description: The date and time the survey was inserted into
-                            the system.
-                          type:
-                          - "null"
-                          - string
-                          format: date-time
-                  name:
-                    description: The name of the survey group.
-                    type:
-                    - "null"
-                    - string
-                  public_hash_id:
-                    description: The public hash ID associated with the survey group.
-                    type:
-                    - "null"
-                    - string
-                  inserted_at:
-                    description: The date and time the survey group was inserted into
-                      the system.
-                    type:
-                    - "null"
-                    - string
-                    format: date-time
-          parent_key: public_hash_id
-          partition_field: id
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "inserted_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      cursor_granularity: "PT0.000001S"
-      start_datetime:
-        datetime: "{{ config['date_from'] }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
-      end_time_option:
-        field_name: "date_to"
-        inject_into: "request_parameter"
-      start_time_option:
-        field_name: "date_from"
-        inject_into: "request_parameter"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type:
-        - "null"
-        - object
-        properties:
-          id:
-            description: Unique identifier for the survey group response
-            type:
-            - "null"
-            - string
-          survey_public_hash_id:
-            description: Public hash ID of the survey associated with the response
-            type:
-            - "null"
-            - string
-          score_type:
-            description: Type of scoring used for the survey responses
-            type:
-            - "null"
-            - string
-          score:
-            description: Score assigned to the survey response
-            type:
-            - "null"
-            - number
-          sentiment:
-            description: Sentiment analysis result for the response
-            type:
-            - "null"
-            - string
-          sentiment_per_label_name:
-            description: Sentiment analysis results per label
-            type:
-            - "null"
-            - object
-          name:
-            description: Name of the respondent
-            type:
-            - "null"
-            - string
-          recipient_id:
-            description: Unique identifier for the recipient of the survey
-            type:
-            - "null"
-            - string
-          property_ids:
-            description: IDs of properties associated with the respondent
-            type:
-            - "null"
-            - array
-          metatags:
-            description: Additional metadata tags associated with the response
-            type:
-            - "null"
-            - object
-          labels:
-            description: Labels associated with the survey response
-            type:
-            - "null"
-            - array
-          labels_with_keywords:
-            description: Labels along with corresponding keywords
-            type:
-            - "null"
-            - object
-          inserted_at:
-            description: Timestamp of when the response was inserted
-            type:
-            - "null"
-            - string
-            format: date-time
-          email:
-            description: Email address of the respondent
-            type:
-            - "null"
-            - string
-          identity:
-            description: Identity information of the respondent
-            type:
-            - "null"
-            - string
-          identity_type:
-            description: Type of identity information provided
-            type:
-            - "null"
-            - string
-          comment:
-            description: Survey response comment provided by the respondent
-            type:
-            - "null"
-            - string
-          translated_comment:
-            description: Translated version of the comment provided
-            type:
-            - "null"
-            - string
-          additional_questions:
-            description: Any additional questions provided in the survey group response
-            type:
-            - "null"
-            - object
-streams:
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestPath
-    requester:
-      type: HttpRequester
-      http_method: "GET"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['api_token'] }}"
-      path: "surveys"
-      url_base: "https://api.zenloop.com/v1/"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type:
-      - "null"
-      - object
-      properties:
-        title:
-          description: The title or name of the survey.
-          type:
-          - "null"
-          - string
-        status:
-          description: The status of the survey data (e.g., active, inactive, completed).
-          type:
-          - "null"
-          - string
-        public_hash_id:
-          description: The unique public hash identifier associated with the survey.
-          type:
-          - "null"
-          - string
-        inserted_at:
-          description: The date and time when the survey data was inserted.
-          type:
-          - "null"
-          - string
-          format: date-time
-  name: "surveys"
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestPath
-    requester:
-      type: HttpRequester
-      http_method: "GET"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['api_token'] }}"
-      path: "survey_groups"
-      url_base: "https://api.zenloop.com/v1/"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type:
-      - "null"
-      - object
-      properties:
-        surveys:
-          description: An array of surveys associated with the survey group.
-          type:
-          - "null"
-          - array
-          items:
-            properties:
-              title:
-                description: The title of the survey.
-                type:
-                - "null"
-                - string
-              status:
-                description: The status of the survey.
-                type:
-                - "null"
-                - string
-              public_hash_id:
-                description: The public hash ID associated with the survey.
-                type:
-                - "null"
-                - string
-              inserted_at:
-                description: The date and time the survey was inserted into the system.
-                type:
-                - "null"
-                - string
-                format: date-time
-        name:
-          description: The name of the survey group.
-          type:
-          - "null"
-          - string
-        public_hash_id:
-          description: The public hash ID associated with the survey group.
-          type:
-          - "null"
-          - string
-        inserted_at:
-          description: The date and time the survey group was inserted into the system.
-          type:
-          - "null"
-          - string
-          format: date-time
-  name: "survey_groups"
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestPath
-    requester:
-      type: HttpRequester
-      http_method: "GET"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['api_token'] }}"
-      path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id']
-        else 'surveys/' + stream_slice.id + '/properties' }}"
-      url_base: "https://api.zenloop.com/v1/"
-    partition_router:
-      class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-      parent_stream_configs:
-      - stream:
-          type: DeclarativeStream
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - "{{ parameters['data_field'] }}"
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: PageIncrement
-                page_size: 50
-                start_from_page: 1
-              page_size_option:
-                field_name: "per_page"
-                inject_into: "request_parameter"
-                type: RequestOption
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              http_method: "GET"
-              authenticator:
-                type: BearerAuthenticator
-                api_token: "{{ config['api_token'] }}"
-              url_base: "https://api.zenloop.com/v1/"
-              path: "surveys"
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $schema: http://json-schema.org/draft-07/schema#
-              type:
-              - "null"
-              - object
-              properties:
-                title:
-                  description: The title or name of the survey.
-                  type:
-                  - "null"
-                  - string
-                status:
-                  description: The status of the survey data (e.g., active, inactive,
-                    completed).
-                  type:
-                  - "null"
-                  - string
-                public_hash_id:
-                  description: The unique public hash identifier associated with the
-                    survey.
-                  type:
-                  - "null"
-                  - string
-                inserted_at:
-                  description: The date and time when the survey data was inserted.
-                  type:
-                  - "null"
-                  - string
-                  format: date-time
-          name: "surveys"
-        parent_key: public_hash_id
-        partition_field: id
-        type: ParentStreamConfig
-      type: CustomPartitionRouter
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type:
-      - "null"
-      - object
-      properties:
-        id:
-          description: The unique identifier for the property.
-          type:
-          - "null"
-          - string
-        name:
-          description: The name or title of the property.
-          type:
-          - "null"
-          - string
-        value:
-          description: The value associated with the property.
-          type:
-          - "null"
-          - string
-  name: "properties"
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestPath
-    requester:
-      type: HttpRequester
-      http_method: "GET"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['api_token'] }}"
-      request_parameters:
-        order_type: "desc"
-        order_by: "inserted_at"
-        date_shortcut: "custom"
-      path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      url_base: "https://api.zenloop.com/v1/"
-    partition_router:
-      class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-      parent_stream_configs:
-      - stream:
-          type: DeclarativeStream
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - "{{ parameters['data_field'] }}"
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: PageIncrement
-                page_size: 50
-                start_from_page: 1
-              page_size_option:
-                field_name: "per_page"
-                inject_into: "request_parameter"
-                type: RequestOption
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              http_method: "GET"
-              authenticator:
-                type: BearerAuthenticator
-                api_token: "{{ config['api_token'] }}"
-              url_base: "https://api.zenloop.com/v1/"
-              path: "surveys"
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $schema: http://json-schema.org/draft-07/schema#
-              type:
-              - "null"
-              - object
-              properties:
-                title:
-                  description: The title or name of the survey.
-                  type:
-                  - "null"
-                  - string
-                status:
-                  description: The status of the survey data (e.g., active, inactive,
-                    completed).
-                  type:
-                  - "null"
-                  - string
-                public_hash_id:
-                  description: The unique public hash identifier associated with the
-                    survey.
-                  type:
-                  - "null"
-                  - string
-                inserted_at:
-                  description: The date and time when the survey data was inserted.
-                  type:
-                  - "null"
-                  - string
-                  format: date-time
-          name: "surveys"
-        parent_key: public_hash_id
-        partition_field: id
-        type: ParentStreamConfig
-      type: CustomPartitionRouter
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "inserted_at"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    cursor_granularity: "PT0.000001S"
-    start_datetime:
-      datetime: "{{ config['date_from'] }}"
-      datetime_format: "%Y-%m-%d"
-      type: MinMaxDatetime
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-      type: MinMaxDatetime
-    step: "P1M"
-    end_time_option:
-      field_name: "date_to"
-      inject_into: "request_parameter"
-      type: RequestOption
-    start_time_option:
-      field_name: "date_from"
-      inject_into: "request_parameter"
-      type: RequestOption
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type:
-      - "null"
-      - object
-      properties:
-        id:
-          description: The unique identifier of the answer data.
-          type:
-          - "null"
-          - string
-        score_type:
-          description: The type of score assigned to the answer data.
-          type:
-          - "null"
-          - string
-        score:
-          description: The score associated with the answer data.
-          type:
-          - "null"
-          - number
-        sentiment:
-          description: The sentiment associated with the answer data.
-          type:
-          - "null"
-          - string
-        sentiment_per_label_name:
-          description: Sentiment per label name.
-          type:
-          - "null"
-          - object
-        name:
-          description: The name of the respondent.
-          type:
-          - "null"
-          - string
-        recipient_id:
-          description: The unique identifier of the recipient.
-          type:
-          - "null"
-          - string
-        property_ids:
-          description: IDs of the properties linked to the answer data.
-          type:
-          - "null"
-          - array
-        metatags:
-          description: Meta tags associated with the answer data.
-          type:
-          - "null"
-          - object
-        labels:
-          description: Any labels associated with the answer data.
-          type:
-          - "null"
-          - array
-        labels_with_keywords:
-          description: Labels associated with keywords.
-          type:
-          - "null"
-          - object
-        inserted_at:
-          description: The timestamp when the answer data was inserted.
-          type:
-          - "null"
-          - string
-          format: date-time
-        email:
-          description: The email address of the respondent.
-          type:
-          - "null"
-          - string
-        identity:
-          description: The identity of the respondent.
-          type:
-          - "null"
-          - string
-        identity_type:
-          description: The type of identity used by the respondent.
-          type:
-          - "null"
-          - string
-        comment:
-          description: Any comments provided by the respondent.
-          type:
-          - "null"
-          - string
-        translated_comment:
-          description: The translated comment provided by the respondent.
-          type:
-          - "null"
-          - string
-        additional_answers:
-          description: Additional answers provided by the respondent.
-          type:
-          - "null"
-          - array
-          items:
-            properties:
-              additional_question_id:
-                description: The unique identifier of the additional question.
-                type:
-                - "null"
-                - string
-              answer:
-                description: The answer provided by the respondent.
-                type:
-                - "null"
-                - string
-              inserted_at:
-                description: The timestamp when the answer was inserted.
-                type:
-                - "null"
-                - string
-                format: date-time
-        additional_questions:
-          description: Any additional questions presented to the respondent.
-          type:
-          - "null"
-          - object
-  name: "answers"
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters['data_field'] }}"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: PageIncrement
-        page_size: 50
-        start_from_page: 1
-      page_size_option:
-        field_name: "per_page"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestPath
-    requester:
-      type: HttpRequester
-      http_method: "GET"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['api_token'] }}"
-      request_parameters:
-        order_type: "desc"
-        order_by: "inserted_at"
-        date_shortcut: "custom"
-      path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      url_base: "https://api.zenloop.com/v1/"
-    partition_router:
-      class_name: source_declarative_manifest.components.ZenloopPartitionRouter
-      parent_stream_configs:
-      - stream:
-          type: DeclarativeStream
-          retriever:
-            type: SimpleRetriever
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - "{{ parameters['data_field'] }}"
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: PageIncrement
-                page_size: 50
-                start_from_page: 1
-              page_size_option:
-                field_name: "per_page"
-                inject_into: "request_parameter"
-                type: RequestOption
-              page_token_option:
-                type: RequestPath
-            requester:
-              type: HttpRequester
-              http_method: "GET"
-              authenticator:
-                type: BearerAuthenticator
-                api_token: "{{ config['api_token'] }}"
-              url_base: "https://api.zenloop.com/v1/"
-              path: "survey_groups"
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $schema: http://json-schema.org/draft-07/schema#
-              type:
-              - "null"
-              - object
-              properties:
-                surveys:
-                  description: An array of surveys associated with the survey group.
-                  type:
-                  - "null"
-                  - array
-                  items:
-                    properties:
-                      title:
-                        description: The title of the survey.
-                        type:
-                        - "null"
-                        - string
-                      status:
-                        description: The status of the survey.
-                        type:
-                        - "null"
-                        - string
-                      public_hash_id:
-                        description: The public hash ID associated with the survey.
-                        type:
-                        - "null"
-                        - string
-                      inserted_at:
-                        description: The date and time the survey was inserted into
-                          the system.
-                        type:
-                        - "null"
-                        - string
-                        format: date-time
-                name:
-                  description: The name of the survey group.
-                  type:
-                  - "null"
-                  - string
-                public_hash_id:
-                  description: The public hash ID associated with the survey group.
-                  type:
-                  - "null"
-                  - string
-                inserted_at:
-                  description: The date and time the survey group was inserted into
-                    the system.
-                  type:
-                  - "null"
-                  - string
-                  format: date-time
-          name: "survey_groups"
-        parent_key: public_hash_id
-        partition_field: id
-        type: ParentStreamConfig
-      type: CustomPartitionRouter
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "inserted_at"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    cursor_granularity: "PT0.000001S"
-    start_datetime:
-      datetime: "{{ config['date_from'] }}"
-      datetime_format: "%Y-%m-%d"
-      type: MinMaxDatetime
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-      type: MinMaxDatetime
-    step: "P1M"
-    end_time_option:
-      field_name: "date_to"
-      inject_into: "request_parameter"
-      type: RequestOption
-    start_time_option:
-      field_name: "date_from"
-      inject_into: "request_parameter"
-      type: RequestOption
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type:
-      - "null"
-      - object
-      properties:
-        id:
-          description: Unique identifier for the survey group response
-          type:
-          - "null"
-          - string
-        survey_public_hash_id:
-          description: Public hash ID of the survey associated with the response
-          type:
-          - "null"
-          - string
-        score_type:
-          description: Type of scoring used for the survey responses
-          type:
-          - "null"
-          - string
-        score:
-          description: Score assigned to the survey response
-          type:
-          - "null"
-          - number
-        sentiment:
-          description: Sentiment analysis result for the response
-          type:
-          - "null"
-          - string
-        sentiment_per_label_name:
-          description: Sentiment analysis results per label
-          type:
-          - "null"
-          - object
-        name:
-          description: Name of the respondent
-          type:
-          - "null"
-          - string
-        recipient_id:
-          description: Unique identifier for the recipient of the survey
-          type:
-          - "null"
-          - string
-        property_ids:
-          description: IDs of properties associated with the respondent
-          type:
-          - "null"
-          - array
-        metatags:
-          description: Additional metadata tags associated with the response
-          type:
-          - "null"
-          - object
-        labels:
-          description: Labels associated with the survey response
-          type:
-          - "null"
-          - array
-        labels_with_keywords:
-          description: Labels along with corresponding keywords
-          type:
-          - "null"
-          - object
-        inserted_at:
-          description: Timestamp of when the response was inserted
-          type:
-          - "null"
-          - string
-          format: date-time
-        email:
-          description: Email address of the respondent
-          type:
-          - "null"
-          - string
-        identity:
-          description: Identity information of the respondent
-          type:
-          - "null"
-          - string
-        identity_type:
-          description: Type of identity information provided
-          type:
-          - "null"
-          - string
-        comment:
-          description: Survey response comment provided by the respondent
-          type:
-          - "null"
-          - string
-        translated_comment:
-          description: Translated version of the comment provided
-          type:
-          - "null"
-          - string
-        additional_questions:
-          description: Any additional questions provided in the survey group response
-          type:
-          - "null"
-          - object
-  name: "answers_survey_group"
+version: 5.16.0
+
+type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
-  - "surveys"
-type: DeclarativeSource
+    - surveys
+
+definitions:
+  streams:
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: surveys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - surveys
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+    survey_groups:
+      type: DeclarativeStream
+      name: survey_groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: survey_groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - survey_groups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/survey_groups"
+    properties:
+      type: DeclarativeStream
+      name: properties
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ 'surveys/' + config['survey_id'] + '/properties' if
+            config['survey_id'] else 'surveys/' + stream_slice.id +
+            '/properties' }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - properties
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.ZenloopPartitionRouter
+          config_parent_field: survey_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                type: DeclarativeStream
+                name: surveys
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.zenloop.com/v1/
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config[\"api_token\"] }}"
+                    path: surveys
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - surveys
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 50
+                      start_from_page: 1
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      inserted_at:
+                        type:
+                          - "null"
+                          - string
+                        description: The date and time when the survey data was inserted.
+                        format: date-time
+                      public_hash_id:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          The unique public hash identifier associated with the
+                          survey.
+                      status:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          The status of the survey data (e.g., active, inactive,
+                          completed).
+                      title:
+                        type:
+                          - "null"
+                          - string
+                        description: The title or name of the survey.
+              parent_key: public_hash_id
+              partition_field: id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/properties"
+    answers:
+      type: DeclarativeStream
+      name: answers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
+          http_method: GET
+          request_parameters:
+            order_type: desc
+            order_by: inserted_at
+            date_shortcut: custom
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - answers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.ZenloopPartitionRouter
+          config_parent_field: survey_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                type: DeclarativeStream
+                name: surveys
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.zenloop.com/v1/
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config[\"api_token\"] }}"
+                    path: surveys
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - surveys
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 50
+                      start_from_page: 1
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      inserted_at:
+                        type:
+                          - "null"
+                          - string
+                        description: The date and time when the survey data was inserted.
+                        format: date-time
+                      public_hash_id:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          The unique public hash identifier associated with the
+                          survey.
+                      status:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          The status of the survey data (e.g., active, inactive,
+                          completed).
+                      title:
+                        type:
+                          - "null"
+                          - string
+                        description: The title or name of the survey.
+              parent_key: public_hash_id
+              partition_field: id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inserted_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['date_from'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/answers"
+    answers_survey_group:
+      type: DeclarativeStream
+      name: answers_survey_group
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
+          http_method: GET
+          request_parameters:
+            order_type: desc
+            order_by: inserted_at
+            date_shortcut: custom
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - answers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.ZenloopPartitionRouter
+          config_parent_field: survey_group_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                type: DeclarativeStream
+                name: survey_groups
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.zenloop.com/v1/
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config[\"api_token\"] }}"
+                    path: survey_groups
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - survey_groups
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    page_size_option:
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 50
+                      start_from_page: 1
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type:
+                      - "null"
+                      - object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      inserted_at:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          The date and time the survey group was inserted into
+                          the system.
+                        format: date-time
+                      name:
+                        type:
+                          - "null"
+                          - string
+                        description: The name of the survey group.
+                      public_hash_id:
+                        type:
+                          - "null"
+                          - string
+                        description: The public hash ID associated with the survey group.
+                      surveys:
+                        type:
+                          - "null"
+                          - array
+                        description: An array of surveys associated with the survey group.
+                        items:
+                          properties:
+                            inserted_at:
+                              type:
+                                - "null"
+                                - string
+                              description: >-
+                                The date and time the survey was inserted into
+                                the system.
+                              format: date-time
+                            public_hash_id:
+                              type:
+                                - "null"
+                                - string
+                              description: The public hash ID associated with the survey.
+                            status:
+                              type:
+                                - "null"
+                                - string
+                              description: The status of the survey.
+                            title:
+                              type:
+                                - "null"
+                                - string
+                              description: The title of the survey.
+              parent_key: public_hash_id
+              partition_field: id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inserted_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['date_from'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/answers_survey_group"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.zenloop.com/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/survey_groups"
+  - $ref: "#/definitions/streams/properties"
+  - $ref: "#/definitions/streams/answers"
+  - $ref: "#/definitions/streams/answers_survey_group"
+
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/zenloop
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Zenloop Spec
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-    - api_token
+      - api_token
     properties:
       api_token:
         type: string
-        description: 'Zenloop API Token. You can get the API token in settings page
-          <a href="https://app.zenloop.com/settings/api">here</a> '
+        description: >-
+          Zenloop API Token. You can get the API token in settings page <a
+          href="https://app.zenloop.com/settings/api">here</a> 
         airbyte_secret: true
+        order: 0
       date_from:
         type: string
-        description: 'Zenloop date_from. Format: 2021-10-24T03:30:30Z or 2021-10-24.
-          Leave empty if only data from current data should be synced'
+        description: >-
+          Zenloop date_from. Format: 2021-10-24T03:30:30Z or 2021-10-24. Leave
+          empty if only data from current data should be synced
         examples:
-        - '2021-10-24T03:30:30Z'
+          - "2021-10-24T03:30:30Z"
+        order: 1
       survey_id:
         type: string
-        description: Zenloop Survey ID. Can be found <a href="https://app.zenloop.com/settings/api">here</a>.
-          Leave empty to pull answers from all surveys
+        description: >-
+          Zenloop Survey ID. Can be found <a
+          href="https://app.zenloop.com/settings/api">here</a>. Leave empty to
+          pull answers from all surveys
         airbyte_secret: true
+        order: 2
       survey_group_id:
         type: string
-        description: Zenloop Survey Group ID. Can be found by pulling All Survey Groups
-          via SurveyGroups stream. Leave empty to pull answers from all survey groups
+        description: >-
+          Zenloop Survey Group ID. Can be found by pulling All Survey Groups via
+          SurveyGroups stream. Leave empty to pull answers from all survey
+          groups
         airbyte_secret: true
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    surveys: false
+    survey_groups: false
+    properties: false
+    answers: false
+    answers_survey_group: false
+  yamlComponents:
+    streams:
+      properties:
+        - parentStreams
+      answers:
+        - parentStreams
+      answers_survey_group:
+        - parentStreams
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  surveys:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      inserted_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the survey data was inserted.
+        format: date-time
+      public_hash_id:
+        type:
+          - "null"
+          - string
+        description: The unique public hash identifier associated with the survey.
+      status:
+        type:
+          - "null"
+          - string
+        description: The status of the survey data (e.g., active, inactive, completed).
+      title:
+        type:
+          - "null"
+          - string
+        description: The title or name of the survey.
+  survey_groups:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      inserted_at:
+        type:
+          - "null"
+          - string
+        description: The date and time the survey group was inserted into the system.
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the survey group.
+      public_hash_id:
+        type:
+          - "null"
+          - string
+        description: The public hash ID associated with the survey group.
+      surveys:
+        type:
+          - "null"
+          - array
+        description: An array of surveys associated with the survey group.
+        items:
+          properties:
+            inserted_at:
+              type:
+                - "null"
+                - string
+              description: The date and time the survey was inserted into the system.
+              format: date-time
+            public_hash_id:
+              type:
+                - "null"
+                - string
+              description: The public hash ID associated with the survey.
+            status:
+              type:
+                - "null"
+                - string
+              description: The status of the survey.
+            title:
+              type:
+                - "null"
+                - string
+              description: The title of the survey.
+  properties:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier for the property.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name or title of the property.
+      value:
+        type:
+          - "null"
+          - string
+        description: The value associated with the property.
+  answers:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      additional_answers:
+        type:
+          - "null"
+          - array
+        description: Additional answers provided by the respondent.
+        items:
+          properties:
+            additional_question_id:
+              type:
+                - "null"
+                - string
+              description: The unique identifier of the additional question.
+            answer:
+              type:
+                - "null"
+                - string
+              description: The answer provided by the respondent.
+            inserted_at:
+              type:
+                - "null"
+                - string
+              description: The timestamp when the answer was inserted.
+              format: date-time
+      additional_questions:
+        type:
+          - "null"
+          - object
+        description: Any additional questions presented to the respondent.
+      comment:
+        type:
+          - "null"
+          - string
+        description: Any comments provided by the respondent.
+      email:
+        type:
+          - "null"
+          - string
+        description: The email address of the respondent.
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the answer data.
+      identity:
+        type:
+          - "null"
+          - string
+        description: The identity of the respondent.
+      identity_type:
+        type:
+          - "null"
+          - string
+        description: The type of identity used by the respondent.
+      inserted_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp when the answer data was inserted.
+        format: date-time
+      labels:
+        type:
+          - "null"
+          - array
+        description: Any labels associated with the answer data.
+      labels_with_keywords:
+        type:
+          - "null"
+          - object
+        description: Labels associated with keywords.
+      metatags:
+        type:
+          - "null"
+          - object
+        description: Meta tags associated with the answer data.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the respondent.
+      property_ids:
+        type:
+          - "null"
+          - array
+        description: IDs of the properties linked to the answer data.
+      recipient_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the recipient.
+      score:
+        type:
+          - "null"
+          - number
+        description: The score associated with the answer data.
+      score_type:
+        type:
+          - "null"
+          - string
+        description: The type of score assigned to the answer data.
+      sentiment:
+        type:
+          - "null"
+          - string
+        description: The sentiment associated with the answer data.
+      sentiment_per_label_name:
+        type:
+          - "null"
+          - object
+        description: Sentiment per label name.
+      translated_comment:
+        type:
+          - "null"
+          - string
+        description: The translated comment provided by the respondent.
+  answers_survey_group:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      additional_questions:
+        type:
+          - "null"
+          - object
+        description: Any additional questions provided in the survey group response
+      comment:
+        type:
+          - "null"
+          - string
+        description: Survey response comment provided by the respondent
+      email:
+        type:
+          - "null"
+          - string
+        description: Email address of the respondent
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the survey group response
+      identity:
+        type:
+          - "null"
+          - string
+        description: Identity information of the respondent
+      identity_type:
+        type:
+          - "null"
+          - string
+        description: Type of identity information provided
+      inserted_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp of when the response was inserted
+        format: date-time
+      labels:
+        type:
+          - "null"
+          - array
+        description: Labels associated with the survey response
+      labels_with_keywords:
+        type:
+          - "null"
+          - object
+        description: Labels along with corresponding keywords
+      metatags:
+        type:
+          - "null"
+          - object
+        description: Additional metadata tags associated with the response
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the respondent
+      property_ids:
+        type:
+          - "null"
+          - array
+        description: IDs of properties associated with the respondent
+      recipient_id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the recipient of the survey
+      score:
+        type:
+          - "null"
+          - number
+        description: Score assigned to the survey response
+      score_type:
+        type:
+          - "null"
+          - string
+        description: Type of scoring used for the survey responses
+      sentiment:
+        type:
+          - "null"
+          - string
+        description: Sentiment analysis result for the response
+      sentiment_per_label_name:
+        type:
+          - "null"
+          - object
+        description: Sentiment analysis results per label
+      survey_public_hash_id:
+        type:
+          - "null"
+          - string
+        description: Public hash ID of the survey associated with the response
+      translated_comment:
+        type:
+          - "null"
+          - string
+        description: Translated version of the comment provided
