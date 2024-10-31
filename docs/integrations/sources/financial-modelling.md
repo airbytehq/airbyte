@@ -11,9 +11,7 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 | `exchange` | `string` | Exchange. The stock exchange : AMEX, AMS, AQS, ASX, ATH, BER, BME, BRU, BSE, BUD, BUE, BVC, CAI, CBOE, CNQ, CPH, DFM, DOH, DUS, DXE, EGX, EURONEXT, HAM, HEL, HKSE, ICE, IOB, IST, JKT, JNB, JPX, KLS, KOE, KSC, KUW, LSE, MCX, MEX, MIL, MUN, NASDAQ, NEO, NSE, NYSE, NZE, OEM, OQX, OSL, OTC, PNK, PRA, RIS, SAO, SAU, SES, SET, SGO, SHH, SHZ, SIX, STO, STU, TAI, TLV, TSX, TSXV, TWO, VIE, VSE, WSE, XETRA | NASDAQ |
 | `marketcapmorethan` | `string` | marketCapMoreThan. Used in screener to filter out stocks with a market cap more than the give marketcap |  |
 | `marketcaplowerthan` | `string` | marketCapLowerThan. Used in screener to filter out stocks with a market cap lower than the give marketcap |  |
-| `limit` | `number` | Limit.  |  |
-| `from` | `string` | From. Used when fetching historical data : The date from which you need the data |  |
-| `to` | `string` | To. Used when fetching historical data : The date till which you need the data |  |
+| `start_date` | `string` | Start Date |  |
 | `time_frame` | `string` | Time Frame. For example 1min, 5min, 15min, 30min, 1hour, 4hour | 1hour |
 
 ## Streams
