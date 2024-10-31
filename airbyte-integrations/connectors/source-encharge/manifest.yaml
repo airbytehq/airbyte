@@ -1,0 +1,862 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for [Encharge](https://encharge.io/) enables seamless
+  data integration between Encharge and your data warehouse or other
+  destinations. With this connector, you can easily sync marketing automation
+  data from Encharge. This allows for improved data-driven decision-making and
+  enhanced marketing insights across platforms.
+
+check:
+  type: CheckStream
+  stream_names:
+    - peoples
+
+definitions:
+  streams:
+    schemas:
+      type: DeclarativeStream
+      name: schemas
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /schemas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - objects
+      primary_key:
+        - name
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schemas"
+    fields:
+      type: DeclarativeStream
+      name: fields
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      primary_key:
+        - name
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fields"
+    peoples:
+      type: DeclarativeStream
+      name: peoples
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - people
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/peoples"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - accountId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    account_tags:
+      type: DeclarativeStream
+      name: account_tags
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags-management
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+      primary_key:
+        - tag
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_tags"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.encharge.io/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Encharge-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/peoples"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/account_tags"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/fields"
+  - $ref: "#/definitions/streams/schemas"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: The API key to use for authentication
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://app-encharge-resources.s3.amazonaws.com/redoc.html
+  testedStreams:
+    schemas:
+      hasRecords: true
+      streamHash: 2c28219872b3fbf617d7d470f3dcffb7f5ef224f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    fields:
+      hasRecords: true
+      streamHash: d6ff2d68317c665abcf74229a08e914933f1ebd9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    peoples:
+      hasRecords: true
+      streamHash: f5365e1e91ec221739d2de544e1f8c84dd95bfa6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: true
+      streamHash: 950d6b08490613b3992216ee76f18791a8dc5d95
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segments:
+      hasRecords: true
+      streamHash: 40c4454205fd55a0ae93a068cf0fcb995a49a507
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account_tags:
+      hasRecords: true
+      streamHash: 11eaab1fb76a8a6e00f25d172215a896e7a6ad0c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    schemas: false
+    fields: false
+    peoples: true
+    accounts: false
+    segments: false
+    account_tags: false
+
+schemas:
+  schemas:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            enum:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            array:
+              type:
+                - boolean
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            format:
+              type:
+                - string
+                - "null"
+            tooltip:
+              type:
+                - string
+                - "null"
+            readOnly:
+              type:
+                - boolean
+                - "null"
+            createdBy:
+              type:
+                - string
+                - "null"
+            enumNames:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            canMapFrom:
+              type:
+                - boolean
+                - "null"
+            firstClassField:
+              type:
+                - boolean
+                - "null"
+      associations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            toObject:
+              type:
+                - string
+                - "null"
+            fromObject:
+              type:
+                - string
+                - "null"
+      primaryField:
+        type:
+          - string
+          - "null"
+      searchableFields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      displayNamePlural:
+        type:
+          - string
+          - "null"
+      displayNameSingular:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - name
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      enum:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      name:
+        type: string
+      array:
+        type:
+          - boolean
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      format:
+        type:
+          - string
+          - "null"
+      tooltip:
+        type:
+          - string
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      enumNames:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      canMapFrom:
+        type:
+          - boolean
+          - "null"
+      firstClassField:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  peoples:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      leadScore:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      isEmailRole:
+        type:
+          - boolean
+          - "null"
+      lastActivity:
+        type:
+          - string
+          - "null"
+      validationResult:
+        type:
+          - string
+          - "null"
+      isEmailDisposable:
+        type:
+          - boolean
+          - "null"
+      validationConfidence:
+        type:
+          - number
+          - "null"
+      CommunicationCategories:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - accountId
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      site:
+        type:
+          - string
+          - "null"
+      flags:
+        type:
+          - object
+          - "null"
+        properties:
+          isFreeEmail:
+            type:
+              - boolean
+              - "null"
+          aiFlowsGenerated:
+            type:
+              - boolean
+              - "null"
+          providedSiteAndName:
+            type:
+              - boolean
+              - "null"
+          registrationFinished:
+            type:
+              - boolean
+              - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            enum:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            array:
+              type:
+                - boolean
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            format:
+              type:
+                - string
+                - "null"
+            tooltip:
+              type:
+                - string
+                - "null"
+            readOnly:
+              type:
+                - boolean
+                - "null"
+            createdBy:
+              type:
+                - string
+                - "null"
+            enumNames:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            canMapFrom:
+              type:
+                - boolean
+                - "null"
+            firstClassField:
+              type:
+                - boolean
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      apiKeys:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      blocked:
+        type:
+          - boolean
+          - "null"
+      approved:
+        type:
+          - boolean
+          - "null"
+      industry:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      writeKey:
+        type:
+          - string
+          - "null"
+      accountId:
+        type: number
+      createdAt:
+        type:
+          - string
+          - "null"
+      onboarding:
+        type:
+          - object
+          - "null"
+        properties:
+          import:
+            type:
+              - boolean
+              - "null"
+      companyInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          isSaaS:
+            type:
+              - boolean
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+      peopleCount:
+        type:
+          - number
+          - "null"
+      testAccount:
+        type:
+          - boolean
+          - "null"
+      webhookSeed:
+        type:
+          - string
+          - "null"
+      activeServices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      hasStripeAPIKey:
+        type:
+          - boolean
+          - "null"
+      outputFieldMappings:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+      accountId:
+        type:
+          - number
+          - "null"
+      conditions:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          operator:
+            type:
+              - string
+              - "null"
+          conditions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                field:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - boolean
+                    - number
+                    - "null"
+                condition:
+                  type:
+                    - string
+                    - "null"
+      objectName:
+        type:
+          - string
+          - "null"
+      autoSegment:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  account_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - tag
+    properties:
+      tag:
+        type: string
+      createdAt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
