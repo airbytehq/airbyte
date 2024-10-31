@@ -1,0 +1,2359 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for Pretix enables seamless data integration with the
+  Pretix event ticketing platform, allowing users to sync ticket sales, attendee
+  information, event data, and other metrics directly into their data warehouse
+  or analytics tools. This connector supports automated data extraction for
+  efficient, reporting and data-driven insights across events managed in Pretix.
+
+check:
+  type: CheckStream
+  stream_names:
+    - orgainzers
+
+definitions:
+  streams:
+    orgainzers:
+      type: DeclarativeStream
+      name: orgainzers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orgainzers"
+    events:
+      type: DeclarativeStream
+      name: events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    tax_rules:
+      type: DeclarativeStream
+      name: tax_rules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/taxrules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax_rules"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    items:
+      type: DeclarativeStream
+      name: items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    vouchers:
+      type: DeclarativeStream
+      name: vouchers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/vouchers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vouchers"
+    discounts:
+      type: DeclarativeStream
+      name: discounts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/discounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discounts"
+    checkin_lists:
+      type: DeclarativeStream
+      name: checkin_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/checkinlists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/checkin_lists"
+    sales_channels:
+      type: DeclarativeStream
+      name: sales_channels
+      primary_key:
+        - identifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/saleschannels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales_channels"
+    giftcards:
+      type: DeclarativeStream
+      name: giftcards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/giftcards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/giftcards"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    devices:
+      type: DeclarativeStream
+      name: devices
+      primary_key:
+        - device_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/devices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/devices"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    seating_plans:
+      type: DeclarativeStream
+      name: seating_plans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizers/{{ stream_partition.organizer }}/seatingplans
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: slug
+              partition_field: organizer
+              stream:
+                $ref: "#/definitions/streams/orgainzers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/seating_plans"
+    shredders:
+      type: DeclarativeStream
+      name: shredders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/shredders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shredders"
+    exporters:
+      type: DeclarativeStream
+      name: exporters
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizers/{{ stream_partition.organizer }}/events/{{
+            stream_partition.event }}/exporters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: organizer
+                stream:
+                  $ref: "#/definitions/streams/orgainzers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: slug
+                partition_field: event
+                stream:
+                  $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/exporters"
+  base_requester:
+    type: HttpRequester
+    url_base: https://pretix.eu/api/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: Token {{ config["api_token"] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/orgainzers"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/tax_rules"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/vouchers"
+  - $ref: "#/definitions/streams/discounts"
+  - $ref: "#/definitions/streams/checkin_lists"
+  - $ref: "#/definitions/streams/sales_channels"
+  - $ref: "#/definitions/streams/giftcards"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/devices"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/seating_plans"
+  - $ref: "#/definitions/streams/shredders"
+  - $ref: "#/definitions/streams/exporters"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          API token to use. Obtain it from the pretix web interface by creating
+          a new token under your team settings.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    orgainzers: true
+    events: true
+    tax_rules: false
+    categories: false
+    items: false
+    orders: false
+    vouchers: false
+    discounts: false
+    checkin_lists: false
+    sales_channels: false
+    giftcards: false
+    teams: false
+    devices: true
+    webhooks: true
+    seating_plans: false
+    shredders: false
+    exporters: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    orgainzers:
+      hasRecords: true
+      streamHash: 70e5295be06943b1d5648d5887d7bd498ecb4ded
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      hasRecords: true
+      streamHash: 889356e60e1fefd4c89a612f6dbc93dca5821c5e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tax_rules:
+      hasRecords: true
+      streamHash: dbb306c333b76515bc55479a277578fd8edf89b5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories:
+      hasRecords: true
+      streamHash: 512fecf5ea01e4901b4a4559e33895318dbf82bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    items:
+      hasRecords: true
+      streamHash: 6805e97525573629bd487e0cc7f5851cd767e0fc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: true
+      streamHash: 45e51995b5ea7f71e378864d93cb5a36bc9790f2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vouchers:
+      hasRecords: true
+      streamHash: 549eee20927ecf39e0a1d4971de4307b92468e21
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    discounts:
+      hasRecords: true
+      streamHash: 7c23dc6d9567f4ca34d608087f4fb4de5dbd66f2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    checkin_lists:
+      hasRecords: true
+      streamHash: dfba7da8c1669ead7058942c25b0f3bb78ad854a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sales_channels:
+      hasRecords: true
+      streamHash: 218089b301660a55cd87dffbb39ccaac32ff485a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    giftcards:
+      streamHash: 44810fad5e9f716e0e955a4ae693050927046609
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      hasRecords: true
+      streamHash: 48905e4a0b593cae2c8db0871f2d1cb77d577b55
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    devices:
+      streamHash: 4247b8e171554c86d300bfd31657201e50dd608e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: bab1e8b1f1f351b81817ee7a6b74719b1e5d8980
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    seating_plans:
+      streamHash: 3ec77428540f488da5272824aabab6064a31446c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    shredders:
+      hasRecords: true
+      streamHash: 483ff4c58d35b8f5ad824c44c20ae9acb800086e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    exporters:
+      hasRecords: true
+      streamHash: ab2c84f419817ef64d7248bc73c78b09e81a48e8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.pretix.eu/en/latest/api/fundamentals.html
+
+schemas:
+  orgainzers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      public_url:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      all_sales_channels:
+        type:
+          - boolean
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      date_from:
+        type:
+          - string
+          - "null"
+      date_to:
+        type:
+          - string
+          - "null"
+      has_subevents:
+        type:
+          - boolean
+          - "null"
+      is_public:
+        type:
+          - boolean
+          - "null"
+      item_meta_properties:
+        type:
+          - object
+          - "null"
+      limit_sales_channels:
+        type:
+          - array
+          - "null"
+      live:
+        type:
+          - boolean
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - string
+              - "null"
+      plugins:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      public_url:
+        type:
+          - string
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      seat_category_mapping:
+        type:
+          - object
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      testmode:
+        type:
+          - boolean
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+  tax_rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      custom_rules:
+        type:
+          - array
+          - "null"
+      eu_reverse_charge:
+        type:
+          - boolean
+          - "null"
+      home_country:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      internal_name:
+        type:
+          - string
+          - "null"
+      keep_gross_if_rate_changes:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - string
+              - "null"
+      price_includes_tax:
+        type:
+          - boolean
+          - "null"
+      rate:
+        type:
+          - string
+          - "null"
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - string
+              - "null"
+      cross_selling_match_products:
+        type:
+          - array
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_addon:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          ar:
+            type:
+              - string
+              - "null"
+          ca:
+            type:
+              - string
+              - "null"
+          cs:
+            type:
+              - string
+              - "null"
+          da:
+            type:
+              - string
+              - "null"
+          de:
+            type:
+              - string
+              - "null"
+          de-informal:
+            type:
+              - string
+              - "null"
+          el:
+            type:
+              - string
+              - "null"
+          en:
+            type:
+              - string
+              - "null"
+          es:
+            type:
+              - string
+              - "null"
+          eu:
+            type:
+              - string
+              - "null"
+          fr:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          it:
+            type:
+              - string
+              - "null"
+          lv:
+            type:
+              - string
+              - "null"
+          nb-no:
+            type:
+              - string
+              - "null"
+          nl:
+            type:
+              - string
+              - "null"
+          nl-informal:
+            type:
+              - string
+              - "null"
+          pl:
+            type:
+              - string
+              - "null"
+          pt-pt:
+            type:
+              - string
+              - "null"
+          ro:
+            type:
+              - string
+              - "null"
+          ru:
+            type:
+              - string
+              - "null"
+          sk:
+            type:
+              - string
+              - "null"
+          sv:
+            type:
+              - string
+              - "null"
+          tr:
+            type:
+              - string
+              - "null"
+          uk:
+            type:
+              - string
+              - "null"
+          zh-hans:
+            type:
+              - string
+              - "null"
+          zh-hant:
+            type:
+              - string
+              - "null"
+      position:
+        type:
+          - number
+          - "null"
+  items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      addons:
+        type:
+          - array
+          - "null"
+      admission:
+        type:
+          - boolean
+          - "null"
+      all_sales_channels:
+        type:
+          - boolean
+          - "null"
+      allow_cancel:
+        type:
+          - boolean
+          - "null"
+      allow_waitinglist:
+        type:
+          - boolean
+          - "null"
+      available_from_mode:
+        type:
+          - string
+          - "null"
+      available_until_mode:
+        type:
+          - string
+          - "null"
+      bundles:
+        type:
+          - array
+          - "null"
+      category:
+        type:
+          - number
+          - "null"
+      checkin_attention:
+        type:
+          - boolean
+          - "null"
+      default_price:
+        type:
+          - string
+          - "null"
+      free_price:
+        type:
+          - boolean
+          - "null"
+      grant_membership_duration_days:
+        type:
+          - number
+          - "null"
+      grant_membership_duration_like_event:
+        type:
+          - boolean
+          - "null"
+      grant_membership_duration_months:
+        type:
+          - number
+          - "null"
+      has_variations:
+        type:
+          - boolean
+          - "null"
+      hide_without_voucher:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      issue_giftcard:
+        type:
+          - boolean
+          - "null"
+      limit_sales_channels:
+        type:
+          - array
+          - "null"
+      meta_data:
+        type:
+          - object
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - string
+              - "null"
+          fr:
+            type:
+              - string
+              - "null"
+      personalized:
+        type:
+          - boolean
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      require_approval:
+        type:
+          - boolean
+          - "null"
+      require_bundling:
+        type:
+          - boolean
+          - "null"
+      require_membership:
+        type:
+          - boolean
+          - "null"
+      require_membership_hidden:
+        type:
+          - boolean
+          - "null"
+      require_membership_types:
+        type:
+          - array
+          - "null"
+      require_voucher:
+        type:
+          - boolean
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tax_rate:
+        type:
+          - string
+          - "null"
+      validity_dynamic_start_choice:
+        type:
+          - boolean
+          - "null"
+      variations:
+        type:
+          - array
+          - "null"
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      api_meta:
+        type:
+          - object
+          - "null"
+      checkin_attention:
+        type:
+          - boolean
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      comment:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      downloads:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            output:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      email:
+        type:
+          - string
+          - "null"
+      event:
+        type:
+          - string
+          - "null"
+      expires:
+        type:
+          - string
+          - "null"
+      fees:
+        type:
+          - array
+          - "null"
+      invoice_address:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          internal_reference:
+            type:
+              - string
+              - "null"
+          is_business:
+            type:
+              - boolean
+              - "null"
+          last_modified:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          name_parts:
+            type:
+              - object
+              - "null"
+            properties:
+              _scheme:
+                type:
+                  - string
+                  - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          vat_id:
+            type:
+              - string
+              - "null"
+          vat_id_validated:
+            type:
+              - boolean
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      last_modified:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      payment_date:
+        type:
+          - string
+          - "null"
+      payment_provider:
+        type:
+          - string
+          - "null"
+      payments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - string
+                - "null"
+            created:
+              type:
+                - string
+                - "null"
+            details:
+              type:
+                - object
+                - "null"
+            local_id:
+              type:
+                - number
+                - "null"
+            payment_date:
+              type:
+                - string
+                - "null"
+            provider:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+      positions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            answers:
+              type:
+                - array
+                - "null"
+            attendee_name:
+              type:
+                - string
+                - "null"
+            attendee_name_parts:
+              type:
+                - object
+                - "null"
+              properties:
+                _scheme:
+                  type:
+                    - string
+                    - "null"
+                family_name:
+                  type:
+                    - string
+                    - "null"
+                given_name:
+                  type:
+                    - string
+                    - "null"
+            canceled:
+              type:
+                - boolean
+                - "null"
+            checkins:
+              type:
+                - array
+                - "null"
+            downloads:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  output:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+            id:
+              type:
+                - number
+                - "null"
+            item:
+              type:
+                - number
+                - "null"
+            order:
+              type:
+                - string
+                - "null"
+            positionid:
+              type:
+                - number
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            print_logs:
+              type:
+                - array
+                - "null"
+            pseudonymization_id:
+              type:
+                - string
+                - "null"
+            secret:
+              type:
+                - string
+                - "null"
+            tax_rate:
+              type:
+                - string
+                - "null"
+            tax_value:
+              type:
+                - string
+                - "null"
+      refunds:
+        type:
+          - array
+          - "null"
+      require_approval:
+        type:
+          - boolean
+          - "null"
+      sales_channel:
+        type:
+          - string
+          - "null"
+      secret:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      testmode:
+        type:
+          - boolean
+          - "null"
+      total:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      valid_if_pending:
+        type:
+          - boolean
+          - "null"
+  vouchers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  discounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      all_sales_channels:
+        type:
+          - boolean
+          - "null"
+      available_from:
+        type:
+          - string
+          - "null"
+      available_until:
+        type:
+          - string
+          - "null"
+      benefit_apply_to_addons:
+        type:
+          - boolean
+          - "null"
+      benefit_discount_matching_percent:
+        type:
+          - string
+          - "null"
+      benefit_ignore_voucher_discounted:
+        type:
+          - boolean
+          - "null"
+      benefit_limit_products:
+        type:
+          - array
+          - "null"
+      benefit_same_products:
+        type:
+          - boolean
+          - "null"
+      condition_all_products:
+        type:
+          - boolean
+          - "null"
+      condition_apply_to_addons:
+        type:
+          - boolean
+          - "null"
+      condition_ignore_voucher_discounted:
+        type:
+          - boolean
+          - "null"
+      condition_limit_products:
+        type:
+          - array
+          - "null"
+      condition_min_count:
+        type:
+          - number
+          - "null"
+      condition_min_value:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      internal_name:
+        type:
+          - string
+          - "null"
+      limit_sales_channels:
+        type:
+          - array
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      subevent_mode:
+        type:
+          - string
+          - "null"
+  checkin_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addon_match:
+        type:
+          - boolean
+          - "null"
+      all_products:
+        type:
+          - boolean
+          - "null"
+      allow_entry_after_exit:
+        type:
+          - boolean
+          - "null"
+      allow_multiple_entries:
+        type:
+          - boolean
+          - "null"
+      auto_checkin_sales_channels:
+        type:
+          - array
+          - "null"
+      checkin_count:
+        type:
+          - number
+          - "null"
+      consider_tickets_used:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      ignore_in_statistics:
+        type:
+          - boolean
+          - "null"
+      include_pending:
+        type:
+          - boolean
+          - "null"
+      limit_products:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position_count:
+        type:
+          - number
+          - "null"
+      rules:
+        type:
+          - object
+          - "null"
+    required:
+      - id
+  sales_channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      identifier:
+        type: string
+      label:
+        type:
+          - object
+          - "null"
+        properties:
+          ar:
+            type:
+              - string
+              - "null"
+          ca:
+            type:
+              - string
+              - "null"
+          cs:
+            type:
+              - string
+              - "null"
+          da:
+            type:
+              - string
+              - "null"
+          de:
+            type:
+              - string
+              - "null"
+          de-informal:
+            type:
+              - string
+              - "null"
+          el:
+            type:
+              - string
+              - "null"
+          en:
+            type:
+              - string
+              - "null"
+          es:
+            type:
+              - string
+              - "null"
+          eu:
+            type:
+              - string
+              - "null"
+          fr:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          it:
+            type:
+              - string
+              - "null"
+          lv:
+            type:
+              - string
+              - "null"
+          nb-no:
+            type:
+              - string
+              - "null"
+          nl:
+            type:
+              - string
+              - "null"
+          nl-informal:
+            type:
+              - string
+              - "null"
+          pl:
+            type:
+              - string
+              - "null"
+          pt-pt:
+            type:
+              - string
+              - "null"
+          ro:
+            type:
+              - string
+              - "null"
+          ru:
+            type:
+              - string
+              - "null"
+          sk:
+            type:
+              - string
+              - "null"
+          sv:
+            type:
+              - string
+              - "null"
+          tr:
+            type:
+              - string
+              - "null"
+          uk:
+            type:
+              - string
+              - "null"
+          zh-hans:
+            type:
+              - string
+              - "null"
+          zh-hant:
+            type:
+              - string
+              - "null"
+      position:
+        type:
+          - number
+          - "null"
+    required:
+      - identifier
+  giftcards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conditions:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      expires:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      issuance:
+        type:
+          - string
+          - "null"
+      issuer:
+        type:
+          - string
+          - "null"
+      secret:
+        type:
+          - string
+          - "null"
+      testmode:
+        type:
+          - boolean
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      all_events:
+        type:
+          - boolean
+          - "null"
+      can_change_event_settings:
+        type:
+          - boolean
+          - "null"
+      can_change_items:
+        type:
+          - boolean
+          - "null"
+      can_change_orders:
+        type:
+          - boolean
+          - "null"
+      can_change_organizer_settings:
+        type:
+          - boolean
+          - "null"
+      can_change_teams:
+        type:
+          - boolean
+          - "null"
+      can_change_vouchers:
+        type:
+          - boolean
+          - "null"
+      can_checkin_orders:
+        type:
+          - boolean
+          - "null"
+      can_create_events:
+        type:
+          - boolean
+          - "null"
+      can_manage_customers:
+        type:
+          - boolean
+          - "null"
+      can_manage_gift_cards:
+        type:
+          - boolean
+          - "null"
+      can_manage_reusable_media:
+        type:
+          - boolean
+          - "null"
+      can_view_orders:
+        type:
+          - boolean
+          - "null"
+      can_view_vouchers:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      limit_events:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      require_2fa:
+        type:
+          - boolean
+          - "null"
+  devices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      all_events:
+        type:
+          - boolean
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      device_id:
+        type: number
+      initialization_token:
+        type:
+          - string
+          - "null"
+      limit_events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      revoked:
+        type:
+          - boolean
+          - "null"
+      security_profile:
+        type:
+          - string
+          - "null"
+      unique_serial:
+        type:
+          - string
+          - "null"
+    required:
+      - device_id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      action_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      all_events:
+        type:
+          - boolean
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      limit_events:
+        type:
+          - array
+          - "null"
+      target_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  seating_plans:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                color:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          zones:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                areas:
+                  type:
+                    - array
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                position:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    x:
+                      type:
+                        - number
+                        - "null"
+                    "y":
+                      type:
+                        - number
+                        - "null"
+                rows:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      position:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          x:
+                            type:
+                              - number
+                              - "null"
+                          "y":
+                            type:
+                              - number
+                              - "null"
+                      row_number:
+                        type:
+                          - string
+                          - "null"
+                      row_number_position:
+                        type:
+                          - string
+                          - "null"
+                      seats:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            category:
+                              type:
+                                - string
+                                - "null"
+                            position:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                x:
+                                  type:
+                                    - number
+                                    - "null"
+                                "y":
+                                  type:
+                                    - number
+                                    - "null"
+                            seat_guid:
+                              type:
+                                - string
+                                - "null"
+                            seat_number:
+                              type:
+                                - string
+                                - "null"
+                            uuid:
+                              type:
+                                - string
+                                - "null"
+                      uuid:
+                        type:
+                          - string
+                          - "null"
+                uuid:
+                  type:
+                    - string
+                    - "null"
+                zone_id:
+                  type:
+                    - string
+                    - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  shredders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      identifier:
+        type:
+          - string
+          - "null"
+      verbose_name:
+        type:
+          - string
+          - "null"
+  exporters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      identifier:
+        type:
+          - string
+          - "null"
+      input_parameters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            choices:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            name:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+      verbose_name:
+        type:
+          - string
+          - "null"
