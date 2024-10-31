@@ -38,6 +38,8 @@ global:
 
 If your Airbyte deployment is underprovisioned, you may notice occasional 'stuck jobs' that remain in-progress for long periods, with eventual failures related to unavailable pods. Increasing job CPU and memory limits may also allow for increased sync speeds.
 
+NOTE: In order for these changes to take effect on existing deployments, you may need to terminate and restart your `worker` and `server` pods.
+
 ### Concurrent Sync Limits
 
 To help rightsize Airbyte deployments and reduce the likelihood of stuck syncs, there are configurable limits to the number of syncs that can be run at once:
