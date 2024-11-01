@@ -681,15 +681,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream2,
-                listOf(
-                    makeInputRecord(1, "2024-01-23T02:00Z", 200),
-                    StreamCheckpoint(
-                        randomizedNamespace,
-                        "test_stream",
-                        "{}",
-                        sourceRecordCount = 1,
-                    )
-                ),
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -751,6 +743,309 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 300,
                     generationId = 42,
                     syncId = 42,
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+        )
+    }
+
+    /**
+     * Largely identical to [testInterruptedTruncateWithPriorData], but doesn't run the initial
+     * sync. This is mostly relevant to warehouse destinations, where running a truncate sync into
+     * an empty destination behaves differently from running a truncate sync when the destination
+     * already contains data.
+     */
+    @Test
+    open fun testInterruptedTruncateWithoutPriorData() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status.
+        assertThrows<DestinationUncleanExitException> {
+            runSync(
+                configContents,
+                stream,
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                streamStatus = null,
+            )
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            if (commitDataIncrementally) {
+                listOf(
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                )
+            } else {
+                listOf()
+            },
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a second sync, this time with a successful status.
+        // This should retain the first syncs' data.
+        runSync(
+            configContents,
+            stream,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+        )
+    }
+
+    /**
+     * Emulates this sequence of events:
+     * 1. User runs a normal incremental sync
+     * 2. User initiates a truncate refresh, but it fails.
+     * 3. User cancels the truncate refresh, and initiates a normal incremental sync.
+     *
+     * In particular, we must retain all records from both the first and second syncs.
+     *
+     * This is, again, similar to [testInterruptedTruncateWithPriorData], except that the third sync
+     * has generation 43 + minGeneration 0 (instead of generation=minGeneration=42)(.
+     */
+    @Test
+    open fun resumeAfterCancelledTruncate() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        // Run a normal sync with nonempty data
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
+        runSync(
+            configContents,
+            stream1,
+            listOf(
+                makeInputRecord(1, "2024-01-23T01:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+            ),
+            stream1,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after initial sync - this indicates a bug in basic connector behavior",
+        )
+
+        val stream2 =
+            stream1.copy(
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status. This should not delete any existing data.
+        assertThrows<DestinationUncleanExitException> {
+            runSync(
+                configContents,
+                stream2,
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                streamStatus = null,
+            )
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                if (commitDataIncrementally) {
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a third sync, this time with a successful status.
+        // This should delete the first sync's data, and retain the second+third syncs' data.
+        val stream3 =
+            stream2.copy(
+                generationId = 43,
+                minimumGenerationId = 0,
+                syncId = 43,
+            )
+        runSync(
+            configContents,
+            stream3,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // records from sync 1
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                // sync 2
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                // and sync 3
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 43,
+                    syncId = 43,
                 ),
             ),
             stream2,

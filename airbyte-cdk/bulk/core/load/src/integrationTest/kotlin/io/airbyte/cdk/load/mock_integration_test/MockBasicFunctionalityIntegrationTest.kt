@@ -58,6 +58,11 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Test
     override fun testAppend() {
         super.testAppend()
     }
