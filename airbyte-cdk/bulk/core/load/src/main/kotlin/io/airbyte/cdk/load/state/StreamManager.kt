@@ -144,6 +144,12 @@ class DefaultStreamManager(
             rangesState[batch.batch.state]
                 ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
+        // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
+        when (batch.batch.state) {
+            Batch.State.COMPLETE -> rangesState[Batch.State.PERSISTED]?.addAll(batch.ranges)
+            else -> Unit
+        }
+
         // Force the ranges to overlap at their endpoints, in order to work around
         // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
         // contiguous.
@@ -172,10 +178,8 @@ class DefaultStreamManager(
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 
-    /** TODO: Handle conflating PERSISTED w/ COMPLETE upstream, to allow for overlap? */
     override fun areRecordsPersistedUntil(index: Long): Boolean {
-        return isProcessingCompleteForState(index, Batch.State.PERSISTED) ||
-            isProcessingCompleteForState(index, Batch.State.COMPLETE) // complete => persisted
+        return isProcessingCompleteForState(index, Batch.State.PERSISTED)
     }
 
     override fun markSucceeded() {
