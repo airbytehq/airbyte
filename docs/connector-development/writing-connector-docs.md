@@ -2,7 +2,7 @@
 
 This document provides guidance on tools and techniques specifically for writing documentation for Airbyte connectors.
 
-For more information about writing documentation at Airbyte generally, please also see the [Contributing Guide for Airbyte Documentation](../ccntributing-to-airbyte/writing-docs.md).
+For more information about writing documentation at Airbyte generally, please also see the [Contributing Guide for Airbyte Documentation](../contributing-to-airbyte/writing-docs.md).
 
 ## Custom markdown extensions for connector docs
 
