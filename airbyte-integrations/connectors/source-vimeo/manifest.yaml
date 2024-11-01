@@ -1,0 +1,1147 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: source-vimeo
+
+check:
+  type: CheckStream
+  stream_names:
+    - channels
+
+definitions:
+  streams:
+    channels:
+      type: DeclarativeStream
+      name: channels
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('next') }}"
+            stop_condition: "{{ response.get('paging', {}).get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.vimeo.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"access_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/channels"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+    properties:
+      access_token:
+        type: string
+        description: >-
+          Access token for authenticating API requests. You can generate this
+          token from your Vimeo developer account.
+        name: access_token
+        title: Access Token
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    channels: true
+  testedStreams:
+    channels:
+      streamHash: 08025a916e65cc72c8699ad064c070286d4d41bf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developer.vimeo.com/api/reference/channels
+
+schemas:
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          connections:
+            type:
+              - object
+              - "null"
+            properties:
+              users:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  options:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  total:
+                    type:
+                      - number
+                      - "null"
+                  uri:
+                    type:
+                      - string
+                      - "null"
+              videos:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  options:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  total:
+                    type:
+                      - number
+                      - "null"
+                  uri:
+                    type:
+                      - string
+                      - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                connections:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    channels:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total:
+                          type:
+                            - number
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+                    groups:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total:
+                          type:
+                            - number
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+                    users:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total:
+                          type:
+                            - number
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+                    videos:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total:
+                          type:
+                            - number
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+            icon:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                active:
+                  type:
+                    - boolean
+                    - "null"
+                base_link:
+                  type:
+                    - string
+                    - "null"
+                default_picture:
+                  type:
+                    - boolean
+                    - "null"
+                resource_key:
+                  type:
+                    - string
+                    - "null"
+                sizes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      link:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                uri:
+                  type:
+                    - string
+                    - "null"
+            is_deprecated:
+              type:
+                - boolean
+                - "null"
+            last_video_featured_time:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            pictures:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                active:
+                  type:
+                    - boolean
+                    - "null"
+                base_link:
+                  type:
+                    - string
+                    - "null"
+                default_picture:
+                  type:
+                    - boolean
+                    - "null"
+                resource_key:
+                  type:
+                    - string
+                    - "null"
+                sizes:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      link:
+                        type:
+                          - string
+                          - "null"
+                      link_with_play_button:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                uri:
+                  type:
+                    - string
+                    - "null"
+            resource_key:
+              type:
+                - string
+                - "null"
+            subcategories:
+              type:
+                - array
+                - "null"
+            top_level:
+              type:
+                - boolean
+                - "null"
+            uri:
+              type:
+                - string
+                - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      header:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          base_link:
+            type:
+              - string
+              - "null"
+          default_picture:
+            type:
+              - boolean
+              - "null"
+          resource_key:
+            type:
+              - string
+              - "null"
+          sizes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                height:
+                  type:
+                    - number
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+          uri:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      modified_time:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pictures:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          base_link:
+            type:
+              - string
+              - "null"
+          default_picture:
+            type:
+              - boolean
+              - "null"
+          resource_key:
+            type:
+              - string
+              - "null"
+          sizes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                height:
+                  type:
+                    - number
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+                link_with_play_button:
+                  type:
+                    - string
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+          uri:
+            type:
+              - string
+              - "null"
+      privacy:
+        type:
+          - object
+          - "null"
+        properties:
+          view:
+            type:
+              - string
+              - "null"
+      resource_key:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                connections:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    videos:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        options:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total:
+                          type:
+                            - number
+                            - "null"
+                        uri:
+                          type:
+                            - string
+                            - "null"
+            canonical:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            resource_key:
+              type:
+                - string
+                - "null"
+            tag:
+              type:
+                - string
+                - "null"
+            uri:
+              type:
+                - string
+                - "null"
+      uri:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+            properties:
+              connections:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  albums:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  appearances:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  channels:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  feed:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  folders_root:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  followers:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  following:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  groups:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  likes:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  membership:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  moderated_channels:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  permission_policies:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  pictures:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  portfolios:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  shared:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  teams:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+                  videos:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      total:
+                        type:
+                          - number
+                          - "null"
+                      uri:
+                        type:
+                          - string
+                          - "null"
+          account:
+            type:
+              - string
+              - "null"
+          available_for_hire:
+            type:
+              - boolean
+              - "null"
+          bio:
+            type:
+              - string
+              - "null"
+          can_work_remotely:
+            type:
+              - boolean
+              - "null"
+          capabilities:
+            type:
+              - object
+              - "null"
+            properties:
+              hasEnterpriseLihp:
+                type:
+                  - boolean
+                  - "null"
+              hasLiveSubscription:
+                type:
+                  - boolean
+                  - "null"
+              hasSimplifiedEnterpriseAccount:
+                type:
+                  - boolean
+                  - "null"
+              hasSvvTimecodedComments:
+                type:
+                  - boolean
+                  - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          gender:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          location_details:
+            type:
+              - object
+              - "null"
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              country_iso_code:
+                type:
+                  - string
+                  - "null"
+              formatted_address:
+                type:
+                  - string
+                  - "null"
+              latitude:
+                type:
+                  - number
+                  - "null"
+              longitude:
+                type:
+                  - number
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              state_iso_code:
+                type:
+                  - string
+                  - "null"
+              sub_locality:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          pictures:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              active:
+                type:
+                  - boolean
+                  - "null"
+              base_link:
+                type:
+                  - string
+                  - "null"
+              default_picture:
+                type:
+                  - boolean
+                  - "null"
+              resource_key:
+                type:
+                  - string
+                  - "null"
+              sizes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    height:
+                      type:
+                        - number
+                        - "null"
+                    link:
+                      type:
+                        - string
+                        - "null"
+                    width:
+                      type:
+                        - number
+                        - "null"
+              uri:
+                type:
+                  - string
+                  - "null"
+          resource_key:
+            type:
+              - string
+              - "null"
+          short_bio:
+            type:
+              - string
+              - "null"
+          skills:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                uri:
+                  type:
+                    - string
+                    - "null"
+          uri:
+            type:
+              - string
+              - "null"
+          websites:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                uri:
+                  type:
+                    - string
+                    - "null"
