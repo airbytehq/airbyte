@@ -232,6 +232,32 @@ Results in the following form:
 
 ![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
 
+## Mapping UI to Associated Docs
+
+Sometimes a connector's configuration UI may have a field that requires more explanation than can be provided in the UI itself. In these cases, the connector developer can use the `FieldAnchor` syntax below to link documentation to a specific UI component. When the user selects the associated field in the UI, the documentation will automatically scroll to the associated documentation section the right-hand panel.
+
+The `FieldAnchor` syntax accepts a `dpath expression, as follows:
+
+`example-a.md`:
+```md
+## Configuring Widgets
+
+<FieldAnchor field="widget_option">
+
+...config-related instructions here...
+```
+
+Taking a more complex example, you can access deeper-nested fields using dpath expressions:
+
+`example-b.md`:
+```md
+## Configuring Unstructures Streams
+
+<FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
+
+...config-related instructions here...
+```
+
 ## Pattern descriptors
 
 Setting a `pattern` on a field in a connector spec enforces that the value entered into that input matches the `pattern` regex value. However, this causes the regex pattern to be displayed in the input's error message, which is usually not very helpful for the end-user.
