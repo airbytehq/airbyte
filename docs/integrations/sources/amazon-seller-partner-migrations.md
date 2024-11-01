@@ -4,7 +4,8 @@
 
 The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed, as none composition of the fields could be used as a primary key.
 
-Users will need to refresh the source schema and reset this stream after upgrading if this stream has been used.
+After upgrading, users will need to refresh the source schema and reset this stream if it was previously used in deduplication mode. 
+And if you notice missing data before upgrade, resetting may resolve the issue for the stream.
 
 ### Refresh affected schemas and reset data
 
