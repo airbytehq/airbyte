@@ -272,17 +272,11 @@ class DestinationMotherDuck(Destination):
         If no stream name is provided, then all streams will be flushed.
         """
         for configured_stream in configured_catalog.streams:
-            if stream_name is not None and stream_name != configured_stream.stream.name:
-                # Skip this stream.
-                continue
-
-            # Else, we're flushing this stream or all streams.
-
-            if stream_name in buffer:
+            if (stream_name is None or stream_name == configured_stream.stream.name) and buffer.get(configured_stream.stream.name):
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
-                processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
+                processor.write_stream_data_from_buffer(buffer, configured_stream.stream.name, configured_stream.destination_sync_mode)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
