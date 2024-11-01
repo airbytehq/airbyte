@@ -1,0 +1,2271 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  Clinicaltrials provides data related to clinical studies.
+
+  Using this connector we can extract data from various streams such as studies
+  and stats.
+
+  Docs : https://clinicaltrials.gov/data-api/api
+
+check:
+  type: CheckStream
+  stream_names:
+    - studies
+
+definitions:
+  streams:
+    studies:
+      type: DeclarativeStream
+      name: studies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: studies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - studies
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/studies"
+    metadata_studies:
+      type: DeclarativeStream
+      name: metadata_studies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: studies/metadata
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metadata_studies"
+    stats:
+      type: DeclarativeStream
+      name: stats
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stats/size
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats"
+    stats_field_values:
+      type: DeclarativeStream
+      name: stats_field_values
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stats/field/values
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats_field_values"
+    stats_field_sizes:
+      type: DeclarativeStream
+      name: stats_field_sizes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stats/field/sizes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats_field_sizes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://clinicaltrials.gov/api/v2/
+
+streams:
+  - $ref: "#/definitions/streams/studies"
+  - $ref: "#/definitions/streams/metadata_studies"
+  - $ref: "#/definitions/streams/stats"
+  - $ref: "#/definitions/streams/stats_field_values"
+  - $ref: "#/definitions/streams/stats_field_sizes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    studies: true
+    metadata_studies: true
+    stats: true
+    stats_field_values: true
+    stats_field_sizes: true
+  testedStreams:
+    studies:
+      streamHash: 5d9410d9305b47c92765a4de0dce91ec9584f78a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    metadata_studies:
+      streamHash: 9d49bd1bfbf6a4cef90afec12fc2c8be1d706a15
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stats:
+      streamHash: 872630ba804cf7f46d5f7c3d09e486f039ff1987
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stats_field_values:
+      streamHash: 045cf9a211d3e3cea115f48bd587af42ec63b05f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stats_field_sizes:
+      streamHash: cc7c43fabe41d78285e56f8441616fb1a49068c2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  studies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      derivedSection:
+        type:
+          - object
+          - "null"
+        properties:
+          conditionBrowseModule:
+            type:
+              - object
+              - "null"
+            properties:
+              ancestors:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+              browseBranches:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    abbrev:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+              browseLeaves:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    asFound:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    relevance:
+                      type:
+                        - string
+                        - "null"
+              meshes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+          interventionBrowseModule:
+            type:
+              - object
+              - "null"
+            properties:
+              ancestors:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+              browseBranches:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    abbrev:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+              browseLeaves:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    asFound:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    relevance:
+                      type:
+                        - string
+                        - "null"
+              meshes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+          miscInfoModule:
+            type:
+              - object
+              - "null"
+            properties:
+              versionHolder:
+                type:
+                  - string
+                  - "null"
+      hasResults:
+        type:
+          - boolean
+          - "null"
+      protocolSection:
+        type:
+          - object
+          - "null"
+        properties:
+          armsInterventionsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              armGroups:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    interventionNames:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+              interventions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    armGroupLabels:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    otherNames:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+          conditionsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              conditions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              keywords:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          contactsLocationsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              centralContacts:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    phone:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+              locations:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    city:
+                      type:
+                        - string
+                        - "null"
+                    contacts:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          phone:
+                            type:
+                              - string
+                              - "null"
+                          role:
+                            type:
+                              - string
+                              - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    facility:
+                      type:
+                        - string
+                        - "null"
+                    geoPoint:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        lat:
+                          type:
+                            - number
+                            - "null"
+                        lon:
+                          type:
+                            - number
+                            - "null"
+                    state:
+                      type:
+                        - string
+                        - "null"
+                    status:
+                      type:
+                        - string
+                        - "null"
+                    zip:
+                      type:
+                        - string
+                        - "null"
+              overallOfficials:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    affiliation:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+          descriptionModule:
+            type:
+              - object
+              - "null"
+            properties:
+              briefSummary:
+                type:
+                  - string
+                  - "null"
+              detailedDescription:
+                type:
+                  - string
+                  - "null"
+          designModule:
+            type:
+              - object
+              - "null"
+            properties:
+              bioSpec:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  retention:
+                    type:
+                      - string
+                      - "null"
+              designInfo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  allocation:
+                    type:
+                      - string
+                      - "null"
+                  interventionModel:
+                    type:
+                      - string
+                      - "null"
+                  interventionModelDescription:
+                    type:
+                      - string
+                      - "null"
+                  maskingInfo:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      masking:
+                        type:
+                          - string
+                          - "null"
+                      maskingDescription:
+                        type:
+                          - string
+                          - "null"
+                      whoMasked:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                  observationalModel:
+                    type:
+                      - string
+                      - "null"
+                  primaryPurpose:
+                    type:
+                      - string
+                      - "null"
+                  timePerspective:
+                    type:
+                      - string
+                      - "null"
+              enrollmentInfo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  count:
+                    type:
+                      - number
+                      - "null"
+              patientRegistry:
+                type:
+                  - boolean
+                  - "null"
+              phases:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              studyType:
+                type:
+                  - string
+                  - "null"
+          eligibilityModule:
+            type:
+              - object
+              - "null"
+            properties:
+              eligibilityCriteria:
+                type:
+                  - string
+                  - "null"
+              genderBased:
+                type:
+                  - boolean
+                  - "null"
+              healthyVolunteers:
+                type:
+                  - boolean
+                  - "null"
+              maximumAge:
+                type:
+                  - string
+                  - "null"
+              minimumAge:
+                type:
+                  - string
+                  - "null"
+              samplingMethod:
+                type:
+                  - string
+                  - "null"
+              sex:
+                type:
+                  - string
+                  - "null"
+              stdAges:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              studyPopulation:
+                type:
+                  - string
+                  - "null"
+          identificationModule:
+            type:
+              - object
+              - "null"
+            properties:
+              acronym:
+                type:
+                  - string
+                  - "null"
+              briefTitle:
+                type:
+                  - string
+                  - "null"
+              nctId:
+                type:
+                  - string
+                  - "null"
+              officialTitle:
+                type:
+                  - string
+                  - "null"
+              orgStudyIdInfo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+              organization:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  class:
+                    type:
+                      - string
+                      - "null"
+                  fullName:
+                    type:
+                      - string
+                      - "null"
+              secondaryIdInfos:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    domain:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    link:
+                      type:
+                        - string
+                        - "null"
+          ipdSharingStatementModule:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              accessCriteria:
+                type:
+                  - string
+                  - "null"
+              infoTypes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              ipdSharing:
+                type:
+                  - string
+                  - "null"
+              timeFrame:
+                type:
+                  - string
+                  - "null"
+          outcomesModule:
+            type:
+              - object
+              - "null"
+            properties:
+              primaryOutcomes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    measure:
+                      type:
+                        - string
+                        - "null"
+                    timeFrame:
+                      type:
+                        - string
+                        - "null"
+              secondaryOutcomes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    measure:
+                      type:
+                        - string
+                        - "null"
+                    timeFrame:
+                      type:
+                        - string
+                        - "null"
+          oversightModule:
+            type:
+              - object
+              - "null"
+            properties:
+              isFdaRegulatedDevice:
+                type:
+                  - boolean
+                  - "null"
+              isFdaRegulatedDrug:
+                type:
+                  - boolean
+                  - "null"
+              isUsExport:
+                type:
+                  - boolean
+                  - "null"
+              oversightHasDmc:
+                type:
+                  - boolean
+                  - "null"
+          referencesModule:
+            type:
+              - object
+              - "null"
+            properties:
+              references:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    citation:
+                      type:
+                        - string
+                        - "null"
+                    pmid:
+                      type:
+                        - string
+                        - "null"
+              seeAlsoLinks:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    label:
+                      type:
+                        - string
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+          sponsorCollaboratorsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              collaborators:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    class:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+              leadSponsor:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  class:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              responsibleParty:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  investigatorAffiliation:
+                    type:
+                      - string
+                      - "null"
+                  investigatorFullName:
+                    type:
+                      - string
+                      - "null"
+                  investigatorTitle:
+                    type:
+                      - string
+                      - "null"
+          statusModule:
+            type:
+              - object
+              - "null"
+            properties:
+              completionDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              expandedAccessInfo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  hasExpandedAccess:
+                    type:
+                      - boolean
+                      - "null"
+              lastKnownStatus:
+                type:
+                  - string
+                  - "null"
+              lastUpdatePostDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              lastUpdateSubmitDate:
+                type:
+                  - string
+                  - "null"
+              overallStatus:
+                type:
+                  - string
+                  - "null"
+              primaryCompletionDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              resultsFirstPostDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              resultsFirstSubmitDate:
+                type:
+                  - string
+                  - "null"
+              resultsFirstSubmitQcDate:
+                type:
+                  - string
+                  - "null"
+              startDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              statusVerifiedDate:
+                type:
+                  - string
+                  - "null"
+              studyFirstPostDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              studyFirstSubmitDate:
+                type:
+                  - string
+                  - "null"
+              studyFirstSubmitQcDate:
+                type:
+                  - string
+                  - "null"
+              whyStopped:
+                type:
+                  - string
+                  - "null"
+      resultsSection:
+        type:
+          - object
+          - "null"
+        properties:
+          adverseEventsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              eventGroups:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    deathsNumAffected:
+                      type:
+                        - number
+                        - "null"
+                    deathsNumAtRisk:
+                      type:
+                        - number
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    otherNumAffected:
+                      type:
+                        - number
+                        - "null"
+                    otherNumAtRisk:
+                      type:
+                        - number
+                        - "null"
+                    seriousNumAffected:
+                      type:
+                        - number
+                        - "null"
+                    seriousNumAtRisk:
+                      type:
+                        - number
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+              frequencyThreshold:
+                type:
+                  - string
+                  - "null"
+              otherEvents:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    assessmentType:
+                      type:
+                        - string
+                        - "null"
+                    organSystem:
+                      type:
+                        - string
+                        - "null"
+                    sourceVocabulary:
+                      type:
+                        - string
+                        - "null"
+                    stats:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          groupId:
+                            type:
+                              - string
+                              - "null"
+                          numAffected:
+                            type:
+                              - number
+                              - "null"
+                          numAtRisk:
+                            type:
+                              - number
+                              - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+              seriousEvents:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    assessmentType:
+                      type:
+                        - string
+                        - "null"
+                    organSystem:
+                      type:
+                        - string
+                        - "null"
+                    sourceVocabulary:
+                      type:
+                        - string
+                        - "null"
+                    stats:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          groupId:
+                            type:
+                              - string
+                              - "null"
+                          numAffected:
+                            type:
+                              - number
+                              - "null"
+                          numAtRisk:
+                            type:
+                              - number
+                              - "null"
+                    term:
+                      type:
+                        - string
+                        - "null"
+              timeFrame:
+                type:
+                  - string
+                  - "null"
+          baselineCharacteristicsModule:
+            type:
+              - object
+              - "null"
+            properties:
+              denoms:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    counts:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          groupId:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                    units:
+                      type:
+                        - string
+                        - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+              measures:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    classes:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          categories:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                measurements:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      groupId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      value:
+                                        type:
+                                          - string
+                                          - "null"
+                                title:
+                                  type:
+                                    - string
+                                    - "null"
+                          title:
+                            type:
+                              - string
+                              - "null"
+                    paramType:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    unitOfMeasure:
+                      type:
+                        - string
+                        - "null"
+          moreInfoModule:
+            type:
+              - object
+              - "null"
+            properties:
+              certainAgreement:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  piSponsorEmployee:
+                    type:
+                      - boolean
+                      - "null"
+              limitationsAndCaveats:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+              pointOfContact:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  organization:
+                    type:
+                      - string
+                      - "null"
+                  phone:
+                    type:
+                      - string
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+          outcomeMeasuresModule:
+            type:
+              - object
+              - "null"
+            properties:
+              outcomeMeasures:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    denoms:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          counts:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                groupId:
+                                  type:
+                                    - string
+                                    - "null"
+                                value:
+                                  type:
+                                    - string
+                                    - "null"
+                          units:
+                            type:
+                              - string
+                              - "null"
+                    groups:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          description:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          title:
+                            type:
+                              - string
+                              - "null"
+                    populationDescription:
+                      type:
+                        - string
+                        - "null"
+                    reportingStatus:
+                      type:
+                        - string
+                        - "null"
+                    timeFrame:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+          participantFlowModule:
+            type:
+              - object
+              - "null"
+            properties:
+              groups:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+              periods:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    dropWithdraws:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          reasons:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                groupId:
+                                  type:
+                                    - string
+                                    - "null"
+                                numSubjects:
+                                  type:
+                                    - string
+                                    - "null"
+                    milestones:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          achievements:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                groupId:
+                                  type:
+                                    - string
+                                    - "null"
+                                numSubjects:
+                                  type:
+                                    - string
+                                    - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+              preAssignmentDetails:
+                type:
+                  - string
+                  - "null"
+              recruitmentDetails:
+                type:
+                  - string
+                  - "null"
+  metadata_studies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      children:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            children:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  altPieceNames:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  children:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        altPieceNames:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        children:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              altPieceNames:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - string
+                                    - "null"
+                              children:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    altPieceNames:
+                                      type:
+                                        - array
+                                        - "null"
+                                      items:
+                                        type:
+                                          - string
+                                          - "null"
+                                    children:
+                                      type:
+                                        - array
+                                        - "null"
+                                      items:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          type:
+                                            type:
+                                              - string
+                                              - "null"
+                                          dedLink:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              label:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              url:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                          name:
+                                            type:
+                                              - string
+                                              - "null"
+                                          piece:
+                                            type:
+                                              - string
+                                              - "null"
+                                          sourceType:
+                                            type:
+                                              - string
+                                              - "null"
+                                          synonyms:
+                                            type:
+                                              - boolean
+                                              - "null"
+                                    dedLink:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        label:
+                                          type:
+                                            - string
+                                            - "null"
+                                        url:
+                                          type:
+                                            - string
+                                            - "null"
+                                    isEnum:
+                                      type:
+                                        - boolean
+                                        - "null"
+                                    name:
+                                      type:
+                                        - string
+                                        - "null"
+                                    piece:
+                                      type:
+                                        - string
+                                        - "null"
+                                    sourceType:
+                                      type:
+                                        - string
+                                        - "null"
+                                    synonyms:
+                                      type:
+                                        - boolean
+                                        - "null"
+                              dedLink:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  label:
+                                    type:
+                                      - string
+                                      - "null"
+                                  url:
+                                    type:
+                                      - string
+                                      - "null"
+                              isEnum:
+                                type:
+                                  - boolean
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              piece:
+                                type:
+                                  - string
+                                  - "null"
+                              sourceType:
+                                type:
+                                  - string
+                                  - "null"
+                              synonyms:
+                                type:
+                                  - boolean
+                                  - "null"
+                              title:
+                                type:
+                                  - string
+                                  - "null"
+                        dedLink:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            label:
+                              type:
+                                - string
+                                - "null"
+                            url:
+                              type:
+                                - string
+                                - "null"
+                        isEnum:
+                          type:
+                            - boolean
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        piece:
+                          type:
+                            - string
+                            - "null"
+                        sourceType:
+                          type:
+                            - string
+                            - "null"
+                        synonyms:
+                          type:
+                            - boolean
+                            - "null"
+                  dedLink:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      label:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                  isEnum:
+                    type:
+                      - boolean
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  nested:
+                    type:
+                      - boolean
+                      - "null"
+                  piece:
+                    type:
+                      - string
+                      - "null"
+                  rules:
+                    type:
+                      - string
+                      - "null"
+                  sourceType:
+                    type:
+                      - string
+                      - "null"
+                  synonyms:
+                    type:
+                      - boolean
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+            dedLink:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+            piece:
+              type:
+                - string
+                - "null"
+            sourceType:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      dedLink:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      piece:
+        type:
+          - string
+          - "null"
+      sourceType:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+  stats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      averageSizeBytes:
+        type:
+          - number
+          - "null"
+      largestStudies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            sizeBytes:
+              type:
+                - number
+                - "null"
+      percentiles:
+        type:
+          - object
+          - "null"
+        properties:
+          10%:
+            type:
+              - number
+              - "null"
+          15%:
+            type:
+              - number
+              - "null"
+          20%:
+            type:
+              - number
+              - "null"
+          25%:
+            type:
+              - number
+              - "null"
+          30%:
+            type:
+              - number
+              - "null"
+          35%:
+            type:
+              - number
+              - "null"
+          40%:
+            type:
+              - number
+              - "null"
+          45%:
+            type:
+              - number
+              - "null"
+          5%:
+            type:
+              - number
+              - "null"
+          50%:
+            type:
+              - number
+              - "null"
+          55%:
+            type:
+              - number
+              - "null"
+          60%:
+            type:
+              - number
+              - "null"
+          65%:
+            type:
+              - number
+              - "null"
+          70%:
+            type:
+              - number
+              - "null"
+          75%:
+            type:
+              - number
+              - "null"
+          80%:
+            type:
+              - number
+              - "null"
+          85%:
+            type:
+              - number
+              - "null"
+          90%:
+            type:
+              - number
+              - "null"
+          95%:
+            type:
+              - number
+              - "null"
+          99%:
+            type:
+              - number
+              - "null"
+      ranges:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            sizeRange:
+              type:
+                - string
+                - "null"
+            studiesCount:
+              type:
+                - number
+                - "null"
+      totalStudies:
+        type:
+          - number
+          - "null"
+  stats_field_values:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avg:
+        type:
+          - number
+          - "null"
+      falseCount:
+        type:
+          - number
+          - "null"
+      field:
+        type:
+          - string
+          - "null"
+      formats:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      longest:
+        type:
+          - object
+          - "null"
+        properties:
+          length:
+            type:
+              - number
+              - "null"
+          nctId:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      max:
+        type:
+          - number
+          - string
+          - "null"
+      min:
+        type:
+          - number
+          - string
+          - "null"
+      missingStudiesCount:
+        type:
+          - number
+          - "null"
+      piece:
+        type:
+          - string
+          - "null"
+      topValues:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            studiesCount:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      trueCount:
+        type:
+          - number
+          - "null"
+      uniqueValuesCount:
+        type:
+          - number
+          - "null"
+  stats_field_sizes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      field:
+        type:
+          - string
+          - "null"
+      maxSize:
+        type:
+          - number
+          - "null"
+      minSize:
+        type:
+          - number
+          - "null"
+      piece:
+        type:
+          - string
+          - "null"
+      topSizes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            size:
+              type:
+                - number
+                - "null"
+            studiesCount:
+              type:
+                - number
+                - "null"
+      uniqueSizesCount:
+        type:
+          - number
+          - "null"
