@@ -2,19 +2,32 @@
 from __future__ import annotations
 
 import datetime
+import io
 import json
 import logging
 import os
 import re
 import uuid
 from collections import defaultdict
+from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping, cast
 from urllib.parse import urlparse
 
+import orjson
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateStats, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateStats,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol_serializers import custom_type_resolver
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
@@ -22,12 +35,38 @@ from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
 from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
+from serpyco_rs import Serializer
+from typing_extensions import override
 
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 MAX_STREAM_BATCH_SIZE = 50_000
+
+
+@dataclass
+class PatchedAirbyteStateMessage(AirbyteStateMessage):
+    """Declare the `id` attribute that platform sends."""
+
+    id: int | None = None
+    """Injected by the platform."""
+
+
+@dataclass
+class PatchedAirbyteMessage(AirbyteMessage):
+    """Keep all defaults but override the type used in `state`."""
+
+    state: PatchedAirbyteStateMessage | None = None
+    """Override class for the state message only."""
+
+
+PatchedAirbyteMessageSerializer = Serializer(
+    PatchedAirbyteMessage,
+    omit_none=True,
+    custom_type_resolver=custom_type_resolver,
+)
+"""Redeclared SerDes class using the patched dataclass."""
 
 
 def validated_sql_name(sql_name: Any) -> str:
@@ -123,7 +162,7 @@ class DestinationMotherDuck(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = str(config.get("destination_path"))
+        path = str(config.get("destination_path", "md:"))
         path = self._get_destination_path(path)
         schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
@@ -233,17 +272,11 @@ class DestinationMotherDuck(Destination):
         If no stream name is provided, then all streams will be flushed.
         """
         for configured_stream in configured_catalog.streams:
-            if stream_name is not None and stream_name != configured_stream.stream.name:
-                # Skip this stream.
-                continue
-
-            # Else, we're flushing this stream or all streams.
-
-            if stream_name in buffer:
+            if (stream_name is None or stream_name == configured_stream.stream.name) and buffer.get(configured_stream.stream.name):
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
-                processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
+                processor.write_stream_data_from_buffer(buffer, configured_stream.stream.name, configured_stream.destination_sync_mode)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -293,3 +326,34 @@ class DestinationMotherDuck(Destination):
 
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
+    @override
+    def run(self, args: list[str]) -> None:
+        """Overridden from CDK base class in order to use the patched SerDes class."""
+        init_uncaught_exception_handler(logger)
+        parsed_args = self.parse_args(args)
+        output_messages = self.run_cmd(parsed_args)
+        for message in output_messages:
+            print(
+                orjson.dumps(
+                    PatchedAirbyteMessageSerializer.dump(
+                        cast(PatchedAirbyteMessage, message),
+                    )
+                ).decode()
+            )
+
+    @override
+    def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
+        """Reads from stdin, converting to Airbyte messages.
+
+        Includes overrides that should be in the CDK but we need to test it in the wild first.
+
+        Rationale:
+            The platform injects `id` but our serializer classes don't support
+            `additionalProperties`.
+        """
+        for line in input_stream:
+            try:
+                yield PatchedAirbyteMessageSerializer.load(orjson.loads(line))
+            except orjson.JSONDecodeError:
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")

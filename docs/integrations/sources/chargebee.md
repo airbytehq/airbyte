@@ -104,6 +104,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.0   | 2024-10-30 | [47978](https://github.com/airbytehq/airbyte/pull/47978)     | Upgrade the CDK and startup files to sync incremental streams concurrently |
+| 0.6.18 | 2024-10-31 | [47099](https://github.com/airbytehq/airbyte/pull/47099) | Update dependencies |
 | 0.6.17  | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387)      | Update CDK dependencies to yield parent records more frequently                                                                                |
 | 0.6.16  | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies                                                                                                                            |
 | 0.6.15  | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies                                                                                                                            |

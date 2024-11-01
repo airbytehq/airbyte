@@ -30,8 +30,12 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
 
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
 
-    /** Transforms a [DebeziumRecordValue] into a [DeserializedRecord]. */
-    fun deserialize(key: DebeziumRecordKey, value: DebeziumRecordValue): DeserializedRecord
+    /**
+     * Transforms a [DebeziumRecordKey] and a [DebeziumRecordValue] into a [DeserializedRecord].
+     *
+     * Returning null means that the event should be treated like a heartbeat.
+     */
+    fun deserialize(key: DebeziumRecordKey, value: DebeziumRecordValue): DeserializedRecord?
 
     /** Maps a [DebeziumState] to an [OpaqueStateValue]. */
     fun serialize(debeziumState: DebeziumState): OpaqueStateValue
