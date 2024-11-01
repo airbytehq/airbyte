@@ -10,7 +10,10 @@ import dpath
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
+from pydantic import GetJsonSchemaHandler
+from pydantic.json_schema import JsonSchemaValue
 from pydantic.v1 import AnyUrl, BaseModel, Field
+from pydantic_core import core_schema as cs
 
 
 class DeliverRecords(BaseModel):
@@ -132,3 +135,39 @@ class AbstractFileBasedSpec(BaseModel):
         if "allOf" in object_property and "enum" in object_property["allOf"][0]:
             object_property["enum"] = object_property["allOf"][0]["enum"]
             object_property.pop("allOf")
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls,
+        core_schema: cs.CoreSchema,
+        handler: GetJsonSchemaHandler,
+    ) -> JsonSchemaValue:
+        """Override the JSON Schema to signal to the UI that file syncs do not require a parser.
+
+        We use the anyOf field to signal that the user must choose between the two delivery methods
+        and after selection of file transfer, the parser-related fields will be ignored and not
+        displayed.
+
+        The delivery_method field is removed from the schema and replaced with a oneOf field that
+        contains the two delivery methods. The streams field is also removed from the schema and
+        replaced with a oneOf field that contains the two delivery methods. The oneOf field is used
+        to signal to the UI that the user must choose between the two delivery methods and after
+        selection of file transfer, the parser-related fields will be ignored and not displayed.
+        """
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        streams_with_parser = json_schema["properties"].pop("streams")
+        streams_without_parser = copy.deepcopy(streams_with_parser)
+        # TODO: Remove parser fields from the schema
+
+        delivery_method = json_schema["properties"].pop("delivery_method")
+        delivery_method_files = copy.deepcopy(delivery_method)
+        # TODO: Add constant and discriminator logic here
+        delivery_method_records = copy.deepcopy(delivery_method)
+        # TODO: Add constant and discriminator logic here
+
+        json_schema["properties"]["oneOf"] = [
+            {delivery_method_records, streams_with_parser},
+            {delivery_method_files, streams_without_parser},
+        ]
+        return json_schema
