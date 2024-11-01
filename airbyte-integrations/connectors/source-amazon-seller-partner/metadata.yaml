@@ -54,6 +54,7 @@ data:
       5.0.0:
         message: The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed to prevent incorrect record deduplication in sync mode. Users will need to refresh the source schema and reset this stream after upgrading.
         upgradeDeadline: "2024-11-20"
+        deadlineAction: "auto_upgrade"
   supportLevel: certified
   tags:
     - language:python
