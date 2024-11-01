@@ -1,0 +1,268 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  This provides data related to reimbursement rates that federal agencies use to
+  reimburse their employees.
+
+  Docs : https://open.gsa.gov/api/perdiem/
+
+check:
+  type: CheckStream
+  stream_names:
+    - mapping_zipcodes_did_statelocations
+
+definitions:
+  streams:
+    mapping_zipcodes_did_statelocations:
+      type: DeclarativeStream
+      name: mapping_zipcodes_did_statelocations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conus/zipcodes/{{ config['year'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mapping_zipcodes_did_statelocations"
+    meals_incidental_expenses:
+      type: DeclarativeStream
+      name: meals_incidental_expenses
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conus/mie/{{ config['year'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meals_incidental_expenses"
+    lodging_rates:
+      type: DeclarativeStream
+      name: lodging_rates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: conus/lodging/{{ config['year'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lodging_rates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.gsa.gov/travel/perdiem/v2/rates/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/mapping_zipcodes_did_statelocations"
+  - $ref: "#/definitions/streams/meals_incidental_expenses"
+  - $ref: "#/definitions/streams/lodging_rates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - year
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      city:
+        type: string
+        order: 1
+        title: city
+      state:
+        type: string
+        order: 2
+        title: state
+      zip:
+        type: string
+        order: 3
+        title: zip
+      year:
+        type: string
+        order: 4
+        title: year
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    mapping_zipcodes_did_statelocations: true
+    meals_incidental_expenses: true
+    lodging_rates: true
+  testedStreams:
+    mapping_zipcodes_did_statelocations:
+      hasRecords: true
+      streamHash: fd506995ffe9a7e6969d4b1ed49ccf8d146f3dee
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meals_incidental_expenses:
+      hasRecords: true
+      streamHash: dd7a06b665c2c881ee980bfb55fc11e005e5cb9a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lodging_rates:
+      hasRecords: true
+      streamHash: e70c22536b71ccd6d1d77263c89885f760623dc3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  mapping_zipcodes_did_statelocations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DID:
+        type:
+          - string
+          - "null"
+      ST:
+        type:
+          - string
+          - "null"
+      Zip:
+        type:
+          - string
+          - "null"
+  meals_incidental_expenses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      FirstLastDay:
+        type:
+          - number
+          - "null"
+      breakfast:
+        type:
+          - number
+          - "null"
+      dinner:
+        type:
+          - number
+          - "null"
+      incidental:
+        type:
+          - number
+          - "null"
+      lunch:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+  lodging_rates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Apr:
+        type:
+          - string
+          - "null"
+      Aug:
+        type:
+          - string
+          - "null"
+      City:
+        type:
+          - string
+          - "null"
+      County:
+        type:
+          - string
+          - "null"
+      DID:
+        type:
+          - string
+          - "null"
+      Dec:
+        type:
+          - string
+          - "null"
+      Feb:
+        type:
+          - string
+          - "null"
+      Jan:
+        type:
+          - string
+          - "null"
+      Jul:
+        type:
+          - string
+          - "null"
+      Jun:
+        type:
+          - string
+          - "null"
+      Mar:
+        type:
+          - string
+          - "null"
+      May:
+        type:
+          - string
+          - "null"
+      Meals:
+        type:
+          - string
+          - "null"
+      Nov:
+        type:
+          - string
+          - "null"
+      Oct:
+        type:
+          - string
+          - "null"
+      Sep:
+        type:
+          - string
+          - "null"
+      State:
+        type:
+          - string
+          - "null"
