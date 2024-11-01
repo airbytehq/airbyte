@@ -102,8 +102,6 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
 For instructions specific to connector configuration docs, please see the [Connector Documentation Guide](./connector-development/writing-connector-docs.md).
 
-docs/contributing-to-airbyte/writing-docs.md
-
 ## Common Tools and Patterns
 
 ### Select between mutually-exclusive content options with `<Tabs>`
