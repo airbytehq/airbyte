@@ -69,7 +69,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Enter the **Host Address**.
 6. Enter your **Username**
 7. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
-8. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add". 
+8. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add".
 9. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 12. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
 13. (Optional) Specify the **Host Address**. The default port for SFTP is 2​2. If your remote server is using a different port, enter it here.
@@ -105,7 +105,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 #### File-specific Configuration
 
-Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type. 
+Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type.
 
 For JSONL, Parquet, and Document File Type formats, you can specify the **Glob** pattern used to specify which files should be selected from the file system. If your provided Folder Path already ends in a slash, you need to add that double slash to the glob where appropriate.
 
@@ -114,6 +114,18 @@ For example, assuming your folder path is not set in the connector configuration
 If your files are in a folder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`.
 
 #### Copy Raw Files Configuration
+
+:::info
+
+The raw file replication feature has the following requirements and limitations:
+- **Supported Airbyte Versions:**
+  - Cloud: All Workspaces
+  - OSS / Enterprise: `v1.2.0` or later
+- **Max File Size:** `1GB` per file
+- **Supported Destinations:**
+  - S3: `v1.4.0` or later
+
+:::
 
 Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
 
@@ -132,7 +144,7 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. 
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
 
 ## Changelog
 <details>
