@@ -18,7 +18,7 @@ def parse_manifest_spec(manifest_obj: dict) -> ConnectorSpecification:
     valid_spec_obj = {
         "connectionSpecification": manifest_obj["spec"]["connection_specification"],
         "documentationUrl": manifest_obj["spec"].get("documentationUrl", None),
-        "advanced_auth": manifest_obj["spec"].get("advanced_auth", None)
+        "advanced_auth": manifest_obj["spec"].get("advanced_auth", None),
     }
 
     return ConnectorSpecification.parse_obj(valid_spec_obj)
