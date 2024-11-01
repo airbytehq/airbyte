@@ -297,8 +297,9 @@ class RecordDiffer(
                     }
                     // otherwise, just be a terrible person.
                     // we know these are the same type, so this is safe to do.
-                    else ->
+                    is Comparable<*> ->
                         @Suppress("UNCHECKED_CAST") (v1 as Comparable<AirbyteValue>).compareTo(v2)
+                    else -> if (v1 == v2) 0 else 1
                 }
             }
         }

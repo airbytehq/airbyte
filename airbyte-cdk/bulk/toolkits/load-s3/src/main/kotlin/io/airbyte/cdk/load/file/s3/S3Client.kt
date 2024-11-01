@@ -9,6 +9,7 @@ import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadRequest
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
+import aws.sdk.kotlin.services.s3.model.HeadObjectRequest
 import aws.sdk.kotlin.services.s3.model.ListObjectsRequest
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
@@ -94,11 +95,11 @@ class S3Client(
     }
 
     override suspend fun getMetadata(key: String): Map<String, String> {
-        val request = GetObjectRequest {
+        val request = HeadObjectRequest {
             bucket = bucketConfig.s3BucketName
             this.key = key
         }
-        return client.getObject(request) { it.metadata ?: emptyMap() }
+        return client.headObject(request).metadata ?: emptyMap()
     }
 
     override suspend fun put(key: String, bytes: ByteArray): S3Object {
@@ -125,12 +126,14 @@ class S3Client(
 
     override suspend fun <U : OutputStream> streamingUpload(
         key: String,
+        metadata: Map<String, String>,
         streamProcessor: StreamProcessor<U>?,
         block: suspend (OutputStream) -> Unit
     ): S3Object {
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
             this.key = key
+            this.metadata = metadata
         }
         val response = client.createMultipartUpload(request)
         val upload =

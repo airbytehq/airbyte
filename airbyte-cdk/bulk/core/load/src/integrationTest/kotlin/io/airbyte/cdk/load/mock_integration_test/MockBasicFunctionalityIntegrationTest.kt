@@ -21,6 +21,9 @@ class MockBasicFunctionalityIntegrationTest :
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
         supportsDedup = true,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -61,5 +64,15 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testDedup() {
         super.testDedup()
+    }
+
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Test
+    override fun testUnions() {
+        super.testUnions()
     }
 }
