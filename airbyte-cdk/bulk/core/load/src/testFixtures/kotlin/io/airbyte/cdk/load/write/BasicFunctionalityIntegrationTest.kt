@@ -677,13 +677,30 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         // Run a sync, but don't emit a stream status. This should not delete any existing data.
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                configContents,
-                stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
-                streamStatus = null,
-            )
+        // There's a race condition between the end of stream killing the connector,
+        // and the connector starting to process the record.
+        // So we run this in a loop until the connector acks the state message.
+        while (true) {
+            val e =
+                assertThrows<DestinationUncleanExitException> {
+                    runSync(
+                        configContents,
+                        stream2,
+                        listOf(
+                            makeInputRecord(1, "2024-01-23T02:00Z", 200),
+                            StreamCheckpoint(
+                                randomizedNamespace,
+                                "test_stream",
+                                "{}",
+                                sourceRecordCount = 1,
+                            )
+                        ),
+                        streamStatus = null,
+                    )
+                }
+            if (e.stateMessages.isNotEmpty()) {
+                break
+            }
         }
         dumpAndDiffRecords(
             parsedConfig,

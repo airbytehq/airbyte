@@ -139,6 +139,26 @@ abstract class IntegrationTest(
         configContents: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
+        /**
+         * If you set this to anything other than `COMPLETE`, you may run into a race condition.
+         * It's recommended that you send an explicit state message in [messages], and run the sync
+         * in a loop until it acks the state message, e.g.
+         * ```
+         * while (true) {
+         *   val e = assertThrows<DestinationUncleanExitException> {
+         *     runSync(
+         *       ...,
+         *       listOf(
+         *         ...,
+         *         StreamCheckpoint(...),
+         *       ),
+         *       ...
+         *     )
+         *   }
+         *   if (e.stateMessages.isNotEmpty()) { break }
+         * }
+         * ```
+         */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> {
         val destination =
