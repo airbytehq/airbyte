@@ -1,0 +1,326 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: Youtube Data
+
+check:
+  type: CheckStream
+  stream_names:
+    - video
+
+definitions:
+  streams:
+    video:
+      type: DeclarativeStream
+      name: video
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: pageToken
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: videos?part=snippet,contentDetails&id=L8tMjbZM8hc
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/video"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.googleapis.com/youtube/v3
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/video"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.google.com/youtube/v3/guides/implementation
+  testedStreams:
+    video:
+      hasRecords: true
+      streamHash: 876ada7904877b508a4fc75be2c79642d954a861
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    video: true
+
+schemas:
+  video:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      etag:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            etag:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            snippet:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                tags:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                channelId:
+                  type:
+                    - string
+                    - "null"
+                localized:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                categoryId:
+                  type:
+                    - string
+                    - "null"
+                thumbnails:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    high:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        url:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                    maxres:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        url:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                    medium:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        url:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                    default:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        url:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                    standard:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        url:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                publishedAt:
+                  type:
+                    - string
+                    - "null"
+                channelTitle:
+                  type:
+                    - string
+                    - "null"
+                defaultAudioLanguage:
+                  type:
+                    - string
+                    - "null"
+                liveBroadcastContent:
+                  type:
+                    - string
+                    - "null"
+            contentDetails:
+              type:
+                - object
+                - "null"
+              properties:
+                caption:
+                  type:
+                    - string
+                    - "null"
+                duration:
+                  type:
+                    - string
+                    - "null"
+                dimension:
+                  type:
+                    - string
+                    - "null"
+                definition:
+                  type:
+                    - string
+                    - "null"
+                projection:
+                  type:
+                    - string
+                    - "null"
+                contentRating:
+                  type:
+                    - object
+                    - "null"
+                licensedContent:
+                  type:
+                    - boolean
+                    - "null"
+                regionRestriction:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    blocked:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+      pageInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          totalResults:
+            type:
+              - number
+              - "null"
+          resultsPerPage:
+            type:
+              - number
+              - "null"
+    additionalProperties: true
