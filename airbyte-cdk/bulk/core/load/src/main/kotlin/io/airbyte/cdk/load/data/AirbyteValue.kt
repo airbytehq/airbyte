@@ -63,6 +63,11 @@ value class IntegerValue(val value: Long) : AirbyteValue, Comparable<IntegerValu
 }
 
 @JvmInline
+value class IntValue(val value: Int) : AirbyteValue, Comparable<IntValue> {
+    override fun compareTo(other: IntValue): Int = value.compareTo(other.value)
+}
+
+@JvmInline
 value class NumberValue(val value: BigDecimal) : AirbyteValue, Comparable<NumberValue> {
     override fun compareTo(other: NumberValue): Int = value.compareTo(other.value)
 }

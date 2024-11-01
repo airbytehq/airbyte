@@ -8,7 +8,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -89,6 +88,19 @@ class MysqlCdcIntegrationTest {
         }
     }
 
+    @Test
+    fun testFullRefresh() {
+        val fullRefreshCatalog =
+            configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
+        CliRunner.source("read", config(), fullRefreshCatalog).run()
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("INSERT INTO test.tbl (k, v) VALUES (4, 'baz')")
+            }
+        }
+    }
+
     companion object {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>
@@ -108,14 +120,12 @@ class MysqlCdcIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = JdbcAirbyteStreamFactory().createGlobal(discoveredStream)
+            val stream: AirbyteStream = MysqlSourceOperations().createGlobal(discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
-                    .withCursorField(
-                        listOf(MysqlJdbcStreamFactory.MysqlCDCMetaFields.CDC_CURSOR.id)
-                    )
+                    .withCursorField(listOf(MysqlCdcMetaFields.CDC_CURSOR.id))
             ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
         }
 
