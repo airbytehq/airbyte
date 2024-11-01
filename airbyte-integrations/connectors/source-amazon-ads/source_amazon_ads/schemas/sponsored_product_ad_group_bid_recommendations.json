@@ -11,7 +11,10 @@
         "properties": {
           "bidValues": {
             "type": "array",
-            "items": { "type": ["null", "object"], "additionalProperties": true }
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true
+            }
           },
           "targetingExpression": {
             "type": ["null", "object"],
