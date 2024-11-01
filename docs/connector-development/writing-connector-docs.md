@@ -14,11 +14,46 @@ Please familiarize yourself with all the tools available to you when writing doc
 As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
 
-## Jump to the relevant documentation section when specific connector setup inputs are focused with `<FieldAnchor>`
+## Mapping UI to Associated Docs
 
-In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
+Sometimes a connector's configuration UI may have a field that requires more explanation than can be provided in the UI itself. In these cases, the connector developer can use the `FieldAnchor` syntax below to link documentation to a specific UI component.
 
-The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. For example, if the connector spec contains a `connectionSpecification.properties.replication_method.replication_slot`, you would mark the start of the related documentation section with `<FieldAnchor field="replication_method.replication_slot">` and its end with `</FieldAnchor>`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor field="replication_method.replication_slot,replication_method.queue_size">`. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`. For example, if the specification of the `oneOf` field is:
+When a user selects the associated field in the UI, the documentation will automatically scroll to the related documentation section the right-hand panel.
+
+The `FieldAnchor` syntax accepts a modified `jsonpath` expression, as follows:
+
+`example-a.md`:
+```md
+## Configuring Widgets
+
+<FieldAnchor field="widget_option">
+
+...config-related instructions here...
+```
+
+Taking a more complex example, you can access deeper-nested fields using `jsonpath` expressions syntax:
+
+`example-b.md`:
+```md
+## Configuring Unstructures Streams
+
+<FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
+
+...config-related instructions here...
+```
+
+Note:
+- The syntax expected is a modified version of jsonpath, without the conventional `$.` prefix.
+- The `FieldAnchor` syntax is only supported in the context of connector documentation, and will not render on the documentation site.
+
+How it works:
+
+- When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag.
+- These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel.
+- There must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
+- The `field` attribute must be a valid `jsonpath` expression to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. For example, if the connector spec contains a `connectionSpecification.properties.replication_method.replication_slot`, you would mark the start of the related documentation section with `<FieldAnchor field="replication_method.replication_slot">` and its end with `</FieldAnchor>`.
+- It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor field="replication_method.replication_slot,replication_method.queue_size">`.
+- To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`. For example, if the specification of the `oneOf` field is:
 
 ```json
 "replication_method": {
