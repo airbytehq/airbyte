@@ -155,7 +155,7 @@ class StreamManagerTest {
                         )
                     ),
                     TestCase(
-                        "Single stream, multiple batches, out of order persist/complete",
+                        "Single stream, multiple batches, complete also persists",
                         listOf(
                             Pair(stream1, SetRecordCount(10)),
                             Pair(stream1, AddComplete(0, 4)),
@@ -163,6 +163,19 @@ class StreamManagerTest {
                             Pair(stream1, ExpectComplete(false)),
                             Pair(stream1, SetEndOfStream),
                             Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream1, ExpectComplete(true)),
+                        )
+                    ),
+                    TestCase(
+                        "Single stream, multiple batches, persist/complete out of order",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(5, 9)), // complete a rangeset before the preceding rangeset is persisted
+                            Pair(stream1, AddPersisted(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(10, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream1, SetEndOfStream),
                             Pair(stream1, ExpectComplete(true)),
                         )
                     ),
@@ -191,7 +204,7 @@ class StreamManagerTest {
                         )
                     ),
                     TestCase(
-                    "mingle streams, multiple batches, out of order persist/complete",
+                    "mingle streams, multiple batches, complete also persists",
                         listOf(
                             Pair(stream1, SetRecordCount(10)),
                             Pair(stream1, AddComplete(0, 4)),
@@ -203,6 +216,24 @@ class StreamManagerTest {
                             Pair(stream1, SetEndOfStream),
                             Pair(stream1, AddComplete(5, 9)),
                             Pair(stream2, AddComplete(5, 9)),
+                            Pair(stream2, SetEndOfStream),
+                            Pair(stream1, ExpectComplete(true)),
+                            Pair(stream2, ExpectComplete(true)),
+                        )
+                    ),
+                    TestCase(
+                        "mingle streams, multiple batches, persist/complete out of order",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream1, ExpectPersistedUntil(10, false)),
+                            Pair(stream2, AddComplete(5, 9)),
+                            Pair(stream2, ExpectPersistedUntil(10, false)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream2, ExpectComplete(false)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream2, AddComplete(0, 4)),
                             Pair(stream2, SetEndOfStream),
                             Pair(stream1, ExpectComplete(true)),
                             Pair(stream2, ExpectComplete(true)),
