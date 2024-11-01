@@ -115,6 +115,8 @@ If your files are in a folder, include the folder in your glob pattern, like `my
 
 #### Copy Raw Files Configuration
 
+<FieldAnchor field="delivery_method.delivery_type">
+
 :::info
 
 The raw file replication feature has the following requirements and limitations:
@@ -130,6 +132,8 @@ The raw file replication feature has the following requirements and limitations:
 Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
 
 Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
+
+</FieldAnchor>
 
 ## Supported sync modes
 

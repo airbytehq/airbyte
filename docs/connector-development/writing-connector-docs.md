@@ -29,6 +29,8 @@ The `FieldAnchor` syntax accepts a modified `jsonpath` expression, as follows:
 <FieldAnchor field="widget_option">
 
 ...config-related instructions here...
+
+</FieldAnchor>
 ```
 
 Taking a more complex example, you can access deeper-nested fields using `jsonpath` expressions syntax:
@@ -40,6 +42,8 @@ Taking a more complex example, you can access deeper-nested fields using `jsonpa
 <FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
 
 ...config-related instructions here...
+
+</FieldAnchor>
 ```
 
 Note:
