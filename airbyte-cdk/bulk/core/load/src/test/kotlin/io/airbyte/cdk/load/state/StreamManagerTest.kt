@@ -155,6 +155,21 @@ class StreamManagerTest {
                         )
                     ),
                     TestCase(
+                        "Single stream, multiple batches, out of order persist/complete",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(5, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream1, AddPersisted(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(5, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream1, ExpectComplete(false)),
+                        )
+                    ),
+                    TestCase(
                         "multiple streams",
                         listOf(
                             Pair(stream1, SetRecordCount(10)),
@@ -177,7 +192,7 @@ class StreamManagerTest {
                             Pair(stream2, ExpectPersistedUntil(20, true)),
                             Pair(stream2, ExpectComplete(true)),
                         )
-                    )
+                    ),
                 )
                 .map { Arguments.of(it) }
                 .stream()
