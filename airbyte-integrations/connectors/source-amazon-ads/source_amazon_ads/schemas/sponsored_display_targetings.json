@@ -1,21 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "targetId": { "type": "number" },
-    "adGroupId": { "type": "number" },
-    "state": { "type": "string" },
-    "expressionType": { "type": "string" },
-    "bid": { "type": "number" },
-    "campaignId": { "type": "number" },
+    "targetId": { "type": ["null", "number"] },
+    "adGroupId": { "type": ["null", "number"] },
+    "state": { "type": ["null", "string"] },
+    "expressionType": { "type": ["null", "string"] },
+    "bid": { "type": ["null", "number"] },
+    "campaignId": { "type": ["null", "number"] },
     "expression": {
       "type": "array",
-      "items": { "type": "object", "additionalProperties": true }
+      "items": { "type": ["null", "object"], "additionalProperties": true }
     },
     "resolvedExpression": {
       "type": "array",
-      "items": { "type": "object", "additionalProperties": true }
+      "items": { "type": ["null", "object"], "additionalProperties": true }
     }
   },
   "title": "sponsored_display_targetings",
-  "type": "object"
+  "type": ["null", "object"]
 }

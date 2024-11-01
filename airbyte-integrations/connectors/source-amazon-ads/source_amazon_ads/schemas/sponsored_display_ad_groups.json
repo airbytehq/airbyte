@@ -1,15 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "name": { "type": "string" },
-    "campaignId": { "type": "number" },
-    "adGroupId": { "type": "number" },
-    "defaultBid": { "type": "number" },
-    "bidOptimization": { "type": "string" },
-    "state": { "type": "string" },
-    "tactic": { "type": "string" },
-    "creativeType": { "type": "string" }
+    "name": { "type": ["null", "string"] },
+    "campaignId": { "type": ["null", "number"] },
+    "adGroupId": { "type": ["null", "number"] },
+    "defaultBid": { "type": ["null", "number"] },
+    "bidOptimization": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "tactic": { "type": ["null", "string"] },
+    "creativeType": { "type": ["null", "string"] }
   },
   "title": "sponsored_display_ad_groups",
-  "type": "object"
+  "type": ["null", "object"]
 }

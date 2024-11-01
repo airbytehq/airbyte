@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "profileId": { "type": "integer" },
+    "profileId": { "type": ["null", "integer"] },
     "countryCode": { "type": ["null", "string"] },
     "currencyCode": { "type": ["null", "string"] },
     "dailyBudget": { "type": ["null", "number"] },
-    "timezone": { "type": "string" },
+    "timezone": { "type": ["null", "string"] },
     "accountInfo": {
       "type": ["object", "null"],
       "properties": {
-        "marketplaceStringId": { "type": "string" },
-        "id": { "type": "string" },
-        "type": { "type": "string" },
+        "marketplaceStringId": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] },
         "name": { "type": ["null", "string"] },
         "subType": { "type": ["null", "string"] },
         "validPaymentMethod": { "type": ["null", "boolean"] }
@@ -19,5 +19,5 @@
     }
   },
   "title": "profiles",
-  "type": "object"
+  "type": ["null", "object"]
 }

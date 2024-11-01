@@ -2,25 +2,25 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "brandName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "marketplace": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "campaignId": {
       "type": ["null", "string"]
     },
     "productAsin": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "productConversionType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "advertiserName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "adGroupId": {
       "type": ["null", "string"]
@@ -29,16 +29,16 @@
       "type": ["null", "string"]
     },
     "productName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "productCategory": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "productSubcategory": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "productGroup": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "publisher": {
       "type": ["null", "string"]
@@ -114,5 +114,5 @@
     }
   },
   "title": "attribution_report_performance_adgroup",
-  "type": "object"
+  "type": ["null", "object"]
 }
