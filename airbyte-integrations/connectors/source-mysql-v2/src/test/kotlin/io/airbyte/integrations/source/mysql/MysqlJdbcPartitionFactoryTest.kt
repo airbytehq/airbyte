@@ -36,10 +36,12 @@ class MysqlJdbcPartitionFactoryTest {
         private val selectQueryGenerator = MysqlSourceOperations()
         private val sharedState = sharedState()
         private val cdcSharedState = sharedState(global = true)
+        private val config = mockk<MysqlSourceConfiguration>()
 
-        val mysqlJdbcPartitionFactory = MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator)
+        val mysqlJdbcPartitionFactory =
+            MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator, config)
         val mysqlCdcJdbcPartitionFactory =
-            MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator)
+            MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
         val fieldId = Field("id", IntFieldType)
         val stream =

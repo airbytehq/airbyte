@@ -18,7 +18,6 @@ from freezegun import freeze_time
 from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
-from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.source import CONFIG_DATE_FORMAT
 from source_amazon_ads.streams import (
     SponsoredBrandsCampaigns,
@@ -170,10 +169,10 @@ REPORT_STATUS_RESPONSE = """
 
 def make_profiles(profile_type="seller"):
     return [
-        Profile(
+        dict(
             profileId=1,
             timezone="America/Los_Angeles",
-            accountInfo=AccountInfo(marketplaceStringId="", id="", type=profile_type),
+            accountInfo=dict(marketplaceStringId="", id="", type=profile_type),
         )
     ]
 
@@ -426,7 +425,7 @@ def test_display_report_stream_slices_full_refresh(config):
 def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_state = {str(profiles[0].profileId): {"reportDate": "2021-07-25"}}
+    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-25"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
         {"profile": profiles[0], "reportDate": "2021-07-25"},
@@ -436,7 +435,7 @@ def test_display_report_stream_slices_incremental(config):
         {"profile": profiles[0], "reportDate": "2021-07-29"},
     ]
 
-    stream_state = {str(profiles[0].profileId): {"reportDate": "2021-07-30"}}
+    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-30"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
@@ -458,7 +457,7 @@ def test_get_start_date(config):
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
 
-    profile_id = str(profiles[0].profileId)
+    profile_id = str(profiles[0]['profileId'])
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -471,8 +470,8 @@ def test_get_start_date(config):
 
 @freeze_time("2021-08-01 04:00:00")
 def test_stream_slices_different_timezones(config):
-    profile1 = Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
-    profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+    profile1 = dict(profileId=1, timezone="America/Los_Angeles", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
+    profile2 = dict(profileId=2, timezone="UTC", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
     assert slices == [{"profile": profile1, "reportDate": "2021-07-31"}, {"profile": profile2, "reportDate": "2021-08-01"}]
@@ -481,8 +480,8 @@ def test_stream_slices_different_timezones(config):
 def test_stream_slices_lazy_evaluation(config):
     with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
         config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
-        profile1 = Profile(profileId=1, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
-        profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+        profile1 = dict(profileId=1, timezone="UTC", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
+        profile2 = dict(profileId=2, timezone="UTC", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
 
         stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
         stream.REPORTING_PERIOD = 5
