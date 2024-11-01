@@ -99,6 +99,7 @@ abstract class IntegrationTest(
         stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
+        reason: String? = null,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
@@ -110,9 +111,12 @@ abstract class IntegrationTest(
             )
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
-                fail(
+                var message =
                     "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
-                )
+                if (reason != null) {
+                    message = reason + "\n" + message
+                }
+                fail(message)
             }
     }
 

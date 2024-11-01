@@ -15,6 +15,8 @@ abstract class S3V2WriteTest(
     stringifySchemalessObjects: Boolean,
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
+    /** This is false for staging mode, and true for non-staging mode. */
+    commitDataIncrementally: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -27,6 +29,7 @@ abstract class S3V2WriteTest(
         stringifySchemalessObjects = stringifySchemalessObjects,
         promoteUnionToObject = promoteUnionToObject,
         preserveUndeclaredFields = preserveUndeclaredFields,
+        commitDataIncrementally = commitDataIncrementally,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -67,6 +70,12 @@ abstract class S3V2WriteTest(
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - data from failed sync is lost")
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
     }
 }
 

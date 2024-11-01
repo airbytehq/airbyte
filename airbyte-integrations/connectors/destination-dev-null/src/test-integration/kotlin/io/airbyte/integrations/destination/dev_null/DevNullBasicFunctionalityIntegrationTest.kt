@@ -22,6 +22,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
+        commitDataIncrementally = false,
     ) {
     @Test
     override fun testBasicWrite() {
