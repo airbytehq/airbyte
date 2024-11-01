@@ -117,7 +117,8 @@ If your files are in a folder, include the folder in your glob pattern, like `my
 
 Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
 
-Format options will not be taken into account, files storage in supported file-based destination without parsing underlying data.
+Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
+
 ## Supported sync modes
 
 The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):

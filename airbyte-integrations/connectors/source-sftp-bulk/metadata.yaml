@@ -30,6 +30,7 @@ data:
         message: "This upgrade migrates the SFTP Bulk source to the Airbyte file-based CDK. This is the first necessary step of transitioning a file connector from community to Airbyte maintained."
         upgradeDeadline: "2024-04-30"
   supportLevel: community
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:python-file-based
