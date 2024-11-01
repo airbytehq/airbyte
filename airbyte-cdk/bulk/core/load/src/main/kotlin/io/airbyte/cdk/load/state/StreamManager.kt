@@ -144,12 +144,6 @@ class DefaultStreamManager(
             rangesState[batch.batch.state]
                 ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
-        // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
-        when (batch.batch.state) {
-            Batch.State.COMPLETE -> rangesState[Batch.State.PERSISTED]?.addAll(batch.ranges)
-            else -> Unit
-        }
-
         // Force the ranges to overlap at their endpoints, in order to work around
         // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
         // contiguous.
@@ -159,6 +153,16 @@ class DefaultStreamManager(
             batch.ranges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
 
         stateRanges.addAll(expanded)
+
+        // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
+        when (batch.batch.state) {
+            Batch.State.COMPLETE ->  {
+                rangesState[Batch.State.PERSISTED]?.addAll(expanded)
+                log.info { "here" }
+            }
+            else -> Unit
+        }
+
         log.info { "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $stateRanges" }
     }
 
