@@ -141,7 +141,8 @@ class DefaultStreamManager(
 
     override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
 
-        rangesState[batch.batch.state] ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
+        rangesState[batch.batch.state]
+            ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
         // Force the ranges to overlap at their endpoints, in order to work around
         // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
@@ -155,7 +156,7 @@ class DefaultStreamManager(
             Batch.State.PERSISTED -> {
                 rangesState[Batch.State.PERSISTED]?.addAll(expanded)
             }
-            Batch.State.COMPLETE ->  {
+            Batch.State.COMPLETE -> {
                 // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
                 rangesState[Batch.State.PERSISTED]?.addAll(expanded)
                 rangesState[Batch.State.COMPLETE]?.addAll(expanded)
@@ -163,7 +164,9 @@ class DefaultStreamManager(
             else -> Unit
         }
 
-        log.info { "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $expanded. PERSISTED is also updated on COMPLETE." }
+        log.info {
+            "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $expanded. PERSISTED is also updated on COMPLETE."
+        }
     }
 
     /** True if all records in `[0, index)` have reached the given state. */
