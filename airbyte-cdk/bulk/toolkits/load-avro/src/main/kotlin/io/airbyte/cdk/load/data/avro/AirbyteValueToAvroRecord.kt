@@ -27,7 +27,9 @@ class AirbyteValueToAvroRecord {
             is ObjectValue -> {
                 val record = GenericData.Record(schema)
                 airbyteValue.values.forEach { (name, value) ->
-                    record.put(name, convert(value, schema.getField(name).schema()))
+                    schema.getField(name)?.let { field ->
+                        record.put(name, convert(value, field.schema()))
+                    }
                 }
                 return record
             }

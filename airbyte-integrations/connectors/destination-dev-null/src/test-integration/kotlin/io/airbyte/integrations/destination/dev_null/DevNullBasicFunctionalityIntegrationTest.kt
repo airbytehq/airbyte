@@ -19,6 +19,9 @@ class DevNullBasicFunctionalityIntegrationTest :
         verifyDataWriting = false,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
     ) {
     @Test
     override fun testBasicWrite() {
