@@ -159,7 +159,6 @@ class DefaultStreamManager(
                 // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
                 rangesState[Batch.State.PERSISTED]?.addAll(expanded)
                 rangesState[Batch.State.COMPLETE]?.addAll(expanded)
-                log.info { "=== here" }
             }
             else -> Unit
         }
