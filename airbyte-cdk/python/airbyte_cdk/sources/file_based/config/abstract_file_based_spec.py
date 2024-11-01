@@ -7,10 +7,11 @@ from abc import abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import dpath
+from pydantic.v1 import AnyUrl, BaseModel, Field
+
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic.v1 import AnyUrl, BaseModel, Field
 
 
 class DeliverRecords(BaseModel):
@@ -25,7 +26,7 @@ class DeliverRecords(BaseModel):
 class DeliverRawFiles(BaseModel):
     class Config(OneOfOptionConfig):
         title = "Copy Raw Files"
-        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files."
+        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.\n\nRequires selection of a supporting destination. See docs for specific requirements and limitations."
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)
