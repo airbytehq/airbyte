@@ -100,7 +100,7 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
 ## Guide To Writing Connector Docs
 
-For instructions specific to connector configuration docs, please see the [Connector Documentation Guide](./connector-development/writing-connector-docs.md).
+For instructions specific to connector configuration docs, please see the [Connector Documentation Guide](../connector-development/writing-connector-docs.md).
 
 ## Common Tools and Patterns
 
