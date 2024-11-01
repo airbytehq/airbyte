@@ -113,6 +113,28 @@ For example, assuming your folder path is not set in the connector configuration
 
 If your files are in a folder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`.
 
+#### Copy Raw Files Configuration
+
+<FieldAnchor field="delivery_method.delivery_type">
+
+:::info
+
+The raw file replication feature has the following requirements and limitations:
+- **Supported Airbyte Versions:**
+  - Cloud: All Workspaces
+  - OSS / Enterprise: `v1.2.0` or later
+- **Max File Size:** `1GB` per file
+- **Supported Destinations:**
+  - S3: `v1.4.0` or later
+
+:::
+
+Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
+
+Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
+
+</FieldAnchor>
+
 ## Supported sync modes
 
 The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
