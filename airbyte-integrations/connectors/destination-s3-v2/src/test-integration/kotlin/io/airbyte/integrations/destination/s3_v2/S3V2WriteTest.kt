@@ -78,6 +78,14 @@ class S3V2WriteTestJsonUncompressed :
         preserveUndeclaredFields = true,
     )
 
+class S3V2WriteTestJsonStaging :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
+
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
         S3V2TestUtils.JSON_GZIP_CONFIG_PATH,

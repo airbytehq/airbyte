@@ -10,6 +10,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PathFactory
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
 import io.airbyte.cdk.load.util.serializeToJsonBytes
@@ -18,11 +19,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
+    // (State -> (GenerationId -> (Key -> PartNumber)))
     @JsonProperty("generations_by_state")
     var generationMap: MutableMap<State, MutableMap<Long, MutableMap<String, Long>>> =
         mutableMapOf(),
@@ -30,6 +34,13 @@ class ObjectStorageDestinationState(
     enum class State {
         STAGED,
         FINALIZED
+    }
+
+    companion object {
+        const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
+
+        fun metadataFor(stream: DestinationStream): Map<String, String> =
+            mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
 
     @JsonIgnore private val accessLock = Mutex()
@@ -124,13 +135,51 @@ class ObjectStorageStagingPersister(
     }
 }
 
-@Factory
-class ObjectStorageDestinationStatePersisterFactory(
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
+class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
+    private val pathFactory: PathFactory
+) : DestinationStatePersister<ObjectStorageDestinationState> {
+    override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
+        val prefix = pathFactory.prefix
+        val matcher = pathFactory.getPathMatcher(stream)
+        client
+            .list(prefix)
+            .mapNotNull { matcher.match(it.key) }
+            .toList()
+            .groupBy {
+                client
+                    .getMetadata(it.path)[ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
+                    ?.toLong()
+                    ?: 0L
+            }
+            .mapValues { (_, matches) ->
+                matches.associate { it.path to (it.partNumber ?: 0L) }.toMutableMap()
+            }
+            .toMutableMap()
+            .let {
+                return ObjectStorageDestinationState(
+                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
+                )
+            }
+    }
+
+    override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {
+        // No-op; state is persisted when the generation id is set on the object metadata
+    }
+}
+
+@Factory
+class ObjectStorageDestinationStatePersisterFactory<T : RemoteObject<*>>(
+    private val client: ObjectStorageClient<T>,
     private val pathFactory: PathFactory
 ) {
     @Singleton
     @Secondary
     fun create(): DestinationStatePersister<ObjectStorageDestinationState> =
-        ObjectStorageStagingPersister(client, pathFactory)
+        if (pathFactory.supportsStaging) {
+            ObjectStorageStagingPersister(client, pathFactory)
+        } else {
+            ObjectStorageFallbackPersister(client, pathFactory)
+        }
 }
