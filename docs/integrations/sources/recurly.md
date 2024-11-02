@@ -66,6 +66,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.1.13 | 2024-10-29 | [46722](https://github.com/airbytehq/airbyte/pull/46722) | Fixes timestamp pattern for UI to match what connector expects |
 | 1.1.12 | 2024-10-28 | [47067](https://github.com/airbytehq/airbyte/pull/47067) | Update dependencies |
 | 1.1.11 | 2024-10-12 | [46829](https://github.com/airbytehq/airbyte/pull/46829) | Update dependencies |
 | 1.1.10 | 2024-10-05 | [46456](https://github.com/airbytehq/airbyte/pull/46456) | Update dependencies |
