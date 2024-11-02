@@ -148,7 +148,7 @@ value class TimeValue(val value: String) : AirbyteValue, Comparable<TimeValue> {
 @JvmInline
 value class ArrayValue(val values: List<AirbyteValue>) : AirbyteValue {
     companion object {
-        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { it as AirbyteValue })
+        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { AirbyteValue.from(it) })
     }
 }
 
