@@ -23,6 +23,8 @@
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | DefaultPaginator | ✅ |  ❌  |
 | webhook_events | id | DefaultPaginator | ✅ |  ❌  |
+| activities | id | DefaultPaginator | ✅ |  ❌  |
+| prospecting_lists | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -31,6 +33,6 @@
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-03 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

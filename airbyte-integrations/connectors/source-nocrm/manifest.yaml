@@ -386,6 +386,66 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/webhook_events"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    prospecting_lists:
+      type: DeclarativeStream
+      name: prospecting_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /spreadsheets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospecting_lists"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.nocrm.io/api/v2
@@ -410,6 +470,8 @@ streams:
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/webhooks"
   - $ref: "#/definitions/streams/webhook_events"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/prospecting_lists"
 
 spec:
   type: Spec
@@ -426,17 +488,17 @@ spec:
           API key to use. Generate it from the admin section of your noCRM.io
           account.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       subdomain:
         type: string
         description: >-
           The subdomain specific to your noCRM.io account, e.g., 'yourcompany'
           in 'yourcompany.nocrm.io'.
         name: subdomain
-        title: Subdomain
         order: 1
+        title: Subdomain
     additionalProperties: true
 
 metadata:
@@ -453,86 +515,102 @@ metadata:
     teams: true
     webhooks: true
     webhook_events: true
+    activities: true
+    prospecting_lists: true
   testedStreams:
     steps:
+      hasRecords: true
       streamHash: f9383377c2a917bd1d80394f906fb5fc3c34327d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pipelines:
+      hasRecords: true
       streamHash: c56ddd411475d8a1764c3170fcaf3130217eb42b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     clients_folders:
+      hasRecords: true
       streamHash: b258a35224e9897a2422253ad04099dd74a0bcdf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     categories:
+      hasRecords: true
       streamHash: c8f2774764ad7965caa3da2bfb79a743dda9ac46
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     predefined_tags:
+      hasRecords: true
       streamHash: 66f44c26da1cad6aeeea34b3c0f72ed3cd7b3546
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     fields:
+      hasRecords: true
       streamHash: 830858410ab66014306bba6d33828f6129c6cd31
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads:
+      hasRecords: true
       streamHash: ce9ef907cbe5ea8d0073a6988666529d8f7fe00a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     follow_ups:
+      hasRecords: true
       streamHash: ae0bdd23b6884fd73eec8985bc0c2307031e88f5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
+      hasRecords: true
       streamHash: 5f65fe700c7db30213f7a0f9c6463a371b8b73e6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
+      hasRecords: true
       streamHash: b32beabce74952a939b1d8c9cd560f47f111b14a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhooks:
+      hasRecords: true
       streamHash: d0407e0ba63f4cd0c357002959d38498f920fc66
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhook_events:
+      hasRecords: true
+      streamHash: 8e6fb9ae222cc9a9bba55eb8e76eebe393b8ef45
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activities:
+      streamHash: 5d12ca04e446cec1c99d1e86c8eee204e5ebe1d5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    webhook_events:
-      streamHash: 8e6fb9ae222cc9a9bba55eb8e76eebe393b8ef45
+    prospecting_lists:
+      streamHash: 15be102f0a24b0e377be3f4cdb87ef6ed01c6d63
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1179,5 +1257,128 @@ schemas:
         type:
           - number
           - "null"
+    required:
+      - id
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_disabled:
+        type:
+          - boolean
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  prospecting_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      column_count:
+        type:
+          - number
+          - "null"
+      column_names:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      privacy:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      title:
+        type:
+          - string
+          - "null"
+      to_qualify_row_count:
+        type:
+          - number
+          - "null"
+      total_row_count:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
     required:
       - id
