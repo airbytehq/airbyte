@@ -16,14 +16,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
   connectorSubtype: api
   connectorType: source
-  definitionId: 3da3ed6e-cfd9-40c8-bd7d-798b353f7caf
+  definitionId: a092386e-9877-4fcb-a9f5-9a49903f3f1f
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-spotlercrm
   githubIssueLabel: source-spotlercrm
   icon: icon.svg
   license: MIT
   name: SpotlerCRM
-  releaseDate: 2024-11-01
+  releaseDate: 2024-11-03
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/spotlercrm

@@ -13,6 +13,12 @@ The Airbyte connector for Spotler CRM enables seamless data integration, allowin
 | accounts | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | DefaultPaginator | ✅ |  ❌  |
 | opportunities | id | No pagination | ✅ |  ❌  |
+| documents |  | DefaultPaginator | ✅ |  ❌  |
+| campaigns | id | DefaultPaginator | ✅ |  ❌  |
+|  cases | id | DefaultPaginator | ✅ |  ❌  |
+| activities | id | DefaultPaginator | ✅ |  ❌  |
+| opportunity_histories | id | No pagination | ✅ |  ❌  |
+| opportunity_lines | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -21,6 +27,6 @@ The Airbyte connector for Spotler CRM enables seamless data integration, allowin
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-01 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-03 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

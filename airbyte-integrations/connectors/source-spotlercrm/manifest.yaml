@@ -107,6 +107,186 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/opportunities"
+    documents:
+      type: DeclarativeStream
+      name: documents
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunity_lines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    " cases":
+      type: DeclarativeStream
+      name: " cases"
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ cases"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    opportunity_histories:
+      type: DeclarativeStream
+      name: opportunity_histories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunityhistories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunity_histories"
+    opportunity_lines:
+      type: DeclarativeStream
+      name: opportunity_lines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunity_lines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+              - "*"
+              - record
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunity_lines"
   base_requester:
     type: HttpRequester
     url_base: https://apiv4.reallysimplesystems.com
@@ -118,6 +298,12 @@ streams:
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/documents"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/ cases"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/opportunity_histories"
+  - $ref: "#/definitions/streams/opportunity_lines"
 
 spec:
   type: Spec
@@ -144,23 +330,71 @@ metadata:
     accounts: true
     contacts: false
     opportunities: false
+    documents: false
+    campaigns: false
+    " cases": false
+    activities: false
+    opportunity_histories: false
+    opportunity_lines: false
   testedStreams:
     accounts:
+      hasRecords: true
       streamHash: 8cf6133ee10f23aee5e684db5986a02666b58b5d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
+      hasRecords: true
       streamHash: e562a5a2d1577a4ad54079f474cd8c98e11f2b80
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    opportunities:
+      hasRecords: true
+      streamHash: 2bd59a79b061c0a23d81dc2ee9ce365222012ebb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    documents:
+      hasRecords: true
+      streamHash: 76e5c7032ea6ec3c9a1827326f86740037c2c18c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 80addee359ceb099ee66d3623dcf27c61ae08256
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    " cases":
+      hasRecords: true
+      streamHash: c62048aa1aecd16f955ba5cdf6d70e14a6b7e56d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activities:
+      hasRecords: true
+      streamHash: 3a163d3ba256991e04ee28ba2926cc2f2e551326
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    opportunity_histories:
+      streamHash: 586a81d5561b88bc533e830095216c5b4feea858
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    opportunities:
-      streamHash: d5669f9b13a96c33d0db33f603902ef8b1dfc01e
+    opportunity_lines:
+      streamHash: e240e898c8bd85b4b8a074a378d184b41951b7e1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -258,6 +492,284 @@ schemas:
     properties: {}
   opportunities:
     type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountid:
+        type:
+          - number
+          - "null"
+      closedate:
+        type:
+          - string
+          - "null"
+      createdby:
+        type:
+          - number
+          - "null"
+      createddate:
+        type:
+          - string
+          - "null"
+      forecast:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifiedby:
+        type:
+          - number
+          - "null"
+      modifieddate:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nextstep:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      repeat:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  documents:
+    type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties: {}
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      dripfeed:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      members:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      opportunities:
+        type:
+          - number
+          - "null"
+      ownerid:
+        type:
+          - number
+          - "null"
+      sales:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  " cases":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      accountid:
+        type:
+          - number
+          - "null"
+      caselevelid:
+        type:
+          - number
+          - "null"
+      createdby:
+        type:
+          - number
+          - "null"
+      createddate:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifiedby:
+        type:
+          - number
+          - "null"
+      modifieddate:
+        type:
+          - string
+          - "null"
+      opened:
+        type:
+          - string
+          - "null"
+      ownerid:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      accountid:
+        type:
+          - number
+          - "null"
+      allday:
+        type:
+          - number
+          - "null"
+      caseid:
+        type:
+          - number
+          - "null"
+      contactid:
+        type:
+          - number
+          - "null"
+      createddate:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifieddate:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  opportunity_histories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      closedate:
+        type:
+          - string
+          - "null"
+      forecast:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifiedby:
+        type:
+          - number
+          - "null"
+      modifieddate:
+        type:
+          - string
+          - "null"
+      opportunitystatus:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  opportunity_lines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      createdby:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      modifiedby:
+        type:
+          - number
+          - "null"
+      opportunityid:
+        type:
+          - number
+          - "null"
+      product:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      unitprice:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+    additionalProperties: true
