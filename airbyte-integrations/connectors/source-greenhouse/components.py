@@ -7,13 +7,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
-class GreenHouseSlicer(Cursor):
+class GreenHouseSlicer(DeclarativeCursor):
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: str
     request_cursor_field: str
@@ -94,6 +94,10 @@ class GreenHouseSlicer(Cursor):
     def get_request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
         return {}
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # Datetime based cursors operate over slices made up of datetime ranges. Stream state is based on the progress
+        # through each slice and does not belong to a specific slice. We just return stream state as it is.
+        return self.get_stream_state()
 
 @dataclass
 class GreenHouseSubstreamSlicer(GreenHouseSlicer):
