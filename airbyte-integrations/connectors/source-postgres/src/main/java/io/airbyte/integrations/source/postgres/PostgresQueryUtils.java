@@ -95,13 +95,13 @@ public class PostgresQueryUtils {
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
 
   /**
-   * Query returns the size table data takes on DB server disk (not incling any index or other
+   * Query returns the size table data takes on DB server disk (not including any index or other
    * metadata) And the size of each page used in (page, tuple) ctid. This helps us evaluate how many
    * pages we need to read to traverse the entire table.
    */
   public static final String CTID_TABLE_BLOCK_SIZE =
       """
-      WITH block_sz AS (SELECT current_setting('block_size')::int), rel_sz AS (select pg_relation_size('%s')) SELECT * from block_sz, rel_sz
+      SELECT current_setting('block_size')::int, pg_relation_size('%s')
       """;
 
   /**
