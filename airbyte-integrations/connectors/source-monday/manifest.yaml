@@ -61,7 +61,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_monday.extractor.MondayIncrementalItemsExtractor
+            class_name: source_declarative_manifest.components.MondayIncrementalItemsExtractor
             field_path:
               - data
               - boards
@@ -83,13 +83,13 @@ definitions:
           pagination_strategy:
             type: CustomPaginationStrategy
             class_name: >-
-              source_monday.item_pagination_strategy.ItemCursorPaginationStrategy
+              source_declarative_manifest.components.ItemCursorPaginationStrategy
       name: items
       primary_key:
         - id
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_monday.components.IncrementalSubstreamSlicer
+        class_name: source_declarative_manifest.components.IncrementalSubstreamSlicer
         cursor_field: updated_at_int
         nested_items_per_page: 20
         parent_complete_fetch: true
@@ -154,7 +154,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_monday.extractor.MondayIncrementalItemsExtractor
+            class_name: source_declarative_manifest.components.MondayIncrementalItemsExtractor
             field_path:
               - data
               - boards
@@ -170,7 +170,7 @@ definitions:
         - id
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_monday.components.IncrementalSubstreamSlicer
+        class_name: source_declarative_manifest.components.IncrementalSubstreamSlicer
         cursor_field: updated_at_int
         nested_items_per_page: 10
         parent_complete_fetch: true
@@ -556,18 +556,18 @@ definitions:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_monday.extractor.MondayActivityExtractor
+            class_name: source_declarative_manifest.components.MondayActivityExtractor
         paginator:
           type: DefaultPaginator
           pagination_strategy:
             type: CustomPaginationStrategy
-            class_name: source_monday.item_pagination_strategy.ItemPaginationStrategy
+            class_name: source_declarative_manifest.components.ItemPaginationStrategy
       name: activity_logs
       primary_key:
         - id
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_monday.components.IncrementalSingleSlice
+        class_name: source_declarative_manifest.components.IncrementalSingleSlice
         cursor_field: created_at_int
       schema_loader:
         type: InlineSchemaLoader
@@ -575,7 +575,7 @@ definitions:
           $ref: "#/schemas/activity_logs"
   base_requester:
     type: CustomRequester
-    class_name: "source_monday.MondayGraphqlRequester"
+    class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
     url_base: "https://api.monday.com/v2"
     authenticator:
       type: BearerAuthenticator
