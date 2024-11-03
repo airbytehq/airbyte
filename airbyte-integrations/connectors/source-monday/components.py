@@ -510,6 +510,7 @@ class IncrementalSingleSlice(DeclarativeCursor):
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
         return self.get_stream_state()
 
+
 @dataclass
 class IncrementalSubstreamSlicer(IncrementalSingleSlice):
     """
