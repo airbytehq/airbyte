@@ -15,7 +15,7 @@ from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
@@ -421,7 +421,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
 
 @dataclass
-class IncrementalSingleSlice(Cursor):
+class IncrementalSingleSlice(DeclarativeCursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -507,6 +507,8 @@ class IncrementalSingleSlice(Cursor):
         else:
             return False
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
 
 @dataclass
 class IncrementalSubstreamSlicer(IncrementalSingleSlice):
