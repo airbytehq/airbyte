@@ -99,6 +99,7 @@ class GreenHouseSlicer(DeclarativeCursor):
         # through each slice and does not belong to a specific slice. We just return stream state as it is.
         return self.get_stream_state()
 
+
 @dataclass
 class GreenHouseSubstreamSlicer(GreenHouseSlicer):
     parent_stream: Stream
