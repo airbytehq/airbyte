@@ -745,7 +745,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         )
 
 
-class ParentIncrementalStipeSubStream(StripeSubStream):
+class ParentIncrementalStripeSubStream(StripeSubStream):
     is_resumable = True
     """
     This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.

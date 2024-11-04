@@ -26,7 +26,7 @@ from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     Events,
     IncrementalStripeStream,
-    ParentIncrementalStipeSubStream,
+    ParentIncrementalStripeSubStream,
     SetupAttempts,
     StripeLazySubStream,
     StripeStream,
@@ -516,7 +516,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            ParentIncrementalStipeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="checkout_sessions_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
                 parent=checkout_sessions,
@@ -540,7 +540,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             subscription_items,
-            ParentIncrementalStipeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
