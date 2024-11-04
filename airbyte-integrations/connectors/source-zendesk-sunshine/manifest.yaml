@@ -233,7 +233,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: relatinships/types
+          path: relationships/types
           http_method: GET
           request_headers:
             Content-Type: application/json
