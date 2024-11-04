@@ -125,19 +125,7 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+    )
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -145,19 +133,7 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+    )
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -165,19 +141,7 @@ class S3V2WriteTestParquetUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+    )
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -185,16 +149,4 @@ class S3V2WriteTestParquetSnappy :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+    )

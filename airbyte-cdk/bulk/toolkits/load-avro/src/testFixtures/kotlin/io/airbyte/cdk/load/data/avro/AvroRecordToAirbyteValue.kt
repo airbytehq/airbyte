@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
@@ -35,19 +34,25 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
 
 class AvroRecordToAirbyteValue {
-    fun convert(avroValue: Any?, schema: AirbyteType): AirbyteValue {
+    fun convert(avroValue: Any?, schema: AirbyteType, depth: Int): AirbyteValue {
+        if (avroValue == null) {
+            return NullValue
+        }
         when (schema) {
             is ObjectType -> {
                 val properties = LinkedHashMap<String, AirbyteValue>()
                 schema.properties.forEach { (name, field) ->
                     val value = (avroValue as GenericRecord).get(name)
-                    properties[name] = convert(value, field.type)
+                    if ((value != null) || depth < 2) {
+                        properties[name] = convert(value, field.type, depth + 1)
+                    }
                 }
                 return ObjectValue(properties)
             }
             is ArrayType -> {
                 val items = schema.items
-                val values = (avroValue as GenericArray<*>).map { convert(it, items.type) }
+                val values =
+                    (avroValue as GenericArray<*>).map { convert(it, items.type, depth + 1) }
                 return ArrayValue(values)
             }
             is ArrayTypeWithoutSchema ->
@@ -55,7 +60,6 @@ class AvroRecordToAirbyteValue {
             is BooleanType -> return BooleanValue(avroValue as Boolean)
             is DateType -> throw UnsupportedOperationException("DateType is not supported")
             is IntegerType -> return IntegerValue(avroValue as Long)
-            is NullType -> return NullValue
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
             is ObjectTypeWithEmptySchema ->
                 throw UnsupportedOperationException("ObjectTypeWithEmptySchema is not supported")
@@ -76,16 +80,16 @@ class AvroRecordToAirbyteValue {
             is TimestampTypeWithoutTimezone,
             is TimestampTypeWithTimezone ->
                 throw UnsupportedOperationException("TimestampType is not supported")
-            is UnionType -> return tryConvertUnion(avroValue, schema)
+            is UnionType -> return tryConvertUnion(avroValue, schema, depth)
             is UnknownType -> throw UnsupportedOperationException("UnknownType is not supported")
             else -> throw IllegalArgumentException("Unsupported schema type: $schema")
         }
     }
 
-    private fun tryConvertUnion(avroValue: Any?, schema: UnionType): AirbyteValue {
+    private fun tryConvertUnion(avroValue: Any?, schema: UnionType, depth: Int): AirbyteValue {
         for (type in schema.options) {
             try {
-                return convert(avroValue, type)
+                return convert(avroValue, type, depth + 1)
             } catch (e: Exception) {
                 continue
             }
@@ -95,5 +99,5 @@ class AvroRecordToAirbyteValue {
 }
 
 fun GenericRecord.toAirbyteValue(schema: AirbyteType): AirbyteValue {
-    return AvroRecordToAirbyteValue().convert(this, schema)
+    return AvroRecordToAirbyteValue().convert(this, schema, 0)
 }

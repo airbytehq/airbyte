@@ -25,9 +25,16 @@ class AirbyteValueToAvroRecord {
     fun convert(airbyteValue: AirbyteValue, schema: Schema): Any? {
         when (airbyteValue) {
             is ObjectValue -> {
-                val record = GenericData.Record(schema)
+                val recordSchema =
+                    if (schema.type == Schema.Type.UNION) {
+                        schema.types.find { it.type == Schema.Type.RECORD }
+                            ?: throw IllegalArgumentException("Union must contain a record type")
+                    } else {
+                        schema
+                    }
+                val record = GenericData.Record(recordSchema)
                 airbyteValue.values.forEach { (name, value) ->
-                    schema.getField(name)?.let { field ->
+                    recordSchema.getField(name)?.let { field ->
                         record.put(name, convert(value, field.schema()))
                     }
                 }

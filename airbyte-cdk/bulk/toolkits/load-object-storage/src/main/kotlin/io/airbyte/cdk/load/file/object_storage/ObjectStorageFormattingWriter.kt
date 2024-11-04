@@ -10,11 +10,13 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
-import io.airbyte.cdk.load.data.DestinationRecordToAirbyteValueWithMeta
+import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
+import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
@@ -33,22 +35,23 @@ interface ObjectStorageFormattingWriter : Closeable {
 @Singleton
 @Secondary
 class ObjectStorageFormattingWriterFactory(
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta,
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    private val avroMapperPipelineFactory: AvroMapperPipelineFactory,
+    private val parquetMapperPipelineFactory: ParquetMapperPipelineFactory
 ) {
     fun create(
         stream: DestinationStream,
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration -> JsonFormattingWriter(outputStream, recordDecorator)
+            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream)
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
                     stream,
                     outputStream,
                     formatConfigProvider.objectStorageFormatConfiguration
                         as AvroFormatConfiguration,
-                    recordDecorator
+                    avroMapperPipelineFactory
                 )
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
@@ -56,19 +59,19 @@ class ObjectStorageFormattingWriterFactory(
                     outputStream,
                     formatConfigProvider.objectStorageFormatConfiguration
                         as ParquetFormatConfiguration,
-                    recordDecorator
+                    parquetMapperPipelineFactory
                 )
-            is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream, recordDecorator)
+            is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream)
         }
     }
 }
 
 class JsonFormattingWriter(
+    private val stream: DestinationStream,
     private val outputStream: OutputStream,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
 ) : ObjectStorageFormattingWriter {
     override fun accept(record: DestinationRecord) {
-        outputStream.write(recordDecorator.decorate(record).toJson().serializeToString())
+        outputStream.write(record.data.withAirbyteMeta(stream, record).toJson().serializeToString())
         outputStream.write("\n")
     }
 
@@ -78,13 +81,12 @@ class JsonFormattingWriter(
 }
 
 class CSVFormattingWriter(
-    stream: DestinationStream,
+    val stream: DestinationStream,
     outputStream: OutputStream,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
 ) : ObjectStorageFormattingWriter {
-    private val printer = stream.schemaWithMeta.toCsvPrinterWithHeader(outputStream)
+    private val printer = stream.schema.withAirbyteMeta().toCsvPrinterWithHeader(outputStream)
     override fun accept(record: DestinationRecord) {
-        printer.printRecord(*recordDecorator.decorate(record).toCsvRecord())
+        printer.printRecord(*record.data.withAirbyteMeta(stream, record).toCsvRecord())
     }
     override fun close() {
         printer.close()
@@ -92,16 +94,21 @@ class CSVFormattingWriter(
 }
 
 class AvroFormattingWriter(
-    stream: DestinationStream,
+    val stream: DestinationStream,
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
+    mapperPipelineFactory: AvroMapperPipelineFactory
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schemaWithMeta.toAvroSchema(stream.descriptor)
+    private val mapperPipeline = mapperPipelineFactory.create(stream)
+    private val avroSchema =
+        mapperPipeline.finalSchema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
+
     override fun accept(record: DestinationRecord) {
-        writer.write(recordDecorator.decorate(record).toAvroRecord(avroSchema))
+        val recordMangled = mapperPipeline.map(record)
+        writer.write(recordMangled.data.withAirbyteMeta(stream, record).toAvroRecord(avroSchema))
     }
 
     override fun close() {
@@ -110,16 +117,20 @@ class AvroFormattingWriter(
 }
 
 class ParquetFormattingWriter(
-    stream: DestinationStream,
+    val stream: DestinationStream,
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
-    private val recordDecorator: DestinationRecordToAirbyteValueWithMeta
+    mapperPipelineFactory: ParquetMapperPipelineFactory
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schemaWithMeta.toAvroSchema(stream.descriptor)
+    private val mapperPipeline = mapperPipelineFactory.create(stream)
+    private val avroSchema =
+        mapperPipeline.finalSchema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+
     private val writer =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
     override fun accept(record: DestinationRecord) {
-        writer.write(recordDecorator.decorate(record).toAvroRecord(avroSchema))
+        val recordMangled = mapperPipeline.map(record)
+        writer.write(recordMangled.data.withAirbyteMeta(stream, record).toAvroRecord(avroSchema))
     }
 
     override fun close() {

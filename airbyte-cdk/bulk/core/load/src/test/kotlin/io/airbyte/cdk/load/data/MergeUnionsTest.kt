@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class MergeUnionsTest {
     @Test
@@ -41,10 +40,25 @@ class MergeUnionsTest {
     }
 
     @Test
-    fun testNameClashFails() {
-        val (inputSchema, _) =
+    fun testNameClash() {
+        val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .withUnion()
+                .withUnion(
+                    expectedInstead =
+                        FieldType(
+                            ObjectType(
+                                properties =
+                                    linkedMapOf(
+                                        "foo" to
+                                            FieldType(
+                                                UnionType(listOf(StringType, IntegerType)),
+                                                false
+                                            )
+                                    )
+                            ),
+                            false
+                        )
+                )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
                 .endRecord()
@@ -53,7 +67,8 @@ class MergeUnionsTest {
                 .endRecord()
                 .endUnion()
                 .build()
-        assertThrows<IllegalArgumentException> { MergeUnions().map(inputSchema) }
+        val output = MergeUnions().map(inputSchema)
+        Assertions.assertEquals(expectedOutput, output)
     }
 
     @Test

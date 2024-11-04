@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -36,10 +35,29 @@ class AirbyteTypeToAvroSchema {
                 val builder = SchemaBuilder.record(name).namespace(namespace).fields()
                 airbyteSchema.properties.entries
                     .fold(builder) { acc, (name, field) ->
-                        // NOTE: We will not support nullable at this stage.
-                        // All nullables should have been converted to union[this, null] upstream
-                        // TODO: Enforce this
-                        acc.name(name).type(convert(field.type, path + name)).noDefault()
+                        val converted = convert(field.type, path + name)
+                        acc.name(name).let {
+                            if (field.nullable && converted.type != Schema.Type.UNION) {
+                                it.type(
+                                        SchemaBuilder.unionOf()
+                                            .nullType()
+                                            .and()
+                                            .type(converted)
+                                            .endUnion()
+                                    )
+                                    .withDefault(null)
+                            } else if (field.nullable && converted.type == Schema.Type.UNION) {
+                                converted.types
+                                    .fold(SchemaBuilder.unionOf().nullType()) { acc, type ->
+                                        acc.and().type(type)
+                                    }
+                                    .endUnion()
+                                    .let { union -> it.type(union) }
+                                    .withDefault(null)
+                            } else {
+                                it.type(converted).noDefault()
+                            }
+                        }
                     }
                     .endRecord()
             }
@@ -54,7 +72,6 @@ class AirbyteTypeToAvroSchema {
                 LogicalTypes.date().addToSchema(schema)
             }
             is IntegerType -> SchemaBuilder.builder().longType()
-            is NullType -> SchemaBuilder.builder().nullType()
             is NumberType -> SchemaBuilder.builder().doubleType()
             is ObjectTypeWithEmptySchema ->
                 throw IllegalArgumentException("Object type with empty schema is not supported")
