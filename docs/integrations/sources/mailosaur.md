@@ -7,8 +7,8 @@ Docs : https://mailosaur.com/docs
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
+| `username` | `string` | Username. Enter &quot;api&quot; here |  |
+| `password` | `string` | Password. Enter your api key here |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -26,6 +26,6 @@ Docs : https://mailosaur.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-25 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-04 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

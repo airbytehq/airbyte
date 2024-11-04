@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -36,6 +36,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/Servers"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -159,10 +167,12 @@ spec:
     properties:
       username:
         type: string
+        description: Enter "api" here
         order: 0
         title: Username
       password:
         type: string
+        description: Enter your api key here
         order: 1
         title: Password
         always_show: true
@@ -178,33 +188,33 @@ metadata:
     Transactions: true
   testedStreams:
     Messages:
-      hasRecords: true
-      streamHash: b33d85d0fc8ebd42c5dbfebbeb3fb88625d50c8b
+      streamHash: c575c1a41d818b9d9a65f94313a38b82d1d16fc6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Message:
-      hasRecords: true
-      streamHash: 6f4b160a1eb3b6492489f88ebfd9e834ba804110
+      streamHash: c3a82b882f0952b501dca9c2c958b56b3541d3a7
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    Servers:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Servers:
       streamHash: 5e1df177ebb73b7190176690dc90be850205dbcc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    Server:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Server:
       streamHash: 273ad3468a86ad7c1b33fb85f3933a3d63a12d63
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Transactions:
       streamHash: 3edcbb4e0514bf8e47343fb415044ccb728932fb
       hasResponse: true
