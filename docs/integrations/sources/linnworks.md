@@ -74,6 +74,7 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.33 | 2024-11-04 | [48271](https://github.com/airbytehq/airbyte/pull/48271) | Update dependencies |
 | 0.1.32 | 2024-10-29 | [47877](https://github.com/airbytehq/airbyte/pull/47877) | Update dependencies |
 | 0.1.31 | 2024-10-28 | [47116](https://github.com/airbytehq/airbyte/pull/47116) | Update dependencies |
 | 0.1.30 | 2024-10-12 | [46798](https://github.com/airbytehq/airbyte/pull/46798) | Update dependencies |
