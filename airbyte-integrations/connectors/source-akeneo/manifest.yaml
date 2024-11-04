@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -206,9 +206,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/attributes"
-    attribute-groups:
+    attribute_groups:
       type: DeclarativeStream
-      name: attribute-groups
+      name: attribute_groups
       primary_key:
         - code
       retriever:
@@ -241,10 +241,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/attribute-groups"
-    association-types:
+          $ref: "#/schemas/attribute_groups"
+    association_types:
       type: DeclarativeStream
-      name: association-types
+      name: association_types
       primary_key:
         - code
       retriever:
@@ -277,7 +277,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/association-types"
+          $ref: "#/schemas/association_types"
     channels:
       type: DeclarativeStream
       name: channels
@@ -384,9 +384,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/currencies"
-    measure-families:
+    measure_families:
       type: DeclarativeStream
-      name: measure-families
+      name: measure_families
       primary_key:
         - code
       retriever:
@@ -419,15 +419,15 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/measure-families"
+          $ref: "#/schemas/measure_families"
   base_requester:
     type: HttpRequester
-    url_base: "{{ config[\"your_host\"] }}/api/rest/v1"
+    url_base: "{{ config[\"host\"] }}/api/rest/v1"
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
         type: HttpRequester
-        url_base: "{{ config[\"your_host\"] }}/api/oauth/v1"
+        url_base: "{{ config[\"host\"] }}/api/oauth/v1"
         path: token
         authenticator:
           type: BasicHttpAuthenticator
@@ -452,12 +452,12 @@ streams:
   - $ref: "#/definitions/streams/families"
   - $ref: "#/definitions/streams/family_variants"
   - $ref: "#/definitions/streams/attributes"
-  - $ref: "#/definitions/streams/attribute-groups"
-  - $ref: "#/definitions/streams/association-types"
+  - $ref: "#/definitions/streams/attribute_groups"
+  - $ref: "#/definitions/streams/association_types"
   - $ref: "#/definitions/streams/channels"
   - $ref: "#/definitions/streams/locales"
   - $ref: "#/definitions/streams/currencies"
-  - $ref: "#/definitions/streams/measure-families"
+  - $ref: "#/definitions/streams/measure_families"
 
 spec:
   type: Spec
@@ -465,15 +465,16 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - your_host
+      - host
       - api_username
       - password
       - client_id
     properties:
-      your_host:
+      host:
         type: string
+        description: https://cb8715249e.trial.akeneo.cloud
         order: 0
-        title: Your Host
+        title: Host
       api_username:
         type: string
         order: 1
@@ -481,7 +482,7 @@ spec:
       password:
         type: string
         order: 2
-        title: password
+        title: Password
         airbyte_secret: true
       client_id:
         type: string
@@ -502,86 +503,86 @@ metadata:
     families: true
     family_variants: true
     attributes: true
-    attribute-groups: true
-    association-types: true
+    attribute_groups: true
+    association_types: true
     channels: true
     locales: true
     currencies: true
-    measure-families: true
+    measure_families: true
   testedStreams:
     products:
-      hasRecords: true
-      streamHash: 3cd48482791a214017facd319d28c6094502fbb3
+      streamHash: d8f7bdfec50fe02408812c2c01f8555de9c21cc9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     "categories ":
-      hasRecords: true
-      streamHash: 5466248a88a505c3215452488ddeb00384306b74
+      streamHash: 0a6a99847156f87fe4ebf0d71cb8f5c9bd83977b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     families:
-      hasRecords: true
-      streamHash: daf3f1e3f37c98cd39fb9160d1c9aca973545f16
+      streamHash: 452cd2f922d7607f777254ee34b449386cb98943
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     family_variants:
-      hasRecords: true
-      streamHash: 37fbee31b7886a838d9c08bc6779841e8221f034
+      streamHash: e4029a5e91f267a5eb2199653dd28eef9fe372c2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     attributes:
-      hasRecords: true
-      streamHash: 16c0e5bd7a0d0596f7067071553a61ab70be8a70
+      streamHash: 8ad57ccffc7bdf3f92cee698c0d48ab90b9c5886
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    attribute-groups:
       hasRecords: true
-      streamHash: 56d5f5228f88bb9e7f72423da6b525eb7795dd78
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attribute_groups:
+      streamHash: ca3773e295515bdc0a0d8d48fddddc4bd442629b
+      hasResponse: true
       responsesAreSuccessful: true
-    association-types:
       hasRecords: true
-      streamHash: 1dd936297b0fd0df3a9d6ceb7435b0b963875d12
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    association_types:
+      streamHash: 984fa922d3728e1a55a026aecdb165f800af1d6a
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     channels:
-      hasRecords: true
-      streamHash: b137d29a6534bef5e23a75fe5a0a48158fdff9a8
+      streamHash: 03f3f97fbf23ccbef66b414c0bf2ac3972423538
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     locales:
-      hasRecords: true
-      streamHash: cce5772ac1b56482a86d2412c1f30cc3914eb97c
+      streamHash: fa6e0c3364ac475d91e4a8479ed21fef68062831
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     currencies:
-      hasRecords: true
-      streamHash: e60d1a5c7f2c702e9497f110096787a988eb7bc9
+      streamHash: 5216fc38b15fcfbf35153bafd306f0d05ac29e00
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    measure-families:
       hasRecords: true
-      streamHash: eb7784ab8ec1c4851b80c663ac55743938a100f5
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    measure_families:
+      hasRecords: true
+      streamHash: d3c6dc38392923b83ea70d6fc791ac46d53f08af
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6401,7 +6402,7 @@ schemas:
           - "null"
     required:
       - code
-  attribute-groups:
+  attribute_groups:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -6453,7 +6454,7 @@ schemas:
           - "null"
     required:
       - code
-  association-types:
+  association_types:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -6623,7 +6624,7 @@ schemas:
           - "null"
     required:
       - code
-  measure-families:
+  measure_families:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
